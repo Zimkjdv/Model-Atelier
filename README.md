@@ -29,6 +29,10 @@ Set-Location ..
 
 瀏覽 <http://127.0.0.1:8000>。Ctrl+C 停止服務。前端建置後由 FastAPI 提供，不需要另外啟動 Node 服務。
 
+Windows 使用者也可以直接雙擊根目錄的 `start-all.bat`，它會開啟兩個獨立視窗並分別執行 `start-local.ps1` 與 `start-comfyui.ps1`。這個 `.bat` 只是啟動捷徑，服務仍由 PowerShell 腳本負責檢查環境與啟動參數。
+
+關閉方式：在平台視窗按 `Ctrl+C` 停止 `8000`，在 ComfyUI 視窗按 `Ctrl+C` 停止 `8188`，看到命令提示字元返回後再關閉視窗。只需要保存草稿或瀏覽已匯入作品時，可以只關閉 ComfyUI；需要完全停止本專案時，兩個視窗都要停止。不要用工作管理員結束所有 `python.exe`，因為其他 Python 專案可能同時運行。
+
 ## 連接埠（Port）一覽
 
 以下是本專案的服務設定與用途；執行狀態於 2026-09-06 查核，之後會隨服務啟停改變。專案啟動腳本均綁定本機 `127.0.0.1`。
@@ -45,6 +49,8 @@ Set-Location ..
 Vite 設定未啟用 `strictPort`，預設埠被占用時會嘗試下一個可用埠；不要直接把其他專案的 `5173` 當成本平台。需要固定開發埠時可自行指定 Vite 的 `--port` 與 `--strictPort` 參數。
 
 設定來源：平台埠在 `start-local.ps1`；ComfyUI 埠在 `start-comfyui.ps1`；前端開發指令在 `frontend/package.json`，API 代理目標在 `frontend/vite.config.ts`。若更改平台埠，需同步調整 Vite 代理；若更改 ComfyUI 埠，需同步修改啟動參數及平台「設定」頁的引擎網址。既有任務仍保存原引擎網址。
+
+`start-all.bat` 會啟動上述兩個腳本，不會另外建立新的服務或連接埠；按 `Ctrl+C` 的方式相同。
 
 若 PowerShell 不允許執行腳本，可直接在根目錄執行：
 
