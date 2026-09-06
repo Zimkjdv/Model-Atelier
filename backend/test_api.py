@@ -105,6 +105,38 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.put('/api/models/metadata', json={**self.target(), 'source_url': 'javascript:alert(1)'}).status_code, 422)
         self.assertEqual(self.client.put('/api/models/selection', json=self.target('missing')).status_code, 404)
 
+    def draft(self, **changes):
+        return dict(title='插畫草稿', prompt='森林中的小屋', engine_url='http://127.0.0.1:8188', **changes)
+
+    def test_draft_persistence_and_conflict(self):
+        created = self.client.post('/api/drafts', json=self.draft(seed='18446744073709551615'))
+        self.assertEqual(created.status_code, 201)
+        first = created.json()
+        payload = self.draft(seed=first['seed'], revision=first['revision'])
+        payload['prompt'] = '雨後的森林'
+        updated = self.client.put('/api/drafts/' + first['id'], json=payload)
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.json()['revision'], 2)
+        self.assertEqual(self.client.put('/api/drafts/' + first['id'], json=payload).status_code, 409)
+        saved = self.client.get('/api/drafts').json()
+        self.assertEqual(saved[0]['prompt'], '雨後的森林')
+        self.assertEqual(saved[0]['seed'], '18446744073709551615')
+
+    def test_draft_validation_and_without_model(self):
+        self.assertEqual(self.client.post('/api/drafts', json=self.draft()).status_code, 201)
+        for changes in [{'width': 65}, {'height': 0}, {'seed': '18446744073709551616'}, {'seed': '-1'}, {'width': 64.5}]:
+            self.assertEqual(self.client.post('/api/drafts', json=self.draft(**changes)).status_code, 422)
+        self.assertEqual(len(self.client.get('/api/drafts').json()), 1)
+        self.assertEqual(self.client.put('/api/drafts/nonexistent', json=self.draft(revision=1)).status_code, 404)
+
+    def test_draft_records_model_version(self):
+        self.sync(['illustration.safetensors'])
+        self.client.put('/api/models/metadata', json={**self.target(), 'version': '1.0'})
+        saved = self.client.post('/api/drafts', json=self.draft(checkpoint='illustration.safetensors')).json()
+        self.assertEqual(saved['model_version'], '1.0')
+        self.client.put('/api/models/metadata', json={**self.target(), 'version': '2.0'})
+        self.assertEqual(self.client.get('/api/drafts').json()[0]['model_version'], '1.0')
+
 
 if __name__ == '__main__':
     unittest.main()

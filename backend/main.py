@@ -16,7 +16,7 @@ import psutil
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
-from backend import catalog
+from backend import catalog, drafts
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -189,6 +189,64 @@ async def model_selection(target: ModelTarget):
         value['selected'] = model['name']
         catalog.write(DB, value)
         return value
+
+
+class DraftInput(BaseModel):
+    title: str = Field(min_length=1, max_length=100)
+    prompt: str = Field(default='', max_length=20000)
+    engine_url: str
+    checkpoint: str = Field(default='', max_length=2048)
+    width: int = Field(default=1024, ge=64, le=8192, multiple_of=8, strict=True)
+    height: int = Field(default=1024, ge=64, le=8192, multiple_of=8, strict=True)
+    seed: str = '0'
+    revision: int | None = Field(default=None, ge=1)
+
+    @field_validator('title')
+    @classmethod
+    def title_not_blank(cls, value):
+        if not value.strip():
+            raise ValueError('草稿名稱不可空白')
+        return value.strip()
+
+    @field_validator('engine_url')
+    @classmethod
+    def draft_url(cls, value):
+        return Settings.validate_url(value)
+
+    @field_validator('seed')
+    @classmethod
+    def seed_valid(cls, value):
+        if not value.isascii() or not value.isdigit() or len(value) > 20 or int(value) > 18446744073709551615:
+            raise ValueError('Seed 必須是 0 至 18446744073709551615 的整數')
+        return str(int(value))
+
+
+def draft_payload(value):
+    payload = value.model_dump(exclude={'revision'})
+    entries = catalog.read(DB, value.engine_url)['models']
+    item = next((item for item in entries if item['name'] == value.checkpoint), {})
+    payload['model_version'] = item.get('version', '')
+    return payload
+
+
+@app.get('/api/drafts')
+def list_drafts():
+    return drafts.list_all(DB)
+
+
+@app.post('/api/drafts', status_code=201)
+def create_draft(value: DraftInput):
+    return drafts.save(DB, draft_payload(value))
+
+
+@app.put('/api/drafts/{draft_id}')
+def update_draft(draft_id: str, value: DraftInput):
+    try:
+        return drafts.save(DB, draft_payload(value), draft_id, value.revision)
+    except KeyError:
+        raise HTTPException(404, '草稿不存在')
+    except ValueError as exc:
+        raise HTTPException(409, str(exc))
 
 
 if (ROOT / 'frontend' / 'dist').exists():
