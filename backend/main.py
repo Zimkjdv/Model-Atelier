@@ -20,7 +20,7 @@ from starlette.concurrency import run_in_threadpool
 from uuid import UUID
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
-from backend import catalog, drafts, assets, submissions
+from backend import catalog, drafts, assets, submissions, gallery_api
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -311,6 +311,7 @@ def update_asset(asset_id: UUID, value: AssetUpdate):
 
 
 submissions.install(app, sys.modules[__name__])
+gallery_api.install(app, sys.modules[__name__])
 
 
 if (ROOT / 'frontend' / 'dist').exists():

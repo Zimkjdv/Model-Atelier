@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, patch
 import httpx
 from backend import test_api
 import unittest
-from backend import main
+from backend import main, catalog
 
 
 class SubmissionTests(unittest.TestCase):
@@ -95,3 +95,16 @@ class SubmissionTests(unittest.TestCase):
         with patch('backend.submissions.httpx.AsyncClient', return_value=remote):
             self.assertEqual(self.client.post('/api/generate', json=self.payload()).status_code, 502)
         remote.post.assert_not_called()
+
+    def test_model_version_is_frozen_at_submission(self):
+        body = self.payload()
+        snapshot = catalog.merge(self.db, body['engine_url'], [body['checkpoint']])
+        snapshot['models'][0]['version'] = 'v1'
+        catalog.write(self.db, snapshot)
+        with patch('backend.submissions.httpx.AsyncClient', return_value=self.remote()):
+            job = self.client.post('/api/generate', json=body).json()
+            snapshot['models'][0]['version'] = 'v2'
+            catalog.write(self.db, snapshot)
+            repeated = self.client.post('/api/generate', json=body).json()
+        self.assertEqual(job['model_version'], 'v1')
+        self.assertEqual(repeated['model_version'], 'v1')

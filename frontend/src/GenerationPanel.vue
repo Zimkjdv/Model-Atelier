@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref } from 'vue'
 const props = defineProps<{ form: { engine_url: string; checkpoint: string; reference_ids: string[] } }>()
+const emit = defineEmits<{ gallery: [jobId: string] }>()
 type Job = { id: string; status: string; checkpoint: string; created_at: string; error?: string }
 const jobs = ref<Job[]>([]), busy = ref(false), error = ref('')
 const pending = ref<Record<string, unknown> | null>(null)
@@ -64,6 +65,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <strong>{{ labels[job.status] || job.status }}</strong> · {{ job.checkpoint }}
       <p class="footnote">{{ new Date(job.created_at).toLocaleString() }} · {{ job.id }}</p>
       <p v-if="job.error" role="status">{{ job.error }}</p>
+      <button v-if="job.status === 'completed'" class="secondary" @click="emit('gallery', job.id)">前往作品庫匯入圖片 →</button>
       <a :href="`/api/jobs/${job.id}/workflow`">下載完整工作流程</a> · <a :href="`/api/jobs/${job.id}`" target="_blank" rel="noopener">任務／歷史 JSON</a>
     </div>
   </article>

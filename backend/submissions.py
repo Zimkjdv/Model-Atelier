@@ -4,7 +4,7 @@ from uuid import UUID
 import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
-from backend import jobs
+from backend import jobs, catalog
 
 
 class Submission(BaseModel):
@@ -44,7 +44,8 @@ def install(app, host):
         if not loaders or any(name != value.checkpoint for name in loaders):
             raise HTTPException(422, '工作流程 checkpoint 與選擇的模型不一致')
         try:
-            job, fresh = jobs.reserve(host.DB, str(value.request_id), value.engine_url, value.workflow, value.checkpoint)
+            model = next((m for m in catalog.read(host.DB, value.engine_url)['models'] if m['name'] == value.checkpoint), {})
+            job, fresh = jobs.reserve(host.DB, str(value.request_id), value.engine_url, value.workflow, value.checkpoint, model.get('version'))
         except ValueError as exc:
             raise HTTPException(409, str(exc))
         if not fresh:

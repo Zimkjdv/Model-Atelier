@@ -5,7 +5,7 @@ from contextlib import closing
 from datetime import datetime, timezone
 
 
-def reserve(path, job_id, engine_url, workflow, checkpoint):
+def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None):
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
         row = db.execute('SELECT value FROM settings WHERE key=?', ('job:' + job_id,)).fetchone()
@@ -15,7 +15,7 @@ def reserve(path, job_id, engine_url, workflow, checkpoint):
                 raise ValueError('此請求 ID 已用於其他工作流程')
             return value, False
         value = dict(id=job_id, prompt_id=job_id, engine_url=engine_url, workflow=workflow,
-                     checkpoint=checkpoint, status='validating', error=None, history=None,
+                     checkpoint=checkpoint, model_version=model_version or '未知', status='validating', error=None, history=None,
                      created_at=datetime.now(timezone.utc).isoformat())
         db.execute('INSERT INTO settings VALUES (?, ?)', ('job:' + job_id, json.dumps(value, ensure_ascii=False)))
         return value, True

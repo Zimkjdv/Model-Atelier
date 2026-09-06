@@ -5,7 +5,7 @@ type Asset = { id: string; title: string; archived: boolean }
 type Draft = { reference_ids?: string[]; id: string; title: string; prompt: string; engine_url: string; checkpoint: string; width: number; height: number; seed: string; revision: number; model_version: string; updated_at: string }
 type Model = { name: string; listed: boolean; version?: string }
 type Catalog = { engine_url: string; models: Model[]; selected: string | null }
-const emit = defineEmits<{ models: []; assets: [] }>()
+const emit = defineEmits<{ models: []; assets: []; gallery: [jobId: string] }>()
 const form = reactive({ title: '未命名創作', prompt: '', engine_url: '', checkpoint: '', width: 1024, height: 1024, seed: '0', reference_ids: [] as string[] })
 const id = ref<string | null>(null), revision = ref<number | null>(null), records = ref<Draft[]>([]), models = ref<Catalog | null>(null)
 const busy = ref(false), error = ref(''), message = ref(''), saved = ref(''), pending = ref<Draft | 'new' | null>(null)
@@ -85,7 +85,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
         <details><summary>進階設定</summary><label for="seed">Seed</label><div class="seed-field"><input id="seed" v-model="form.seed" inputmode="numeric" pattern="[0-9]{1,20}" required><button type="button" class="secondary" @click="randomSeed">隨機</button></div><p class="footnote">以文字精確保存 64 位元整數，避免瀏覽器數字精度造成變更。</p></details>
         <div class="save-actions"><button class="primary" :disabled="!form.engine_url">{{ busy ? '處理中…' : '保存草稿' }}</button><button v-if="id" type="button" class="secondary" @click="save(true)">另存新草稿</button></div>
       </fieldset></form>
-      <div><GenerationPanel :form="form"/><article class="panel canvas-panel"><div class="panel-heading"><h2>畫布比例預覽</h2><span class="badge">{{ form.width }} × {{ form.height }}</span></div><div class="canvas-area"><div class="canvas" :style="{aspectRatio:aspect,width:`min(100%, ${Math.min(300, 320 * Number(form.width) / Number(form.height))}px)`}"><span>◈</span><p>為下一張作品留下構想</p><small>此處僅預覽比例，不是生成結果</small></div></div><p>使用「生成圖片」提交目前表單。保存草稿不會啟動 GPU 任務。</p></article>
+      <div><GenerationPanel :form="form" @gallery="emit('gallery', $event)"/><article class="panel canvas-panel"><div class="panel-heading"><h2>畫布比例預覽</h2><span class="badge">{{ form.width }} × {{ form.height }}</span></div><div class="canvas-area"><div class="canvas" :style="{aspectRatio:aspect,width:`min(100%, ${Math.min(300, 320 * Number(form.width) / Number(form.height))}px)`}"><span>◈</span><p>為下一張作品留下構想</p><small>此處僅預覽比例，不是生成結果</small></div></div><p>使用「生成圖片」提交目前表單。保存草稿不會啟動 GPU 任務。</p></article>
       <article class="panel"><h2>已保存草稿 <span class="muted">{{ records.length }}</span></h2><p v-if="!records.length" class="muted">保存第一份草稿後，可以在這裡接續編輯。</p><button v-for="record in records" :key="record.id" class="draft-row" :class="{chosen:id===record.id}" :disabled="busy" @click="choose(record)"><strong>{{ record.title }}</strong><span>{{ record.width }} × {{ record.height }} · {{ new Date(record.updated_at).toLocaleString() }}</span><small>{{ record.checkpoint || '未選擇模型' }} · 版本 {{ record.model_version || '未知' }}</small></button></article></div>
     </div>
   </div>
