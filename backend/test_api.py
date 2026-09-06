@@ -3,7 +3,9 @@ import tempfile
 import unittest
 from contextlib import closing
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
+
+import httpx
 
 from fastapi.testclient import TestClient
 from backend import main
@@ -48,6 +50,58 @@ class ApiTests(unittest.TestCase):
         self.assertIsNone(error)
         self.assertIsNone(gpus[0]['used'])
         self.assertEqual(gpus[0]['total'], 12288 * 1024 ** 2)
+
+    def sync(self, names=None, broken=False):
+        payload = {} if names is None else {'CheckpointLoaderSimple': {'input': {'required': {'ckpt_name': [names]}}}}
+        remote = AsyncMock()
+        remote.__aenter__.return_value = remote
+        if broken:
+            remote.get.side_effect = httpx.ConnectError('offline')
+        else:
+            remote.get.return_value = httpx.Response(200, json=payload, request=httpx.Request('GET', 'http://test/object_info'))
+        with patch.object(main.httpx, 'AsyncClient', return_value=remote):
+            response = self.client.post('/api/models/sync')
+        self.assertEqual(response.status_code, 200)
+        return response.json()
+
+    def target(self, name='illustration.safetensors'):
+        return dict(engine_url='http://127.0.0.1:8188', name=name)
+
+    def test_catalog_sync_preserves_metadata_and_missing_models(self):
+        self.sync(['illustration.safetensors', 'illustration.safetensors', 'other.safetensors'])
+        response = self.client.put('/api/models/metadata', json={**self.target(), 'notes': '版本待驗證', 'source_url': 'https://example.com/model'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.put('/api/models/selection', json=self.target()).status_code, 200)
+        result = self.sync(['other.safetensors'])
+        item = next(item for item in result['models'] if item['name'] == 'illustration.safetensors')
+        self.assertEqual(len(result['models']), 2)
+        self.assertFalse(item['listed'])
+        self.assertEqual(item['notes'], '版本待驗證')
+        self.assertEqual(result['selected'], 'illustration.safetensors')
+        self.assertEqual(self.client.put('/api/models/selection', json=self.target()).status_code, 409)
+        self.assertEqual(self.client.get('/api/models').json(), result)
+
+    def test_catalog_failure_does_not_erase_snapshot(self):
+        initial = self.sync(['illustration.safetensors'])
+        for result in [self.sync(broken=True), self.sync()]:
+            self.assertEqual(result['models'], initial['models'])
+            self.assertEqual(result['synced_at'], initial['synced_at'])
+            self.assertTrue(result['sync_error'])
+        self.assertIsNone(self.sync([])['sync_error'])
+        self.assertFalse(self.client.get('/api/models').json()['models'][0]['listed'])
+
+    def test_catalog_scoped_to_engine_and_rejects_stale_edits(self):
+        self.sync(['illustration.safetensors'])
+        self.client.put('/api/settings', json={'comfy_url': 'http://127.0.0.1:9000'})
+        self.assertEqual(self.client.get('/api/models').json()['models'], [])
+        self.assertEqual(self.client.put('/api/models/metadata', json=self.target()).status_code, 409)
+        self.client.put('/api/settings', json={'comfy_url': 'http://127.0.0.1:8188'})
+        self.assertEqual(len(self.client.get('/api/models').json()['models']), 1)
+
+    def test_model_source_and_unknown_selection_validation(self):
+        self.sync(['illustration.safetensors'])
+        self.assertEqual(self.client.put('/api/models/metadata', json={**self.target(), 'source_url': 'javascript:alert(1)'}).status_code, 422)
+        self.assertEqual(self.client.put('/api/models/selection', json=self.target('missing')).status_code, 404)
 
 
 if __name__ == '__main__':

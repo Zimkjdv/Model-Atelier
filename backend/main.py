@@ -1,4 +1,5 @@
 import csv
+import asyncio
 import io
 import os
 import platform
@@ -12,9 +13,10 @@ from urllib.parse import urlsplit
 
 import httpx
 import psutil
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
+from backend import catalog
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -24,6 +26,7 @@ with closing(sqlite3.connect(DB)) as db, db:
     db.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
 
 app = FastAPI(title='Model Atelier', version='0.1.0')
+catalog_lock = asyncio.Lock()
 
 
 def engine_url():
@@ -117,6 +120,74 @@ async def engine():
 @app.get('/api/health')
 def health():
     return {'status': 'ok'}
+
+
+class ModelTarget(BaseModel):
+    engine_url: str
+    name: str = Field(min_length=1, max_length=2048)
+
+
+class ModelMetadata(ModelTarget):
+    notes: str = Field(default='', max_length=4000)
+    source_url: str = Field(default='', max_length=2048)
+
+    @field_validator('source_url')
+    @classmethod
+    def validate_source(cls, value):
+        return Settings.validate_url(value) if value.strip() else ''
+
+
+def current_catalog(target):
+    if target.engine_url != engine_url():
+        raise HTTPException(409, '執行引擎已變更，請重新載入模型庫')
+    value = catalog.read(DB, target.engine_url)
+    model = next((item for item in value['models'] if item['name'] == target.name), None)
+    if model is None:
+        raise HTTPException(404, '模型未登記，請先同步清單')
+    return value, model
+
+
+@app.get('/api/models')
+def models():
+    return catalog.read(DB, engine_url())
+
+
+@app.post('/api/models/sync')
+async def sync_models():
+    async with catalog_lock:
+        url = engine_url()
+        try:
+            async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
+                response = await client.get(url + '/object_info/CheckpointLoaderSimple')
+                response.raise_for_status()
+                names = catalog.checkpoint_names(response.json())
+        except (httpx.HTTPError, ValueError) as exc:
+            value = catalog.read(DB, url)
+            value['sync_error'] = (str(exc) if isinstance(exc, ValueError)
+                                   else '無法同步 ComfyUI，保留上次清單；請檢查連線後重試。')
+            catalog.write(DB, value)
+            return value
+        return catalog.merge(DB, url, names)
+
+
+@app.put('/api/models/metadata')
+async def model_metadata(target: ModelMetadata):
+    async with catalog_lock:
+        value, model = current_catalog(target)
+        model.update(notes=target.notes, source_url=target.source_url)
+        catalog.write(DB, value)
+        return value
+
+
+@app.put('/api/models/selection')
+async def model_selection(target: ModelTarget):
+    async with catalog_lock:
+        value, model = current_catalog(target)
+        if not model['listed']:
+            raise HTTPException(409, '模型已不在最近同步清單中，請重新同步確認')
+        value['selected'] = model['name']
+        catalog.write(DB, value)
+        return value
 
 
 if (ROOT / 'frontend' / 'dist').exists():

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
+import ModelLibrary from './ModelLibrary.vue'
 type Memory = { total: number | null; used: number | null; free: number | null }
 type System = { host: string; os: string; python: string; updated_at: string; gpus: (Memory & { index: string; name: string; driver: string })[]; gpu_error: string | null; ram: Memory; disk: Memory & { path: string } }
 type Engine = { connected: boolean; url: string; error?: string; stats?: { system: { comfyui_version?: string; ram_total?: number; ram_free?: number }; devices: { name: string; vram_total?: number; vram_free?: number }[] } }
@@ -47,14 +48,14 @@ onUnmounted(() => clearInterval(timer))
     <aside>
       <a class="brand" href="#" @click.prevent="page = '系統資訊'"><span class="brand-icon">M</span><span>Model Atelier<small>個人 AI 創作工作台</small></span></a>
       <div class="nav-label">WORKSPACE</div>
-      <nav aria-label="主要導覽"><button v-for="(item, i) in pages" :key="item" :class="{ active: page === item }" @click="page = item"><span class="nav-icon">{{ ['◈', '▦', '▧', '◉', '⚙'][i] }}</span>{{ item }}<span v-if="i < 3" class="soon">待開發</span></button></nav>
+      <nav aria-label="主要導覽"><button v-for="(item, i) in pages" :key="item" :class="{ active: page === item }" @click="page = item"><span class="nav-icon">{{ ['◈', '▦', '▧', '◉', '⚙'][i] }}</span>{{ item }}<span v-if="i === 0 || i === 2" class="soon">待開發</span></button></nav>
       <div class="sidebar-footer"><span class="dot" :class="{ online: engine?.connected }"></span>{{ engine?.connected ? 'ComfyUI 已連線' : 'ComfyUI 未連線' }}<small>LOCAL STUDIO · v0.1</small></div>
     </aside>
     <main>
       <header><span>工作空間 <span class="slash">/</span> {{ page }}</span><span class="badge">本地部署</span></header>
       <section class="content">
         <div class="heading"><div><div class="eyebrow">YOUR CREATIVE ENVIRONMENT</div><h1>{{ page }}</h1><p>{{ page === '系統資訊' ? '了解你的創作環境，讓每一次實驗都有跡可循。' : page === '設定' ? '連接模型執行環境，建立你的個人工作空間。' : '從這裡開始，逐步建立你的創作流程。' }}</p></div><button v-if="page === '系統資訊'" class="secondary" :disabled="busy" @click="refresh">{{ busy ? '更新中…' : '↻ 重新整理' }}</button></div>
-        <p v-if="error" role="alert" class="notice warning">{{ error }}</p>
+        <p v-if="error && page === '系統資訊'" role="alert" class="notice warning">{{ error }}</p>
         <template v-if="page === '系統資訊'">
           <div class="host-bar"><span class="chip">平台主機</span><strong>{{ system?.host ?? '讀取中' }}</strong><span class="muted">每 15 秒更新 · {{ system ? new Date(system.updated_at).toLocaleTimeString() : '等待資訊' }}</span></div>
           <div class="cards" v-if="system">
@@ -69,7 +70,8 @@ onUnmounted(() => clearInterval(timer))
           <p class="footnote">硬體資訊供資源評估使用。平台不依顯卡型號限制存取；模型能否執行仍取決於完整工作流程。</p>
         </template>
         <form v-else-if="page === '設定'" class="panel settings" @submit.prevent="save"><h2>ComfyUI 連線</h2><p class="muted">先啟動 ComfyUI，再填入其服務位址。設定保存在本機資料庫。</p><label for="url">服務位址</label><input id="url" v-model="url" placeholder="http://127.0.0.1:8188" required type="url"><p class="muted">支援本機或你管理的遠端執行主機。</p><button class="primary" :disabled="saving">{{ saving ? '保存中…' : '保存並檢查連線' }}</button><p role="status">{{ message }}</p><p v-if="engine">{{ engine.connected ? 'ComfyUI 連線成功' : engine.error }}</p></form>
-        <article v-else class="panel placeholder"><div class="outline-icon">◈</div><h2>{{ page }}尚未實作</h2><p>目前版本已提供系統資訊與 ComfyUI 連線設定。<br>生成、模型登記與作品保存將依開發清單接續實作。</p><button class="secondary" @click="page = '系統資訊'">查看系統資訊</button></article>
+        <ModelLibrary v-else-if="page === '模型庫'" @settings="page = '設定'" />
+        <article v-else class="panel placeholder"><div class="outline-icon">◈</div><h2>{{ page }}尚未實作</h2><p>目前版本已提供系統資訊、模型庫與 ComfyUI 連線設定。<br>生成與作品保存將依開發清單接續實作。</p><button class="secondary" @click="page = '系統資訊'">查看系統資訊</button></article>
       </section>
     </main>
   </div>
