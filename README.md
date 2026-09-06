@@ -45,7 +45,26 @@ npm.cmd run dev
 
 ## ComfyUI
 
-ComfyUI 需另外安裝並啟動，使用自己的 Python 環境，不與平台 `.venv` 混用。預設連接 `http://127.0.0.1:8188`，可在設定頁修改。未安裝或未啟動時，平台仍可使用系統資訊功能。
+本機 ComfyUI 使用 `runtime/ComfyUI` 內的獨立 `.venv`，不與平台 `.venv` 混用。`runtime/` 已排除於 Git。預設連接 `http://127.0.0.1:8188`，可在設定頁修改。未啟動時，平台仍可使用系統資訊功能。
+
+從專案根目錄啟動（另開終端執行平台 `start-local.ps1`）：
+
+```powershell
+.\start-comfyui.ps1
+```
+
+腳本只監聽本機 8188，停用雲端 API 節點，Ctrl+C 停止。初始安裝不含 checkpoint；模型庫成功同步時顯示 0 個模型是正常結果，不能視為已完成生圖驗證。
+
+其他主機的安裝流程：
+
+```powershell
+git clone https://github.com/Comfy-Org/ComfyUI.git runtime/ComfyUI
+python -m venv runtime/ComfyUI/.venv
+.\runtime\ComfyUI\.venv\Scripts\python.exe -m pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+.\runtime\ComfyUI\.venv\Scripts\python.exe -m pip install --no-cache-dir -r runtime/ComfyUI/requirements.txt
+```
+
+重新安裝時需確認當時官方版本與驅動相容性。模型檔可放在 `runtime/ComfyUI/models/checkpoints/`，或使用 ComfyUI 的額外模型路徑設定。
 
 平台主機的硬體取自 psutil / nvidia-smi，模型執行環境取自 ComfyUI `/system_stats`。引擎沒有提供的遠端磁碟資料顯示無法取得，不以本機磁碟代替。
 
@@ -55,9 +74,13 @@ ComfyUI 需另外安裝並啟動，使用自己的 Python 環境，不與平台 
 
 每個引擎位址各自保存快照、來源網址、備註與偏好模型。離線或回應格式錯誤時保留上次資料；模型從清單移除後保留其備註並標示「最近清單未列出」。清單只代表同步當下引擎登記的名稱，不代表已驗證架構、授權或能成功生成。
 
-「設為偏好」只保存選擇，不會載入 GPU。來源與備註可手動整理；檔案雜湊、大小、自動架構辨識及生成流程尚未實作。
+「設為偏好」只保存選擇，不會載入 GPU。來源、模型版本與備註可手動整理；未填版本或來源顯示「未知」，登記版本不視為自動驗證。檔案雜湊、大小、自動架構辨識及生成流程尚未實作。
 
-模型庫離線、資料合併、主機隔離與驗證錯誤已用模擬 ComfyUI 回應測試；真實模型同步仍需啟動 ComfyUI 後驗證。
+模型庫另外顯示目前連接的 ComfyUI `/system_stats` 回報版本及官方 GitHub 專案連結；離線或無版本資料時顯示「未知」，不以 GitHub 最新版代替正在執行的版本。
+
+模型庫離線、資料合併、主機隔離與驗證錯誤已用模擬 ComfyUI 回應測試。2026-09-06 已在 RTX 3060 上完成真實 ComfyUI 連線與空 checkpoint 清單同步；尚未驗證實際模型載入與生成。
+
+本次環境：ComfyUI 0.34.0（commit `15eb748b3ec5f8a0a2d470b7fb280e2d7579f916`）、Python 3.12.10、PyTorch 2.14.0+cu130、NVIDIA 驅動 616.56。CUDA 矩陣運算及 `pip check` 通過，完整套件快照保存於本地 `runtime/comfyui-installed.txt`。
 
 ## 資料與測試
 

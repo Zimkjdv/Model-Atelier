@@ -69,7 +69,7 @@ class ApiTests(unittest.TestCase):
 
     def test_catalog_sync_preserves_metadata_and_missing_models(self):
         self.sync(['illustration.safetensors', 'illustration.safetensors', 'other.safetensors'])
-        response = self.client.put('/api/models/metadata', json={**self.target(), 'notes': '版本待驗證', 'source_url': 'https://example.com/model'})
+        response = self.client.put('/api/models/metadata', json={**self.target(), 'version': ' v1.2 ', 'notes': '版本待驗證', 'source_url': 'https://example.com/model'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.client.put('/api/models/selection', json=self.target()).status_code, 200)
         result = self.sync(['other.safetensors'])
@@ -77,6 +77,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(len(result['models']), 2)
         self.assertFalse(item['listed'])
         self.assertEqual(item['notes'], '版本待驗證')
+        self.assertEqual(item['version'], 'v1.2')
         self.assertEqual(result['selected'], 'illustration.safetensors')
         self.assertEqual(self.client.put('/api/models/selection', json=self.target()).status_code, 409)
         self.assertEqual(self.client.get('/api/models').json(), result)
@@ -99,7 +100,8 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(len(self.client.get('/api/models').json()['models']), 1)
 
     def test_model_source_and_unknown_selection_validation(self):
-        self.sync(['illustration.safetensors'])
+        initial = self.sync(['illustration.safetensors'])
+        self.assertEqual(initial['models'][0]['version'], '')
         self.assertEqual(self.client.put('/api/models/metadata', json={**self.target(), 'source_url': 'javascript:alert(1)'}).status_code, 422)
         self.assertEqual(self.client.put('/api/models/selection', json=self.target('missing')).status_code, 404)
 

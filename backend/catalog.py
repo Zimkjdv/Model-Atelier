@@ -33,7 +33,7 @@ def merge(db_path, url, names):
     for item in models.values():
         item['listed'] = False
     for name in names:
-        models.setdefault(name, dict(name=name, notes='', source_url=''))['listed'] = True
+        models.setdefault(name, dict(name=name, notes='', source_url='', version=''))['listed'] = True
     value.update(models=sorted(models.values(), key=lambda item: item['name'].casefold()),
                  synced_at=datetime.now(timezone.utc).isoformat(), sync_error=None)
     write(db_path, value)

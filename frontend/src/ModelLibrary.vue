@@ -1,11 +1,24 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-type Model = { name: string; listed: boolean; notes: string; source_url: string }
+type Model = { name: string; listed: boolean; notes: string; source_url: string; version?: string }
+type Engine = { connected: boolean; url: string; stats?: { system?: { comfyui_version?: string } } }
 type Catalog = { engine_url: string; models: Model[]; selected: string | null; synced_at: string | null; sync_error: string | null }
 const emit = defineEmits<{ settings: [] }>()
 const catalog = ref<Catalog | null>(null), search = ref(''), filter = ref('all')
 const busy = ref(false), error = ref(''), feedback = ref('')
 const editing = ref<string | null>(null), notes = ref(''), source = ref('')
+const version = ref(''), engine = ref<Engine | null>(null)
+const engineVersion = computed(() => {
+  const value = engine.value?.stats?.system?.comfyui_version
+  return engine.value?.connected && engine.value.url === catalog.value?.engine_url && typeof value === 'string' && value.trim() ? value : '未知'
+})
+async function refreshEngine() {
+  engine.value = null
+  try {
+    const response = await fetch('/api/engine')
+    if (response.ok) engine.value = await response.json()
+  } catch { /* An unavailable engine has an unknown version. */ }
+}
 const visible = computed(() => (catalog.value?.models ?? []).filter(model =>
   model.name.toLocaleLowerCase().includes(search.value.toLocaleLowerCase()) &&
   (filter.value === 'all' || (filter.value === 'listed' ? model.listed : !model.listed))))
@@ -24,13 +37,14 @@ async function load(sync = false) {
   try {
     const next = await request(sync ? '/sync' : '', sync ? 'POST' : 'GET')
     catalog.value = sync ? await request('') : next
+    await refreshEngine()
     if (sync && !catalog.value.sync_error && catalog.value.engine_url === next.engine_url)
       feedback.value = '清單已同步。模型尚未載入 GPU。'
   } catch { error.value = '無法讀取模型庫，請確認平台後端已啟動。原有畫面可能已過期。' }
   finally { busy.value = false }
 }
 function edit(model: Model) {
-  editing.value = model.name; notes.value = model.notes; source.value = model.source_url
+  editing.value = model.name; notes.value = model.notes; source.value = model.source_url; version.value = model.version ?? ''
   feedback.value = ''; error.value = ''
 }
 async function update(model: Model, metadata = false) {
@@ -39,7 +53,7 @@ async function update(model: Model, metadata = false) {
   try {
     catalog.value = await request(metadata ? '/metadata' : '/selection', 'PUT', {
       engine_url: catalog.value.engine_url, name: model.name,
-      ...(metadata ? { notes: notes.value, source_url: source.value } : {}),
+      ...(metadata ? { notes: notes.value, source_url: source.value, version: version.value } : {}),
     })
     if (metadata) editing.value = null
     feedback.value = metadata ? '模型資料已保存。' : '偏好模型已保存；此操作不會載入或執行模型。'
@@ -57,6 +71,12 @@ onMounted(() => load())
         <code>{{ catalog?.engine_url ?? '正在讀取執行引擎…' }}</code></div>
       <div class="library-actions"><button class="primary" :disabled="busy || editing !== null" @click="load(true)">{{ busy ? '處理中…' : '↻ 同步模型清單' }}</button><button class="secondary" @click="emit('settings')">連線設定</button></div>
     </div>
+    <article class="panel engine-version">
+      <div class="panel-heading"><h2>ComfyUI 執行引擎</h2><span class="chip">版本 {{ engineVersion }}</span></div>
+      <p>版本來源：{{ engineVersion === '未知' ? '尚未取得有效的服務版本回報' : '目前連接的 ComfyUI /system_stats 回報' }}</p>
+      <a class="source-link" href="https://github.com/Comfy-Org/ComfyUI" target="_blank" rel="noopener noreferrer">官方專案來源：GitHub / Comfy-Org / ComfyUI ↗</a>
+      <p class="footnote">此為引擎版本，並非 checkpoint 版本。顯示目前服務回報的版本，不以 GitHub 最新版代替；官方專案連結不表示遠端服務必定使用未修改的官方程式。</p>
+    </article>
     <p v-if="error" role="alert" class="notice warning">{{ error }} <button class="secondary" :disabled="busy || editing !== null" @click="load()">重新載入</button></p>
     <p v-if="catalog?.sync_error" role="alert" class="notice warning">{{ catalog.sync_error }} 此處顯示的是歷史紀錄，不代表模型目前可用。</p>
     <p v-if="feedback" role="status" class="notice success">{{ feedback }}</p>
@@ -73,7 +93,10 @@ onMounted(() => load())
       <article v-for="model in visible" :key="model.name" class="panel model-card" :class="{ preferred: catalog?.selected === model.name }">
         <div class="model-card-top"><span class="chip">CHECKPOINT</span><span class="status" :class="{ connected: model.listed }">{{ model.listed ? '最近清單內' : '最近清單未列出' }}</span></div>
         <h2>{{ model.name }}</h2><p class="footnote">架構與相容性：未驗證</p>
+        <p>模型版本：{{ model.version?.trim() || '未知' }}<span v-if="model.version?.trim()" class="muted">（使用者登記）</span></p>
+        <p v-if="!model.source_url" class="footnote">模型來源：未知</p>
         <form v-if="editing === model.name" class="model-form" @submit.prevent="update(model, true)">
+          <label :for="'version-' + model.name">模型版本</label><input :id="'version-' + model.name" v-model="version" maxlength="100" placeholder="未填寫時顯示未知">
           <label :for="'source-' + model.name">來源網址</label><input :id="'source-' + model.name" v-model="source" type="url" maxlength="2048" placeholder="https://…">
           <label :for="'notes-' + model.name">備註</label><textarea :id="'notes-' + model.name" v-model="notes" maxlength="4000" rows="4" placeholder="版本、用途、授權說明或待驗證事項"></textarea>
           <div class="library-actions"><button class="primary" :disabled="busy">保存資料</button><button type="button" class="secondary" :disabled="busy" @click="editing = null">取消</button></div>

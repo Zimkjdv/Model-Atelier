@@ -128,6 +128,7 @@ class ModelTarget(BaseModel):
 
 
 class ModelMetadata(ModelTarget):
+    version: str = Field(default='', max_length=100)
     notes: str = Field(default='', max_length=4000)
     source_url: str = Field(default='', max_length=2048)
 
@@ -174,7 +175,7 @@ async def sync_models():
 async def model_metadata(target: ModelMetadata):
     async with catalog_lock:
         value, model = current_catalog(target)
-        model.update(notes=target.notes, source_url=target.source_url)
+        model.update(notes=target.notes, source_url=target.source_url, version=target.version.strip())
         catalog.write(DB, value)
         return value
 
