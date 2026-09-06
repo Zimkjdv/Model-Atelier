@@ -15,6 +15,10 @@ def list_all(path):
 def save(path, payload, draft_id=None, revision=None):
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
+        for asset_id in payload.get('reference_ids', []):
+            row = db.execute('SELECT value FROM settings WHERE key=?', ('asset:' + asset_id,)).fetchone()
+            if not row or json.loads(row[0]).get('archived'):
+                raise ValueError('參考素材不存在或已封存，請重新選擇素材')
         now = datetime.now(timezone.utc).isoformat()
         if draft_id:
             row = db.execute('SELECT value FROM settings WHERE key=?', ('draft:' + draft_id,)).fetchone()

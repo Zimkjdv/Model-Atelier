@@ -1,4 +1,5 @@
 import sqlite3
+import io
 import tempfile
 import unittest
 from contextlib import closing
@@ -6,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch, AsyncMock
 
 import httpx
+from PIL import Image
 
 from fastapi.testclient import TestClient
 from backend import main
@@ -19,11 +21,14 @@ class ApiTests(unittest.TestCase):
             db.execute('CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
         self.patcher = patch.object(main, 'DB', self.db)
         self.patcher.start()
+        self.data_patcher = patch.object(main, 'DATA', Path(self.temp.name))
+        self.data_patcher.start()
         self.client = TestClient(main.app)
 
     def tearDown(self):
         self.client.close()
         self.patcher.stop()
+        self.data_patcher.stop()
         self.temp.cleanup()
 
     def test_settings_persist_and_invalid_url_does_not_replace(self):
@@ -136,6 +141,41 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(saved['model_version'], '1.0')
         self.client.put('/api/models/metadata', json={**self.target(), 'version': '2.0'})
         self.assertEqual(self.client.get('/api/drafts').json()[0]['model_version'], '1.0')
+
+    def upload(self):
+        stream = io.BytesIO()
+        Image.new('RGB', (32, 24), '#aac8b0').save(stream, format='PNG')
+        response = self.client.post('/api/assets?filename=sample.png', content=stream.getvalue())
+        self.assertEqual(response.status_code, 201)
+        return response.json()
+
+    def test_asset_image_validation_and_archive_restore(self):
+        self.assertEqual(self.client.post('/api/assets?filename=fake.png', content=b'not an image').status_code, 422)
+        item = self.upload()
+        self.assertEqual(item['width'], 32)
+        image = self.client.get('/api/assets/' + item['id'] + '/image')
+        self.assertEqual(image.headers['content-type'], 'image/png')
+        self.assertEqual(Image.open(io.BytesIO(image.content)).size, (32, 24))
+        for archived in (True, False):
+            response = self.client.put('/api/assets/' + item['id'], json={'title': '改名', 'archived': archived})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['archived'], archived)
+
+    def test_referenced_asset_cannot_be_archived(self):
+        item = self.upload()
+        draft = self.client.post('/api/drafts', json=self.draft(reference_ids=[item['id']])).json()
+        endpoint = '/api/assets/' + item['id']
+        self.assertEqual(self.client.put(endpoint, json={'title': item['title'], 'archived': True}).status_code, 409)
+        update = self.draft(reference_ids=[], revision=draft['revision'])
+        self.assertEqual(self.client.put('/api/drafts/' + draft['id'], json=update).status_code, 200)
+        self.assertEqual(self.client.put(endpoint, json={'title': item['title'], 'archived': True}).status_code, 200)
+        self.assertEqual(self.client.post('/api/drafts', json=self.draft(reference_ids=[item['id']])).status_code, 409)
+
+    def test_asset_limits_and_missing_reference(self):
+        with patch.object(main.assets, 'MAX_BYTES', 5):
+            self.assertEqual(self.client.post('/api/assets', content=b'123456').status_code, 413)
+        self.assertEqual(self.client.post('/api/drafts', json=self.draft(reference_ids=['00000000-0000-0000-0000-000000000000'])).status_code, 409)
+        self.assertEqual(self.client.get('/api/assets/not-a-uuid/image').status_code, 422)
 
 
 if __name__ == '__main__':

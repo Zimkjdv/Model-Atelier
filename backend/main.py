@@ -13,10 +13,13 @@ from urllib.parse import urlsplit
 
 import httpx
 import psutil
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
+from uuid import UUID
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
-from backend import catalog, drafts
+from backend import catalog, drafts, assets
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -192,6 +195,7 @@ async def model_selection(target: ModelTarget):
 
 
 class DraftInput(BaseModel):
+    reference_ids: list[UUID] = Field(default_factory=list, max_length=8)
     title: str = Field(min_length=1, max_length=100)
     prompt: str = Field(default='', max_length=20000)
     engine_url: str
@@ -222,7 +226,8 @@ class DraftInput(BaseModel):
 
 
 def draft_payload(value):
-    payload = value.model_dump(exclude={'revision'})
+    payload = value.model_dump(mode='json', exclude={'revision'})
+    payload['reference_ids'] = list(dict.fromkeys(payload['reference_ids']))
     entries = catalog.read(DB, value.engine_url)['models']
     item = next((item for item in entries if item['name'] == value.checkpoint), {})
     payload['model_version'] = item.get('version', '')
@@ -236,7 +241,10 @@ def list_drafts():
 
 @app.post('/api/drafts', status_code=201)
 def create_draft(value: DraftInput):
-    return drafts.save(DB, draft_payload(value))
+    try:
+        return drafts.save(DB, draft_payload(value))
+    except ValueError as exc:
+        raise HTTPException(409, str(exc))
 
 
 @app.put('/api/drafts/{draft_id}')
@@ -245,6 +253,58 @@ def update_draft(draft_id: str, value: DraftInput):
         return drafts.save(DB, draft_payload(value), draft_id, value.revision)
     except KeyError:
         raise HTTPException(404, '草稿不存在')
+    except ValueError as exc:
+        raise HTTPException(409, str(exc))
+
+
+@app.get('/api/assets')
+def list_assets():
+    return assets.list_all(DB)
+
+
+@app.post('/api/assets', status_code=201)
+async def upload_asset(request: Request, filename: str = '未命名素材'):
+    chunks = bytearray()
+    async for chunk in request.stream():
+        if len(chunks) + len(chunk) > assets.MAX_BYTES:
+            raise HTTPException(413, '圖片不可超過 20 MiB')
+        chunks.extend(chunk)
+    try:
+        return await run_in_threadpool(assets.create, DB, DATA / 'assets', bytes(chunks), filename)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc))
+
+
+@app.get('/api/assets/{asset_id}/image')
+def asset_image(asset_id: UUID):
+    try:
+        assets.get(DB, str(asset_id))
+    except KeyError:
+        raise HTTPException(404, '找不到素材')
+    target = DATA / 'assets' / (str(asset_id) + '.png')
+    if not target.is_file():
+        raise HTTPException(404, '素材檔案已遺失')
+    return FileResponse(target, media_type='image/png', headers={'X-Content-Type-Options': 'nosniff'})
+
+
+class AssetUpdate(BaseModel):
+    title: str = Field(min_length=1, max_length=100)
+    archived: bool = False
+
+    @field_validator('title')
+    @classmethod
+    def not_blank(cls, value):
+        if not value.strip():
+            raise ValueError('名稱不可空白')
+        return value.strip()
+
+
+@app.put('/api/assets/{asset_id}')
+def update_asset(asset_id: UUID, value: AssetUpdate):
+    try:
+        return assets.update(DB, str(asset_id), value.title, value.archived)
+    except KeyError:
+        raise HTTPException(404, '找不到素材')
     except ValueError as exc:
         raise HTTPException(409, str(exc))
 

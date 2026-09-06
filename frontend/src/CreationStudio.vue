@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { computed, onActivated, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
-type Draft = { id: string; title: string; prompt: string; engine_url: string; checkpoint: string; width: number; height: number; seed: string; revision: number; model_version: string; updated_at: string }
+type Asset = { id: string; title: string; archived: boolean }
+type Draft = { reference_ids?: string[]; id: string; title: string; prompt: string; engine_url: string; checkpoint: string; width: number; height: number; seed: string; revision: number; model_version: string; updated_at: string }
 type Model = { name: string; listed: boolean; version?: string }
 type Catalog = { engine_url: string; models: Model[]; selected: string | null }
-const emit = defineEmits<{ models: [] }>()
-const form = reactive({ title: '未命名創作', prompt: '', engine_url: '', checkpoint: '', width: 1024, height: 1024, seed: '0' })
+const emit = defineEmits<{ models: []; assets: [] }>()
+const form = reactive({ title: '未命名創作', prompt: '', engine_url: '', checkpoint: '', width: 1024, height: 1024, seed: '0', reference_ids: [] as string[] })
 const id = ref<string | null>(null), revision = ref<number | null>(null), records = ref<Draft[]>([]), models = ref<Catalog | null>(null)
 const busy = ref(false), error = ref(''), message = ref(''), saved = ref(''), pending = ref<Draft | 'new' | null>(null)
 const dirty = computed(() => JSON.stringify(form) !== saved.value)
 const selected = computed(() => models.value?.engine_url === form.engine_url ? models.value.models.find(m => m.name === form.checkpoint) : undefined)
 const draftVersion = ref('')
+const references = ref<Asset[]>([])
 const modelVersion = computed(() => selected.value?.version || draftVersion.value || '未知')
 const available = computed(() => models.value?.engine_url === form.engine_url ? models.value.models.filter(m => m.listed) : [])
 const aspect = computed(() => Number(form.width) > 0 && Number(form.height) > 0 ? `${form.width} / ${form.height}` : '1 / 1')
@@ -23,10 +25,10 @@ async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> 
 }
 function apply(record: Draft | 'new') {
   if (record === 'new') {
-    Object.assign(form, { title: '未命名創作', prompt: '', engine_url: models.value?.engine_url ?? '', checkpoint: models.value?.models.find(m => m.listed && m.name === models.value?.selected)?.name ?? '', width: 1024, height: 1024, seed: '0' })
+    Object.assign(form, { title: '未命名創作', prompt: '', engine_url: models.value?.engine_url ?? '', checkpoint: models.value?.models.find(m => m.listed && m.name === models.value?.selected)?.name ?? '', width: 1024, height: 1024, seed: '0', reference_ids: [] as string[] })
     id.value = null; revision.value = null; draftVersion.value = ''
   } else {
-    Object.assign(form, { title: record.title, prompt: record.prompt, engine_url: record.engine_url, checkpoint: record.checkpoint, width: record.width, height: record.height, seed: record.seed })
+    Object.assign(form, { title: record.title, prompt: record.prompt, engine_url: record.engine_url, checkpoint: record.checkpoint, width: record.width, height: record.height, seed: record.seed, reference_ids: record.reference_ids ?? [] })
     id.value = record.id; revision.value = record.revision; draftVersion.value = record.model_version
   }
   saved.value = JSON.stringify(form); pending.value = null; error.value = ''; message.value = ''
@@ -36,8 +38,8 @@ async function refresh() {
   if (busy.value) return
   busy.value = true; error.value = ''
   try {
-    const [list, catalog] = await Promise.all([api<Draft[]>('drafts'), api<Catalog>('models')])
-    records.value = list; models.value = catalog
+    const [list, catalog, assets] = await Promise.all([api<Draft[]>('drafts'), api<Catalog>('models'), api<Asset[]>('assets')])
+    records.value = list; models.value = catalog; references.value = assets
     if (!form.engine_url && !dirty.value) apply('new')
   } catch (e) { error.value = e instanceof Error ? e.message : '無法讀取草稿' }
   finally { busy.value = false }
@@ -78,6 +80,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
         <label for="draft-prompt">畫面描述 <small>{{ form.prompt.length }} / 20000</small></label><textarea id="draft-prompt" v-model="form.prompt" maxlength="20000" rows="7" placeholder="描述角色、場景、光線與你想呈現的畫面…"></textarea>
         <div class="size-presets"><button v-for="preset in [{label:'正方形',w:1024,h:1024},{label:'直式',w:832,h:1216},{label:'橫式',w:1216,h:832}]" :key="preset.label" type="button" class="secondary" @click="form.width=preset.w;form.height=preset.h">{{ preset.label }}</button></div>
         <div class="size-fields"><label for="width">寬度<input id="width" v-model.number="form.width" type="number" min="64" max="8192" step="8" required></label><label for="height">高度<input id="height" v-model.number="form.height" type="number" min="64" max="8192" step="8" required></label></div>
+        <details><summary>參考素材（{{ form.reference_ids.length }} / 8）</summary><p class="footnote">此階段僅保存素材關聯，尚未套用至生成流程。</p><button class="secondary" type="button" @click="emit('assets')">管理／上傳參考圖 →</button><div class="reference-list"><label v-for="asset in references.filter(a => !a.archived || form.reference_ids.includes(a.id))" :key="asset.id"><input v-model="form.reference_ids" type="checkbox" :value="asset.id" :disabled="!form.reference_ids.includes(asset.id) && form.reference_ids.length >= 8"><img :src="'/api/assets/' + asset.id + '/image'" :alt="asset.title">{{ asset.title }}{{ asset.archived ? '（已封存）' : '' }}</label></div><p v-if="!references.length" class="footnote">尚無素材，可先到參考素材頁上傳圖片。</p></details>
         <details><summary>進階設定</summary><label for="seed">Seed</label><div class="seed-field"><input id="seed" v-model="form.seed" inputmode="numeric" pattern="[0-9]{1,20}" required><button type="button" class="secondary" @click="randomSeed">隨機</button></div><p class="footnote">以文字精確保存 64 位元整數，避免瀏覽器數字精度造成變更。</p></details>
         <div class="save-actions"><button class="primary" :disabled="!form.engine_url">{{ busy ? '處理中…' : '保存草稿' }}</button><button v-if="id" type="button" class="secondary" @click="save(true)">另存新草稿</button></div>
       </fieldset></form>
@@ -88,5 +91,6 @@ onActivated(() => { if (form.engine_url) void refresh() })
 </template>
 
 <style scoped>
+.reference-list label{display:flex;align-items:center;gap:10px;overflow-wrap:anywhere}.reference-list input{width:16px;flex-shrink:0}.reference-list img{width:48px;height:48px;object-fit:contain;flex-shrink:0}
 .studio-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px;font-size:12px}.studio-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px}.editor fieldset{border:0;padding:0;margin:0;min-width:0}.editor label{display:block;font-size:12px;margin:22px 0 10px}.editor label:first-child{margin-top:0}.editor label small{float:right;color:#8a9990}.editor select,.editor textarea{width:100%;padding:12px;background:#101517;color:#e5ebe7;border:1px solid #4c5855;border-radius:7px;font:inherit;font-size:13px}.editor textarea{resize:vertical;line-height:1.8}.editor select:focus-visible,.editor textarea:focus-visible{outline:2px solid #adceb0;outline-offset:3px}.size-fields{display:grid;grid-template-columns:1fr 1fr;gap:15px}.size-fields label{margin:14px 0}.size-fields input{margin-top:10px}.size-presets,.seed-field,.save-actions{display:flex;gap:10px;flex-wrap:wrap}.size-presets{margin-top:18px}.seed-field{flex-wrap:nowrap}.seed-field input{min-width:0}.seed-field button{flex-shrink:0}.save-actions{margin-top:24px}.inline-note{background:#202b24;border-radius:7px;padding:12px;font-size:12px}.text-button{padding:0;background:none;color:#c5dfba;font-size:12px}.editor details{border-top:1px solid #35403a;padding-top:18px;margin-top:10px}.editor summary{font-size:12px;cursor:pointer}.canvas-area{min-height:310px;display:grid;place-items:center;padding:25px 0}.canvas{width:min(100%,300px);min-height:0;background:linear-gradient(150deg,#2d3b31,#141c1a);border:1px dashed #6b8169;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px;overflow:hidden}.canvas>span{font-size:35px;color:#aec5a1}.canvas p{font-size:12px}.canvas small{font-size:10px;color:#8c9e93}.canvas-panel>p{font-size:11px}.draft-row{display:block;width:100%;text-align:left;background:#13191a;border:1px solid #303d37;border-radius:8px;color:#d9e5dc;margin-top:12px;padding:14px;overflow-wrap:anywhere}.draft-row.chosen{border-color:#9ebc90}.draft-row span,.draft-row small{display:block;font-size:10px;color:#94a79a;margin-top:8px}.draft-row strong{font-size:13px}@media(max-width:1100px){.studio-grid{grid-template-columns:1fr}}@media(max-width:700px){.canvas-panel .panel-heading{align-items:start;flex-direction:column}.studio-toolbar .muted{flex-basis:60%}}
 </style>
