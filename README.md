@@ -90,7 +90,7 @@ python -m venv runtime/ComfyUI/.venv
 
 每個引擎位址各自保存快照、來源網址、備註與偏好模型。離線或回應格式錯誤時保留上次資料；模型從清單移除後保留其備註並標示「最近清單未列出」。清單只代表同步當下引擎登記的名稱，不代表已驗證架構、授權或能成功生成。
 
-「設為偏好」只保存選擇，不會載入 GPU。來源、模型版本與備註可手動整理；未填版本或來源顯示「未知」，登記版本不視為自動驗證。檔案雜湊、大小、自動架構辨識及生成流程尚未實作。
+「設為偏好」只保存選擇，不會載入 GPU。來源、模型版本與備註可手動整理；未填版本或來源顯示「未知」，登記版本不視為自動驗證。檔案雜湊、大小與自動架構辨識尚未實作。
 
 模型庫另外顯示目前連接的 ComfyUI `/system_stats` 回報版本及官方 GitHub 專案連結；離線或無版本資料時顯示「未知」，不以 GitHub 最新版代替正在執行的版本。
 
@@ -103,7 +103,25 @@ python -m venv runtime/ComfyUI/.venv
 設定保存在 `data/atelier.sqlite3`。停止平台後可備份整個 `data/`；`.venv`、`node_modules`、`dist` 與 `data` 不提交版本控制。
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest backend.test_api -v
+.\.venv\Scripts\python.exe -m unittest discover -s backend -v
 ```
 
 目前僅供本機使用，綁定 127.0.0.1，尚無登入功能。Docker 待平台功能穩定後評估，初期不需要安裝 Docker。後續容器化須分別處理資料持久化、GPU 存取與 ComfyUI 連線。
+
+
+## ComfyUI 任務提交
+
+創作頁的「生成圖片」會提交目前表單，保存草稿仍是獨立操作。第一版採標準 checkpoint 文生圖：20 steps、Euler / normal、CFG 7、batch 1；暫不支援 FLUX 專用流程、LoRA 或參考圖輸入。選有參考素材時明確拒絕生成，避免誤以為已套用圖片。尺寸通過驗證不代表顯存一定足夠。
+
+- `POST /api/generate`：草稿欄位加 UUID `request_id`，後端建立工作流程，seed 由字串轉為精確整數。
+- `POST /api/jobs`：`request_id`、`engine_url`、`checkpoint`、完整 ComfyUI API 格式 `workflow`。僅接受目前六種標準節點，SaveImage 前綴固定為 ModelAtelier，不接受任意自訂節點或編輯器格式 JSON。
+- `GET /api/jobs`：本平台任務清單及已知佇列狀態。
+- `GET /api/jobs/{id}`：任務、完整工作流程及已取得的 ComfyUI 歷史。
+- `POST /api/jobs/{id}/refresh`：向任務原引擎查詢 history / queue，更新 queued、running、completed、failed 或 unknown；切換設定不改變舊任務的引擎。
+- `GET /api/jobs/{id}/workflow`：直接下載原始完整 JSON，避免瀏覽器重新序列化破壞 64 位元 seed。
+
+提交前重新查詢 checkpoint；無模型或模型消失回傳 409，離線回傳 503，模型清單無效回傳 502，工作流程被引擎拒絕回傳 422 並保存節點錯誤。任務先寫 SQLite，再提交引擎；相同 ID、相同內容回傳既有紀錄，不重複送出；相同 ID、不同內容回傳 409。提交逾時或回應不明標示 unknown，不自動重送。引擎清空歷史或重啟後找不到任務也不推定成功。瀏覽器斷線保留原請求供恢復；進行中的任務每五秒查詢狀態。
+
+輸出圖片目前留在 ComfyUI output，平台保存工作流程及查詢到的歷史 JSON，作品庫匯入與圖片預覽待後續實作。完整工作流程是 ComfyUI API graph，不含節點編輯器版面配置。
+
+2026-09-06：19 項後端測試及 Vue 型別檢查／建置通過。真實 ComfyUI 空 checkpoint 提交驗證為 409，未監聽端點驗證為 503；測試使用暫存資料庫。尚無 checkpoint，因此成功推論與 GPU 出圖仍待實機驗證。

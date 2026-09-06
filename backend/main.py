@@ -6,6 +6,7 @@ import platform
 import shutil
 import sqlite3
 import subprocess
+import sys
 from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,7 +20,7 @@ from starlette.concurrency import run_in_threadpool
 from uuid import UUID
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
-from backend import catalog, drafts, assets
+from backend import catalog, drafts, assets, submissions
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -307,6 +308,9 @@ def update_asset(asset_id: UUID, value: AssetUpdate):
         raise HTTPException(404, '找不到素材')
     except ValueError as exc:
         raise HTTPException(409, str(exc))
+
+
+submissions.install(app, sys.modules[__name__])
 
 
 if (ROOT / 'frontend' / 'dist').exists():
