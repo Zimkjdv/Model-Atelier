@@ -11,6 +11,7 @@ from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
+from typing import Literal
 
 import httpx
 import psutil
@@ -143,8 +144,33 @@ class ModelMetadata(ModelTarget):
     version: str = Field(default='', max_length=100)
     notes: str = Field(default='', max_length=4000)
     source_url: str = Field(default='', max_length=2048)
+    architecture: Literal['unknown', 'sd1', 'sdxl', 'sd3', 'flux', 'other'] = 'unknown'
+    size_bytes: int | None = Field(default=None, strict=True, gt=0, le=9007199254740991)
+    sha256: str = Field(default='', max_length=64, pattern=r'^(?:[0-9a-f]{64})?$')
+    license_name: str = Field(default='', max_length=200)
+    license_url: str = Field(default='', max_length=2048)
 
-    @field_validator('source_url')
+    @field_validator('version', 'notes', 'source_url', 'sha256', 'license_name', 'license_url', mode='before')
+    @classmethod
+    def clear_nullable_text(cls, value):
+        return '' if value is None else value
+
+    @field_validator('architecture', mode='before')
+    @classmethod
+    def clear_architecture(cls, value):
+        return 'unknown' if value is None or value == '' else value
+
+    @field_validator('size_bytes', mode='before')
+    @classmethod
+    def clear_size(cls, value):
+        return None if isinstance(value, str) and value == '' else value
+
+    @field_validator('sha256', mode='before')
+    @classmethod
+    def normalize_checksum(cls, value):
+        return value.strip().lower() if isinstance(value, str) else value
+
+    @field_validator('source_url', 'license_url')
     @classmethod
     def validate_source(cls, value):
         return Settings.validate_url(value) if value.strip() else ''
@@ -175,32 +201,31 @@ async def sync_models():
                 response.raise_for_status()
                 names = catalog.checkpoint_names(response.json())
         except (httpx.HTTPError, ValueError) as exc:
-            value = catalog.read(DB, url)
-            value['sync_error'] = (str(exc) if isinstance(exc, ValueError)
-                                   else '無法同步 ComfyUI，保留上次清單；請檢查連線後重試。')
-            catalog.write(DB, value)
-            return value
+            message = (str(exc) if isinstance(exc, ValueError)
+                       else '無法同步 ComfyUI，保留上次清單；請檢查連線後重試。')
+            return catalog.sync_error(DB, url, message)
         return catalog.merge(DB, url, names)
 
 
 @app.put('/api/models/metadata')
 async def model_metadata(target: ModelMetadata):
     async with catalog_lock:
-        value, model = current_catalog(target)
-        model.update(notes=target.notes, source_url=target.source_url, version=target.version.strip())
-        catalog.write(DB, value)
-        return value
+        current_catalog(target)
+        changes = target.model_dump(exclude_unset=True, exclude={'name', 'engine_url'})
+        for field in ('version', 'license_name'):
+            if field in changes:
+                changes[field] = changes[field].strip()
+        return catalog.update_metadata(DB, target.engine_url, target.name, changes)
 
 
 @app.put('/api/models/selection')
 async def model_selection(target: ModelTarget):
     async with catalog_lock:
-        value, model = current_catalog(target)
-        if not model['listed']:
-            raise HTTPException(409, '模型已不在最近同步清單中，請重新同步確認')
-        value['selected'] = model['name']
-        catalog.write(DB, value)
-        return value
+        current_catalog(target)
+        try:
+            return catalog.select(DB, target.engine_url, target.name)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc))
 
 
 class DraftInput(BaseModel):

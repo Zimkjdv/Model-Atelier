@@ -67,7 +67,9 @@ def install(app, host):
             raise HTTPException(422, '工作流程 checkpoint 與選擇的模型不一致')
         try:
             model = next((m for m in catalog.read(host.DB, value.engine_url)['models'] if m['name'] == value.checkpoint), {})
-            job, fresh = jobs.reserve(host.DB, str(value.request_id), value.engine_url, value.workflow, value.checkpoint, model.get('version'))
+            metadata = catalog.capture(model, value.checkpoint)
+            job, fresh = jobs.reserve(host.DB, str(value.request_id), value.engine_url, value.workflow,
+                                      value.checkpoint, metadata['version'], metadata)
         except ValueError as exc:
             raise HTTPException(409, str(exc))
         if not fresh:

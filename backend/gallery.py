@@ -7,6 +7,7 @@ import sqlite3
 import tempfile
 import warnings
 from contextlib import closing
+from copy import deepcopy
 from datetime import datetime, timezone
 from uuid import UUID, uuid5
 
@@ -119,6 +120,7 @@ def save(path, folder, job, source, raw):
     value = dict(id=artwork_id, job_id=job['id'], prompt_id=job['prompt_id'],
                  title=source['filename'], source=source, engine_url=job['engine_url'],
                  checkpoint=job['checkpoint'], model_version=job.get('model_version') or '未知',
+                 model_metadata=deepcopy(job.get('model_metadata')),
                  parameters=parameters(job['workflow'], source['node_id']), workflow=job['workflow'],
                  width=width, height=height, size=len(raw), extension=extension, media_type=media_type,
                  sha256=hashlib.sha256(raw).hexdigest(), created_at=job['created_at'],

@@ -68,7 +68,8 @@ def install(app, host):
             warnings.append('原作品模型版本未知，無法確認目前 checkpoint 與原版本一致')
         elif model and model.get('version') and model['version'] != version:
             warnings.append('目前登記的模型版本與原作品不同；已保留原作品版本供比較')
-        return dict(artwork_id=str(artwork_id), settings=settings, model_version=version, warnings=warnings,
+        return dict(artwork_id=str(artwork_id), settings=settings, model_version=version,
+                    model_metadata=item.get('model_metadata'), warnings=warnings,
                     availability=dict(current_engine_url=host.engine_url(), engine_matches=matches,
                                       checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at')))
 

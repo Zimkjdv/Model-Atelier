@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue'
+import { architectureLabel, fileHash, fileSize, metadataTime, safeMetadataUrl } from './modelMetadata'
+import type { ModelMetadataSnapshot } from './modelMetadata'
 const props = defineProps<{ jobId?: string }>()
 const emit = defineEmits<{ studio: []; restore: [artworkId: string] }>()
 type Parameters = { prompt: string | null; negative_prompt: string | null; seed: string | null; steps: number | null; cfg: number | null; sampler: string | null; scheduler: string | null; denoise: number | null }
-type Artwork = { id: string; job_id: string; title: string; checkpoint: string; model_version: string; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string }
+type Artwork = { id: string; job_id: string; title: string; checkpoint: string; model_version: string; model_metadata?: ModelMetadataSnapshot | null; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string }
 type Job = { id: string; status: string; checkpoint: string; created_at: string }
 type ImportResult = { imported: Artwork[]; existing: Artwork[]; errors: { source: { filename: string }; message: string }[] }
 const items = ref<Artwork[]>([]), jobs = ref<Job[]>([]), selectedJob = ref(props.jobId || '')
@@ -82,7 +84,22 @@ onMounted(refresh)
       <div class="preview-grid"><div class="preview-image"><img v-if="selected.image_available" :src="imageUrl(selected)" :alt="selected.title" @error="selected.image_available = false"><p v-else class="notice warning">原圖無法讀取，請重新整理作品庫或從備份還原。</p></div>
         <div class="artwork-info"><h3>生成設定</h3><dl><dt>Checkpoint</dt><dd>{{ selected.checkpoint }}</dd><dt>模型版本（提交時登記）</dt><dd>{{ selected.model_version }}</dd><dt>圖片尺寸</dt><dd>{{ selected.width }} × {{ selected.height }}</dd><dt>Seed</dt><dd>{{ selected.parameters.seed ?? '未知' }}</dd><dt>Steps / CFG</dt><dd>{{ selected.parameters.steps ?? '未知' }} / {{ selected.parameters.cfg ?? '未知' }}</dd><dt>Sampler / Scheduler</dt><dd>{{ selected.parameters.sampler ?? '未知' }} / {{ selected.parameters.scheduler ?? '未知' }}</dd><dt>Denoise</dt><dd>{{ selected.parameters.denoise ?? '未知' }}</dd></dl>
         <h3>畫面描述</h3><p class="prompt">{{ selected.parameters.prompt ?? '無法從此工作流程解析，請查看完整 JSON。' }}</p><h3>負面提示詞</h3><p class="prompt">{{ selected.parameters.negative_prompt || '未設定或無法解析' }}</p>
-        <details><summary>來源紀錄</summary><p>原引擎：{{ selected.engine_url }}</p><p>任務：{{ selected.job_id }}</p><p>提交：{{ new Date(selected.created_at).toLocaleString() }}</p><p>匯入：{{ new Date(selected.imported_at).toLocaleString() }}</p><p>原圖 SHA-256：{{ selected.sha256 }}</p></details>
+        <details class="model-snapshot"><summary>提交時模型資料</summary>
+          <template v-if="selected.model_metadata"><p class="footnote">保留任務提交時的使用者登記，不隨模型庫後續編輯改動；不代表平台已驗證檔案、授權或相容性。</p><dl>
+            <dt>模型檔名</dt><dd>{{ selected.model_metadata.name || '未知' }}</dd>
+            <dt>登記版本</dt><dd>{{ selected.model_metadata.version?.trim() || '未知' }}</dd>
+            <dt>登記架構</dt><dd>{{ architectureLabel(selected.model_metadata.architecture) }}</dd>
+            <dt>模型檔案大小</dt><dd>{{ fileSize(selected.model_metadata.size_bytes) }}</dd>
+            <dt>模型檔案 SHA-256</dt><dd class="file-hash">{{ fileHash(selected.model_metadata.sha256) }}</dd>
+            <dt>模型來源</dt><dd><a v-if="safeMetadataUrl(selected.model_metadata.source_url)" :href="safeMetadataUrl(selected.model_metadata.source_url)" target="_blank" rel="noopener noreferrer">查看當時登記來源 ↗</a><span v-else>未知</span></dd>
+            <dt>授權名稱／標記</dt><dd>{{ selected.model_metadata.license_name?.trim() || '未知' }}</dd>
+            <dt>授權條款網址</dt><dd><a v-if="safeMetadataUrl(selected.model_metadata.license_url)" :href="safeMetadataUrl(selected.model_metadata.license_url)" target="_blank" rel="noopener noreferrer">查看當時登記條款 ↗</a><span v-else>未知</span></dd>
+            <dt>登記資料更新</dt><dd>{{ metadataTime(selected.model_metadata.metadata_updated_at) }}</dd>
+            <dt>快照保存</dt><dd>{{ metadataTime(selected.model_metadata.captured_at) }}</dd>
+          </dl></template>
+          <p v-else class="footnote">此作品尚無提交時的模型資料快照，當時架構、檔案識別及授權資訊未知。</p>
+        </details>
+        <details><summary>作品來源紀錄</summary><p>原引擎：{{ selected.engine_url }}</p><p>任務：{{ selected.job_id }}</p><p>提交：{{ new Date(selected.created_at).toLocaleString() }}</p><p>匯入：{{ new Date(selected.imported_at).toLocaleString() }}</p><p class="file-hash">作品原圖 SHA-256：{{ selected.sha256 }}</p></details>
         <div class="artwork-actions"><button class="primary" @click="restore(selected)">載入創作設定 →</button><a v-if="selected.image_available" :href="imageUrl(selected) + '?download=true'">下載原圖 ↓</a><a :href="`/api/artworks/${selected.id}/workflow`">下載完整工作流程</a><a :href="`/api/jobs/${selected.job_id}`" target="_blank" rel="noopener">原始任務 JSON ↗</a></div>
         </div></div></template>
   </dialog>
@@ -90,4 +107,5 @@ onMounted(refresh)
 
 <style scoped>
 .import-panel{background:linear-gradient(120deg,#253b2d,#191d20)}.import-controls,.artwork-toolbar,.artwork-actions{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.import-controls label,.artwork-toolbar label{display:grid;gap:9px;font-size:12px;flex:1;min-width:0}.import-controls select{width:100%;padding:12px;border:1px solid #4c5855;border-radius:7px;background:#101517;color:#e5ebe7;font:inherit}.artwork-toolbar{margin:24px 0}.artwork-toolbar .muted{align-self:center;font-size:12px}.artwork-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.artwork-card{min-width:0;margin-bottom:0}.artwork-cover{display:grid;place-items:center;width:100%;height:230px;padding:0;background:#101617;color:#9fb1a5;border-radius:8px;overflow:hidden}.artwork-cover img{width:100%;height:100%;object-fit:contain}.artwork-card h2{font-size:14px;overflow-wrap:anywhere;margin-top:18px}.artwork-card p{font-size:11px;overflow-wrap:anywhere}.artwork-actions{align-items:center;margin-top:18px;font-size:12px}.artwork-actions a{color:#c5dfba}.missing{color:#ebc4a1}.artwork-dialog{background:#191f20;color:#e5ebe7;border:1px solid #4c5855;border-radius:14px;padding:24px;width:min(1160px,94vw);max-height:90vh}.artwork-dialog::backdrop{background:#000b}.preview-heading{display:flex;align-items:start;justify-content:space-between;gap:20px;margin-bottom:20px}.preview-heading h2{font-size:18px;overflow-wrap:anywhere}.preview-heading button{flex-shrink:0}.preview-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px}.preview-image{background:#101617;display:grid;place-items:center;align-self:start;min-height:200px}.preview-image img{max-width:100%;max-height:70vh;object-fit:contain}.artwork-info{font-size:12px;min-width:0;overflow-wrap:anywhere}.artwork-info h3{font-size:13px;margin-top:20px}.artwork-info dl{display:grid;grid-template-columns:1fr 1.2fr;gap:10px}.artwork-info dt{color:#9fb1a5}.artwork-info dd{margin:0}.prompt{white-space:pre-wrap;max-height:220px;overflow:auto}.artwork-info details{margin-top:24px}.artwork-info summary{cursor:pointer}@media(max-width:1100px){.artwork-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.artwork-grid,.preview-grid{grid-template-columns:1fr}.import-controls label,.artwork-toolbar label{flex-basis:100%}.artwork-dialog{padding:16px}.preview-heading h2{font-size:14px}}
+.model-snapshot a{color:#c5dfba}.file-hash{font-family:monospace;line-height:1.7}
 </style>
