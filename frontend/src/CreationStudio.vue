@@ -2,6 +2,7 @@
 import { computed, onActivated, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import ModelValidation from './ModelValidation.vue'
+import GenerationAdvice from './GenerationAdvice.vue'
 import { generationDefaults, newCreation } from './creationSettings'
 import type { ArtworkSettings, CreationForm, FailedJobSettings, GenerationFields } from './creationSettings'
 import { architectureLabel } from './modelMetadata'
@@ -270,7 +271,8 @@ onActivated(() => { if (form.engine_url) void refresh() })
         </details>
         <div class="save-actions"><button class="primary" :disabled="!form.engine_url">{{ busy ? '處理中…' : '保存草稿' }}</button><button v-if="id" type="button" class="secondary" @click="save(true)">另存新草稿</button></div>
       </fieldset></form>
-      <div><GenerationPanel :form="form" :blocked-reason="submissionBlock" :disabled="busy || restoring || !!pending" @gallery="emit('gallery', $event)" @restore-job="restoreFailedJob"/><article class="panel canvas-panel"><div class="panel-heading"><h2>畫布比例預覽</h2><span class="badge">{{ form.width }} × {{ form.height }}</span></div><div class="canvas-area"><div class="canvas" :style="{aspectRatio:aspect,width:`min(100%, ${Math.min(300, 320 * Number(form.width) / Number(form.height))}px)`}"><span>◈</span><p>為下一張作品留下構想</p><small>此處僅預覽比例，不是生成結果</small></div></div><p>使用「生成圖片」提交目前表單。保存草稿不會啟動 GPU 任務。</p></article>
+      <div><GenerationAdvice :form="form" />
+      <GenerationPanel :form="form" :blocked-reason="submissionBlock" :disabled="busy || restoring || !!pending" @gallery="emit('gallery', $event)" @restore-job="restoreFailedJob"/><article class="panel canvas-panel"><div class="panel-heading"><h2>畫布比例預覽</h2><span class="badge">{{ form.width }} × {{ form.height }}</span></div><div class="canvas-area"><div class="canvas" :style="{aspectRatio:aspect,width:`min(100%, ${Math.min(300, 320 * Number(form.width) / Number(form.height))}px)`}"><span>◈</span><p>為下一張作品留下構想</p><small>此處僅預覽比例，不是生成結果</small></div></div><p>使用「生成圖片」提交目前表單。保存草稿不會啟動 GPU 任務。</p></article>
       <article class="panel"><h2>已保存草稿 <span class="muted">{{ records.length }}</span></h2><p v-if="!records.length" class="muted">保存第一份草稿後，可以在這裡接續編輯。</p><button v-for="record in records" :key="record.id" class="draft-row" :class="{chosen:id===record.id}" :disabled="busy || restoring" @click="choose(record)"><strong>{{ record.title }}</strong><span>{{ record.width }} × {{ record.height }} · {{ new Date(record.updated_at).toLocaleString() }}</span><small>{{ record.checkpoint || '未選擇模型' }} · 版本 {{ record.model_version || '未知' }}</small></button></article></div>
     </div>
   </div>

@@ -373,6 +373,8 @@ model_profiles.install(app, sys.modules[__name__])
 model_paths.install(app, sys.modules[__name__])
 environment.install(app, sys.modules[__name__])
 validation_records.install(app, sys.modules[__name__])
+from backend import generation_advice
+generation_advice.install(app, sys.modules[__name__])
 
 
 if (ROOT / 'frontend' / 'dist').exists():
