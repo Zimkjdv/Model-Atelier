@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import httpx
 
-from backend import jobs, main, test_api, workflows
+from backend import jobs, main, test_api, test_submissions, workflows
 
 
 class CancellationTests(unittest.TestCase):
@@ -265,7 +265,8 @@ class CancellationTests(unittest.TestCase):
                 values = main.DraftInput(title='race', engine_url='http://127.0.0.1:8188', checkpoint='sample.safetensors').model_dump(mode='json')
                 job_id = str(uuid4())
                 values['request_id'] = job_id
-                remote = self.remote({'CheckpointLoaderSimple': {'input': {'required': {'ckpt_name': [['sample.safetensors']]}}}})
+                remote = self.remote({'CheckpointLoaderSimple': {'input': {'required': {'ckpt_name': [['sample.safetensors']]}}}},
+                                     test_submissions.sampler_capabilities())
 
                 async def submitted(url, **kwargs):
                     # Represents another worker reconciling the accepted upstream

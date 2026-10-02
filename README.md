@@ -40,9 +40,9 @@ Windows 使用者也可以直接雙擊根目錄的 `start-all.bat`，它會開�
 | Port | 服務／用途 | 使用時機與啟動方式 | 查核狀態 |
 | --- | --- | --- | --- |
 | `8000` | Model Atelier 主平台：FastAPI API、建置後的 Vue 頁面、參考素材與作品圖片 | 日常使用；根目錄執行 `./start-local.ps1`，瀏覽 `http://127.0.0.1:8000/` | 本日未啟動 |
-| `8188` | ComfyUI：模型清單、生成任務、佇列／歷史及輸出圖片讀取 | 生成、同步模型或匯入圖片時使用；根目錄執行 `./start-comfyui.ps1` | 本日未啟動 |
+| `8188` | ComfyUI：模型及取樣能力清單、生成任務、佇列／歷史、進度與輸出圖片讀取 | 生成、同步選項／模型或匯入圖片時使用；根目錄執行 `./start-comfyui.ps1` | 2026-10-02 真實能力同步驗證後已關閉 |
 | `5173`（預設） | Vite 前端開發伺服器：Vue 熱更新；`/api` 代理到 `8000` | 僅前端開發需要；在 `frontend/` 執行 `npm.cmd run dev` | 本日未查核占用狀態；實際開發網址以 Vite 終端輸出為準 |
-| `8001`（臨時） | 作品庫隔離測試平台，使用暫存資料庫與測試圖片 | 2026-10-02 作品載入設定的瀏覽器驗證使用，非固定服務、非日常依賴 | 已停止監聽，隔離資料與臨時啟動腳本已清除 |
+| `8001`（臨時） | 隔離測試平台，使用暫存資料庫、測試圖片與模擬引擎 | 2026-10-02 作品設定、任務取消、進度與取樣選項瀏覽器驗證使用，非固定服務、非日常依賴 | 已停止監聽，隔離資料與臨時啟動腳本已清除 |
 
 日常使用只需啟動 `8000` 與 `8188`。介面、API、作品預覽共用 `8000`；已匯入的作品即使 ComfyUI 關閉仍可瀏覽。SQLite 是本機檔案，不占用網路連接埠；作品庫也不需要額外服務埠。
 
@@ -135,7 +135,7 @@ python -m venv runtime/ComfyUI/.venv
 
 ## ComfyUI 任務提交
 
-創作頁的「生成圖片」會提交目前表單，保存草稿仍是獨立操作。第一版採標準 checkpoint 文生圖，預設 20 steps、Euler / normal、CFG 7、denoise 1、空白負面提示詞；正／負提示詞與取樣參數可編輯、保存並提交，batch 固定為 1。Steps 範圍 1–150、CFG 範圍 0–30、denoise 範圍 0–1；取樣器及 scheduler 的實際支援由連接的 ComfyUI 驗證。暫不支援 FLUX 專用流程、LoRA 或參考圖輸入。選有參考素材時明確拒絕生成，避免誤以為已套用圖片。尺寸通過驗證不代表顯存一定足夠。
+創作頁的「生成圖片」會提交目前表單，保存草稿仍是獨立操作。第一版採標準 checkpoint 文生圖，預設 20 steps、Euler / normal、CFG 7、denoise 1、空白負面提示詞；正／負提示詞與取樣參數可編輯、保存並提交，batch 固定為 1。平台 Steps 範圍 1–150、CFG 範圍 0–30、denoise 範圍 0–1；生成使用平台與引擎範圍的交集，取樣器及 scheduler 從 ComfyUI 同步。暫不支援 FLUX 專用流程、LoRA 或參考圖輸入。選有參考素材時明確拒絕生成，避免誤以為已套用圖片。尺寸通過驗證不代表顯存一定足夠。
 
 - `POST /api/generate`：草稿欄位加 UUID `request_id`，後端建立工作流程，seed 由字串轉為精確整數。
 - `POST /api/jobs`：`request_id`、`engine_url`、`checkpoint`、完整 ComfyUI API 格式 `workflow`。僅接受目前六種標準節點，SaveImage 前綴固定為 ModelAtelier，不接受任意自訂節點或編輯器格式 JSON。
@@ -155,6 +155,20 @@ python -m venv runtime/ComfyUI/.venv
 2026-10-02：取消功能通過 51 項後端測試及前端型別檢查／建置。隔離模擬引擎的瀏覽器驗證確認只移除指定排隊任務，其他排隊與執行項目保留；測試涵蓋逾時、競態、當機後查詢與重複請求。尚未以實際 GPU 排隊生成驗證。
 
 2026-09-06：19 項後端測試及 Vue 型別檢查／建置通過。真實 ComfyUI 空 checkpoint 提交驗證為 409，未監聽端點驗證為 503；測試使用暫存資料庫。尚無 checkpoint，因此成功推論與 GPU 出圖仍待實機驗證。
+
+## 引擎取樣選項與相容檢查
+
+創作頁的進階設定顯示目前引擎 `KSampler` 提供的 Sampler、Scheduler、steps／CFG／denoise 範圍及同步時間。重新整理清單或按「更新引擎選項」會查詢引擎；不再以固定的少數選項代表引擎全部能力。能力快照按引擎位址保存，離線或回應異常時顯示最後快照與原因，沒有快照則顯示尚無資料。
+
+`GET /api/engine/capabilities`、`POST /api/engine/capabilities/sync` 均重新讀取目前引擎 `/object_info/KSampler`。回傳 `engine_url`、`current_engine_url`、`engine_matches`、`available`、`stale`、`sampler_names`、`schedulers`、`bounds`、`engine_bounds`、`synced_at`、`sync_error`。`bounds` 是平台與引擎範圍的交集；`engine_bounds` 保留引擎原始數值範圍／預設值供查閱。HTTP 200 也可能是過期快照，需檢查 `stale` 及 `engine_matches`，不能只以 `available` 判斷。
+
+載入草稿或作品時不改寫原 Sampler、Scheduler 或數值，不支援的選項仍顯示原值。離線、能力未確認、引擎不符或不相容時停用新的生成操作，草稿仍可依平台欄位範圍保存。範圍取交集，不自動截短數值；CFG 等浮點欄位不強制套用引擎介面的按鍵增量，原 CFG 5.55 可保留。
+
+`POST /api/generate` 與直接 `POST /api/jobs` 都會在入列前重新查詢 checkpoint 及 KSampler，驗證每個 KSampler 的取樣器、scheduler、steps、CFG、denoise 及整數 seed，並再次確認目前引擎未變更。不相容回傳 422，能力離線／查詢失敗或異常也明確拒絕，沒有發送 `/prompt`。既有相同請求 ID 直接回傳保存的結果，即使引擎設定已切換也不重新驗證或提交；不同內容仍回傳 409。
+
+標準 EmptyLatentImage 仍以平台尺寸 64–8192、8 的倍數、batch_size 1 驗證，本次沒有動態擴大尺寸或導入 FLUX 專用流程。取樣清單存在不代表模型架構、GPU 顯存或完整工作流程已通過相容驗證。
+
+2026-10-02：84 項後端測試、前端型別檢查／建置與依賴檢查通過。RTX 3060 本機 ComfyUI 0.34.0 實測讀取 45 種 sampler 與 9 種 scheduler。隔離瀏覽器驗證選項變更時提交被拒絕且不入列、原設定可保存、手動調整後精確 seed 與 CFG 5.55 可提交，以及離線快照提示。測試服務與資料已清理；尚無 checkpoint，未驗證實際 GPU 出圖。
 
 ## 即時任務進度
 

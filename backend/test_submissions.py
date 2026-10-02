@@ -7,6 +7,16 @@ import unittest
 from backend import main, catalog
 
 
+def sampler_capabilities():
+    return {'KSampler': {'input': {'required': {
+        'sampler_name': [['euler', 'euler_ancestral', 'dpmpp_2m', 'dpmpp_2m_sde', 'dpmpp_sde', 'ddim']],
+        'scheduler': [['normal', 'karras', 'exponential', 'sgm_uniform', 'simple', 'ddim_uniform', 'beta']],
+        'steps': ['INT', {'min': 1, 'max': 10000, 'default': 20}],
+        'cfg': ['FLOAT', {'min': 0.0, 'max': 100.0, 'default': 8.0}],
+        'denoise': ['FLOAT', {'min': 0.0, 'max': 1.0, 'default': 1.0}],
+    }}}}
+
+
 class SubmissionTests(unittest.TestCase):
     setUp = test_api.ApiTests.setUp
     tearDown = test_api.ApiTests.tearDown
@@ -16,7 +26,10 @@ class SubmissionTests(unittest.TestCase):
     def remote(self, names=None):
         remote = AsyncMock()
         remote.__aenter__.return_value = remote
-        remote.get.return_value = httpx.Response(200, request=httpx.Request('GET', 'http://test'), json={'CheckpointLoaderSimple': {'input': {'required': {'ckpt_name': [names if names is not None else ['test.safetensors']]}}}})
+        def response(url):
+            payload = sampler_capabilities() if url.endswith('/object_info/KSampler') else {'CheckpointLoaderSimple': {'input': {'required': {'ckpt_name': [names if names is not None else ['test.safetensors']]}}}}
+            return httpx.Response(200, request=httpx.Request('GET', url), json=payload)
+        remote.get.side_effect = response
         remote.post.return_value = httpx.Response(200, request=httpx.Request('POST', 'http://test'), json={'prompt_id': str(uuid4()), 'number': 0, 'node_errors': {}})
         return remote
 
@@ -91,6 +104,7 @@ class SubmissionTests(unittest.TestCase):
     def test_missing_job_and_malformed_engine(self):
         self.assertEqual(self.client.get('/api/jobs/' + str(uuid4())).status_code, 404)
         remote = self.remote()
+        remote.get.side_effect = None
         remote.get.return_value = httpx.Response(200, request=httpx.Request('GET', 'http://test'), json={})
         with patch('backend.submissions.httpx.AsyncClient', return_value=remote):
             self.assertEqual(self.client.post('/api/generate', json=self.payload()).status_code, 502)

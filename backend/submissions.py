@@ -7,7 +7,7 @@ from uuid import UUID
 import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
-from backend import jobs, catalog, workflows, cancellation, progress
+from backend import jobs, catalog, workflows, cancellation, progress, capabilities
 
 
 class Submission(BaseModel):
@@ -50,6 +50,16 @@ def install(app, host):
             return await submit_locked(value)
 
     async def submit_locked(value):
+        # Recovery is pinned to the recorded request, including after changing
+        # the current engine. Never probe fresh capabilities or replay an old ID.
+        try:
+            existing = jobs.get(host.DB, str(value.request_id))
+        except KeyError:
+            pass
+        else:
+            if any(existing[name] != getattr(value, name) for name in ('engine_url', 'checkpoint', 'workflow')):
+                raise HTTPException(409, '此請求 ID 已用於其他工作流程')
+            return existing
         if value.engine_url != host.engine_url():
             raise HTTPException(409, '引擎設定已變更，請重新載入模型庫')
         loaders = [n['inputs'].get('ckpt_name') for n in value.workflow.values() if n['class_type'] == 'CheckpointLoaderSimple']
@@ -81,6 +91,22 @@ def install(app, host):
                 fail(409, 'ComfyUI 尚未安裝任何 checkpoint，請先安裝模型並同步模型庫')
             if value.checkpoint not in names:
                 fail(409, '所選 checkpoint 已不存在，請重新同步模型庫')
+            try:
+                live = await capabilities.fetch(client, value.engine_url)
+                capabilities.write(host.DB, value.engine_url, live)
+            except httpx.RequestError:
+                fail(503, 'ComfyUI 取樣能力離線或查詢逾時，尚未提交任務；快照不能用於提交驗證')
+            except httpx.HTTPStatusError as exc:
+                status = exc.response.status_code
+                fail(503 if status >= 500 else 502, f'無法讀取 ComfyUI KSampler 能力（HTTP {status}），尚未提交任務')
+            except ValueError:
+                fail(502, 'ComfyUI KSampler 能力格式無效或不相容，尚未提交任務')
+            try:
+                capabilities.validate_workflow(value.workflow, live)
+            except ValueError as exc:
+                fail(422, str(exc))
+            if value.engine_url != host.engine_url():
+                fail(409, '驗證期間引擎設定已變更，尚未提交任務；請重新載入模型庫與能力清單')
             job = cancellation.persist(host, job, status='submitting')
             try:
                 response = await client.post(value.engine_url + '/prompt', json={
@@ -165,3 +191,4 @@ def install(app, host):
             raise HTTPException(503, '無法查詢原 ComfyUI 引擎；已保留任務原狀態與工作流程')
 
     progress.install(app, host, refresh, job_lock)
+    capabilities.install(app, host)

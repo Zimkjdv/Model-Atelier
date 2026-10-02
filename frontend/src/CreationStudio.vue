@@ -7,6 +7,8 @@ type Asset = { id: string; title: string; archived: boolean }
 type Draft = Omit<CreationForm, keyof GenerationFields> & Partial<GenerationFields> & { id: string; revision: number; model_version: string; updated_at: string }
 type Model = { name: string; listed: boolean; version?: string }
 type Catalog = { engine_url: string; models: Model[]; selected: string | null }
+type Range = { min: number; max: number }
+type Capabilities = { engine_url: string; current_engine_url: string; engine_matches: boolean; available: boolean; stale: boolean; sampler_names: string[]; schedulers: string[]; bounds: Partial<Record<'steps' | 'cfg' | 'denoise', Range>>; synced_at: string | null; sync_error: string | null }
 const emit = defineEmits<{ models: []; assets: []; gallery: [jobId: string] }>()
 const props = defineProps<{ restoreRequest?: { artworkId: string; token: number } | null }>()
 const form = reactive(newCreation())
@@ -20,9 +22,26 @@ const draftVersion = ref('')
 const references = ref<Asset[]>([])
 const modelVersion = computed(() => draftVersion.value || selected.value?.version || '未知')
 const available = computed(() => models.value?.engine_url === form.engine_url ? models.value.models.filter(m => m.listed) : [])
-const submissionBlock = computed(() => models.value && models.value.engine_url !== form.engine_url ? '此草稿使用的引擎與目前設定不同。請到設定頁連接原引擎，再更新模型庫。' : '')
-const samplers = ['euler', 'euler_ancestral', 'dpmpp_2m', 'dpmpp_2m_sde', 'dpmpp_sde', 'ddim']
-const schedulers = ['normal', 'karras', 'exponential', 'sgm_uniform', 'simple', 'ddim_uniform', 'beta']
+const capabilities = ref<Capabilities | null>(null), capabilityBusy = ref(false), capabilityError = ref('')
+let capabilityRequest = 0
+const matchingCapabilities = computed(() => capabilities.value?.engine_url === form.engine_url ? capabilities.value : null)
+const samplers = computed(() => matchingCapabilities.value?.sampler_names ?? [])
+const schedulers = computed(() => matchingCapabilities.value?.schedulers ?? [])
+const submissionBlock = computed(() => {
+  if (models.value && models.value.engine_url !== form.engine_url) return '此草稿使用的引擎與目前設定不同。請到設定頁連接原引擎，再更新模型庫。'
+  if (capabilityBusy.value) return '正在更新引擎取樣選項，請稍候；草稿仍可保存。'
+  const value = matchingCapabilities.value
+  if (!value || !value.available) return '尚無此引擎的取樣能力資料。請啟動 ComfyUI 並更新引擎選項；草稿仍可保存。'
+  if (!value.engine_matches) return '引擎設定已變更，請重新整理清單與引擎選項。'
+  if (value.stale) return '引擎選項為上次快照，尚無法確認目前支援情況。請確認連線後更新；草稿仍可保存。'
+  if (!samplers.value.includes(form.sampler_name)) return `目前引擎不支援取樣器 ${form.sampler_name}。已保留原設定，請手動選擇可用選項。`
+  if (!schedulers.value.includes(form.scheduler)) return `目前引擎不支援 scheduler ${form.scheduler}。已保留原設定，請手動選擇可用選項。`
+  for (const field of ['steps', 'cfg', 'denoise'] as const) {
+    const range = value.bounds[field]
+    if (range && (!Number.isFinite(form[field]) || form[field] < range.min || form[field] > range.max)) return `${field} 超出目前引擎與平台可用範圍 ${range.min}–${range.max}。已保留原設定供調整或保存。`
+  }
+  return ''
+})
 const aspect = computed(() => Number(form.width) > 0 && Number(form.height) > 0 ? `${form.width} / ${form.height}` : '1 / 1')
 async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
   const response = await fetch('/api/' + path, { method, ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}) })
@@ -63,11 +82,21 @@ async function restoreArtwork(request: { artworkId: string; token: number }) {
   finally { if (props.restoreRequest?.token === request.token) restoring.value = false }
 }
 watch(() => props.restoreRequest, request => { if (request) void restoreArtwork(request) }, { immediate: true })
+async function refreshCapabilities(explicit = false) {
+  const request = ++capabilityRequest
+  capabilityBusy.value = true; capabilityError.value = ''
+  try {
+    const value = await api<Capabilities>(explicit ? 'engine/capabilities/sync' : 'engine/capabilities', explicit ? 'POST' : 'GET')
+    if (request === capabilityRequest) capabilities.value = value
+  } catch (e) {
+    if (request === capabilityRequest) { capabilities.value = null; capabilityError.value = e instanceof Error ? e.message : '無法更新引擎選項' }
+  } finally { if (request === capabilityRequest) capabilityBusy.value = false }
+}
 async function refresh() {
   if (busy.value) return
   busy.value = true; error.value = ''
   try {
-    const [list, catalog, assets] = await Promise.all([api<Draft[]>('drafts'), api<Catalog>('models'), api<Asset[]>('assets')])
+    const [list, catalog, assets] = await Promise.all([api<Draft[]>('drafts'), api<Catalog>('models'), api<Asset[]>('assets'), refreshCapabilities()])
     records.value = list; models.value = catalog; references.value = assets
     if (!form.engine_url && !dirty.value) apply('new')
   } catch (e) { error.value = e instanceof Error ? e.message : '無法讀取草稿' }
@@ -114,10 +143,11 @@ onActivated(() => { if (form.engine_url) void refresh() })
         <div class="size-fields"><label for="width">寬度<input id="width" v-model.number="form.width" type="number" min="64" max="8192" step="8" required></label><label for="height">高度<input id="height" v-model.number="form.height" type="number" min="64" max="8192" step="8" required></label></div>
         <details><summary>參考素材（{{ form.reference_ids.length }} / 8）</summary><p class="footnote">此階段僅保存素材關聯，尚未套用至生成流程。</p><button class="secondary" type="button" @click="emit('assets')">管理／上傳參考圖 →</button><div class="reference-list"><label v-for="asset in references.filter(a => !a.archived || form.reference_ids.includes(a.id))" :key="asset.id"><input v-model="form.reference_ids" type="checkbox" :value="asset.id" :disabled="!form.reference_ids.includes(asset.id) && form.reference_ids.length >= 8"><img :src="'/api/assets/' + asset.id + '/image'" :alt="asset.title">{{ asset.title }}{{ asset.archived ? '（已封存）' : '' }}</label></div><p v-if="!references.length" class="footnote">尚無素材，可先到參考素材頁上傳圖片。</p></details>
         <details><summary>進階設定</summary><label for="seed">Seed</label><div class="seed-field"><input id="seed" v-model="form.seed" inputmode="numeric" pattern="[0-9]{1,20}" required><button type="button" class="secondary" @click="randomSeed">隨機</button></div><p class="footnote">以文字精確保存 64 位元整數，避免瀏覽器數字精度造成變更。</p>
+          <div class="inline-note" role="status"><p>{{ capabilityBusy ? '正在讀取 ComfyUI 取樣選項…' : matchingCapabilities?.available ? matchingCapabilities.stale ? '顯示上次引擎選項快照；尚未確認目前支援情況。' : '選項來自目前 ComfyUI 的 KSampler。' : '尚無此引擎的取樣選項資料。' }}</p><p v-if="matchingCapabilities?.synced_at" class="footnote">{{ matchingCapabilities.engine_url }} · 同步於 {{ new Date(matchingCapabilities.synced_at).toLocaleString() }}</p><p v-if="capabilityError || matchingCapabilities?.sync_error">{{ capabilityError || matchingCapabilities?.sync_error }}</p><button type="button" class="secondary" :disabled="capabilityBusy" @click="refreshCapabilities(true)">{{ capabilityBusy ? '更新中…' : '更新引擎選項' }}</button></div>
           <div class="size-fields"><label for="steps">Steps<input id="steps" v-model.number="form.steps" type="number" min="1" max="150" step="1" required></label><label for="cfg">CFG<input id="cfg" v-model.number="form.cfg" type="number" min="0" max="30" step="any" required></label></div>
-          <label for="sampler">Sampler</label><select id="sampler" v-model="form.sampler_name"><option v-if="!samplers.includes(form.sampler_name)" :value="form.sampler_name">{{ form.sampler_name }}（原設定）</option><option v-for="sampler in samplers" :key="sampler" :value="sampler">{{ sampler }}</option></select>
-          <label for="scheduler">Scheduler</label><select id="scheduler" v-model="form.scheduler"><option v-if="!schedulers.includes(form.scheduler)" :value="form.scheduler">{{ form.scheduler }}（原設定）</option><option v-for="scheduler in schedulers" :key="scheduler" :value="scheduler">{{ scheduler }}</option></select>
-          <label for="denoise">Denoise</label><input id="denoise" v-model.number="form.denoise" type="number" min="0" max="1" step="any" required><p class="footnote">實際支援的取樣器與設定由連接的 ComfyUI 驗證。</p>
+          <label for="sampler">Sampler</label><select id="sampler" v-model="form.sampler_name"><option v-if="!samplers.includes(form.sampler_name)" :value="form.sampler_name">{{ form.sampler_name }}（原設定，{{ matchingCapabilities?.available && !matchingCapabilities.stale ? '目前引擎未列出' : '尚未確認支援' }}）</option><option v-for="sampler in samplers" :key="sampler" :value="sampler">{{ sampler }}</option></select>
+          <label for="scheduler">Scheduler</label><select id="scheduler" v-model="form.scheduler"><option v-if="!schedulers.includes(form.scheduler)" :value="form.scheduler">{{ form.scheduler }}（原設定，{{ matchingCapabilities?.available && !matchingCapabilities.stale ? '目前引擎未列出' : '尚未確認支援' }}）</option><option v-for="scheduler in schedulers" :key="scheduler" :value="scheduler">{{ scheduler }}</option></select>
+          <label for="denoise">Denoise</label><input id="denoise" v-model.number="form.denoise" type="number" min="0" max="1" step="any" required><p class="footnote">草稿可保存原設定，生成前會重新確認引擎選項與參數範圍。</p><p v-if="matchingCapabilities?.available" class="footnote">{{ matchingCapabilities.stale ? '上次記錄的' : '目前' }}可用範圍：<template v-for="field in (['steps', 'cfg', 'denoise'] as const)" :key="field"><span v-if="matchingCapabilities.bounds[field]"> {{ field }} {{ matchingCapabilities.bounds[field]!.min }}–{{ matchingCapabilities.bounds[field]!.max }}；</span></template>平台上限不因引擎範圍變大而提高。</p>
         </details>
         <div class="save-actions"><button class="primary" :disabled="!form.engine_url">{{ busy ? '處理中…' : '保存草稿' }}</button><button v-if="id" type="button" class="secondary" @click="save(true)">另存新草稿</button></div>
       </fieldset></form>
