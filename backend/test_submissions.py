@@ -35,6 +35,9 @@ class SubmissionTests(unittest.TestCase):
         remote = AsyncMock()
         remote.__aenter__.return_value = remote
         def response(url):
+            name = url.rsplit('/', 1)[-1]
+            if name in {'CLIPTextEncode', 'EmptyLatentImage', 'VAEDecode', 'SaveImage'}:
+                return httpx.Response(200, request=httpx.Request('GET', url), json={name: {'input': {'required': {}}}})
             payload = sampler_capabilities() if url.endswith('/object_info/KSampler') else {'CheckpointLoaderSimple': {'input': {'required': {'ckpt_name': [names if names is not None else ['test.safetensors']]}}}}
             return httpx.Response(200, request=httpx.Request('GET', url), json=payload)
         remote.get.side_effect = response

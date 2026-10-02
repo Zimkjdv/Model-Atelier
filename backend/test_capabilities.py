@@ -29,6 +29,9 @@ class CapabilityTests(unittest.TestCase):
         remote.__aenter__.return_value = remote
 
         def get(url):
+            name = url.rsplit('/', 1)[-1]
+            if name in {'CLIPTextEncode', 'EmptyLatentImage', 'VAEDecode', 'SaveImage'}:
+                return self.response({name: {'input': {'required': {}}}}, url)
             if url.endswith('/object_info/KSampler'):
                 if capability_error:
                     raise capability_error

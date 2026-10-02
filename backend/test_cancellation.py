@@ -266,7 +266,9 @@ class CancellationTests(unittest.TestCase):
                 job_id = str(uuid4())
                 values['request_id'] = job_id
                 remote = self.remote({'CheckpointLoaderSimple': {'input': {'required': {'ckpt_name': [['sample.safetensors']]}}}},
-                                     test_submissions.sampler_capabilities())
+                                     test_submissions.sampler_capabilities(),
+                                     *({name: {'input': {'required': {}}}} for name in
+                                       ('CLIPTextEncode', 'EmptyLatentImage', 'SaveImage', 'VAEDecode')))
 
                 async def submitted(url, **kwargs):
                     # Represents another worker reconciling the accepted upstream

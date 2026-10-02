@@ -7,7 +7,7 @@ from uuid import UUID
 import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
-from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures
+from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures, node_preflight
 
 
 class Submission(BaseModel):
@@ -114,6 +114,14 @@ def install(app, host):
                 capabilities.validate_workflow(value.workflow, live)
             except ValueError as exc:
                 fail(422, '工作流程參數未通過平台與原引擎能力驗證，尚未提交任務', preflight_error=str(exc))
+            try:
+                await node_preflight.check(client, value.engine_url, value.workflow)
+            except node_preflight.MissingNodes as exc:
+                fail(422, str(exc), 'missing_nodes')
+            except httpx.RequestError:
+                fail(503, '必要節點檢查連線失敗，尚未提交任務', 'engine_offline')
+            except (httpx.HTTPStatusError, ValueError):
+                fail(502, '無法取得有效的必要節點定義，尚未提交任務')
             if value.engine_url != host.engine_url():
                 fail(409, '驗證期間引擎設定已變更，尚未提交任務；請重新載入模型庫與能力清單', 'engine_changed')
             # Metadata may change while fresh capabilities are being fetched.

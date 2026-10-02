@@ -9,6 +9,8 @@ CUDA_OOM = re.compile(r'\bcuda(?:\s+error\s*:)?\s+out\s+of\s+memory\b', re.IGNOR
 IDENTIFIER = re.compile(r'[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*')
 
 TEXT = {
+    'missing_nodes': ('缺少必要節點', '原 ComfyUI 引擎未登記此流程需要的節點，任務尚未提交。',
+                      ['查看任務錯誤中的節點名稱並確認引擎安裝完整。', '修復或重啟原引擎後，載入設定再建立新任務。']),
     'engine_offline': ('ComfyUI 無法連線', '原 ComfyUI 引擎離線或連線逾時，任務尚未提交。',
                        ['確認原引擎已啟動且位址正確。', '連線恢復後先查詢原任務；確認失敗原因並調整設定後才建立新任務。']),
     'no_checkpoints': ('尚未安裝 checkpoint', 'ComfyUI 目前沒有可用的 checkpoint，任務尚未提交。',
