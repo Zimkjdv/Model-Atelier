@@ -1,22 +1,28 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import type { CreationForm } from './creationSettings'
+import { mergeJob, terminal, useJobEvents, type Job } from './jobEvents'
 const props = defineProps<{ form: CreationForm; blockedReason?: string; disabled?: boolean }>()
 const emit = defineEmits<{ gallery: [jobId: string] }>()
-type Job = { id: string; status: string; checkpoint: string; created_at: string; error?: string }
 const jobs = ref<Job[]>([]), busy = ref(false), error = ref('')
 const cancelChoice = ref<string | null>(null)
 const pending = ref<Record<string, unknown> | null>(null)
 try { pending.value = JSON.parse(localStorage.getItem('atelier-pending-submission') || 'null') } catch { /* No valid saved request. */ }
 const labels: Record<string, string> = { validating: '確認模型中', submitting: '提交中', queued: '等待生成', running: '生成中', completed: '已完成', failed: '失敗', unknown: '結果待確認', cancelling: '確認取消中', cancel_unknown: '取消結果待確認', cancelled: '已取消排隊' }
-const terminal = (job: Job) => ['completed', 'failed', 'cancelled'].includes(job.status)
 async function request(path: string, method = 'GET', body?: unknown) {
   const response = await fetch('/api/' + path, { method, headers: { 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) })
   const data = await response.json()
   if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : data.detail?.message || '請檢查輸入參數或引擎連線')
   return data
 }
-async function load() { jobs.value = await request('jobs') }
+async function load() {
+  const incoming: Job[] = await request('jobs')
+  jobs.value = incoming.map(job => mergeJob(jobs.value.find(previous => previous.id === job.id), job))
+}
+const { connections, visible, reconnect } = useJobEvents(jobs, async () => {
+  try { await load() } catch (e) { error.value = e instanceof Error ? e.message : '查詢失敗'; throw e }
+})
+const connectionLabels = { connecting: '正在連接即時進度', connected: '即時進度已連線', reconnecting: '即時進度重新連線中', offline: '即時進度暫不可用' }
 async function generate() {
   if (busy.value || props.disabled || (!pending.value && props.blockedReason)) return
   busy.value = true; error.value = ''
@@ -61,8 +67,9 @@ async function cancel(job: Job) {
   catch (e) { error.value = e instanceof Error ? e.message : '無法確認取消結果'; await load().catch(() => {}) }
   finally { busy.value = false }
 }
-onMounted(() => { void load().catch(e => { error.value = e.message }) })
-let timer = window.setInterval(() => { if (jobs.value.some(j => ['queued', 'running', 'cancelling', 'cancel_unknown'].includes(j.status))) void refresh() }, 5000)
+const timer = window.setInterval(() => {
+  if (visible.value && jobs.value.some(j => !terminal(j) && connections.value[j.id]?.state !== 'connected')) void refresh()
+}, 15000)
 onBeforeUnmount(() => window.clearInterval(timer))
 </script>
 <template>
@@ -76,11 +83,19 @@ onBeforeUnmount(() => window.clearInterval(timer))
     <p v-if="pending" class="notice warning">尚有未確認的提交 {{ pending.request_id }}。恢復時使用原始參數，重複請求不會再次入列。</p>
     <button type="button" class="primary" :disabled="busy || disabled || (!pending && (!form.checkpoint || !!form.reference_ids.length || !!blockedReason))" @click="generate">{{ busy ? '處理中…' : pending ? '恢復原提交請求' : '生成圖片' }}</button>
     <button type="button" class="secondary" :disabled="busy" @click="refresh">更新任務狀態</button>
+    <button v-if="jobs.some(j => !terminal(j))" type="button" class="secondary" :disabled="busy" @click="reconnect">重新連線進度</button>
+    <p v-if="jobs.some(j => !terminal(j))" class="footnote">即時監聽最近 4 個未完成任務。離線時保留最後進度並低頻查詢；切換頁面或隱藏分頁會停止監聽。</p>
     <p v-if="!jobs.length" class="footnote">尚無任務。生成結果暫存於 ComfyUI output，平台保留歷史 JSON。</p>
     <div v-for="job in jobs" :key="job.id" class="job">
       <strong>{{ labels[job.status] || job.status }}</strong> · {{ job.checkpoint }}
       <p class="footnote">{{ new Date(job.created_at).toLocaleString() }} · {{ job.id }}</p>
       <p v-if="job.error" role="status">{{ job.error }}</p>
+      <div v-if="job.progress" class="node-progress">
+        <p class="footnote">目前節點 {{ job.progress.node }} · {{ job.progress.percent == null ? '正在執行' : `${job.progress.percent}%（${job.progress.current} / ${job.progress.max}）` }}</p>
+        <progress v-if="job.progress.percent != null" :value="job.progress.percent" max="100" :aria-label="`任務 ${job.id} 目前節點進度`"></progress>
+        <p class="footnote">進度更新：{{ new Date(job.progress.updated_at).toLocaleTimeString() }}。{{ terminal(job) ? '這是最後記錄的節點進度，任務結果見上方狀態。' : '節點完成後仍需等待引擎確認整個任務。' }}</p>
+      </div>
+      <p v-if="!terminal(job)" class="footnote" role="status">{{ connections[job.id] ? connectionLabels[connections[job.id]!.state] : '使用狀態查詢' }}<template v-if="connections[job.id]?.message"> · {{ connections[job.id]!.message }}</template><template v-if="connections[job.id]?.state !== 'connected' && job.progress"> · 上次進度可能已過期</template></p>
       <template v-if="job.status === 'queued'"><button v-if="cancelChoice !== job.id" type="button" class="secondary" :disabled="busy" @click="cancelChoice = job.id">取消排隊</button><div v-else class="notice"><p>只移除這個任務的排隊項目。若它已開始執行，平台會保留任務並提示最新狀態。</p><button type="button" class="secondary" :disabled="busy" @click="cancelChoice = null">保留任務</button><button type="button" class="secondary" :disabled="busy" @click="cancel(job)">確認取消此任務</button></div></template>
       <button v-if="['cancelling', 'cancel_unknown'].includes(job.status)" type="button" class="secondary" :disabled="busy" @click="cancel(job)">確認取消結果</button>
       <button v-if="job.status === 'completed'" class="secondary" @click="emit('gallery', job.id)">前往作品庫匯入圖片 →</button>
@@ -90,4 +105,5 @@ onBeforeUnmount(() => window.clearInterval(timer))
 </template>
 <style scoped>
 button{margin:4px 8px 10px 0}.job{border-top:1px solid #35403a;padding:15px 0;font-size:12px;overflow-wrap:anywhere}.job a{color:#c5dfba}
+.node-progress{margin:12px 0}progress{width:100%;height:8px;accent-color:#c5dfba}
 </style>

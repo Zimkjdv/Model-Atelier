@@ -2,7 +2,7 @@
 import json
 import sqlite3
 from contextlib import closing
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 
 def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None):
@@ -51,6 +51,30 @@ def update(path, job_id, **changes):
 def compare_update(path, snapshot, **changes):
     """Reject stale remote observations without overwriting a newer job state."""
     return _update(path, snapshot['id'], snapshot.get('revision', 0), changes)
+
+
+def claim_watch(path, job_id, owner, seconds=60):
+    """One upstream progress reader across workers, independent of job revision."""
+    key = 'watch:' + job_id
+    timestamp = datetime.now(timezone.utc)
+    with closing(sqlite3.connect(path)) as db, db:
+        db.execute('BEGIN IMMEDIATE')
+        row = db.execute('SELECT value FROM settings WHERE key=?', (key,)).fetchone()
+        if row:
+            value = json.loads(row[0])
+            if value['owner'] != owner and datetime.fromisoformat(value['expires']) > timestamp:
+                return False
+        value = dict(owner=owner, expires=(timestamp + timedelta(seconds=seconds)).isoformat())
+        db.execute('INSERT OR REPLACE INTO settings VALUES (?, ?)', (key, json.dumps(value)))
+    return True
+
+
+def release_watch(path, job_id, owner):
+    with closing(sqlite3.connect(path)) as db, db:
+        db.execute('BEGIN IMMEDIATE')
+        row = db.execute('SELECT value FROM settings WHERE key=?', ('watch:' + job_id,)).fetchone()
+        if row and json.loads(row[0])['owner'] == owner:
+            db.execute('DELETE FROM settings WHERE key=?', ('watch:' + job_id,))
 
 
 def list_all(path):

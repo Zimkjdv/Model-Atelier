@@ -7,7 +7,7 @@ from uuid import UUID
 import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
-from backend import jobs, catalog, workflows, cancellation
+from backend import jobs, catalog, workflows, cancellation, progress
 
 
 class Submission(BaseModel):
@@ -148,15 +148,8 @@ def install(app, host):
             return await cancellation.refresh(host, job)
         try:
             async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
-                response = await client.get(job['engine_url'] + '/history/' + job['prompt_id'])
-                response.raise_for_status()
-                data = response.json()
-                if not isinstance(data, dict):
-                    raise ValueError()
-                entry = data.get(job['prompt_id'])
-                if entry:
-                    state = entry['status']
-                    status = 'failed' if state.get('status_str') == 'error' else 'completed' if state.get('completed') is True else 'unknown'
+                status, entry = await cancellation.history_state(client, job)
+                if entry is not None:
                     return cancellation.persist(host, job, status=status, history=entry, error='ComfyUI 執行失敗，請查看任務 JSON' if status == 'failed' else None)
                 response = await client.get(job['engine_url'] + '/queue')
                 response.raise_for_status()
@@ -170,3 +163,5 @@ def install(app, host):
                 return cancellation.persist(host, job, status='unknown', error='引擎佇列與歷史中找不到任務；可能已清除或重啟，請勿自動重送')
         except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError):
             raise HTTPException(503, '無法查詢原 ComfyUI 引擎；已保留任務原狀態與工作流程')
+
+    progress.install(app, host, refresh, job_lock)
