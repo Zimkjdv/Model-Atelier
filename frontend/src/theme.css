@@ -1,0 +1,27 @@
+/* Shared studio palette and control states. Component layout remains local. */
+:root {
+  --surface-input: #101517;
+  --text-primary: #e5ebe7;
+  --text-muted: #aebbb4;
+  --border-control: #61746b;
+  --focus-ring: #d0edbf;
+  --surface-notice: #1c2824;
+  --border-notice: #536e60;
+  --text-notice: #dae8dc;
+  --surface-warning: #30291e;
+  --border-warning: #92794f;
+  --text-warning: #f1dbb2;
+  --radius-control: 7px;
+}
+button,input,select,textarea { font: inherit; }
+input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea {
+  background:var(--surface-input);color:var(--text-primary);border:1px solid var(--border-control);border-radius:var(--radius-control);
+}
+:where(button,a,input,select,textarea,summary):focus-visible { outline:2px solid var(--focus-ring);outline-offset:4px; }
+button:disabled { cursor:not-allowed; }
+:where(input,textarea)::placeholder { color:var(--text-muted);opacity:1; }
+.notice { background:var(--surface-notice);border-color:var(--border-notice);color:var(--text-notice);line-height:1.7; }
+.notice.warning { background:var(--surface-warning);border-color:var(--border-warning);color:var(--text-warning); }
+.notice.success { background:var(--surface-notice);border-color:var(--border-notice);color:var(--text-notice); }
+.footnote,.muted { color:var(--text-muted);line-height:1.7; }
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important;transition:none!important;animation:none!important; } }
