@@ -7,6 +7,7 @@ import ArtworkLibrary from './ArtworkLibrary.vue'
 import LocalModelPaths from './LocalModelPaths.vue'
 import EngineEnvironment from './EngineEnvironment.vue'
 import LocalEnvironmentCheck from './LocalEnvironmentCheck.vue'
+import StorageOverview from './StorageOverview.vue'
 import type { EngineReport } from './environmentTypes'
 type Memory = { total: number | null; used: number | null; free: number | null }
 type System = { host: string; os: string; python: string; updated_at: string; gpus: (Memory & { index: string; name: string; driver: string })[]; gpu_error: string | null; ram: Memory; disk: Memory & { path: string } }
@@ -114,6 +115,7 @@ onUnmounted(() => { alive = false; ++refreshToken; ++settingsEpoch; refreshAbort
           <div v-else class="card">{{ busy ? '正在讀取硬體資訊…' : '尚無硬體資料，請重新整理。' }}</div>
           <EngineEnvironment :engine="engine" :selected-url="savedUrl" @settings="page = '設定'"/>
           <LocalEnvironmentCheck/>
+          <StorageOverview/>
           <article class="panel details" v-if="system"><h2>環境詳細資訊</h2><dl><dt>作業系統</dt><dd>{{ system.os }}</dd><dt>平台 Python</dt><dd>{{ system.python }}</dd><dt>資料目錄</dt><dd>{{ system.disk.path }}</dd></dl></article>
           <p class="footnote">硬體資訊供資源評估使用。平台不依顯卡型號限制存取；模型能否執行仍取決於完整工作流程。</p>
         </template>

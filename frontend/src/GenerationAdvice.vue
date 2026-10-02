@@ -36,6 +36,6 @@ async function check() {
   </section>
 </template>
 <style scoped>
-.resource-advice { margin: 16px 0; padding: 18px; border: 1px solid #ddd8ce; border-radius: 12px; background: #faf8f3; }
+.resource-advice { margin: 16px 0; padding: 18px; border: 1px solid #405047; border-radius: 12px; background: #19231e; }
 h3 { margin: 0 0 8px; } p, li { line-height: 1.7; } small { display: block; margin-top: 12px; overflow-wrap: anywhere; }
 </style>
