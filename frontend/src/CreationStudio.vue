@@ -37,6 +37,8 @@ const profile = ref<ModelProfile | null>(null), profileBusy = ref(false), profil
 const presetChoice = ref<string | null>(null)
 let profileRequest = 0, profileAbort: AbortController | null = null
 const matchingProfile = computed(() => profile.value?.engine_url === form.engine_url && profile.value.name === form.checkpoint ? profile.value : null)
+const editableWorkflow = computed(() => !form.checkpoint || !!matchingProfile.value?.workflow)
+const retainedParameters = computed(() => ({ prompt: form.prompt, negative_prompt: form.negative_prompt, seed: form.seed, width: form.width, height: form.height, steps: form.steps, cfg: form.cfg, sampler_name: form.sampler_name, scheduler: form.scheduler, denoise: form.denoise }))
 const profileMessage = computed(() => matchingProfile.value?.compatibility.status === 'supported'
   ? '適用目前文生圖流程；登記架構尚未驗證實際檔案。'
   : matchingProfile.value?.compatibility.message ?? '')
@@ -262,6 +264,8 @@ onActivated(() => { if (form.engine_url) void refresh() })
           <p v-if="matchingProfile?.preset" class="footnote">預設僅在確認後套用。</p>
         </section>
         <ModelValidation v-if="form.checkpoint" :engine-url="form.engine_url" :name="form.checkpoint" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
+        <p v-if="matchingProfile?.workflow" class="footnote" role="status">{{ matchingProfile.workflow.name }} · 每次 {{ matchingProfile.workflow.batch_size }} 張；參考圖與 LoRA 尚未接入此流程。</p>
+        <div v-show="editableWorkflow">
         <label for="draft-prompt">畫面描述 <small>{{ form.prompt.length }} / 20000</small></label><textarea id="draft-prompt" v-model="form.prompt" maxlength="20000" rows="7" placeholder="描述角色、場景、光線與你想呈現的畫面…"></textarea>
         <label for="draft-negative">負面提示詞 <small>{{ form.negative_prompt.length }} / 20000</small></label><textarea id="draft-negative" v-model="form.negative_prompt" maxlength="20000" rows="3" placeholder="描述希望避免的畫面特徵…"></textarea>
         <div class="size-presets"><button v-for="preset in [{label:'正方形',w:1024,h:1024},{label:'直式',w:832,h:1216},{label:'橫式',w:1216,h:832}]" :key="preset.label" type="button" class="secondary" @click="form.width=preset.w;form.height=preset.h">{{ preset.label }}</button></div>
@@ -275,6 +279,8 @@ onActivated(() => { if (form.engine_url) void refresh() })
           <label for="scheduler">Scheduler</label><select id="scheduler" v-model="form.scheduler"><option v-if="!schedulers.includes(form.scheduler)" :value="form.scheduler">{{ form.scheduler }}（原設定，{{ matchingCapabilities?.available && !matchingCapabilities.stale ? '目前引擎未列出' : '尚未確認支援' }}）</option><option v-for="scheduler in schedulers" :key="scheduler" :value="scheduler">{{ scheduler }}</option></select>
           <label for="denoise">Denoise</label><input id="denoise" v-model.number="form.denoise" type="number" min="0" max="1" step="any" required><p class="footnote">草稿可保存原設定，生成前會重新確認引擎選項與參數範圍。</p><p v-if="matchingCapabilities?.available" class="footnote">{{ matchingCapabilities.stale ? '上次記錄的' : '目前' }}可用範圍：<template v-for="field in (['steps', 'cfg', 'denoise'] as const)" :key="field"><span v-if="matchingCapabilities.bounds[field]"> {{ field }} {{ matchingCapabilities.bounds[field]!.min }}–{{ matchingCapabilities.bounds[field]!.max }}；</span></template>平台上限不因引擎範圍變大而提高。</p>
         </details>
+        </div>
+        <section v-if="!editableWorkflow" class="notice" aria-label="保留的創作參數"><p>此模型尚未取得可用的表單流程；原參數未修改，仍可保存草稿。切換回支援模型後可繼續編輯。</p><details><summary>查看保留的原始參數</summary><pre class="retained-parameters">{{ JSON.stringify(retainedParameters, null, 2) }}</pre></details></section>
         <div class="save-actions"><button class="primary" :disabled="!form.engine_url">{{ busy ? '處理中…' : '保存草稿' }}</button><button v-if="id" type="button" class="secondary" @click="save(true)">另存新草稿</button></div>
       </fieldset></form>
       <div><GenerationAdvice :form="form" />
@@ -285,6 +291,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
 </template>
 
 <style scoped>
+.retained-parameters{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:320px;overflow:auto}
 .studio-layout-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}.studio-layout-controls p{overflow-wrap:anywhere}.studio-grid.editor-collapsed{grid-template-columns:minmax(0,1fr)}.studio-grid>div{min-width:0}.studio-grid .panel{overflow-wrap:anywhere}
 
 .reference-list label{display:flex;align-items:center;gap:10px;overflow-wrap:anywhere}.reference-list input{width:16px;flex-shrink:0}.reference-list img{width:48px;height:48px;object-fit:contain;flex-shrink:0}

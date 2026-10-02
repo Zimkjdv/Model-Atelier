@@ -38,7 +38,7 @@ class ModelProfileTests(unittest.TestCase):
             response = self.get_profile()
         self.assertEqual(response.status_code, 200, response.text)
         result = response.json()
-        self.assertEqual(set(result), {'engine_url', 'name', 'architecture', 'metadata_updated_at', 'compatibility', 'preset'})
+        self.assertEqual(set(result), {'engine_url', 'name', 'architecture', 'metadata_updated_at', 'compatibility', 'preset', 'workflow'})
         self.assertEqual(result['metadata_updated_at'], registered['metadata_updated_at'])
         self.assertEqual(result['compatibility']['status'], 'supported')
         self.assertTrue(result['compatibility']['allows_submission'])

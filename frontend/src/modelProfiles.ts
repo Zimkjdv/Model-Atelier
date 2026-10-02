@@ -18,6 +18,7 @@ export type ModelProfile = {
   metadata_updated_at: string | null
   compatibility: { status: 'supported' | 'unknown' | 'unsupported'; message: string; allows_submission: boolean }
   preset: ModelPreset | null
+  workflow: { id: 'checkpoint-text2image-v1'; name: string; fields: string[]; batch_size: 1; reference_images: false; lora: false; verification: string } | null
 }
 
 export function profileIdentity(profile: ModelProfile): string {
@@ -30,6 +31,14 @@ export function validateProfile(value: ModelProfile): ModelProfile {
       typeof value.compatibility.allows_submission !== 'boolean' || typeof value.compatibility.message !== 'string')
     throw new Error('模型工作流程資料格式無效，請重新更新。')
   const preset = value.preset
+  const workflow = value.workflow
+  const expectedFields = ['prompt', 'negative_prompt', 'seed', 'width', 'height', 'steps', 'cfg', 'sampler_name', 'scheduler', 'denoise']
+  if (value.compatibility.allows_submission ?
+      !workflow || workflow.id !== 'checkpoint-text2image-v1' || typeof workflow.name !== 'string' ||
+      workflow.batch_size !== 1 || workflow.reference_images !== false || workflow.lora !== false ||
+      !Array.isArray(workflow.fields) || workflow.fields.length !== expectedFields.length ||
+      new Set(workflow.fields).size !== expectedFields.length || !expectedFields.every(key => workflow.fields.includes(key)) : workflow !== null)
+    throw new Error('流程欄位描述無效，已保留目前參數，請更新模型資料。')
   if (preset != null) {
     const settings = preset.settings
     if (!settings || typeof preset.id !== 'string' || typeof preset.name !== 'string' ||

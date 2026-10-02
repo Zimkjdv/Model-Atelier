@@ -61,7 +61,18 @@ def profile(engine_url, model):
     kind = architecture(model.get('architecture'))
     return dict(engine_url=engine_url, name=model['name'], architecture=kind,
                 metadata_updated_at=model.get('metadata_updated_at'), compatibility=compatibility(kind),
+                workflow=workflow_description(kind),
                 preset=copy.deepcopy(preset(model)))
+
+
+def workflow_description(kind):
+    if not compatibility(kind)['allows_submission']:
+        return None
+    return dict(id='checkpoint-text2image-v1', name='標準 checkpoint 單張文生圖',
+                fields=['prompt', 'negative_prompt', 'seed', 'width', 'height', 'steps', 'cfg',
+                        'sampler_name', 'scheduler', 'denoise'], batch_size=1,
+                reference_images=False, lora=False,
+                verification='registered_architecture' if kind in ('sd1', 'sdxl') else 'engine_validation_required')
 
 
 def install(app, host):
