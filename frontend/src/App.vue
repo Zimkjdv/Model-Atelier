@@ -4,6 +4,7 @@ import ModelLibrary from './ModelLibrary.vue'
 import CreationStudio from './CreationStudio.vue'
 import AssetLibrary from './AssetLibrary.vue'
 import ArtworkLibrary from './ArtworkLibrary.vue'
+import LocalModelPaths from './LocalModelPaths.vue'
 type Memory = { total: number | null; used: number | null; free: number | null }
 type System = { host: string; os: string; python: string; updated_at: string; gpus: (Memory & { index: string; name: string; driver: string })[]; gpu_error: string | null; ram: Memory; disk: Memory & { path: string } }
 type Engine = { connected: boolean; url: string; error?: string; stats?: { system: { comfyui_version?: string; ram_total?: number; ram_free?: number }; devices: { name: string; vram_total?: number; vram_free?: number }[] } }
@@ -80,7 +81,7 @@ onUnmounted(() => clearInterval(timer))
           <article class="panel details" v-if="system"><h2>環境詳細資訊</h2><dl><dt>作業系統</dt><dd>{{ system.os }}</dd><dt>平台 Python</dt><dd>{{ system.python }}</dd><dt>資料目錄</dt><dd>{{ system.disk.path }}</dd></dl></article>
           <p class="footnote">硬體資訊供資源評估使用。平台不依顯卡型號限制存取；模型能否執行仍取決於完整工作流程。</p>
         </template>
-        <form v-else-if="page === '設定'" class="panel settings" @submit.prevent="save"><h2>ComfyUI 連線</h2><p class="muted">先啟動 ComfyUI，再填入其服務位址。設定保存在本機資料庫。</p><label for="url">服務位址</label><input id="url" v-model="url" placeholder="http://127.0.0.1:8188" required type="url"><p class="muted">支援本機或你管理的遠端執行主機。</p><button class="primary" :disabled="saving">{{ saving ? '保存中…' : '保存並檢查連線' }}</button><p role="status">{{ message }}</p><p v-if="engine">{{ engine.connected ? 'ComfyUI 連線成功' : engine.error }}</p></form>
+        <template v-else-if="page === '設定'"><form class="panel settings" @submit.prevent="save"><h2>ComfyUI 連線</h2><p class="muted">先啟動 ComfyUI，再填入其服務位址。設定保存在本機資料庫。</p><label for="url">服務位址</label><input id="url" v-model="url" placeholder="http://127.0.0.1:8188" required type="url"><p class="muted">支援本機或你管理的遠端執行主機。</p><button class="primary" :disabled="saving">{{ saving ? '保存中…' : '保存並檢查連線' }}</button><p role="status">{{ message }}</p><p v-if="engine">{{ engine.connected ? 'ComfyUI 連線成功' : engine.error }}</p></form><LocalModelPaths :selected-engine-url="engine?.url || ''"/></template>
         <ModelLibrary v-else-if="page === '模型庫'" @settings="page = '設定'" />
         <AssetLibrary v-else-if="page === '參考素材'" />
         <ArtworkLibrary v-else-if="page === '作品庫'" :job-id="galleryJob" @studio="page = '創作工作台'" @restore="restoreArtwork" />

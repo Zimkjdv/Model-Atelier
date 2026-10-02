@@ -95,6 +95,20 @@ python -m venv runtime/ComfyUI/.venv
 
 平台主機的硬體取自 psutil / nvidia-smi，模型執行環境取自 ComfyUI `/system_stats`。引擎沒有提供的遠端磁碟資料顯示無法取得，不以本機磁碟代替。
 
+## 使用既有 checkpoint 目錄
+
+在設定頁的「本機模型目錄」登記最多八個既有的絕對目錄，每行一個，例如 `D:\AI\checkpoints`。目錄必須存在、可讀且位於本機磁碟；平台只保存目錄設定，不上傳、搬移、複製或刪除模型。預設 `runtime/ComfyUI/models/checkpoints` 仍保留，不須重複登記。
+
+此設定只供專案的 `start-comfyui.ps1` 啟動本機受管理 ComfyUI 使用，與設定頁選擇的遠端引擎分開。保存後先在原 ComfyUI 終端按 Ctrl+C，重新執行 `./start-comfyui.ps1`，再到模型庫同步。未重啟前不能當作引擎已讀到新目錄；只登記路徑也不表示檔案是有效模型或已通過生成驗收。
+
+啟動腳本以獨立匯出工具，從 SQLite 產生 `runtime/comfy-extra-model-paths.json`，再透過 ComfyUI 官方 `--extra-model-paths-config` 參數讀取。JSON 採相容 YAML 的格式，追加 checkpoint 搜尋目錄，不覆寫 ComfyUI 原本的 `extra_model_paths.yaml`。設定損壞、目錄遺失或匯出失敗會停止啟動並說明原因，避免繼續使用舊匯出檔。移除登記後須再重啟，不會刪除該目錄或模型檔。
+
+搜尋順序保留 ComfyUI 原目錄，再依登記順序追加。不同目錄內相同相對檔名可能被前面的檔案遮蔽；請避免重名，模型清單中的檔名不能單獨證明實際載入來源。平台不遞迴掃描或雜湊全部外部權重，模型版本及來源仍須正確登記。舊目錄目前不可讀或容量未知時，介面保留登記並提示原因，不以零容量代替未知。
+
+`GET /api/local-model-paths` 讀取本機目錄登記與狀態；`PUT /api/local-model-paths` 使用修訂號保存，衝突回傳 409，不覆寫其他視窗的修改。平台及 ComfyUI 重啟後仍從本機 `data/atelier.sqlite3` 讀取設定；備份 `data/` 會保存登記，外部模型檔案需另行備份。
+
+2026-10-03：170 項後端測試通過（1 項既有 Windows 權限跳過），Vue 型別檢查／建置通過。真實 ComfyUI 驗證含空白的額外目錄、原 Pony 清單保留，以及移除登記後重啟恢復原清單；77 bytes 的測試檔只驗證檔名列舉，未載入權重或新增生成任務。瀏覽器驗證修訂衝突、輸入保留與其他引擎的範圍提示；測試檔已清理，服務已停止。
+
 ## Pony V6 XL 本地安裝與驗收
 
 本專案提供固定來源的安裝指令，將作者 [AstraliteHeart/pony-diffusion-v6](https://huggingface.co/AstraliteHeart/pony-diffusion-v6) 的權重保存為 `runtime/ComfyUI/models/checkpoints/pony-v6-xl.safetensors`。來源固定在 commit `5ec9c05863255568f1b59753e3838107befaa712`，檔案為 6,938,041,050 bytes，SHA256 為 `67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3`；詳見 [來源 manifest](models/pony-v6-xl.json)。該修訂模型卡登記 `creativeml-openrail-m`，未附授權全文，本次僅記錄來源標記，完整條款尚未核對。
