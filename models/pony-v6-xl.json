@@ -1,0 +1,23 @@
+{
+  "id": "pony-v6-xl",
+  "name": "Pony Diffusion V6 XL",
+  "version": "V6 XL",
+  "architecture": "SDXL",
+  "source": {
+    "provider": "Hugging Face",
+    "repository": "AstraliteHeart/pony-diffusion-v6",
+    "revision": "5ec9c05863255568f1b59753e3838107befaa712",
+    "filename": "v6.safetensors",
+    "page_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6",
+    "download_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/resolve/5ec9c05863255568f1b59753e3838107befaa712/v6.safetensors"
+  },
+  "filename": "pony-v6-xl.safetensors",
+  "size_bytes": 6938041050,
+  "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+  "license": {
+    "identifier": "creativeml-openrail-m",
+    "source": "upstream repository card metadata",
+    "terms_verified": false,
+    "note": "上游登記的授權標記；尚未核對完整授權條款，不代表使用權或法律保證。"
+  }
+}

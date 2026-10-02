@@ -11,7 +11,8 @@
 - 創作工作台：正／負提示詞、尺寸、完整 seed、模型與取樣設定、畫布比例預覽，以及本機草稿保存與重載。
 - 參考素材：圖片上傳、預覽、搜尋、命名、封存／還原，以及草稿素材關聯。
 - 生成任務：標準 checkpoint 文生圖提交、任務查詢、重複請求防護及完整工作流程下載。
-- 作品庫：匯入已完成任務圖片、本機原圖與縮圖、搜尋、大圖預覽、生成參數及下載，並可載入支援流程的創作設定。尚未提供訓練或模型下載。
+- 作品庫：匯入已完成任務圖片、本機原圖與縮圖、搜尋、大圖預覽、生成參數及下載，並可載入支援流程的創作設定。
+- Pony V6 XL：固定作者來源的本地安裝器、大小與 SHA256 驗證，以及 RTX 3060 生成驗收工具。尚未提供訓練或通用模型下載管理。
 
 ## 本機安裝（PowerShell）
 
@@ -39,9 +40,9 @@ Windows 使用者也可以直接雙擊根目錄的 `start-all.bat`，它會開�
 
 | Port | 服務／用途 | 使用時機與啟動方式 | 查核狀態 |
 | --- | --- | --- | --- |
-| `8000` | Model Atelier 主平台：FastAPI API、建置後的 Vue 頁面、參考素材與作品圖片 | 日常使用；根目錄執行 `./start-local.ps1`，瀏覽 `http://127.0.0.1:8000/` | 本日未啟動 |
-| `8188` | ComfyUI：模型及取樣能力清單、生成任務、佇列／歷史、進度與輸出圖片讀取 | 生成、同步選項／模型或匯入圖片時使用；根目錄執行 `./start-comfyui.ps1` | 2026-10-02 真實能力同步驗證後已關閉 |
-| `5173`（預設） | Vite 前端開發伺服器：Vue 熱更新；`/api` 代理到 `8000` | 僅前端開發需要；在 `frontend/` 執行 `npm.cmd run dev` | 本日未查核占用狀態；實際開發網址以 Vite 終端輸出為準 |
+| `8000` | Model Atelier 主平台：FastAPI API、建置後的 Vue 頁面、參考素材與作品圖片 | 日常使用；根目錄執行 `./start-local.ps1`，瀏覽 `http://127.0.0.1:8000/` | 2026-10-02 生成及重啟驗收使用；驗收後停止 |
+| `8188` | ComfyUI：模型及取樣能力清單、生成任務、佇列／歷史、進度與輸出圖片讀取 | 生成、同步選項／模型或匯入圖片時使用；根目錄執行 `./start-comfyui.ps1` | 2026-10-02 Pony GPU 生成驗證後已關閉 |
+| `5173`（預設） | Vite 前端開發伺服器：Vue 熱更新；`/api` 代理到 `8000` | 僅前端開發需要；在 `frontend/` 執行 `npm.cmd run dev` | 本次查核未監聽；實際開發網址以 Vite 終端輸出為準 |
 | `8001`（臨時） | 隔離測試平台，使用暫存資料庫、測試圖片與模擬引擎 | 2026-10-02 作品設定、任務取消、進度與取樣選項瀏覽器驗證使用，非固定服務、非日常依賴 | 已停止監聽，隔離資料與臨時啟動腳本已清除 |
 
 日常使用只需啟動 `8000` 與 `8188`。介面、API、作品預覽共用 `8000`；已匯入的作品即使 ComfyUI 關閉仍可瀏覽。SQLite 是本機檔案，不占用網路連接埠；作品庫也不需要額外服務埠。
@@ -94,6 +95,30 @@ python -m venv runtime/ComfyUI/.venv
 
 平台主機的硬體取自 psutil / nvidia-smi，模型執行環境取自 ComfyUI `/system_stats`。引擎沒有提供的遠端磁碟資料顯示無法取得，不以本機磁碟代替。
 
+## Pony V6 XL 本地安裝與驗收
+
+本專案提供固定來源的安裝指令，將作者 [AstraliteHeart/pony-diffusion-v6](https://huggingface.co/AstraliteHeart/pony-diffusion-v6) 的權重保存為 `runtime/ComfyUI/models/checkpoints/pony-v6-xl.safetensors`。來源固定在 commit `5ec9c05863255568f1b59753e3838107befaa712`，檔案為 6,938,041,050 bytes，SHA256 為 `67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3`；詳見 [來源 manifest](models/pony-v6-xl.json)。該修訂模型卡登記 `creativeml-openrail-m`，未附授權全文，本次僅記錄來源標記，完整條款尚未核對。
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.install_pony
+```
+
+安裝器使用同目錄 `.part` 暫存檔，支援續傳，不建立第二份下載快取。完整大小與 SHA256 通過後才發布正式 checkpoint，並保存 `.provenance.json`。預設最多嘗試 3 次，需保留至少 2 GiB 可用空間。已存在且符合 hash 的正式檔直接沿用；不同正式檔拒絕覆蓋。`--restart` 只清空此模型的下載暫存檔，不覆蓋正式模型。安裝中止後可重跑續傳；若 `.install.lock` 殘留，先確認沒有安裝程序仍在執行，再移除該模型的鎖檔。
+
+啟動平台與 ComfyUI，至模型庫同步清單、選擇 `pony-v6-xl.safetensors` 後即可生成。權重與本機驗收報告都在 `runtime/`，不提交 Git。
+
+一般風景的可重跑驗收：
+
+```powershell
+.\.venv\Scripts\python.exe scripts/verify_local_generation.py --platform http://127.0.0.1:8000 --expected-engine http://127.0.0.1:8188 --checkpoint pony-v6-xl.safetensors --report runtime/pony-v6-xl-acceptance.json
+# 重啟平台後，只讀原作品與完整參數；不重新生成。
+.\.venv\Scripts\python.exe scripts/verify_local_generation.py --platform http://127.0.0.1:8000 --expected-engine http://127.0.0.1:8188 --checkpoint pony-v6-xl.safetensors --report runtime/pony-v6-xl-acceptance.json --verify-report
+```
+
+驗收只提交一個 UUID 任務，確認歷史成功後匯入作品，核對圖片、完整 seed、工作流程及設定還原。逾時或不明結果保留原任務 ID，不自動再次生成。耗時是提交到確認歷史的牆鐘時間，包含載入與查詢；VRAM 是定期取樣的觀察值，不等同精確峰值。768×768、單張、20 steps 只是本次測試設定，不代表所有解析度或硬體均已通過。
+
+2026-10-02 RTX 3060 實機通過生成、作品匯入、瀏覽器節點進度與設定載入，以及重啟後離線讀取；設定與測量範圍見 [驗收紀錄](docs/validation/pony-v6-xl-rtx3060.md)。重跑新的生成需明確指定新的報告檔名；既有報告使用 `--verify-report`，避免意外重複生成。
+
 ## 創作草稿
 
 創作工作台可以在未安裝模型時先保存構想。新草稿採用目前模型庫的偏好模型（若仍列在清單），支援另存新草稿、載入及未保存變更提示。切換平台頁面保留編輯內容；重新整理瀏覽器前需保存。
@@ -118,7 +143,7 @@ python -m venv runtime/ComfyUI/.venv
 
 模型庫另外顯示目前連接的 ComfyUI `/system_stats` 回報版本及官方 GitHub 專案連結；離線或無版本資料時顯示「未知」，不以 GitHub 最新版代替正在執行的版本。
 
-模型庫離線、資料合併、主機隔離與驗證錯誤已用模擬 ComfyUI 回應測試。2026-09-06 已在 RTX 3060 上完成真實 ComfyUI 連線與空 checkpoint 清單同步；尚未驗證實際模型載入與生成。
+模型庫離線、資料合併、主機隔離與驗證錯誤已用模擬 ComfyUI 回應測試。2026-09-06 完成真實 ComfyUI 連線與空 checkpoint 清單同步；2026-10-02 完成 Pony V6 XL 載入、GPU 生成及作品保存驗收。其他模型與 RTX 4080 尚待實測。
 
 本次環境：ComfyUI 0.34.0（commit `15eb748b3ec5f8a0a2d470b7fb280e2d7579f916`）、Python 3.12.10、PyTorch 2.14.0+cu130、NVIDIA 驅動 616.56。CUDA 矩陣運算及 `pip check` 通過，完整套件快照保存於本地 `runtime/comfyui-installed.txt`。
 
