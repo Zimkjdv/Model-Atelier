@@ -91,13 +91,14 @@ onUnmounted(() => { alive = false; ++refreshToken; ++settingsEpoch; refreshAbort
 
 <template>
   <div class="layout">
+    <a class="skip-link" href="#main-content">跳至主要內容</a>
     <aside>
       <a class="brand" href="#" @click.prevent="page = '系統資訊'"><span class="brand-icon">M</span><span>Model Atelier<small>個人 AI 創作工作台</small></span></a>
       <div class="nav-label">WORKSPACE</div>
-      <nav aria-label="主要導覽"><button v-for="(item, i) in pages" :key="item" :class="{ active: page === item }" @click="page = item"><span class="nav-icon">{{ ['◈', '▦', '▧', '◉', '⚙', '▨'][i] }}</span>{{ item }}</button></nav>
+      <nav aria-label="主要導覽"><button v-for="(item, i) in pages" :key="item" :class="{ active: page === item }" :aria-label="item" :aria-current="page === item ? 'page' : undefined" :title="item" @click="page = item"><span class="nav-icon" aria-hidden="true">{{ ['◈', '▦', '▧', '◉', '⚙', '▨'][i] }}</span>{{ item }}</button></nav>
       <div class="sidebar-footer"><span class="dot" :class="{ online: engine?.connected }"></span>{{ engine?.connected ? 'ComfyUI 已連線' : 'ComfyUI 未連線' }}<small>LOCAL STUDIO · v0.1</small></div>
     </aside>
-    <main>
+    <main id="main-content" tabindex="-1">
       <header><span>工作空間 <span class="slash">/</span> {{ page }}</span><span class="badge">本地部署</span></header>
       <section class="content">
         <div class="heading"><div><div class="eyebrow">YOUR CREATIVE ENVIRONMENT</div><h1>{{ page }}</h1><p>{{ page === '系統資訊' ? '了解你的創作環境，讓每一次實驗都有跡可循。' : page === '設定' ? '連接模型執行環境，建立你的個人工作空間。' : '從這裡開始，逐步建立你的創作流程。' }}</p></div><button v-if="page === '系統資訊'" class="secondary" :disabled="busy" @click="refresh()">{{ busy ? '更新中…' : '↻ 重新整理' }}</button></div>
