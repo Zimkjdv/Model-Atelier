@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import ModelValidation from './ModelValidation.vue'
 import { architectures, architectureLabel, fileHash, fileSize, metadataTime, parseFileSize, safeMetadataUrl, validArchitecture } from './modelMetadata'
 import type { Architecture, ModelMetadata } from './modelMetadata'
 type Model = ModelMetadata & { name: string; listed: boolean; notes: string; source_url: string; version?: string }
@@ -10,6 +11,8 @@ const catalog = ref<Catalog | null>(null), search = ref(''), filter = ref('all')
 const busy = ref(false), error = ref(''), feedback = ref('')
 const editing = ref<string | null>(null), notes = ref(''), source = ref('')
 const version = ref(''), engine = ref<Engine | null>(null)
+const validationName = ref('')
+const validationModel = computed(() => catalog.value?.models.find(model => model.name === validationName.value))
 const architecture = ref<Architecture>('unknown'), sizeBytes = ref(''), sha256 = ref('')
 const licenseName = ref(''), licenseUrl = ref('')
 const engineVersion = computed(() => {
@@ -133,6 +136,8 @@ onMounted(() => load())
             <dt>授權條款網址</dt><dd><a v-if="safeMetadataUrl(model.license_url)" :href="safeMetadataUrl(model.license_url)" target="_blank" rel="noopener noreferrer" class="source-link">查看登記條款 ↗</a><span v-else>未知</span></dd>
             <dt>資料最後更新</dt><dd>{{ metadataTime(model.metadata_updated_at) }}</dd>
           </dl></details>
+          <button type="button" class="secondary" @click="validationName = validationName === model.name ? '' : model.name">{{ validationName === model.name ? '收合驗證紀錄' : '查看流程驗證紀錄' }}</button>
+          <ModelValidation v-if="validationName === model.name && catalog" :engine-url="catalog.engine_url" :name="model.name" :refresh-key="validationModel?.metadata_updated_at || ''" />
           <div class="model-footer"><button class="secondary" :disabled="busy || editing !== null" @click="edit(model)">編輯資料</button><button class="primary" :disabled="busy || !model.listed || editing !== null || catalog?.selected === model.name" @click="update(model)">{{ catalog?.selected === model.name ? '✓ 偏好模型' : '設為偏好' }}</button></div>
         </template>
       </article>

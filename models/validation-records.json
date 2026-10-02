@@ -1,0 +1,28 @@
+{
+  "records": [{
+    "id": "pony-v6-xl-rtx3060-20261002",
+    "date": "2026-10-02",
+    "model": "Pony V6 XL",
+    "architecture": "sdxl",
+    "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+    "workflow": "checkpoint-text2image-v1",
+    "workload": "inference",
+    "gpu": "NVIDIA GeForce RTX 3060",
+    "vram_bytes": 12884901888,
+    "ram_gib": 63.94,
+    "os": "Windows 10 19045",
+    "python": "3.12.10",
+    "comfyui": "0.34.0",
+    "pytorch": "2.14.0+cu130",
+    "driver": "616.56",
+    "precision": "模型 float16；VAE bfloat16",
+    "offload": "ComfyUI 預設動態 VRAM，CPU offload 由引擎管理",
+    "settings": {"width": 768, "height": 768, "steps": 20, "cfg": 5.5, "sampler_name": "dpmpp_2m", "scheduler": "karras", "denoise": 1.0, "batch_size": 1},
+    "cold_wall_seconds": 22.880,
+    "warm_engine_seconds": 8.85,
+    "sampled_device_peak_bytes": 10451156992,
+    "sample_count": 12,
+    "reference": "docs/validation/pony-v6-xl-rtx3060.md",
+    "conditions": "單張一般風景；沒有 LoRA 或參考圖。冷啟動耗時包含載入、排隊及平台查詢；暖啟動耗時來自引擎，兩者量測定義不同。顯存為整個裝置的取樣最高用量，包含其他程序，可能漏掉瞬時峰值，不是最低顯存需求。"
+  }]
+}

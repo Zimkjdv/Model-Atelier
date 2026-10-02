@@ -309,7 +309,7 @@ class ModelPathTests(unittest.TestCase):
         (comfy / 'main.py').write_text('import json,sys\nfrom pathlib import Path\nPath("observed-arguments.json").write_text(json.dumps(sys.argv[1:]),encoding="utf-8")\n', encoding='utf-8')
         self.cli_database(dict(revision=1, updated_at=None, paths=[str(self.first)]))
         command = [shell, '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', str(self.root / 'start-comfyui.ps1')]
-        result = subprocess.run(command, capture_output=True, text=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW,
+        result = subprocess.run(command, capture_output=True, text=True, errors="replace", timeout=30, creationflags=subprocess.CREATE_NO_WINDOW,
                                 env=os.environ | {'PYTHONDONTWRITEBYTECODE': '1'})
         self.assertEqual(result.returncode, 0, result.stderr)
         marker = comfy / 'observed-arguments.json'
@@ -318,7 +318,7 @@ class ModelPathTests(unittest.TestCase):
         self.assertEqual(arguments[index + 1], str((self.root / 'runtime' / model_paths.EXPORT_NAME).resolve()))
         previous = marker.read_bytes()
         self.cli_database(dict(revision=2, updated_at=None, paths=[str(self.root / 'missing')]))
-        result = subprocess.run(command, capture_output=True, text=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW,
+        result = subprocess.run(command, capture_output=True, text=True, errors="replace", timeout=30, creationflags=subprocess.CREATE_NO_WINDOW,
                                 env=os.environ | {'PYTHONDONTWRITEBYTECODE': '1'})
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(marker.read_bytes(), previous)

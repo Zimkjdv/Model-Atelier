@@ -23,7 +23,7 @@ from starlette.concurrency import run_in_threadpool
 from uuid import UUID
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
-from backend import catalog, drafts, assets, submissions, gallery_api, model_profiles, model_paths, environment
+from backend import catalog, drafts, assets, submissions, gallery_api, model_profiles, model_paths, environment, validation_records
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -372,6 +372,7 @@ gallery_api.install(app, sys.modules[__name__])
 model_profiles.install(app, sys.modules[__name__])
 model_paths.install(app, sys.modules[__name__])
 environment.install(app, sys.modules[__name__])
+validation_records.install(app, sys.modules[__name__])
 
 
 if (ROOT / 'frontend' / 'dist').exists():

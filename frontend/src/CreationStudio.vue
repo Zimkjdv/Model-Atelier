@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onActivated, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
+import ModelValidation from './ModelValidation.vue'
 import { generationDefaults, newCreation } from './creationSettings'
 import type { ArtworkSettings, CreationForm, FailedJobSettings, GenerationFields } from './creationSettings'
 import { architectureLabel } from './modelMetadata'
@@ -254,6 +255,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
           </template>
           <p v-if="matchingProfile?.preset" class="footnote">預設僅在確認後套用。</p>
         </section>
+        <ModelValidation v-if="form.checkpoint" :engine-url="form.engine_url" :name="form.checkpoint" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
         <label for="draft-prompt">畫面描述 <small>{{ form.prompt.length }} / 20000</small></label><textarea id="draft-prompt" v-model="form.prompt" maxlength="20000" rows="7" placeholder="描述角色、場景、光線與你想呈現的畫面…"></textarea>
         <label for="draft-negative">負面提示詞 <small>{{ form.negative_prompt.length }} / 20000</small></label><textarea id="draft-negative" v-model="form.negative_prompt" maxlength="20000" rows="3" placeholder="描述希望避免的畫面特徵…"></textarea>
         <div class="size-presets"><button v-for="preset in [{label:'正方形',w:1024,h:1024},{label:'直式',w:832,h:1216},{label:'橫式',w:1216,h:832}]" :key="preset.label" type="button" class="secondary" @click="form.width=preset.w;form.height=preset.h">{{ preset.label }}</button></div>
