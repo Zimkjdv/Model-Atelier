@@ -9,6 +9,12 @@ type System = { host: string; os: string; python: string; updated_at: string; gp
 type Engine = { connected: boolean; url: string; error?: string; stats?: { system: { comfyui_version?: string; ram_total?: number; ram_free?: number }; devices: { name: string; vram_total?: number; vram_free?: number }[] } }
 const page = ref('系統資訊'), system = ref<System | null>(null), engine = ref<Engine | null>(null)
 const galleryJob = ref('')
+const restoreRequest = ref<{ artworkId: string; token: number } | null>(null)
+let restoreToken = 0
+function restoreArtwork(artworkId: string) {
+  restoreRequest.value = { artworkId, token: ++restoreToken }
+  page.value = '創作工作台'
+}
 const url = ref(''), error = ref(''), message = ref(''), busy = ref(false), saving = ref(false)
 const pages = ['創作工作台', '模型庫', '作品庫', '系統資訊', '設定', '參考素材']
 let timer: ReturnType<typeof setInterval> | undefined
@@ -60,7 +66,7 @@ onUnmounted(() => clearInterval(timer))
       <section class="content">
         <div class="heading"><div><div class="eyebrow">YOUR CREATIVE ENVIRONMENT</div><h1>{{ page }}</h1><p>{{ page === '系統資訊' ? '了解你的創作環境，讓每一次實驗都有跡可循。' : page === '設定' ? '連接模型執行環境，建立你的個人工作空間。' : '從這裡開始，逐步建立你的創作流程。' }}</p></div><button v-if="page === '系統資訊'" class="secondary" :disabled="busy" @click="refresh">{{ busy ? '更新中…' : '↻ 重新整理' }}</button></div>
         <p v-if="error && page === '系統資訊'" role="alert" class="notice warning">{{ error }}</p>
-        <KeepAlive><CreationStudio v-if="page === '創作工作台'" @models="page = '模型庫'" @assets="page = '參考素材'" @gallery="galleryJob = $event; page = '作品庫'" /></KeepAlive>
+        <KeepAlive><CreationStudio v-if="page === '創作工作台'" :restore-request="restoreRequest" @models="page = '模型庫'" @assets="page = '參考素材'" @gallery="galleryJob = $event; page = '作品庫'" /></KeepAlive>
         <template v-if="page === '系統資訊'">
           <div class="host-bar"><span class="chip">平台主機</span><strong>{{ system?.host ?? '讀取中' }}</strong><span class="muted">每 15 秒更新 · {{ system ? new Date(system.updated_at).toLocaleTimeString() : '等待資訊' }}</span></div>
           <div class="cards" v-if="system">
@@ -77,7 +83,7 @@ onUnmounted(() => clearInterval(timer))
         <form v-else-if="page === '設定'" class="panel settings" @submit.prevent="save"><h2>ComfyUI 連線</h2><p class="muted">先啟動 ComfyUI，再填入其服務位址。設定保存在本機資料庫。</p><label for="url">服務位址</label><input id="url" v-model="url" placeholder="http://127.0.0.1:8188" required type="url"><p class="muted">支援本機或你管理的遠端執行主機。</p><button class="primary" :disabled="saving">{{ saving ? '保存中…' : '保存並檢查連線' }}</button><p role="status">{{ message }}</p><p v-if="engine">{{ engine.connected ? 'ComfyUI 連線成功' : engine.error }}</p></form>
         <ModelLibrary v-else-if="page === '模型庫'" @settings="page = '設定'" />
         <AssetLibrary v-else-if="page === '參考素材'" />
-        <ArtworkLibrary v-else-if="page === '作品庫'" :job-id="galleryJob" @studio="page = '創作工作台'" />
+        <ArtworkLibrary v-else-if="page === '作品庫'" :job-id="galleryJob" @studio="page = '創作工作台'" @restore="restoreArtwork" />
       </section>
     </main>
   </div>

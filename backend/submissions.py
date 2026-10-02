@@ -4,7 +4,7 @@ from uuid import UUID
 import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
-from backend import jobs, catalog
+from backend import jobs, catalog, workflows
 
 
 class Submission(BaseModel):
@@ -93,15 +93,7 @@ def install(app, host):
             raise HTTPException(422, '第一版文生圖尚未套用參考素材，請先取消素材選取')
         if not value.checkpoint:
             raise HTTPException(422, '請先選擇 checkpoint')
-        workflow = {
-            '1': {'class_type': 'CheckpointLoaderSimple', 'inputs': {'ckpt_name': value.checkpoint}},
-            '2': {'class_type': 'CLIPTextEncode', 'inputs': {'text': value.prompt, 'clip': ['1', 1]}},
-            '3': {'class_type': 'CLIPTextEncode', 'inputs': {'text': '', 'clip': ['1', 1]}},
-            '4': {'class_type': 'EmptyLatentImage', 'inputs': {'width': value.width, 'height': value.height, 'batch_size': 1}},
-            '5': {'class_type': 'KSampler', 'inputs': {'model': ['1', 0], 'positive': ['2', 0], 'negative': ['3', 0], 'latent_image': ['4', 0], 'seed': int(value.seed), 'steps': 20, 'cfg': 7.0, 'sampler_name': 'euler', 'scheduler': 'normal', 'denoise': 1.0}},
-            '6': {'class_type': 'VAEDecode', 'inputs': {'samples': ['5', 0], 'vae': ['1', 2]}},
-            '7': {'class_type': 'SaveImage', 'inputs': {'images': ['6', 0], 'filename_prefix': 'ModelAtelier'}},
-        }
+        workflow = workflows.build(value.model_dump())
         return await submit(Submission(request_id=value.request_id, engine_url=value.engine_url, checkpoint=value.checkpoint, workflow=workflow))
 
     @app.get('/api/jobs')

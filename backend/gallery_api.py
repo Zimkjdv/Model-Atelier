@@ -8,7 +8,7 @@ from fastapi import HTTPException, Response
 from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 
-from backend import gallery, jobs
+from backend import gallery, jobs, catalog, workflows
 
 
 def install(app, host):
@@ -39,6 +39,38 @@ def install(app, host):
     def workflow(artwork_id: UUID):
         return Response(json.dumps(lookup(artwork_id)['workflow'], ensure_ascii=False, indent=2), media_type='application/json',
                         headers={'Content-Disposition': f'attachment; filename="{artwork_id}.json"'})
+
+    @app.get('/api/artworks/{artwork_id}/creation-settings')
+    def creation_settings(artwork_id: UUID):
+        item = lookup(artwork_id)
+        def validate(value):
+            return host.DraftInput.model_validate(value).model_dump(mode='json', exclude={'revision'})
+        try:
+            settings = workflows.extract(item, validate)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        original = catalog.read(host.DB, settings['engine_url'])
+        model = next((value for value in original['models'] if value['name'] == settings['checkpoint']), None)
+        matches = settings['engine_url'] == host.engine_url()
+        checkpoint_status = ('unknown' if original.get('synced_at') is None or original.get('sync_error')
+                             else 'available' if model and model.get('listed') else 'missing')
+        warnings = []
+        if not matches:
+            warnings.append('作品原引擎與目前設定不同；已保留原位址，生成前請先確認引擎設定')
+        if checkpoint_status == 'missing':
+            warnings.append('原 checkpoint 不在最近同步的模型清單；請先安裝模型或重新同步後確認')
+        elif checkpoint_status == 'unknown':
+            warnings.append('原引擎模型清單尚未同步或同步失敗；checkpoint 可用性待確認')
+        else:
+            warnings.append('checkpoint 僅在最近同步清單中，實際可用性將於生成前再次檢查')
+        version = item.get('model_version') or '未知'
+        if version == '未知':
+            warnings.append('原作品模型版本未知，無法確認目前 checkpoint 與原版本一致')
+        elif model and model.get('version') and model['version'] != version:
+            warnings.append('目前登記的模型版本與原作品不同；已保留原作品版本供比較')
+        return dict(artwork_id=str(artwork_id), settings=settings, model_version=version, warnings=warnings,
+                    availability=dict(current_engine_url=host.engine_url(), engine_matches=matches,
+                                      checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at')))
 
     @app.get('/api/artworks/{artwork_id}/image')
     def image(artwork_id: UUID, download: bool = False, thumbnail: bool = False):

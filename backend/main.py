@@ -15,7 +15,8 @@ from urllib.parse import urlsplit
 import httpx
 import psutil
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, JSONResponse
 from starlette.concurrency import run_in_threadpool
 from uuid import UUID
 from fastapi.staticfiles import StaticFiles
@@ -31,6 +32,13 @@ with closing(sqlite3.connect(DB)) as db, db:
 
 app = FastAPI(title='Model Atelier', version='0.1.0')
 catalog_lock = asyncio.Lock()
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(request: Request, exc: RequestValidationError):
+    # Raw invalid JSON numbers such as NaN cannot be echoed by a JSON response.
+    return JSONResponse(status_code=422, content={'detail': [
+        {key: error[key] for key in ('type', 'loc', 'msg')} for error in exc.errors()]})
 
 
 def engine_url():
@@ -199,11 +207,17 @@ class DraftInput(BaseModel):
     reference_ids: list[UUID] = Field(default_factory=list, max_length=8)
     title: str = Field(min_length=1, max_length=100)
     prompt: str = Field(default='', max_length=20000)
+    negative_prompt: str = Field(default='', max_length=20000)
     engine_url: str
     checkpoint: str = Field(default='', max_length=2048)
     width: int = Field(default=1024, ge=64, le=8192, multiple_of=8, strict=True)
     height: int = Field(default=1024, ge=64, le=8192, multiple_of=8, strict=True)
     seed: str = '0'
+    steps: int = Field(default=20, ge=1, le=150, strict=True)
+    cfg: float = Field(default=7.0, ge=0, le=30, strict=True, allow_inf_nan=False)
+    sampler_name: str = Field(default='euler', min_length=1, max_length=64, pattern=r'^[a-z][a-z0-9_]*$')
+    scheduler: str = Field(default='normal', min_length=1, max_length=64, pattern=r'^[a-z][a-z0-9_]*$')
+    denoise: float = Field(default=1.0, ge=0, le=1, strict=True, allow_inf_nan=False)
     revision: int | None = Field(default=None, ge=1)
 
     @field_validator('title')
@@ -237,7 +251,10 @@ def draft_payload(value):
 
 @app.get('/api/drafts')
 def list_drafts():
-    return drafts.list_all(DB)
+    # Supply the original generation defaults for old records without rewriting them.
+    defaults = {name: DraftInput.model_fields[name].default for name in
+                ('negative_prompt', 'steps', 'cfg', 'sampler_name', 'scheduler', 'denoise')}
+    return [defaults | item for item in drafts.list_all(DB)]
 
 
 @app.post('/api/drafts', status_code=201)

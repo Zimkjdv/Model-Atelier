@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue'
 const props = defineProps<{ jobId?: string }>()
-const emit = defineEmits<{ studio: [] }>()
+const emit = defineEmits<{ studio: []; restore: [artworkId: string] }>()
 type Parameters = { prompt: string | null; negative_prompt: string | null; seed: string | null; steps: number | null; cfg: number | null; sampler: string | null; scheduler: string | null; denoise: number | null }
 type Artwork = { id: string; job_id: string; title: string; checkpoint: string; model_version: string; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string }
 type Job = { id: string; status: string; checkpoint: string; created_at: string }
@@ -48,6 +48,10 @@ async function open(item: Artwork) {
   await nextTick()
   preview.value?.showModal()
 }
+function restore(item: Artwork) {
+  preview.value?.close()
+  emit('restore', item.id)
+}
 const imageUrl = (item: Artwork, thumbnail = false) => `/api/artworks/${item.id}/image${thumbnail ? '?thumbnail=true' : ''}`
 const importedCount = (job: Job) => items.value.filter(item => item.job_id === job.id).length
 onMounted(refresh)
@@ -71,7 +75,7 @@ onMounted(refresh)
     <button class="artwork-cover" :aria-label="'查看作品 ' + item.title" @click="open(item)"><img v-if="item.thumbnail_available" :src="imageUrl(item, true)" :alt="item.title" loading="lazy" @error="item.thumbnail_available = false"><span v-else>縮圖無法讀取 · 點此查看資料</span></button>
     <h2>{{ item.title }}</h2><p>{{ item.width }} × {{ item.height }} · {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p><p>{{ item.checkpoint }} · 版本 {{ item.model_version }}</p>
     <p v-if="!item.image_available" class="missing">原圖已遺失，請從備份還原；生成參數仍保留。</p>
-    <div class="artwork-actions"><button class="secondary" @click="open(item)">預覽與參數</button><a v-if="item.image_available" :href="imageUrl(item) + '?download=true'">下載原圖 ↓</a></div>
+    <div class="artwork-actions"><button class="secondary" @click="open(item)">預覽與參數</button><button class="secondary" @click="restore(item)">載入創作設定 →</button><a v-if="item.image_available" :href="imageUrl(item) + '?download=true'">下載原圖 ↓</a></div>
   </article></div>
   <dialog ref="preview" class="artwork-dialog" aria-labelledby="artwork-preview-title" @close="selected = null">
     <template v-if="selected"><div class="preview-heading"><h2 id="artwork-preview-title">{{ selected.title }}</h2><button class="secondary" autofocus @click="preview?.close()">關閉 ×</button></div>
@@ -79,7 +83,7 @@ onMounted(refresh)
         <div class="artwork-info"><h3>生成設定</h3><dl><dt>Checkpoint</dt><dd>{{ selected.checkpoint }}</dd><dt>模型版本（提交時登記）</dt><dd>{{ selected.model_version }}</dd><dt>圖片尺寸</dt><dd>{{ selected.width }} × {{ selected.height }}</dd><dt>Seed</dt><dd>{{ selected.parameters.seed ?? '未知' }}</dd><dt>Steps / CFG</dt><dd>{{ selected.parameters.steps ?? '未知' }} / {{ selected.parameters.cfg ?? '未知' }}</dd><dt>Sampler / Scheduler</dt><dd>{{ selected.parameters.sampler ?? '未知' }} / {{ selected.parameters.scheduler ?? '未知' }}</dd><dt>Denoise</dt><dd>{{ selected.parameters.denoise ?? '未知' }}</dd></dl>
         <h3>畫面描述</h3><p class="prompt">{{ selected.parameters.prompt ?? '無法從此工作流程解析，請查看完整 JSON。' }}</p><h3>負面提示詞</h3><p class="prompt">{{ selected.parameters.negative_prompt || '未設定或無法解析' }}</p>
         <details><summary>來源紀錄</summary><p>原引擎：{{ selected.engine_url }}</p><p>任務：{{ selected.job_id }}</p><p>提交：{{ new Date(selected.created_at).toLocaleString() }}</p><p>匯入：{{ new Date(selected.imported_at).toLocaleString() }}</p><p>原圖 SHA-256：{{ selected.sha256 }}</p></details>
-        <div class="artwork-actions"><a v-if="selected.image_available" :href="imageUrl(selected) + '?download=true'">下載原圖 ↓</a><a :href="`/api/artworks/${selected.id}/workflow`">下載完整工作流程</a><a :href="`/api/jobs/${selected.job_id}`" target="_blank" rel="noopener">原始任務 JSON ↗</a></div>
+        <div class="artwork-actions"><button class="primary" @click="restore(selected)">載入創作設定 →</button><a v-if="selected.image_available" :href="imageUrl(selected) + '?download=true'">下載原圖 ↓</a><a :href="`/api/artworks/${selected.id}/workflow`">下載完整工作流程</a><a :href="`/api/jobs/${selected.job_id}`" target="_blank" rel="noopener">原始任務 JSON ↗</a></div>
         </div></div></template>
   </dialog>
 </template>

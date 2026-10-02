@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref } from 'vue'
-const props = defineProps<{ form: { engine_url: string; checkpoint: string; reference_ids: string[] } }>()
+import type { CreationForm } from './creationSettings'
+const props = defineProps<{ form: CreationForm; blockedReason?: string; disabled?: boolean }>()
 const emit = defineEmits<{ gallery: [jobId: string] }>()
 type Job = { id: string; status: string; checkpoint: string; created_at: string; error?: string }
 const jobs = ref<Job[]>([]), busy = ref(false), error = ref('')
@@ -15,7 +16,7 @@ async function request(path: string, method = 'GET', body?: unknown) {
 }
 async function load() { jobs.value = await request('jobs') }
 async function generate() {
-  if (busy.value) return
+  if (busy.value || props.disabled || (!pending.value && props.blockedReason)) return
   busy.value = true; error.value = ''
   try {
     if (!pending.value) {
@@ -53,12 +54,13 @@ onBeforeUnmount(() => window.clearInterval(timer))
 <template>
   <article class="panel">
     <h2>生成任務</h2>
-    <p class="footnote">標準 checkpoint 文生圖 · 20 steps · Euler / normal · CFG 7 · 每次 1 張。工作流程與精確 seed 會保存到本機。</p>
+    <p class="footnote">標準 checkpoint 文生圖 · {{ form.steps }} steps · {{ form.sampler_name }} / {{ form.scheduler }} · CFG {{ form.cfg }} · denoise {{ form.denoise }} · 每次 1 張。工作流程與精確 seed 會保存到本機。</p>
     <p v-if="form.reference_ids.length" class="notice warning">尚未支援參考圖生成，請先取消素材選取。</p>
     <p v-else-if="!form.checkpoint" class="notice">請先安裝並同步 checkpoint，再選擇模型。</p>
+    <p v-if="blockedReason" class="notice warning">{{ blockedReason }}</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
     <p v-if="pending" class="notice warning">尚有未確認的提交 {{ pending.request_id }}。恢復時使用原始參數，重複請求不會再次入列。</p>
-    <button type="button" class="primary" :disabled="busy || (!pending && (!form.checkpoint || !!form.reference_ids.length))" @click="generate">{{ busy ? '處理中…' : pending ? '恢復原提交請求' : '生成圖片' }}</button>
+    <button type="button" class="primary" :disabled="busy || disabled || (!pending && (!form.checkpoint || !!form.reference_ids.length || !!blockedReason))" @click="generate">{{ busy ? '處理中…' : pending ? '恢復原提交請求' : '生成圖片' }}</button>
     <button type="button" class="secondary" :disabled="busy" @click="refresh">更新任務狀態</button>
     <p v-if="!jobs.length" class="footnote">尚無任務。生成結果暫存於 ComfyUI output，平台保留歷史 JSON。</p>
     <div v-for="job in jobs" :key="job.id" class="job">
