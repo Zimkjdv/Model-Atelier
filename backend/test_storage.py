@@ -45,7 +45,7 @@ class StorageTests(unittest.TestCase):
         self.assertFalse((self.root / 'missing').exists())
 
     def test_invalid_capacity_is_unknown_and_not_retried_per_directory(self):
-        for usage in (Usage(100, 1, 101), Usage(100, -1, 20), Usage(0, 0, 0), Usage(True, 0, 0)):
+        for usage in (Usage(100, 1, 101), Usage(100, 80, 40), Usage(100, -1, 20), Usage(0, 0, 0), Usage(True, 0, 0)):
             with (patch.object(storage, 'volume_identity', return_value=('v', 'root')),
                   patch.object(storage.shutil, 'disk_usage', return_value=usage) as disk):
                 result = storage.inventory([('a', self.a), ('b', self.b)])

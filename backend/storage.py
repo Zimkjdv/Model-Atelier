@@ -48,7 +48,8 @@ def inventory(directories):
                 try:
                     usage = shutil.disk_usage(resolved)
                     if (any(type(v) is not int or v < 0 for v in usage) or usage.total <= 0
-                            or usage.used > usage.total or usage.free > usage.total):
+                            or usage.used > usage.total or usage.free > usage.total
+                            or usage.used + usage.free > usage.total):
                         raise ValueError('Invalid disk capacity')
                     volume.update(total=usage.total, used=usage.used, free=usage.free, status='available')
                 except (OSError, ValueError):

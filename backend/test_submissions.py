@@ -18,6 +18,14 @@ def sampler_capabilities():
 
 
 class SubmissionTests(unittest.TestCase):
+    def test_malformed_node_type_returns_validation_error_without_engine_or_jobs(self):
+        for node_type in ([], {}, ['KSampler'], 1, None):
+            body = {key: self.payload()[key] for key in ('request_id', 'engine_url', 'checkpoint')}
+            body['workflow'] = {'1': {'class_type': node_type, 'inputs': {}}}
+            with patch('backend.submissions.httpx.AsyncClient', side_effect=AssertionError('no engine call')):
+                self.assertEqual(self.client.post('/api/jobs', json=body).status_code, 422)
+        self.assertEqual(self.client.get('/api/jobs').json(), [])
+
     setUp = test_api.ApiTests.setUp
     tearDown = test_api.ApiTests.tearDown
     def payload(self):

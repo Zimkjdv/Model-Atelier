@@ -23,7 +23,8 @@ class Submission(BaseModel):
             raise ValueError('工作流程不可超過 2 MiB')
         allowed = {'CheckpointLoaderSimple', 'CLIPTextEncode', 'EmptyLatentImage', 'KSampler', 'VAEDecode', 'SaveImage'}
         for node in value.values():
-            if not isinstance(node, dict) or node.get('class_type') not in allowed or not isinstance(node.get('inputs'), dict):
+            if (not isinstance(node, dict) or not isinstance(node.get('class_type'), str)
+                    or node['class_type'] not in allowed or not isinstance(node.get('inputs'), dict)):
                 raise ValueError('第一版僅接受標準 checkpoint 文生圖 API 工作流程，不支援自訂節點')
             if node['class_type'] == 'SaveImage' and node['inputs'].get('filename_prefix') != 'ModelAtelier':
                 raise ValueError('輸出檔名前綴必須為 ModelAtelier')

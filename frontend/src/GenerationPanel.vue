@@ -28,8 +28,10 @@ async function generate() {
   busy.value = true; error.value = ''
   try {
     if (!pending.value) {
-      pending.value = { ...JSON.parse(JSON.stringify(props.form)), request_id: crypto.randomUUID() }
-      localStorage.setItem('atelier-pending-submission', JSON.stringify(pending.value))
+      const candidate = { ...JSON.parse(JSON.stringify(props.form)), request_id: crypto.randomUUID() }
+      // Do not make an unpersisted request eligible for the recovery path.
+      localStorage.setItem('atelier-pending-submission', JSON.stringify(candidate))
+      pending.value = candidate
     }
     const response = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pending.value) })
     const data = await response.json()
