@@ -1,6 +1,7 @@
 import csv
 import asyncio
 import io
+import math
 import os
 import platform
 import shutil
@@ -22,7 +23,7 @@ from starlette.concurrency import run_in_threadpool
 from uuid import UUID
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
-from backend import catalog, drafts, assets, submissions, gallery_api, model_profiles, model_paths
+from backend import catalog, drafts, assets, submissions, gallery_api, model_profiles, model_paths, environment
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -92,10 +93,16 @@ def gpu_info():
                 continue
             def memory(value):
                 try:
-                    return int(float(value) * 1024 * 1024)
-                except ValueError:
+                    amount = float(value)
+                    return int(amount * 1024 * 1024) if math.isfinite(amount) and amount >= 0 and amount * 1024 * 1024 <= environment.MAX_NUMBER else None
+                except (ValueError, OverflowError):
                     return None
-            cards.append(dict(index=row[0], name=row[1], total=memory(row[2]), used=memory(row[3]), free=memory(row[4]), driver=row[5]))
+            total, used, free = (memory(value) for value in row[2:5])
+            total = total if total is not None and total > 0 else None
+            used = used if used is not None and (total is None or used <= total) else None
+            free = free if free is not None and (total is None or free <= total) else None
+            cards.append(dict(index=row[0], name=environment.text(row[1]), total=total, used=used, free=free,
+                              driver=environment.text(row[5], 80)))
         return cards, None if cards else '未偵測到 NVIDIA GPU'
     except (OSError, subprocess.TimeoutExpired):
         return [], '無法取得 NVIDIA 資訊：nvidia-smi 不可用或查詢逾時'
@@ -125,9 +132,17 @@ async def engine():
             stats = response.json()
         if not isinstance(stats, dict) or not isinstance(stats.get('system'), dict) or not isinstance(stats.get('devices'), list):
             raise ValueError('回應不是 ComfyUI 系統資訊')
-        return {'connected': True, 'url': url, 'stats': stats}
-    except (httpx.HTTPError, ValueError):
-        return {'connected': False, 'url': url, 'error': '無法連接 ComfyUI，請確認服務已啟動且位址正確。'}
+        diagnostics = environment.scoped_engine_diagnostics(stats, url, engine_url())
+        result = {'connected': True, 'url': url, 'stats': environment.compatible_stats(stats), 'diagnostics': diagnostics}
+        if not diagnostics['matches_selected_engine']:
+            result['error'] = '查詢期間引擎設定已變更，請重新整理'
+        return result
+    except httpx.HTTPError:
+        return {'connected': False, 'url': url, 'error': '無法連接 ComfyUI，請確認服務已啟動且位址正確。',
+                'diagnostics': environment.scoped_engine_diagnostics(None, url, engine_url(), status='offline')}
+    except ValueError:
+        return {'connected': False, 'url': url, 'error': 'ComfyUI 系統資訊格式無效，尚未確認引擎裝置。',
+                'diagnostics': environment.scoped_engine_diagnostics(None, url, engine_url(), status='invalid')}
 
 
 @app.get('/api/health')
@@ -356,6 +371,7 @@ submissions.install(app, sys.modules[__name__])
 gallery_api.install(app, sys.modules[__name__])
 model_profiles.install(app, sys.modules[__name__])
 model_paths.install(app, sys.modules[__name__])
+environment.install(app, sys.modules[__name__])
 
 
 if (ROOT / 'frontend' / 'dist').exists():
