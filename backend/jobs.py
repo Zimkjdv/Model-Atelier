@@ -6,6 +6,11 @@ from contextlib import closing
 from datetime import datetime, timedelta, timezone
 
 
+def display(value):
+    # Old failures remain unclassified; GETs must not rewrite or guess causes.
+    return dict(value, failure_info=value.get('failure_info'))
+
+
 def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, model_metadata=None):
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
@@ -14,10 +19,10 @@ def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, 
             value = json.loads(row[0])
             if any(value[k] != v for k, v in dict(engine_url=engine_url, workflow=workflow, checkpoint=checkpoint).items()):
                 raise ValueError('此請求 ID 已用於其他工作流程')
-            return value, False
+            return display(value), False
         value = dict(id=job_id, prompt_id=job_id, engine_url=engine_url, workflow=workflow,
                      checkpoint=checkpoint, model_version=model_version or '未知', model_metadata=deepcopy(model_metadata),
-                     status='validating', error=None, history=None,
+                     status='validating', error=None, history=None, failure_info=None,
                      revision=0, created_at=datetime.now(timezone.utc).isoformat())
         db.execute('INSERT INTO settings VALUES (?, ?)', ('job:' + job_id, json.dumps(value, ensure_ascii=False)))
         return value, True
@@ -28,7 +33,7 @@ def get(path, job_id):
         row = db.execute('SELECT value FROM settings WHERE key=?', ('job:' + job_id,)).fetchone()
     if not row:
         raise KeyError(job_id)
-    return json.loads(row[0])
+    return display(json.loads(row[0]))
 
 
 def _update(path, job_id, expected_revision, changes):
@@ -42,10 +47,10 @@ def _update(path, job_id, expected_revision, changes):
         value = json.loads(row[0])
         revision = value.get('revision', 0)
         if expected_revision is not None and revision != expected_revision:
-            return value, False
+            return display(value), False
         value.update(changes, revision=revision + 1, updated_at=datetime.now(timezone.utc).isoformat())
         db.execute('UPDATE settings SET value=? WHERE key=?', (json.dumps(value, ensure_ascii=False), 'job:' + job_id))
-    return value, True
+    return display(value), True
 
 
 def update(path, job_id, **changes):
@@ -84,4 +89,4 @@ def release_watch(path, job_id, owner):
 def list_all(path):
     with closing(sqlite3.connect(path)) as db:
         rows = db.execute("SELECT value FROM settings WHERE key LIKE 'job:%'").fetchall()
-    return sorted((json.loads(row[0]) for row in rows), key=lambda item: item['created_at'], reverse=True)
+    return sorted((display(json.loads(row[0])) for row in rows), key=lambda item: item['created_at'], reverse=True)

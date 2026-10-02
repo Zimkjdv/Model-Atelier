@@ -1,3 +1,5 @@
+import type { ModelMetadataSnapshot } from './modelMetadata'
+
 export type GenerationFields = {
   negative_prompt: string
   steps: number
@@ -23,6 +25,21 @@ export type ArtworkSettings = {
   settings: CreationForm
   model_version: string
   warnings: string[]
+  model_metadata?: ModelMetadataSnapshot | null
+}
+
+export type FailedJobSettings = {
+  job_id: string
+  settings: CreationForm
+  model_version: string
+  model_metadata: ModelMetadataSnapshot | null
+  warnings: string[]
+  availability: {
+    current_engine_url: string
+    engine_matches: boolean
+    checkpoint_status: 'available' | 'missing' | 'unknown'
+    catalog_synced_at: string | null
+  }
 }
 
 export const generationDefaults: GenerationFields = {

@@ -2,7 +2,7 @@
 import { computed, onActivated, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import { generationDefaults, newCreation } from './creationSettings'
-import type { ArtworkSettings, CreationForm, GenerationFields } from './creationSettings'
+import type { ArtworkSettings, CreationForm, FailedJobSettings, GenerationFields } from './creationSettings'
 import { architectureLabel } from './modelMetadata'
 import { presetFields, profileIdentity, validateProfile } from './modelProfiles'
 import type { ModelProfile } from './modelProfiles'
@@ -16,9 +16,11 @@ const emit = defineEmits<{ models: []; assets: []; gallery: [jobId: string] }>()
 const props = defineProps<{ restoreRequest?: { artworkId: string; token: number } | null }>()
 const form = reactive(newCreation())
 const id = ref<string | null>(null), revision = ref<number | null>(null), records = ref<Draft[]>([]), models = ref<Catalog | null>(null)
-type Restoration = { kind: 'artwork'; value: ArtworkSettings }
+type Restoration = { kind: 'artwork'; value: ArtworkSettings } | { kind: 'job'; value: FailedJobSettings }
+type SettingsOrigin = (ArtworkSettings & { kind: 'artwork' }) | (FailedJobSettings & { kind: 'job' })
 const busy = ref(false), restoring = ref(false), error = ref(''), message = ref(''), saved = ref(JSON.stringify(form)), pending = ref<Draft | 'new' | Restoration | null>(null)
-const origin = ref<ArtworkSettings | null>(null)
+const origin = ref<SettingsOrigin | null>(null)
+let restorationRequest = 0
 const dirty = computed(() => JSON.stringify(form) !== saved.value)
 const selected = computed(() => models.value?.engine_url === form.engine_url ? models.value.models.find(m => m.name === form.checkpoint) : undefined)
 const draftVersion = ref('')
@@ -75,12 +77,16 @@ async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> 
   return response.json()
 }
 function apply(record: Draft | 'new' | Restoration) {
+  ++restorationRequest; restoring.value = false
   presetChoice.value = null
   if (typeof record === 'object' && 'kind' in record) {
     Object.assign(form, newCreation(), record.value.settings, { reference_ids: [...record.value.settings.reference_ids] })
     id.value = null; revision.value = null; draftVersion.value = record.value.model_version || '未知'
-    origin.value = record.value; saved.value = ''; pending.value = null; error.value = ''
-    message.value = '作品設定已載入為新草稿，請保存或調整後按「生成圖片」。'
+    origin.value = record.kind === 'artwork' ? { ...record.value, kind: 'artwork' } : { ...record.value, kind: 'job' }
+    saved.value = ''; pending.value = null; error.value = ''
+    message.value = record.kind === 'job'
+      ? '失敗任務原設定已載入為新草稿。請手動調整，再按「生成圖片」建立新任務。'
+      : '作品設定已載入為新草稿，請保存或調整後按「生成圖片」。'
     return
   }
   origin.value = null
@@ -93,17 +99,36 @@ function apply(record: Draft | 'new' | Restoration) {
   }
   saved.value = JSON.stringify(form); pending.value = null; error.value = ''; message.value = ''
 }
-function choose(record: Draft | 'new') { if (dirty.value) pending.value = record; else apply(record) }
+function choose(record: Draft | 'new') {
+  ++restorationRequest; restoring.value = false
+  if (dirty.value) pending.value = record
+  else apply(record)
+}
 async function restoreArtwork(request: { artworkId: string; token: number }) {
+  const current = ++restorationRequest
   restoring.value = true; error.value = ''; message.value = ''
   try {
     const value = await api<ArtworkSettings>(`artworks/${request.artworkId}/creation-settings`)
-    if (props.restoreRequest?.token !== request.token) return
+    if (current !== restorationRequest || props.restoreRequest?.token !== request.token) return
     const record: Restoration = { kind: 'artwork', value }
     if (dirty.value) pending.value = record
     else apply(record)
-  } catch (e) { if (props.restoreRequest?.token === request.token) error.value = e instanceof Error ? e.message : '無法載入作品設定' }
-  finally { if (props.restoreRequest?.token === request.token) restoring.value = false }
+  } catch (e) { if (current === restorationRequest && props.restoreRequest?.token === request.token) error.value = e instanceof Error ? e.message : '無法載入作品設定' }
+  finally { if (current === restorationRequest) restoring.value = false }
+}
+async function restoreFailedJob(jobId: string) {
+  if (busy.value || restoring.value || pending.value) return
+  const current = ++restorationRequest
+  restoring.value = true; error.value = ''; message.value = ''
+  try {
+    const value = await api<FailedJobSettings>(`jobs/${jobId}/creation-settings`)
+    if (current !== restorationRequest) return
+    if (value.job_id !== jobId) throw new Error('讀取的設定與指定失敗任務不同，已保留目前草稿。')
+    const record: Restoration = { kind: 'job', value }
+    if (dirty.value) pending.value = record
+    else apply(record)
+  } catch (e) { if (current === restorationRequest) error.value = e instanceof Error ? e.message : '無法載入失敗任務設定' }
+  finally { if (current === restorationRequest) restoring.value = false }
 }
 watch(() => props.restoreRequest, request => { if (request) void restoreArtwork(request) }, { immediate: true })
 async function refreshProfile() {
@@ -191,7 +216,7 @@ function randomSeed() {
 }
 function beforeUnload(event: BeforeUnloadEvent) { if (dirty.value) { event.preventDefault(); event.returnValue = '' } }
 onMounted(() => { void refresh(); window.addEventListener('beforeunload', beforeUnload) })
-onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload); ++profileRequest; profileAbort?.abort() })
+onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload); ++profileRequest; ++restorationRequest; profileAbort?.abort() })
 onActivated(() => { if (form.engine_url) void refresh() })
 </script>
 
@@ -199,9 +224,9 @@ onActivated(() => { if (form.engine_url) void refresh() })
   <div class="studio">
     <div class="studio-toolbar"><span class="chip">創作草稿</span><span class="muted">{{ dirty ? '尚有未保存變更' : id ? '已保存 · 修訂 ' + revision : '新草稿' }}</span><button class="secondary" :disabled="busy || restoring" @click="choose('new')">＋ 新草稿</button><button class="secondary" :disabled="busy || restoring" @click="refresh">重新整理清單</button></div>
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p><p v-if="message" class="notice" role="status">{{ message }}</p>
-    <p v-if="restoring" class="notice" role="status">正在讀取作品設定…</p>
-    <div v-if="pending" class="notice warning" role="alert"><p>載入其他草稿或作品設定會取代目前未保存的內容。</p><button class="secondary" :disabled="busy || restoring" @click="pending = null">繼續編輯</button> <button class="secondary" :disabled="busy || restoring" @click="apply(pending)">捨棄變更並載入</button></div>
-    <div v-if="origin" class="notice" role="status"><p>來源作品版本：{{ origin.model_version }} · 已保留原引擎與生成設定。</p><p v-if="selected?.version && selected.version !== origin.model_version">模型庫目前登記版本：{{ selected.version }}。再次生成使用目前安裝的模型，請確認版本。</p><p v-for="warning in origin.warnings" :key="warning">{{ warning }}</p></div>
+    <p v-if="restoring" class="notice" role="status">正在讀取原始創作設定…</p>
+    <div v-if="pending" class="notice warning" role="alert"><p>載入其他草稿、作品或失敗任務設定會取代目前未保存的內容。</p><button class="secondary" :disabled="busy || restoring" @click="pending = null">繼續編輯</button> <button class="secondary" :disabled="busy || restoring" @click="apply(pending)">捨棄變更並載入</button></div>
+    <div v-if="origin" class="notice" role="status"><p>{{ origin.kind === 'job' ? '來源失敗任務 ' + origin.job_id.slice(0, 8) + ' · 提交時版本：' : '來源作品版本：' }}{{ origin.model_version }} · 已保留原引擎與生成設定。</p><p v-if="selected?.version && selected.version !== origin.model_version">模型庫目前登記版本：{{ selected.version }}。再次生成使用目前安裝的模型，請確認版本。</p><p v-for="warning in origin.warnings" :key="warning">{{ warning }}</p></div>
     <div class="studio-grid">
       <form class="panel editor" @submit.prevent="save()"><fieldset :disabled="busy || restoring">
         <label for="draft-title">草稿名稱</label><input id="draft-title" v-model="form.title" required maxlength="100">
@@ -243,7 +268,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
         </details>
         <div class="save-actions"><button class="primary" :disabled="!form.engine_url">{{ busy ? '處理中…' : '保存草稿' }}</button><button v-if="id" type="button" class="secondary" @click="save(true)">另存新草稿</button></div>
       </fieldset></form>
-      <div><GenerationPanel :form="form" :blocked-reason="submissionBlock" :disabled="busy || restoring || !!pending" @gallery="emit('gallery', $event)"/><article class="panel canvas-panel"><div class="panel-heading"><h2>畫布比例預覽</h2><span class="badge">{{ form.width }} × {{ form.height }}</span></div><div class="canvas-area"><div class="canvas" :style="{aspectRatio:aspect,width:`min(100%, ${Math.min(300, 320 * Number(form.width) / Number(form.height))}px)`}"><span>◈</span><p>為下一張作品留下構想</p><small>此處僅預覽比例，不是生成結果</small></div></div><p>使用「生成圖片」提交目前表單。保存草稿不會啟動 GPU 任務。</p></article>
+      <div><GenerationPanel :form="form" :blocked-reason="submissionBlock" :disabled="busy || restoring || !!pending" @gallery="emit('gallery', $event)" @restore-job="restoreFailedJob"/><article class="panel canvas-panel"><div class="panel-heading"><h2>畫布比例預覽</h2><span class="badge">{{ form.width }} × {{ form.height }}</span></div><div class="canvas-area"><div class="canvas" :style="{aspectRatio:aspect,width:`min(100%, ${Math.min(300, 320 * Number(form.width) / Number(form.height))}px)`}"><span>◈</span><p>為下一張作品留下構想</p><small>此處僅預覽比例，不是生成結果</small></div></div><p>使用「生成圖片」提交目前表單。保存草稿不會啟動 GPU 任務。</p></article>
       <article class="panel"><h2>已保存草稿 <span class="muted">{{ records.length }}</span></h2><p v-if="!records.length" class="muted">保存第一份草稿後，可以在這裡接續編輯。</p><button v-for="record in records" :key="record.id" class="draft-row" :class="{chosen:id===record.id}" :disabled="busy || restoring" @click="choose(record)"><strong>{{ record.title }}</strong><span>{{ record.width }} × {{ record.height }} · {{ new Date(record.updated_at).toLocaleString() }}</span><small>{{ record.checkpoint || '未選擇模型' }} · 版本 {{ record.model_version || '未知' }}</small></button></article></div>
     </div>
   </div>

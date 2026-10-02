@@ -11,7 +11,7 @@ from uuid import uuid4
 import httpx
 from fastapi import HTTPException
 
-from backend import jobs
+from backend import jobs, failures
 
 TERMINAL = {'completed', 'failed', 'cancelled'}
 CANCEL_STATES = {'cancelling', 'cancel_unknown'}
@@ -84,6 +84,8 @@ async def history_state(client, job):
     entry = data[job['prompt_id']]
     if not isinstance(entry, dict) or not isinstance(entry.get('status'), dict):
         raise ValueError('invalid history status')
+    if not failures.history_matches(job, entry):
+        raise ValueError('history prompt ownership mismatch')
     state = entry['status']
     if type(state.get('completed')) is not bool or state.get('status_str') not in ('success', 'error'):
         raise ValueError('invalid history outcome')
@@ -103,7 +105,9 @@ async def reconcile(host, client, job, state=UNOBSERVED):
     attempt = attempt_update(job, active_until=None, checked_at=now().isoformat())
     if historical is not None:
         # Preserve any result produced in the dequeue race; never label it cancelled.
+        failure_info = failures.from_history(job, entry) if historical == 'failed' else None
         return persist(host, job, status=historical if historical in TERMINAL else 'cancel_unknown', history=entry,
+                       failure_info=failure_info,
                        cancel_attempt=attempt | {'result': 'already_finished' if historical in TERMINAL else 'unconfirmed'},
                        error='ComfyUI 執行失敗，請查看任務 JSON' if historical == 'failed' else
                              UNCERTAIN if historical == 'unknown' else None)

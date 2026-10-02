@@ -35,7 +35,7 @@ ELIGIBLE = {'queued', 'running', 'unknown'}
 
 def summary(job):
     keys = ('id', 'prompt_id', 'engine_url', 'checkpoint', 'model_version',
-            'status', 'error', 'revision', 'created_at', 'updated_at', 'progress')
+            'status', 'error', 'failure_info', 'revision', 'created_at', 'updated_at', 'progress')
     return {key: job[key] for key in keys if key in job}
 
 

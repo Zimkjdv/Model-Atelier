@@ -7,7 +7,7 @@ from uuid import UUID
 import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
-from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles
+from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures
 
 
 class Submission(BaseModel):
@@ -75,12 +75,15 @@ def install(app, host):
         if not fresh:
             return job
         job_id = job['id']
-        def fail(code, message, **extra):
-            jobs.compare_update(host.DB, job, status='failed', error=message, **extra)
-            raise HTTPException(code, {'message': message, 'job_id': job_id})
+        def fail(code, message, failure_code='preflight_invalid', failure_info=None, **extra):
+            diagnostic = failure_info or failures.info(failure_code)
+            _, changed = jobs.compare_update(host.DB, job, status='failed', error=message, failure_info=diagnostic, **extra)
+            if not changed:
+                raise HTTPException(409, '任務狀態已由另一個請求更新，請重新查詢；未覆蓋新狀態或失敗原因')
+            raise HTTPException(code, {'message': message, 'job_id': job_id, 'failure_info': diagnostic})
         initial_compatibility = model_profiles.compatibility(metadata.get('architecture'))
         if not initial_compatibility['allows_submission']:
-            fail(422, initial_compatibility['message'])
+            fail(422, initial_compatibility['message'], 'unsupported_architecture')
         async with httpx.AsyncClient(timeout=15, trust_env=False) as client:
             try:
                 response = await client.get(value.engine_url + '/object_info/CheckpointLoaderSimple')
@@ -89,18 +92,18 @@ def install(app, host):
                 if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
                     raise ValueError('invalid checkpoint list')
             except httpx.RequestError:
-                fail(503, 'ComfyUI 離線或連線逾時，尚未提交任務')
+                fail(503, 'ComfyUI 離線或連線逾時，尚未提交任務', 'engine_offline')
             except (httpx.HTTPStatusError, KeyError, IndexError, TypeError, ValueError):
                 fail(502, 'ComfyUI 模型清單格式無效，尚未提交任務')
             if not names:
-                fail(409, 'ComfyUI 尚未安裝任何 checkpoint，請先安裝模型並同步模型庫')
+                fail(409, 'ComfyUI 尚未安裝任何 checkpoint，請先安裝模型並同步模型庫', 'no_checkpoints')
             if value.checkpoint not in names:
-                fail(409, '所選 checkpoint 已不存在，請重新同步模型庫')
+                fail(409, '所選 checkpoint 已不存在，請重新同步模型庫', 'checkpoint_missing')
             try:
                 live = await capabilities.fetch(client, value.engine_url)
                 capabilities.write(host.DB, value.engine_url, live)
             except httpx.RequestError:
-                fail(503, 'ComfyUI 取樣能力離線或查詢逾時，尚未提交任務；快照不能用於提交驗證')
+                fail(503, 'ComfyUI 取樣能力離線或查詢逾時，尚未提交任務；快照不能用於提交驗證', 'engine_offline')
             except httpx.HTTPStatusError as exc:
                 status = exc.response.status_code
                 fail(503 if status >= 500 else 502, f'無法讀取 ComfyUI KSampler 能力（HTTP {status}），尚未提交任務')
@@ -109,9 +112,9 @@ def install(app, host):
             try:
                 capabilities.validate_workflow(value.workflow, live)
             except ValueError as exc:
-                fail(422, str(exc))
+                fail(422, '工作流程參數未通過平台與原引擎能力驗證，尚未提交任務', preflight_error=str(exc))
             if value.engine_url != host.engine_url():
-                fail(409, '驗證期間引擎設定已變更，尚未提交任務；請重新載入模型庫與能力清單')
+                fail(409, '驗證期間引擎設定已變更，尚未提交任務；請重新載入模型庫與能力清單', 'engine_changed')
             # Metadata may change while fresh capabilities are being fetched.
             # Recheck registered architecture without replacing the immutable
             # submission snapshot or silently applying a suggested preset.
@@ -119,14 +122,19 @@ def install(app, host):
                                   if model['name'] == value.checkpoint), {})
             current_compatibility = model_profiles.compatibility(current_model.get('architecture'))
             if not current_compatibility['allows_submission']:
-                fail(422, '驗證期間模型架構登記已變更，尚未提交任務；' + current_compatibility['message'])
+                fail(422, '驗證期間模型架構登記已變更，尚未提交任務；' + current_compatibility['message'], 'unsupported_architecture')
             job = cancellation.persist(host, job, status='submitting')
             try:
                 response = await client.post(value.engine_url + '/prompt', json={
                     'prompt': value.workflow, 'prompt_id': job_id, 'client_id': job_id,
                     'extra_data': {'model_atelier_job_id': job_id}})
                 if response.status_code == 400:
-                    fail(422, 'ComfyUI 拒絕工作流程，請檢查節點與模型相容性', upstream_error=response.json())
+                    try:
+                        rejected = response.json()
+                    except ValueError:
+                        rejected = dict(http_status=400, body=response.text)
+                    fail(422, 'ComfyUI 拒絕工作流程，請檢查節點與模型相容性',
+                         failure_info=failures.from_rejection(job, rejected), upstream_error=rejected)
                 response.raise_for_status()
                 result = response.json()
                 prompt_id = str(UUID(result['prompt_id']))
@@ -159,6 +167,48 @@ def install(app, host):
     def workflow(job_id: UUID):
         return Response(json.dumps(lookup(job_id)['workflow'], ensure_ascii=False, indent=2), media_type='application/json', headers={'Content-Disposition': f'attachment; filename="{job_id}.json"'})
 
+    @app.get('/api/jobs/{job_id}/creation-settings')
+    def creation_settings(job_id: UUID):
+        job = lookup(job_id)
+        if job['status'] != 'failed':
+            raise HTTPException(409, '僅可載入已確認失敗任務的原設定；未提交或重送任何任務')
+        outputs = [node_id for node_id, node in job['workflow'].items()
+                   if isinstance(node, dict) and node.get('class_type') == 'SaveImage']
+        if len(outputs) != 1:
+            raise HTTPException(422, '此任務工作流程無法完整還原到目前創作表單，請下載原工作流程使用；未載入任何參數')
+        item = dict(workflow=job['workflow'], checkpoint=job['checkpoint'], engine_url=job['engine_url'],
+                    source={'node_id': outputs[0]}, title='失敗任務設定')
+        def validate(value):
+            return host.DraftInput.model_validate(value).model_dump(mode='json', exclude={'revision'})
+        try:
+            settings = workflows.extract(item, validate)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        original = catalog.read(host.DB, settings['engine_url'])
+        model = next((value for value in original['models'] if value['name'] == settings['checkpoint']), None)
+        current_engine = host.engine_url()
+        matches = settings['engine_url'] == current_engine
+        checkpoint_status = ('unknown' if original.get('synced_at') is None or original.get('sync_error')
+                             else 'available' if model and model.get('listed') else 'missing')
+        warnings = ['已保留失敗任務的原始設定；未提交或重送任務，確認並調整後請建立新請求。']
+        if not matches:
+            warnings.append('任務原引擎與目前設定不同；已保留原位址，生成前請先確認引擎設定')
+        if checkpoint_status == 'missing':
+            warnings.append('原 checkpoint 不在最近同步的模型清單；請先安裝模型或重新同步後確認')
+        elif checkpoint_status == 'unknown':
+            warnings.append('原引擎模型清單尚未同步或同步失敗；checkpoint 可用性待確認')
+        else:
+            warnings.append('checkpoint 僅在最近同步清單中，實際可用性將於生成前再次檢查')
+        version = job.get('model_version') or '未知'
+        if version == '未知':
+            warnings.append('原任務模型版本未知，無法確認目前 checkpoint 與原版本一致')
+        elif model and model.get('version') and model['version'] != version:
+            warnings.append('目前登記的模型版本與原任務不同；已保留原任務版本供比較')
+        return dict(job_id=str(job_id), settings=settings, model_version=version,
+                    model_metadata=job.get('model_metadata'), warnings=warnings,
+                    availability=dict(current_engine_url=current_engine, engine_matches=matches,
+                                      checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at')))
+
     @app.post('/api/jobs/{job_id}/cancel')
     async def cancel(job_id: UUID):
         async with job_lock(job_id):
@@ -189,7 +239,9 @@ def install(app, host):
             async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
                 status, entry = await cancellation.history_state(client, job)
                 if entry is not None:
-                    return cancellation.persist(host, job, status=status, history=entry, error='ComfyUI 執行失敗，請查看任務 JSON' if status == 'failed' else None)
+                    return cancellation.persist(host, job, status=status, history=entry,
+                                                failure_info=failures.from_history(job, entry) if status == 'failed' else None,
+                                                error='ComfyUI 執行失敗，請查看任務 JSON' if status == 'failed' else None)
                 response = await client.get(job['engine_url'] + '/queue')
                 response.raise_for_status()
                 queue = response.json()

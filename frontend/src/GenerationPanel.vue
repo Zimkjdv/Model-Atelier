@@ -3,7 +3,7 @@ import { onBeforeUnmount, ref } from 'vue'
 import type { CreationForm } from './creationSettings'
 import { mergeJob, terminal, useJobEvents, type Job } from './jobEvents'
 const props = defineProps<{ form: CreationForm; blockedReason?: string; disabled?: boolean }>()
-const emit = defineEmits<{ gallery: [jobId: string] }>()
+const emit = defineEmits<{ gallery: [jobId: string]; restoreJob: [jobId: string] }>()
 const jobs = ref<Job[]>([]), busy = ref(false), error = ref('')
 const cancelChoice = ref<string | null>(null)
 const pending = ref<Record<string, unknown> | null>(null)
@@ -80,7 +80,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
     <p v-else-if="!form.checkpoint" class="notice">請先安裝並同步 checkpoint，再選擇模型。</p>
     <p v-if="blockedReason" class="notice warning">{{ blockedReason }}</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
-    <p v-if="pending" class="notice warning">尚有未確認的提交 {{ pending.request_id }}。恢復時使用原始參數，重複請求不會再次入列。</p>
+    <p v-if="pending" class="notice warning">尚有未確認的提交 {{ pending.request_id }}。恢復時使用原始參數，重複請求不會再次入列。請先確認原提交，再載入失敗任務的設定。</p>
     <button type="button" class="primary" :disabled="busy || disabled || (!pending && (!form.checkpoint || !!form.reference_ids.length || !!blockedReason))" @click="generate">{{ busy ? '處理中…' : pending ? '恢復原提交請求' : '生成圖片' }}</button>
     <button type="button" class="secondary" :disabled="busy" @click="refresh">更新任務狀態</button>
     <button v-if="jobs.some(j => !terminal(j))" type="button" class="secondary" :disabled="busy" @click="reconnect">重新連線進度</button>
@@ -89,7 +89,16 @@ onBeforeUnmount(() => window.clearInterval(timer))
     <div v-for="job in jobs" :key="job.id" class="job">
       <strong>{{ labels[job.status] || job.status }}</strong> · {{ job.checkpoint }}
       <p class="footnote">{{ new Date(job.created_at).toLocaleString() }} · {{ job.id }}</p>
-      <p v-if="job.error" role="status">{{ job.error }}</p>
+      <section v-if="job.status === 'failed' && job.failure_info" class="failure-info" aria-label="任務失敗說明">
+        <h3>{{ job.failure_info.title }}</h3><p>{{ job.failure_info.message }}</p>
+        <ul v-if="job.failure_info.suggestions.length"><li v-for="(suggestion, index) in job.failure_info.suggestions" :key="index">{{ suggestion }}</li></ul>
+        <details v-if="job.failure_info.node_id || job.failure_info.node_type || job.failure_info.exception_type"><summary>技術識別資料</summary><dl>
+          <template v-if="job.failure_info.node_id"><dt>節點 ID</dt><dd>{{ job.failure_info.node_id }}</dd></template>
+          <template v-if="job.failure_info.node_type"><dt>節點類型</dt><dd>{{ job.failure_info.node_type }}</dd></template>
+          <template v-if="job.failure_info.exception_type"><dt>錯誤類型</dt><dd>{{ job.failure_info.exception_type }}</dd></template>
+        </dl></details>
+      </section>
+      <p v-else-if="job.error" role="status">{{ job.error }}</p>
       <div v-if="job.progress" class="node-progress">
         <p class="footnote">目前節點 {{ job.progress.node }} · {{ job.progress.percent == null ? '正在執行' : `${job.progress.percent}%（${job.progress.current} / ${job.progress.max}）` }}</p>
         <progress v-if="job.progress.percent != null" :value="job.progress.percent" max="100" :aria-label="`任務 ${job.id} 目前節點進度`"></progress>
@@ -98,6 +107,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <p v-if="!terminal(job)" class="footnote" role="status">{{ connections[job.id] ? connectionLabels[connections[job.id]!.state] : '使用狀態查詢' }}<template v-if="connections[job.id]?.message"> · {{ connections[job.id]!.message }}</template><template v-if="connections[job.id]?.state !== 'connected' && job.progress"> · 上次進度可能已過期</template></p>
       <template v-if="job.status === 'queued'"><button v-if="cancelChoice !== job.id" type="button" class="secondary" :disabled="busy" @click="cancelChoice = job.id">取消排隊</button><div v-else class="notice"><p>只移除這個任務的排隊項目。若它已開始執行，平台會保留任務並提示最新狀態。</p><button type="button" class="secondary" :disabled="busy" @click="cancelChoice = null">保留任務</button><button type="button" class="secondary" :disabled="busy" @click="cancel(job)">確認取消此任務</button></div></template>
       <button v-if="['cancelling', 'cancel_unknown'].includes(job.status)" type="button" class="secondary" :disabled="busy" @click="cancel(job)">確認取消結果</button>
+      <template v-if="job.status === 'failed'"><button type="button" class="secondary" :aria-label="`載入原設定並調整：${job.id}`" :disabled="busy || disabled || !!pending" @click="emit('restoreJob', job.id)">載入原設定並調整</button><p class="footnote">載入後可手動調整，再按「生成圖片」建立新任務。</p></template>
       <button v-if="job.status === 'completed'" class="secondary" @click="emit('gallery', job.id)">前往作品庫匯入圖片 →</button>
       <a :href="`/api/jobs/${job.id}/workflow`">下載完整工作流程</a> · <a :href="`/api/jobs/${job.id}`" target="_blank" rel="noopener">任務／歷史 JSON</a>
     </div>
@@ -106,4 +116,5 @@ onBeforeUnmount(() => window.clearInterval(timer))
 <style scoped>
 button{margin:4px 8px 10px 0}.job{border-top:1px solid #35403a;padding:15px 0;font-size:12px;overflow-wrap:anywhere}.job a{color:#c5dfba}
 .node-progress{margin:12px 0}progress{width:100%;height:8px;accent-color:#c5dfba}
+.failure-info{background:#2c2720;border:1px solid #625342;border-radius:8px;padding:14px;margin:12px 0}.failure-info h3{font-size:13px;margin:0;color:#ebc4a1}.failure-info p{line-height:1.7}.failure-info ul{padding-left:20px;line-height:1.8}.failure-info details{margin-top:12px}.failure-info summary{cursor:pointer;color:#c8bba9}.failure-info dl{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;font-size:11px}.failure-info dt{color:#b6a48d}.failure-info dd{margin:0;font-family:monospace}
 </style>
