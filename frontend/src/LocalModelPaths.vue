@@ -98,8 +98,8 @@ onMounted(() => { void load() })
     <p v-if="error" class="notice warning" role="alert">{{ error }}<span v-if="conflict"> 你的輸入已保留，請先決定是否重新讀取已保存設定。</span></p>
     <p v-if="feedback" class="notice success" role="status">{{ feedback }}</p>
     <div v-if="reloadChoice" class="notice warning" role="alert"><p>重新讀取會取代目前未保存的目錄文字。</p><div class="paths-actions"><button type="button" class="secondary" :disabled="busy" @click="reloadChoice = false">保留目前輸入</button><button type="button" class="secondary" :disabled="busy" @click="load">捨棄輸入並重新讀取</button></div></div>
-    <form @submit.prevent="save"><label for="local-checkpoint-paths">額外 checkpoint 目錄（每行一個，最多 8 個）</label><textarea id="local-checkpoint-paths" v-model="text" :disabled="busy || !data" rows="5" maxlength="32775" spellcheck="false" placeholder="D:\AI\Models\checkpoints&#10;E:\Shared Models\checkpoints"></textarea>
-      <p class="footnote">請填寫平台主機上已存在且可讀取的絕對目錄。刪除對應行即可移除此處登記；留空表示不追加本平台的目錄，ComfyUI 原有搜尋範圍仍保留。</p>
+    <form @submit.prevent="save"><label for="local-checkpoint-paths">額外 checkpoint 目錄（每行一個，最多 8 個）</label><textarea id="local-checkpoint-paths" aria-describedby="local-paths-help" v-model="text" :disabled="busy || !data" rows="5" maxlength="32775" spellcheck="false" placeholder="D:\AI\Models\checkpoints&#10;E:\Shared Models\checkpoints"></textarea>
+      <p id="local-paths-help" class="footnote">請填寫平台主機上已存在且可讀取的絕對目錄。刪除對應行即可移除此處登記；留空表示不追加本平台的目錄，ComfyUI 原有搜尋範圍仍保留。</p>
       <div class="paths-actions"><button class="primary" :disabled="busy || !data || !dirty || conflict">{{ busy ? '處理中…' : '保存模型目錄' }}</button><span class="muted">{{ pathCount }} / 8 個額外目錄 · {{ dirty ? '尚未保存' : '與保存設定一致' }}</span></div>
     </form>
     <template v-if="data">

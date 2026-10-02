@@ -60,6 +60,7 @@ onMounted(refresh)
 </script>
 
 <template>
+  <p v-if="busy" class="footnote" role="status">正在讀取或匯入作品，請稍候…</p>
   <article class="panel import-panel">
     <span class="chip">YOUR COLLECTION</span><h2>留下每一次創作</h2>
     <p>把已完成任務的圖片保存到作品庫。匯入後可離線瀏覽，並保留原圖與生成設定。</p>
@@ -71,13 +72,13 @@ onMounted(refresh)
   <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
   <p v-if="message" class="notice" role="status">{{ message }}</p>
   <ul v-if="failures.length" class="notice warning" role="alert"><li v-for="(failure, index) in failures" :key="index">{{ failure.source.filename }}：{{ failure.message }}</li></ul>
-  <div class="artwork-toolbar"><label for="artwork-search">搜尋作品<input id="artwork-search" v-model="search" type="search" placeholder="檔名、模型或畫面描述"></label><button class="secondary" :disabled="busy" @click="refresh">重新整理</button><span class="muted">{{ visible.length }} 張作品</span></div>
+  <div class="artwork-toolbar"><label for="artwork-search">搜尋作品<input id="artwork-search" v-model="search" type="search" placeholder="檔名、模型或畫面描述"></label><button class="secondary" :disabled="busy" @click="refresh">重新整理</button><span class="muted" role="status">{{ visible.length }} 張作品</span></div>
   <article v-if="!visible.length" class="panel placeholder"><h2>{{ busy ? '讀取作品中…' : items.length ? '沒有符合的作品' : '第一張作品，從一次生成開始' }}</h2><p>{{ items.length ? '試試其他搜尋文字。' : '完成生成後，選擇上方任務匯入圖片。作品會保存在這台平台主機。' }}</p></article>
   <div class="artwork-grid"><article v-for="item in visible" :key="item.id" class="panel artwork-card">
     <button class="artwork-cover" :aria-label="'查看作品 ' + item.title" @click="open(item)"><img v-if="item.thumbnail_available" :src="imageUrl(item, true)" :alt="item.title" loading="lazy" @error="item.thumbnail_available = false"><span v-else>縮圖無法讀取 · 點此查看資料</span></button>
     <h2>{{ item.title }}</h2><p>{{ item.width }} × {{ item.height }} · {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p><p>{{ item.checkpoint }} · 版本 {{ item.model_version }}</p>
     <p v-if="!item.image_available" class="missing">原圖已遺失，請從備份還原；生成參數仍保留。</p>
-    <div class="artwork-actions"><button class="secondary" @click="open(item)">預覽與參數</button><button class="secondary" @click="restore(item)">載入創作設定 →</button><a v-if="item.image_available" :href="imageUrl(item) + '?download=true'">下載原圖 ↓</a></div>
+    <div class="artwork-actions"><button class="secondary" :aria-label="'預覽與參數：' + item.title" @click="open(item)">預覽與參數</button><button class="secondary" :aria-label="'載入創作設定：' + item.title" @click="restore(item)">載入創作設定 →</button><a v-if="item.image_available" :href="imageUrl(item) + '?download=true'">下載原圖 ↓</a></div>
   </article></div>
   <dialog ref="preview" class="artwork-dialog" aria-labelledby="artwork-preview-title" @close="selected = null">
     <template v-if="selected"><div class="preview-heading"><h2 id="artwork-preview-title">{{ selected.title }}</h2><button class="secondary" autofocus @click="preview?.close()">關閉 ×</button></div>

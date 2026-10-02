@@ -102,11 +102,11 @@ onMounted(() => load())
     <div class="library-toolbar">
       <label class="search-label">搜尋模型<input v-model="search" type="search" placeholder="輸入 checkpoint 檔名"></label>
       <label>清單狀態<select v-model="filter"><option value="all">全部紀錄</option><option value="listed">最近清單內</option><option value="missing">最近清單未列出</option></select></label>
-      <span class="muted">{{ visible.length }} 個模型</span>
+      <span class="muted" role="status">{{ visible.length }} 個模型</span>
     </div>
     <p class="footnote">{{ catalog?.synced_at ? '最後成功同步：' + new Date(catalog.synced_at).toLocaleString() : '尚未成功同步' }} · 清單狀態為同步時的快照，並非即時可用性或架構相容性驗證。</p>
     <p class="footnote">以下為使用者登記資料，不代表平台已核對對應檔案、完整授權條款或流程相容性。</p>
-    <article v-if="!catalog && busy" class="panel placeholder"><h2>正在讀取模型紀錄…</h2></article>
+    <article v-if="!catalog && busy" class="panel placeholder" role="status"><h2>正在讀取模型紀錄…</h2></article>
     <article v-else-if="!catalog?.models.length" class="panel placeholder"><span class="outline-icon">▦</span><h2>{{ catalog?.synced_at ? 'ComfyUI 尚未列出 checkpoint' : '建立你的第一份模型清單' }}</h2><p>先啟動 ComfyUI 並確認其中已登記 checkpoint，<br>再按「同步模型清單」。平台不會自動下載模型。</p></article>
     <article v-else-if="!visible.length" class="panel placeholder"><h2>沒有符合條件的模型</h2><button class="secondary" @click="search = ''; filter = 'all'">清除篩選</button></article>
     <div class="model-grid">
@@ -120,7 +120,7 @@ onMounted(() => load())
           <label :for="'version-' + model.name">模型版本</label><input :id="'version-' + model.name" v-model="version" maxlength="100" placeholder="未填寫時顯示未知">
           <label :for="'architecture-' + model.name">模型架構（使用者登記）</label><select :id="'architecture-' + model.name" v-model="architecture"><option v-for="option in architectures" :key="option.value" :value="option.value">{{ option.label }}</option></select>
           <label :for="'size-' + model.name">檔案大小（bytes）</label><input :id="'size-' + model.name" v-model="sizeBytes" inputmode="numeric" maxlength="16" placeholder="正整數；留空表示未知">
-          <label :for="'hash-' + model.name">模型檔案 SHA-256</label><input :id="'hash-' + model.name" v-model="sha256" maxlength="64" autocomplete="off" spellcheck="false" placeholder="完整 64 位十六進位值；留空表示未知">
+          <label :for="'hash-' + model.name">模型檔案 SHA-256</label><input aria-describedby="model-hash-help" :id="'hash-' + model.name" v-model="sha256" maxlength="64" autocomplete="off" spellcheck="false" placeholder="完整 64 位十六進位值；留空表示未知"><p id="model-hash-help" class="footnote">請填完整 64 位十六進位 SHA256；留空為未知，登記不代表已驗證檔案。</p>
           <label :for="'source-' + model.name">來源網址</label><input :id="'source-' + model.name" v-model="source" type="url" maxlength="2048" placeholder="https://…">
           <label :for="'license-name-' + model.name">授權名稱／標記</label><input :id="'license-name-' + model.name" v-model="licenseName" maxlength="200" placeholder="依上游登記；留空表示未知">
           <label :for="'license-url-' + model.name">授權條款網址</label><input :id="'license-url-' + model.name" v-model="licenseUrl" type="url" maxlength="2048" placeholder="https://…">
