@@ -3,6 +3,9 @@ import { computed, onActivated, onBeforeUnmount, onMounted, reactive, ref, watch
 import GenerationPanel from './GenerationPanel.vue'
 import { generationDefaults, newCreation } from './creationSettings'
 import type { ArtworkSettings, CreationForm, GenerationFields } from './creationSettings'
+import { architectureLabel } from './modelMetadata'
+import { presetFields, profileIdentity, validateProfile } from './modelProfiles'
+import type { ModelProfile } from './modelProfiles'
 type Asset = { id: string; title: string; archived: boolean }
 type Draft = Omit<CreationForm, keyof GenerationFields> & Partial<GenerationFields> & { id: string; revision: number; model_version: string; updated_at: string }
 type Model = { name: string; listed: boolean; version?: string }
@@ -23,12 +26,32 @@ const references = ref<Asset[]>([])
 const modelVersion = computed(() => draftVersion.value || selected.value?.version || '未知')
 const available = computed(() => models.value?.engine_url === form.engine_url ? models.value.models.filter(m => m.listed) : [])
 const capabilities = ref<Capabilities | null>(null), capabilityBusy = ref(false), capabilityError = ref('')
+const profile = ref<ModelProfile | null>(null), profileBusy = ref(false), profileError = ref('')
+const presetChoice = ref<string | null>(null)
+let profileRequest = 0, profileAbort: AbortController | null = null
+const matchingProfile = computed(() => profile.value?.engine_url === form.engine_url && profile.value.name === form.checkpoint ? profile.value : null)
+const profileMessage = computed(() => matchingProfile.value?.compatibility.status === 'supported'
+  ? '適用目前文生圖流程；登記架構尚未驗證實際檔案。'
+  : matchingProfile.value?.compatibility.message ?? '')
+const presetValidationLabel = computed(() => matchingProfile.value?.preset?.id === 'pony-v6-xl-rtx3060-landscape'
+  ? '已驗：RTX 3060 單張風景'
+  : '起始參數，尚未逐模型實測')
+const presetReferenceUrl = computed(() => matchingProfile.value?.preset?.reference === 'docs/validation/pony-v6-xl-rtx3060.md'
+  ? 'https://github.com/Zimkjdv/Model-Atelier/blob/main/docs/validation/pony-v6-xl-rtx3060.md'
+  : '')
+const presetRows = computed(() => matchingProfile.value?.preset ? presetFields.map(field => ({
+  ...field, current: form[field.key], next: matchingProfile.value!.preset!.settings[field.key],
+  changed: form[field.key] !== matchingProfile.value!.preset!.settings[field.key],
+})) : [])
 let capabilityRequest = 0
 const matchingCapabilities = computed(() => capabilities.value?.engine_url === form.engine_url ? capabilities.value : null)
 const samplers = computed(() => matchingCapabilities.value?.sampler_names ?? [])
 const schedulers = computed(() => matchingCapabilities.value?.schedulers ?? [])
 const submissionBlock = computed(() => {
   if (models.value && models.value.engine_url !== form.engine_url) return '此草稿使用的引擎與目前設定不同。請到設定頁連接原引擎，再更新模型庫。'
+  if (form.checkpoint && profileBusy.value) return '正在確認模型工作流程資料，請稍候；草稿仍可保存。'
+  if (form.checkpoint && !matchingProfile.value) return profileError.value || '尚未取得此模型的工作流程資料，請更新後再生成；草稿仍可保存。'
+  if (matchingProfile.value && !matchingProfile.value.compatibility.allows_submission) return matchingProfile.value.compatibility.message
   if (capabilityBusy.value) return '正在更新引擎取樣選項，請稍候；草稿仍可保存。'
   const value = matchingCapabilities.value
   if (!value || !value.available) return '尚無此引擎的取樣能力資料。請啟動 ComfyUI 並更新引擎選項；草稿仍可保存。'
@@ -52,6 +75,7 @@ async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> 
   return response.json()
 }
 function apply(record: Draft | 'new' | Restoration) {
+  presetChoice.value = null
   if (typeof record === 'object' && 'kind' in record) {
     Object.assign(form, newCreation(), record.value.settings, { reference_ids: [...record.value.settings.reference_ids] })
     id.value = null; revision.value = null; draftVersion.value = record.value.model_version || '未知'
@@ -82,6 +106,53 @@ async function restoreArtwork(request: { artworkId: string; token: number }) {
   finally { if (props.restoreRequest?.token === request.token) restoring.value = false }
 }
 watch(() => props.restoreRequest, request => { if (request) void restoreArtwork(request) }, { immediate: true })
+async function refreshProfile() {
+  const request = ++profileRequest
+  profileAbort?.abort()
+  profileAbort = null; profile.value = null; presetChoice.value = null; profileError.value = ''
+  const engineUrl = form.engine_url, name = form.checkpoint
+  if (!engineUrl || !name) { profileBusy.value = false; return }
+  const controller = new AbortController()
+  profileAbort = controller; profileBusy.value = true
+  try {
+    const query = new URLSearchParams({ engine_url: engineUrl, name })
+    const response = await fetch('/api/models/profile?' + query, { signal: controller.signal })
+    const data = await response.json()
+    if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : '無法確認模型工作流程資料。')
+    const value = validateProfile(data as ModelProfile)
+    if (value.engine_url !== engineUrl || value.name !== name) throw new Error('模型工作流程資料與目前選擇不同，請重新更新。')
+    if (request === profileRequest && form.engine_url === engineUrl && form.checkpoint === name) profile.value = value
+  } catch (e) {
+    if (request === profileRequest && !controller.signal.aborted)
+      profileError.value = e instanceof Error ? e.message : '無法確認模型工作流程資料。'
+  } finally {
+    if (request === profileRequest) { profileBusy.value = false; profileAbort = null }
+  }
+}
+watch(() => [form.engine_url, form.checkpoint], () => { void refreshProfile() }, { immediate: true, flush: 'sync' })
+function choosePreset() {
+  const value = matchingProfile.value
+  if (profileBusy.value || !value?.preset || !value.compatibility.allows_submission) return
+  if (!presetRows.value.some(row => row.changed)) {
+    message.value = '目前參數已符合此模型預設。'
+    return
+  }
+  presetChoice.value = profileIdentity(value)
+}
+function confirmPreset() {
+  const value = matchingProfile.value
+  if (profileBusy.value || !value?.preset || !value.compatibility.allows_submission || presetChoice.value !== profileIdentity(value)) {
+    presetChoice.value = null
+    message.value = '模型資料已變更，請重新確認預設參數。'
+    return
+  }
+  const settings = value.preset.settings
+  form.width = settings.width; form.height = settings.height; form.steps = settings.steps
+  form.cfg = settings.cfg; form.sampler_name = settings.sampler_name
+  form.scheduler = settings.scheduler; form.denoise = settings.denoise
+  presetChoice.value = null
+  message.value = `已套用「${value.preset.name}」。請確認並保存草稿。`
+}
 async function refreshCapabilities(explicit = false) {
   const request = ++capabilityRequest
   capabilityBusy.value = true; capabilityError.value = ''
@@ -99,6 +170,7 @@ async function refresh() {
     const [list, catalog, assets] = await Promise.all([api<Draft[]>('drafts'), api<Catalog>('models'), api<Asset[]>('assets'), refreshCapabilities()])
     records.value = list; models.value = catalog; references.value = assets
     if (!form.engine_url && !dirty.value) apply('new')
+    await refreshProfile()
   } catch (e) { error.value = e instanceof Error ? e.message : '無法讀取草稿' }
   finally { busy.value = false }
 }
@@ -119,7 +191,7 @@ function randomSeed() {
 }
 function beforeUnload(event: BeforeUnloadEvent) { if (dirty.value) { event.preventDefault(); event.returnValue = '' } }
 onMounted(() => { void refresh(); window.addEventListener('beforeunload', beforeUnload) })
-onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
+onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload); ++profileRequest; profileAbort?.abort() })
 onActivated(() => { if (form.engine_url) void refresh() })
 </script>
 
@@ -137,6 +209,26 @@ onActivated(() => { if (form.engine_url) void refresh() })
         <p class="footnote">模型版本：{{ modelVersion }} · {{ form.engine_url || '等待讀取引擎設定' }}</p>
         <p v-if="!available.length" class="inline-note">目前沒有可選的 checkpoint。仍可先保存創作草稿。 <button type="button" class="text-button" @click="emit('models')">前往模型庫 →</button></p>
         <p v-else-if="form.checkpoint && !selected?.listed" class="inline-note">這份草稿的模型未在目前清單中，保留原設定供整理。</p>
+        <section v-if="form.checkpoint" class="model-profile" aria-label="模型工作流程與預設">
+          <div class="profile-heading"><h3>模型工作流程</h3><button type="button" class="secondary" :disabled="profileBusy" @click="refreshProfile">{{ profileBusy ? '更新中…' : '更新模型資料' }}</button></div>
+          <p v-if="profileBusy" role="status">正在確認此模型的登記架構與工作流程…</p>
+          <p v-else-if="profileError || !matchingProfile" role="alert" class="profile-warning">{{ profileError || '尚無此模型的工作流程資料。' }}</p>
+          <template v-else><p class="footnote">登記架構：{{ architectureLabel(matchingProfile.architecture) }}</p>
+            <p :class="{ 'profile-warning': matchingProfile.compatibility.status !== 'supported' }" role="status">{{ profileMessage }}</p>
+            <template v-if="matchingProfile.preset"><h3>{{ matchingProfile.preset.name }}</h3>
+              <p class="footnote">{{ presetValidationLabel }}</p>
+              <details class="preset-reference"><summary>預設來源與提示詞參考</summary>
+                <p>{{ matchingProfile.preset.description }}</p><p class="footnote">{{ matchingProfile.preset.validation }}</p>
+                <p v-if="presetReferenceUrl"><a :href="presetReferenceUrl" target="_blank" rel="noopener noreferrer">查看驗收紀錄 ↗</a></p>
+                <p v-if="matchingProfile.preset.prompt_hint" class="profile-hint">提示詞參考：{{ matchingProfile.preset.prompt_hint }}</p>
+              </details>
+              <details v-if="!presetChoice" class="preset-differences"><summary>預設參數與目前設定</summary><table><thead><tr><th scope="col">參數</th><th scope="col">目前</th><th scope="col">預設</th></tr></thead><tbody><tr v-for="row in presetRows" :key="row.key" :class="{ changed: row.changed }"><th scope="row">{{ row.label }}</th><td>{{ row.current }}</td><td>{{ row.next }}</td></tr></tbody></table></details>
+              <button v-if="!presetChoice" type="button" class="secondary apply-preset" :disabled="profileBusy || !matchingProfile.compatibility.allows_submission" @click="choosePreset">套用模型預設</button>
+              <div v-else class="preset-confirm" role="alert"><p>套用預設將取代下方參數，請確認差異。</p><table><thead><tr><th scope="col">參數</th><th scope="col">目前</th><th scope="col">套用後</th></tr></thead><tbody><tr v-for="row in presetRows" :key="row.key" :class="{ changed: row.changed }"><th scope="row">{{ row.label }}</th><td>{{ row.current }}</td><td>{{ row.next }}</td></tr></tbody></table><div class="preset-actions"><button type="button" class="primary" :disabled="profileBusy" @click="confirmPreset">套用並取代上述參數</button><button type="button" class="secondary" @click="presetChoice = null">保留目前設定</button></div></div>
+            </template><p v-else class="footnote">此模型尚無可套用的參數預設。</p>
+          </template>
+          <p v-if="matchingProfile?.preset" class="footnote">預設僅在確認後套用。</p>
+        </section>
         <label for="draft-prompt">畫面描述 <small>{{ form.prompt.length }} / 20000</small></label><textarea id="draft-prompt" v-model="form.prompt" maxlength="20000" rows="7" placeholder="描述角色、場景、光線與你想呈現的畫面…"></textarea>
         <label for="draft-negative">負面提示詞 <small>{{ form.negative_prompt.length }} / 20000</small></label><textarea id="draft-negative" v-model="form.negative_prompt" maxlength="20000" rows="3" placeholder="描述希望避免的畫面特徵…"></textarea>
         <div class="size-presets"><button v-for="preset in [{label:'正方形',w:1024,h:1024},{label:'直式',w:832,h:1216},{label:'橫式',w:1216,h:832}]" :key="preset.label" type="button" class="secondary" @click="form.width=preset.w;form.height=preset.h">{{ preset.label }}</button></div>
@@ -159,5 +251,6 @@ onActivated(() => { if (form.engine_url) void refresh() })
 
 <style scoped>
 .reference-list label{display:flex;align-items:center;gap:10px;overflow-wrap:anywhere}.reference-list input{width:16px;flex-shrink:0}.reference-list img{width:48px;height:48px;object-fit:contain;flex-shrink:0}
+.model-profile{border:1px solid #3d5143;background:#18231c;padding:16px;border-radius:9px;margin:18px 0;font-size:12px;overflow-wrap:anywhere}.model-profile h3{font-size:13px;margin:0}.profile-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-heading button{font-size:11px;padding:8px 10px}.profile-warning{color:#ebc4a1}.profile-hint{font-family:monospace;white-space:pre-wrap;line-height:1.7}.model-profile table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px}.model-profile th,.model-profile td{text-align:left;border-bottom:1px solid #34473a;padding:9px 6px;overflow-wrap:anywhere}.model-profile tbody th{font-weight:normal;color:#9fb1a5}.model-profile tr.changed td:last-child{color:#daebcb;font-weight:bold}.preset-confirm{background:#26362a;border:1px solid #607857;border-radius:7px;padding:12px;margin-top:14px}.preset-actions{display:flex;gap:10px;flex-wrap:wrap}.apply-preset{margin-top:14px}.model-profile .preset-differences{margin-top:14px}
 .studio-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px;font-size:12px}.studio-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px}.editor fieldset{border:0;padding:0;margin:0;min-width:0}.editor label{display:block;font-size:12px;margin:22px 0 10px}.editor label:first-child{margin-top:0}.editor label small{float:right;color:#8a9990}.editor select,.editor textarea{width:100%;padding:12px;background:#101517;color:#e5ebe7;border:1px solid #4c5855;border-radius:7px;font:inherit;font-size:13px}.editor textarea{resize:vertical;line-height:1.8}.editor select:focus-visible,.editor textarea:focus-visible{outline:2px solid #adceb0;outline-offset:3px}.size-fields{display:grid;grid-template-columns:1fr 1fr;gap:15px}.size-fields label{margin:14px 0}.size-fields input{margin-top:10px}.size-presets,.seed-field,.save-actions{display:flex;gap:10px;flex-wrap:wrap}.size-presets{margin-top:18px}.seed-field{flex-wrap:nowrap}.seed-field input{min-width:0}.seed-field button{flex-shrink:0}.save-actions{margin-top:24px}.inline-note{background:#202b24;border-radius:7px;padding:12px;font-size:12px}.text-button{padding:0;background:none;color:#c5dfba;font-size:12px}.editor details{border-top:1px solid #35403a;padding-top:18px;margin-top:10px}.editor summary{font-size:12px;cursor:pointer}.canvas-area{min-height:310px;display:grid;place-items:center;padding:25px 0}.canvas{width:min(100%,300px);min-height:0;background:linear-gradient(150deg,#2d3b31,#141c1a);border:1px dashed #6b8169;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px;overflow:hidden}.canvas>span{font-size:35px;color:#aec5a1}.canvas p{font-size:12px}.canvas small{font-size:10px;color:#8c9e93}.canvas-panel>p{font-size:11px}.draft-row{display:block;width:100%;text-align:left;background:#13191a;border:1px solid #303d37;border-radius:8px;color:#d9e5dc;margin-top:12px;padding:14px;overflow-wrap:anywhere}.draft-row.chosen{border-color:#9ebc90}.draft-row span,.draft-row small{display:block;font-size:10px;color:#94a79a;margin-top:8px}.draft-row strong{font-size:13px}@media(max-width:1100px){.studio-grid{grid-template-columns:1fr}}@media(max-width:700px){.canvas-panel .panel-heading{align-items:start;flex-direction:column}.studio-toolbar .muted{flex-basis:60%}}
 </style>

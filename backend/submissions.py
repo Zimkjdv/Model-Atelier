@@ -7,7 +7,7 @@ from uuid import UUID
 import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
-from backend import jobs, catalog, workflows, cancellation, progress, capabilities
+from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles
 
 
 class Submission(BaseModel):
@@ -78,6 +78,9 @@ def install(app, host):
         def fail(code, message, **extra):
             jobs.compare_update(host.DB, job, status='failed', error=message, **extra)
             raise HTTPException(code, {'message': message, 'job_id': job_id})
+        initial_compatibility = model_profiles.compatibility(metadata.get('architecture'))
+        if not initial_compatibility['allows_submission']:
+            fail(422, initial_compatibility['message'])
         async with httpx.AsyncClient(timeout=15, trust_env=False) as client:
             try:
                 response = await client.get(value.engine_url + '/object_info/CheckpointLoaderSimple')
@@ -109,6 +112,14 @@ def install(app, host):
                 fail(422, str(exc))
             if value.engine_url != host.engine_url():
                 fail(409, '驗證期間引擎設定已變更，尚未提交任務；請重新載入模型庫與能力清單')
+            # Metadata may change while fresh capabilities are being fetched.
+            # Recheck registered architecture without replacing the immutable
+            # submission snapshot or silently applying a suggested preset.
+            current_model = next((model for model in catalog.read(host.DB, value.engine_url)['models']
+                                  if model['name'] == value.checkpoint), {})
+            current_compatibility = model_profiles.compatibility(current_model.get('architecture'))
+            if not current_compatibility['allows_submission']:
+                fail(422, '驗證期間模型架構登記已變更，尚未提交任務；' + current_compatibility['message'])
             job = cancellation.persist(host, job, status='submitting')
             try:
                 response = await client.post(value.engine_url + '/prompt', json={
