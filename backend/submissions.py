@@ -1,10 +1,13 @@
 """Checkpoint text-to-image API and pinned-engine job reconciliation."""
 import json
+import asyncio
+from datetime import datetime, timedelta, timezone
+from weakref import WeakValueDictionary
 from uuid import UUID
 import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
-from backend import jobs, catalog, workflows
+from backend import jobs, catalog, workflows, cancellation
 
 
 class Submission(BaseModel):
@@ -28,6 +31,11 @@ class Submission(BaseModel):
 
 
 def install(app, host):
+    locks = WeakValueDictionary()
+
+    def job_lock(job_id):
+        return locks.setdefault(str(job_id), asyncio.Lock())
+
     class Generate(host.DraftInput):
         request_id: UUID
 
@@ -38,6 +46,10 @@ def install(app, host):
             raise HTTPException(404, '找不到任務')
 
     async def submit(value):
+        async with job_lock(value.request_id):
+            return await submit_locked(value)
+
+    async def submit_locked(value):
         if value.engine_url != host.engine_url():
             raise HTTPException(409, '引擎設定已變更，請重新載入模型庫')
         loaders = [n['inputs'].get('ckpt_name') for n in value.workflow.values() if n['class_type'] == 'CheckpointLoaderSimple']
@@ -52,7 +64,7 @@ def install(app, host):
             return job
         job_id = job['id']
         def fail(code, message, **extra):
-            jobs.update(host.DB, job_id, status='failed', error=message, **extra)
+            jobs.compare_update(host.DB, job, status='failed', error=message, **extra)
             raise HTTPException(code, {'message': message, 'job_id': job_id})
         async with httpx.AsyncClient(timeout=15, trust_env=False) as client:
             try:
@@ -69,7 +81,7 @@ def install(app, host):
                 fail(409, 'ComfyUI 尚未安裝任何 checkpoint，請先安裝模型並同步模型庫')
             if value.checkpoint not in names:
                 fail(409, '所選 checkpoint 已不存在，請重新同步模型庫')
-            jobs.update(host.DB, job_id, status='submitting')
+            job = cancellation.persist(host, job, status='submitting')
             try:
                 response = await client.post(value.engine_url + '/prompt', json={
                     'prompt': value.workflow, 'prompt_id': job_id, 'client_id': job_id,
@@ -80,8 +92,8 @@ def install(app, host):
                 result = response.json()
                 prompt_id = str(UUID(result['prompt_id']))
             except (httpx.RequestError, httpx.HTTPStatusError, ValueError, KeyError, TypeError):
-                return jobs.update(host.DB, job_id, status='unknown', error='提交結果待確認；請查詢狀態，不要重新生成')
-            return jobs.update(host.DB, job_id, status='queued', prompt_id=prompt_id, submission=result)
+                return jobs.compare_update(host.DB, job, status='unknown', error='提交結果待確認；請查詢狀態，不要重新生成')[0]
+            return jobs.compare_update(host.DB, job, status='queued', prompt_id=prompt_id, submission=result)[0]
 
     async def submit_endpoint(value: Submission):
         return await submit(value)
@@ -108,11 +120,32 @@ def install(app, host):
     def workflow(job_id: UUID):
         return Response(json.dumps(lookup(job_id)['workflow'], ensure_ascii=False, indent=2), media_type='application/json', headers={'Content-Disposition': f'attachment; filename="{job_id}.json"'})
 
+    @app.post('/api/jobs/{job_id}/cancel')
+    async def cancel(job_id: UUID):
+        async with job_lock(job_id):
+            return await cancellation.cancel(host, lookup(job_id))
+
     @app.post('/api/jobs/{job_id}/refresh')
     async def refresh(job_id: UUID):
+        async with job_lock(job_id):
+            return await refresh_locked(job_id)
+
+    async def refresh_locked(job_id):
         job = lookup(job_id)
-        if job['status'] in ('completed', 'failed'):
+        if job['status'] in cancellation.TERMINAL:
             return job
+        if job['status'] in ('validating', 'submitting'):
+            # Do not promote a live submission from a second worker. After a
+            # process crash, the bounded guard expires so its original UUID can
+            # still be reconciled from the upstream queue/history without replay.
+            try:
+                started = datetime.fromisoformat(job.get('updated_at', job['created_at']))
+                if datetime.now(timezone.utc) - started < timedelta(seconds=60):
+                    return job
+            except (TypeError, ValueError):
+                pass
+        if job['status'] in cancellation.CANCEL_STATES:
+            return await cancellation.refresh(host, job)
         try:
             async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
                 response = await client.get(job['engine_url'] + '/history/' + job['prompt_id'])
@@ -124,7 +157,7 @@ def install(app, host):
                 if entry:
                     state = entry['status']
                     status = 'failed' if state.get('status_str') == 'error' else 'completed' if state.get('completed') is True else 'unknown'
-                    return jobs.update(host.DB, str(job_id), status=status, history=entry, error='ComfyUI 執行失敗，請查看任務 JSON' if status == 'failed' else None)
+                    return cancellation.persist(host, job, status=status, history=entry, error='ComfyUI 執行失敗，請查看任務 JSON' if status == 'failed' else None)
                 response = await client.get(job['engine_url'] + '/queue')
                 response.raise_for_status()
                 queue = response.json()
@@ -132,8 +165,8 @@ def install(app, host):
                     if not isinstance(queue[key], list):
                         raise ValueError()
                     for item in queue[key]:
-                        if item[1] == job['prompt_id'] or (isinstance(item[3], dict) and item[3].get('model_atelier_job_id') == job['id']):
-                            return jobs.update(host.DB, str(job_id), status=state, prompt_id=str(UUID(item[1])), error=None)
-                return jobs.update(host.DB, str(job_id), status='unknown', error='引擎佇列與歷史中找不到任務；可能已清除或重啟，請勿自動重送')
+                        if item[1] == job['prompt_id']:
+                            return cancellation.persist(host, job, status=state, error=None)
+                return cancellation.persist(host, job, status='unknown', error='引擎佇列與歷史中找不到任務；可能已清除或重啟，請勿自動重送')
         except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError):
             raise HTTPException(503, '無法查詢原 ComfyUI 引擎；已保留任務原狀態與工作流程')

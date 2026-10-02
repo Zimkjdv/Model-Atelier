@@ -16,7 +16,7 @@ def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None):
             return value, False
         value = dict(id=job_id, prompt_id=job_id, engine_url=engine_url, workflow=workflow,
                      checkpoint=checkpoint, model_version=model_version or '未知', status='validating', error=None, history=None,
-                     created_at=datetime.now(timezone.utc).isoformat())
+                     revision=0, created_at=datetime.now(timezone.utc).isoformat())
         db.execute('INSERT INTO settings VALUES (?, ?)', ('job:' + job_id, json.dumps(value, ensure_ascii=False)))
         return value, True
 
@@ -29,13 +29,28 @@ def get(path, job_id):
     return json.loads(row[0])
 
 
-def update(path, job_id, **changes):
+def _update(path, job_id, expected_revision, changes):
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
-        value = json.loads(db.execute('SELECT value FROM settings WHERE key=?', ('job:' + job_id,)).fetchone()[0])
-        value.update(changes, updated_at=datetime.now(timezone.utc).isoformat())
+        row = db.execute('SELECT value FROM settings WHERE key=?', ('job:' + job_id,)).fetchone()
+        if row is None:
+            raise KeyError(job_id)
+        value = json.loads(row[0])
+        revision = value.get('revision', 0)
+        if expected_revision is not None and revision != expected_revision:
+            return value, False
+        value.update(changes, revision=revision + 1, updated_at=datetime.now(timezone.utc).isoformat())
         db.execute('UPDATE settings SET value=? WHERE key=?', (json.dumps(value, ensure_ascii=False), 'job:' + job_id))
-    return value
+    return value, True
+
+
+def update(path, job_id, **changes):
+    return _update(path, job_id, None, changes)[0]
+
+
+def compare_update(path, snapshot, **changes):
+    """Reject stale remote observations without overwriting a newer job state."""
+    return _update(path, snapshot['id'], snapshot.get('revision', 0), changes)
 
 
 def list_all(path):

@@ -5,9 +5,11 @@ const props = defineProps<{ form: CreationForm; blockedReason?: string; disabled
 const emit = defineEmits<{ gallery: [jobId: string] }>()
 type Job = { id: string; status: string; checkpoint: string; created_at: string; error?: string }
 const jobs = ref<Job[]>([]), busy = ref(false), error = ref('')
+const cancelChoice = ref<string | null>(null)
 const pending = ref<Record<string, unknown> | null>(null)
 try { pending.value = JSON.parse(localStorage.getItem('atelier-pending-submission') || 'null') } catch { /* No valid saved request. */ }
-const labels: Record<string, string> = { validating: '確認模型中', submitting: '提交中', queued: '等待生成', running: '生成中', completed: '已完成', failed: '失敗', unknown: '結果待確認' }
+const labels: Record<string, string> = { validating: '確認模型中', submitting: '提交中', queued: '等待生成', running: '生成中', completed: '已完成', failed: '失敗', unknown: '結果待確認', cancelling: '確認取消中', cancel_unknown: '取消結果待確認', cancelled: '已取消排隊' }
+const terminal = (job: Job) => ['completed', 'failed', 'cancelled'].includes(job.status)
 async function request(path: string, method = 'GET', body?: unknown) {
   const response = await fetch('/api/' + path, { method, headers: { 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) })
   const data = await response.json()
@@ -42,13 +44,25 @@ async function refresh() {
   busy.value = true; error.value = ''
   try {
     await load()
-    for (const job of jobs.value.filter(j => !['completed', 'failed'].includes(j.status))) await request(`jobs/${job.id}/refresh`, 'POST')
+    const failures: string[] = []
+    for (const job of jobs.value.filter(j => !terminal(j))) {
+      try { await request(`jobs/${job.id}/refresh`, 'POST') }
+      catch (e) { failures.push(`${job.id.slice(0, 8)}：${e instanceof Error ? e.message : '查詢失敗'}`) }
+    }
     await load()
+    error.value = failures.slice(0, 3).join('；') + (failures.length > 3 ? `；另有 ${failures.length - 3} 筆查詢失敗` : '')
   } catch (e) { error.value = e instanceof Error ? e.message : '查詢失敗' }
   finally { busy.value = false }
 }
+async function cancel(job: Job) {
+  if (busy.value) return
+  busy.value = true; error.value = ''; cancelChoice.value = null
+  try { await request(`jobs/${job.id}/cancel`, 'POST'); await load() }
+  catch (e) { error.value = e instanceof Error ? e.message : '無法確認取消結果'; await load().catch(() => {}) }
+  finally { busy.value = false }
+}
 onMounted(() => { void load().catch(e => { error.value = e.message }) })
-let timer = window.setInterval(() => { if (jobs.value.some(j => ['queued', 'running'].includes(j.status))) void refresh() }, 5000)
+let timer = window.setInterval(() => { if (jobs.value.some(j => ['queued', 'running', 'cancelling', 'cancel_unknown'].includes(j.status))) void refresh() }, 5000)
 onBeforeUnmount(() => window.clearInterval(timer))
 </script>
 <template>
@@ -67,6 +81,8 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <strong>{{ labels[job.status] || job.status }}</strong> · {{ job.checkpoint }}
       <p class="footnote">{{ new Date(job.created_at).toLocaleString() }} · {{ job.id }}</p>
       <p v-if="job.error" role="status">{{ job.error }}</p>
+      <template v-if="job.status === 'queued'"><button v-if="cancelChoice !== job.id" type="button" class="secondary" :disabled="busy" @click="cancelChoice = job.id">取消排隊</button><div v-else class="notice"><p>只移除這個任務的排隊項目。若它已開始執行，平台會保留任務並提示最新狀態。</p><button type="button" class="secondary" :disabled="busy" @click="cancelChoice = null">保留任務</button><button type="button" class="secondary" :disabled="busy" @click="cancel(job)">確認取消此任務</button></div></template>
+      <button v-if="['cancelling', 'cancel_unknown'].includes(job.status)" type="button" class="secondary" :disabled="busy" @click="cancel(job)">確認取消結果</button>
       <button v-if="job.status === 'completed'" class="secondary" @click="emit('gallery', job.id)">前往作品庫匯入圖片 →</button>
       <a :href="`/api/jobs/${job.id}/workflow`">下載完整工作流程</a> · <a :href="`/api/jobs/${job.id}`" target="_blank" rel="noopener">任務／歷史 JSON</a>
     </div>
