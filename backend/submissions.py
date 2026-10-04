@@ -157,6 +157,8 @@ def install(app, host):
 
     @app.post('/api/generate')
     async def generate(value: Generate):
+        if any(item.enabled for item in value.loras):
+            raise HTTPException(422, 'LoRA 設定可保存草稿，但尚未接入生成流程；請先停用 LoRA 再生成。')
         if value.reference_ids:
             raise HTTPException(422, '第一版文生圖尚未套用參考素材，請先取消素材選取')
         if not value.checkpoint:

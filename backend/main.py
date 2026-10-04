@@ -24,6 +24,7 @@ from uuid import UUID
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 from backend import catalog, drafts, assets, submissions, gallery_api, model_profiles, model_paths, environment, validation_records, generation_advice, storage, loras, lora_compatibility
+from backend.lora_settings import LoraSetting
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -244,6 +245,7 @@ async def model_selection(target: ModelTarget):
 
 
 class DraftInput(BaseModel):
+    loras: list[LoraSetting] = Field(default_factory=list, max_length=1)
     reference_ids: list[UUID] = Field(default_factory=list, max_length=8)
     title: str = Field(min_length=1, max_length=100)
     prompt: str = Field(default='', max_length=20000)
@@ -294,7 +296,7 @@ def list_drafts():
     # Supply the original generation defaults for old records without rewriting them.
     defaults = {name: DraftInput.model_fields[name].default for name in
                 ('negative_prompt', 'steps', 'cfg', 'sampler_name', 'scheduler', 'denoise')}
-    return [defaults | item for item in drafts.list_all(DB)]
+    return [dict(loras=[]) | defaults | item for item in drafts.list_all(DB)]
 
 
 @app.post('/api/drafts', status_code=201)

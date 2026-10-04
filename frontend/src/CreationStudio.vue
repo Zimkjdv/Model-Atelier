@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onActivated, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
+import LoraControls from './LoraControls.vue'
 import ModelValidation from './ModelValidation.vue'
 import GenerationAdvice from './GenerationAdvice.vue'
 import { useStudioPreferences } from './studioPreferences'
@@ -30,6 +31,7 @@ const dirty = computed(() => JSON.stringify(form) !== saved.value)
 const selected = computed(() => models.value?.engine_url === form.engine_url ? models.value.models.find(m => m.name === form.checkpoint) : undefined)
 const draftVersion = ref('')
 const references = ref<Asset[]>([])
+const loraBlock = ref('')
 const modelVersion = computed(() => draftVersion.value || selected.value?.version || '未知')
 const available = computed(() => models.value?.engine_url === form.engine_url ? models.value.models.filter(m => m.listed) : [])
 const capabilities = ref<Capabilities | null>(null), capabilityBusy = ref(false), capabilityError = ref('')
@@ -38,7 +40,7 @@ const presetChoice = ref<string | null>(null)
 let profileRequest = 0, profileAbort: AbortController | null = null
 const matchingProfile = computed(() => profile.value?.engine_url === form.engine_url && profile.value.name === form.checkpoint ? profile.value : null)
 const editableWorkflow = computed(() => !form.checkpoint || !!matchingProfile.value?.workflow)
-const retainedParameters = computed(() => ({ prompt: form.prompt, negative_prompt: form.negative_prompt, seed: form.seed, width: form.width, height: form.height, steps: form.steps, cfg: form.cfg, sampler_name: form.sampler_name, scheduler: form.scheduler, denoise: form.denoise }))
+const retainedParameters = computed(() => ({ prompt: form.prompt, negative_prompt: form.negative_prompt, seed: form.seed, width: form.width, height: form.height, steps: form.steps, cfg: form.cfg, sampler_name: form.sampler_name, scheduler: form.scheduler, denoise: form.denoise, loras: form.loras }))
 const profileMessage = computed(() => matchingProfile.value?.compatibility.status === 'supported'
   ? '適用目前文生圖流程；登記架構尚未驗證實際檔案。'
   : matchingProfile.value?.compatibility.message ?? '')
@@ -58,6 +60,7 @@ const matchingCapabilities = computed(() => capabilities.value?.engine_url === f
 const samplers = computed(() => matchingCapabilities.value?.sampler_names ?? [])
 const schedulers = computed(() => matchingCapabilities.value?.schedulers ?? [])
 const submissionBlock = computed(() => {
+  if (loraBlock.value) return loraBlock.value
   if (models.value && models.value.engine_url !== form.engine_url) return '此草稿使用的引擎與目前設定不同。請到設定頁連接原引擎，再更新模型庫。'
   if (form.checkpoint && profileBusy.value) return '正在確認模型工作流程資料，請稍候；草稿仍可保存。'
   if (form.checkpoint && !matchingProfile.value) return profileError.value || '尚未取得此模型的工作流程資料，請更新後再生成；草稿仍可保存。'
@@ -80,7 +83,7 @@ async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> 
   const response = await fetch('/api/' + path, { method, ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}) })
   if (!response.ok) {
     const data = await response.json().catch(() => ({}))
-    throw new Error(typeof data.detail === 'string' ? data.detail : '請檢查名稱、尺寸、seed 與取樣設定：steps 1–150、CFG 0–30、denoise 0–1。')
+    throw new Error(typeof data.detail === 'string' ? data.detail : '請檢查名稱、尺寸、seed 與取樣設定：steps 1–150、CFG 0–30、denoise 0–1；LoRA 強度需為 −20 至 20 的數值。')
   }
   return response.json()
 }
@@ -88,7 +91,7 @@ function apply(record: Draft | 'new' | Restoration) {
   ++restorationRequest; restoring.value = false
   presetChoice.value = null
   if (typeof record === 'object' && 'kind' in record) {
-    Object.assign(form, newCreation(), record.value.settings, { reference_ids: [...record.value.settings.reference_ids] })
+    Object.assign(form, newCreation(), record.value.settings, { reference_ids: [...record.value.settings.reference_ids], loras: (record.value.settings.loras ?? []).map(item => ({ ...item })) })
     id.value = null; revision.value = null; draftVersion.value = record.value.model_version || '未知'
     origin.value = record.kind === 'artwork' ? { ...record.value, kind: 'artwork' } : { ...record.value, kind: 'job' }
     saved.value = ''; pending.value = null; error.value = ''
@@ -102,7 +105,7 @@ function apply(record: Draft | 'new' | Restoration) {
     Object.assign(form, newCreation(), { engine_url: models.value?.engine_url ?? '', checkpoint: models.value?.models.find(m => m.listed && m.name === models.value?.selected)?.name ?? '' })
     id.value = null; revision.value = null; draftVersion.value = ''
   } else {
-    Object.assign(form, { ...generationDefaults, title: record.title, prompt: record.prompt, engine_url: record.engine_url, checkpoint: record.checkpoint, width: record.width, height: record.height, seed: record.seed, reference_ids: [...(record.reference_ids ?? [])], negative_prompt: record.negative_prompt ?? '', steps: record.steps ?? 20, cfg: record.cfg ?? 7, sampler_name: record.sampler_name ?? 'euler', scheduler: record.scheduler ?? 'normal', denoise: record.denoise ?? 1 })
+    Object.assign(form, { ...generationDefaults, title: record.title, prompt: record.prompt, engine_url: record.engine_url, checkpoint: record.checkpoint, width: record.width, height: record.height, seed: record.seed, reference_ids: [...(record.reference_ids ?? [])], loras: (record.loras ?? []).map(item => ({ ...item })), negative_prompt: record.negative_prompt ?? '', steps: record.steps ?? 20, cfg: record.cfg ?? 7, sampler_name: record.sampler_name ?? 'euler', scheduler: record.scheduler ?? 'normal', denoise: record.denoise ?? 1 })
     id.value = record.id; revision.value = record.revision; draftVersion.value = record.model_version || '未知'
   }
   saved.value = JSON.stringify(form); pending.value = null; error.value = ''; message.value = ''
@@ -282,6 +285,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
         </details>
         </div>
         <section v-if="!editableWorkflow" class="notice" aria-label="保留的創作參數"><p>此模型尚未取得可用的表單流程；原參數未修改，仍可保存草稿。切換回支援模型後可繼續編輯。</p><details><summary>查看保留的原始參數</summary><pre class="retained-parameters">{{ JSON.stringify(retainedParameters, null, 2) }}</pre></details></section>
+        <LoraControls v-model="form.loras" :engine-url="form.engine_url" :checkpoint="form.checkpoint" @blocked="loraBlock = $event" />
         <div class="save-actions"><button class="primary" :disabled="!form.engine_url">{{ busy ? '處理中…' : '保存草稿' }}</button><button v-if="id" type="button" class="secondary" @click="save(true)">另存新草稿</button></div>
       </fieldset></form>
       <div><GenerationAdvice :form="form" />

@@ -1,6 +1,9 @@
 import type { ModelMetadataSnapshot } from './modelMetadata'
 
+export type LoraSetting = { name: string; enabled: boolean; strength_model: number; strength_clip: number }
+
 export type GenerationFields = {
+  loras: LoraSetting[]
   negative_prompt: string
   steps: number
   cfg: number
@@ -43,11 +46,12 @@ export type FailedJobSettings = {
 }
 
 export const generationDefaults: GenerationFields = {
+  loras: [],
   negative_prompt: '', steps: 20, cfg: 7,
   sampler_name: 'euler', scheduler: 'normal', denoise: 1,
 }
 
 export function newCreation(): CreationForm {
   return { ...generationDefaults, title: '未命名創作', prompt: '', engine_url: '',
-    checkpoint: '', width: 1024, height: 1024, seed: '0', reference_ids: [] }
+    checkpoint: '', width: 1024, height: 1024, seed: '0', reference_ids: [], loras: [] }
 }
