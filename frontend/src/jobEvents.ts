@@ -1,13 +1,14 @@
 import { onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch, type Ref } from 'vue'
 import type { LoraMetadataSnapshot } from './modelMetadata'
 import type { ComponentSnapshot } from './fluxSettings'
+import type { ReferenceSnapshot } from './referenceSettings'
 
 export type JobProgress = { node: string; current: number | null; max: number | null; percent: number | null; updated_at: string }
 export type JobFailure = {
   code: string; title: string; message: string; suggestions: string[]
   node_id: string | null; node_type: string | null; exception_type: string | null
 }
-export type Job = { id: string; status: string; checkpoint: string; created_at: string; updated_at?: string; revision?: number; error?: string; progress?: JobProgress; failure_info?: JobFailure | null; lora_metadata?: LoraMetadataSnapshot[] | null; preflight_warnings?: string[]; workflow_id?: string | null; component_metadata?: ComponentSnapshot[] | null }
+export type Job = { id: string; status: string; checkpoint: string; created_at: string; updated_at?: string; revision?: number; error?: string; progress?: JobProgress; failure_info?: JobFailure | null; lora_metadata?: LoraMetadataSnapshot[] | null; preflight_warnings?: string[]; workflow_id?: string | null; component_metadata?: ComponentSnapshot[] | null; reference_metadata?: ReferenceSnapshot[] | null; input_upload?: { name: string; subfolder: string; type: string } }
 type Connection = { state: 'connecting' | 'connected' | 'reconnecting' | 'offline'; message?: string }
 export const terminal = (job: Job) => ['completed', 'failed', 'cancelled', 'stopped'].includes(job.status)
 

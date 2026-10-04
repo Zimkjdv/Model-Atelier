@@ -3,20 +3,23 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 import type { CreationForm } from './creationSettings'
 import LoraSnapshot from './LoraSnapshot.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
+import ReferenceSnapshot from './ReferenceSnapshot.vue'
+import { imageWorkflowId } from './referenceSettings'
 import { fluxWorkflowId, type FluxForm } from './fluxSettings'
 import { mergeJob, terminal, useJobEvents, type Job } from './jobEvents'
 const props = defineProps<{ form: CreationForm | FluxForm; workflow?: 'flux'; blockedReason?: string; disabled?: boolean }>()
 const checkpointForm = computed(() => 'checkpoint' in props.form ? props.form : null)
 const pendingKey = props.workflow === 'flux' ? 'atelier-pending-flux-submission' : 'atelier-pending-submission'
 const generatePath = props.workflow === 'flux' ? '/api/flux/generate' : '/api/generate'
-const missingModel = computed(() => checkpointForm.value ? !checkpointForm.value.checkpoint || !!checkpointForm.value.reference_ids.length : !('diffusion_model' in props.form && props.form.diffusion_model))
+const imageMode = computed(() => checkpointForm.value?.workflow_mode === 'image2image')
+const missingModel = computed(() => checkpointForm.value ? !checkpointForm.value.checkpoint || (imageMode.value ? !checkpointForm.value.image_asset_id : !!checkpointForm.value.reference_ids.length) : !('diffusion_model' in props.form && props.form.diffusion_model))
 const emit = defineEmits<{ gallery: [jobId: string]; restoreJob: [jobId: string] }>()
 const jobs = ref<Job[]>([]), busy = ref(false), error = ref('')
 const cancelChoice = ref<string | null>(null)
 const stopChoice = ref<string | null>(null)
 const pending = ref<Record<string, unknown> | null>(null)
 try { pending.value = JSON.parse(localStorage.getItem(pendingKey) || 'null') } catch { /* No valid saved request. */ }
-const labels: Record<string, string> = { validating: '確認模型中', submitting: '提交中', queued: '等待生成', running: '生成中', completed: '已完成', failed: '失敗', unknown: '結果待確認', cancelling: '確認取消中', cancel_unknown: '取消結果待確認', cancelled: '已取消排隊', stopping: '確認停止中', stop_unknown: '停止結果待確認', stopped: '已停止生成' }
+const labels: Record<string, string> = { uploading_input: '上傳輸入圖片中', validating: '確認模型中', submitting: '提交中', queued: '等待生成', running: '生成中', completed: '已完成', failed: '失敗', unknown: '結果待確認', cancelling: '確認取消中', cancel_unknown: '取消結果待確認', cancelled: '已取消排隊', stopping: '確認停止中', stop_unknown: '停止結果待確認', stopped: '已停止生成' }
 async function request(path: string, method = 'GET', body?: unknown) {
   const response = await fetch('/api/' + path, { method, headers: { 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) })
   const data = await response.json()
@@ -25,7 +28,7 @@ async function request(path: string, method = 'GET', body?: unknown) {
 }
 async function load() {
   const incoming: Job[] = await request('jobs')
-  jobs.value = incoming.filter(job => props.workflow === 'flux' ? job.workflow_id === fluxWorkflowId : !job.workflow_id).map(job => mergeJob(jobs.value.find(previous => previous.id === job.id), job))
+  jobs.value = incoming.filter(job => props.workflow === 'flux' ? job.workflow_id === fluxWorkflowId : !job.workflow_id || job.workflow_id === imageWorkflowId).map(job => mergeJob(jobs.value.find(previous => previous.id === job.id), job))
 }
 const { connections, visible, reconnect } = useJobEvents(jobs, async () => {
   try { await load() } catch (e) { error.value = e instanceof Error ? e.message : '查詢失敗'; throw e }
@@ -92,9 +95,9 @@ onBeforeUnmount(() => window.clearInterval(timer))
 <template>
   <article class="panel">
     <h2>生成任務</h2>
-    <p v-if="checkpointForm" class="footnote">標準 checkpoint 文生圖 · {{ form.steps }} steps · {{ checkpointForm.sampler_name }} / {{ checkpointForm.scheduler }} · CFG {{ checkpointForm.cfg }} · denoise {{ checkpointForm.denoise }} · 每次 1 張。工作流程與精確 seed 會保存到本機。</p>
+    <p v-if="checkpointForm" class="footnote">Checkpoint {{ imageMode ? '圖生圖' : '文生圖' }} · {{ form.steps }} steps · {{ checkpointForm.sampler_name }} / {{ checkpointForm.scheduler }} · CFG {{ checkpointForm.cfg }} · denoise {{ checkpointForm.denoise }} · 每次 1 張。工作流程與精確 seed 會保存到本機。</p>
     <p v-else class="footnote">FLUX.1 [schnell] · {{ form.steps }} steps · Euler / simple · CFG 1 · 每次 1 張。完整流程與四元件快照會保存到本機；GPU 尚未驗證。</p>
-    <p v-if="checkpointForm?.reference_ids.length" class="notice warning">尚未支援參考圖生成，請先取消素材選取。</p>
+    <p v-if="!imageMode && checkpointForm?.reference_ids.length" class="notice warning">文生圖不使用參考素材，請先取消選取，或切換圖生圖流程。</p>
     <p v-else-if="checkpointForm && !checkpointForm.checkpoint" class="notice">請先安裝並同步 checkpoint，再選擇模型。</p>
     <p v-if="blockedReason" class="notice warning">{{ blockedReason }}</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
@@ -107,8 +110,10 @@ onBeforeUnmount(() => window.clearInterval(timer))
     <div v-for="job in jobs" :key="job.id" class="job">
       <strong>{{ labels[job.status] || job.status }}</strong> · {{ job.checkpoint }}
       <p class="footnote">{{ new Date(job.created_at).toLocaleString() }} · {{ job.id }}</p>
+      <p v-if="job.workflow_id === imageWorkflowId" class="footnote">單張圖生圖 · 原素材與前處理已凍結。</p>
       <LoraSnapshot v-if="checkpointForm" :items="job.lora_metadata" />
       <ComponentSnapshot :items="job.component_metadata" />
+      <ReferenceSnapshot :items="job.reference_metadata" :job-id="job.id" :processed-ready="!!job.input_upload || job.status === 'completed'" />
       <details v-if="job.preflight_warnings?.length"><summary>提交時檢查提示（原紀錄）</summary><p class="footnote">以下為提交當時的提示，不代表目前狀態或後續實測結果。</p><p v-for="warning in job.preflight_warnings" :key="warning" class="footnote">{{ warning }}</p></details>
       <section v-if="job.status === 'failed' && job.failure_info" class="failure-info" aria-label="任務失敗說明">
         <h3>{{ job.failure_info.title }}</h3><p>{{ job.failure_info.message }}</p>
@@ -130,7 +135,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <button v-if="['cancelling', 'cancel_unknown'].includes(job.status)" type="button" class="secondary" :disabled="busy" @click="cancel(job)">確認取消結果</button>
       <template v-if="job.status === 'running'"><button v-if="stopChoice !== job.id" type="button" class="secondary" :disabled="busy" @click="stopChoice = job.id">停止此任務</button><div v-else class="notice warning"><p>只停止這個任務。需原引擎具備已驗證的指定任務停止能力；若已完成會保留結果，停止請求仍需歷史確認。</p><button type="button" class="secondary" :disabled="busy" @click="stopChoice = null">繼續生成</button><button type="button" class="secondary" :disabled="busy" @click="stop(job)">確認停止此任務</button></div></template>
       <button v-if="['stopping', 'stop_unknown'].includes(job.status)" type="button" class="secondary" :disabled="busy" @click="stop(job)">確認停止結果</button>
-      <template v-if="job.status === 'failed' || (workflow === 'flux' && terminal(job))"><button type="button" class="secondary" :aria-label="`載入原設定並調整：${job.id}`" :disabled="busy || disabled || !!pending" @click="emit('restoreJob', job.id)">載入原設定並調整</button><p class="footnote">載入後可手動調整，再按「生成圖片」建立新任務。</p></template>
+      <template v-if="job.status === 'failed' || ((workflow === 'flux' || job.workflow_id === imageWorkflowId) && terminal(job))"><button type="button" class="secondary" :aria-label="`載入原設定並調整：${job.id}`" :disabled="busy || disabled || !!pending" @click="emit('restoreJob', job.id)">載入原設定並調整</button><p class="footnote">載入後可手動調整，再按「生成圖片」建立新任務。</p></template>
       <button v-if="job.status === 'completed'" class="secondary" @click="emit('gallery', job.id)">前往作品庫匯入圖片 →</button>
       <a :href="`/api/jobs/${job.id}/workflow`">下載完整工作流程</a> · <a :href="`/api/jobs/${job.id}`" target="_blank" rel="noopener">任務／歷史 JSON</a>
     </div>

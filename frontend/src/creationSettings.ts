@@ -1,4 +1,5 @@
 import type { ModelMetadataSnapshot, LoraMetadataSnapshot } from './modelMetadata'
+import { referenceDefaults, type ReferenceFields, type ReferenceSnapshot } from './referenceSettings'
 
 export type LoraSetting = { name: string; enabled: boolean; strength_model: number; strength_clip: number }
 
@@ -12,7 +13,7 @@ export type GenerationFields = {
   denoise: number
 }
 
-export type CreationForm = GenerationFields & {
+export type CreationForm = GenerationFields & ReferenceFields & {
   title: string
   prompt: string
   engine_url: string
@@ -30,6 +31,7 @@ export type ArtworkSettings = {
   warnings: string[]
   model_metadata?: ModelMetadataSnapshot | null
   lora_metadata?: LoraMetadataSnapshot[] | null
+  reference_metadata?: ReferenceSnapshot[] | null
 }
 
 export type FailedJobSettings = {
@@ -38,6 +40,7 @@ export type FailedJobSettings = {
   model_version: string
   model_metadata: ModelMetadataSnapshot | null
   lora_metadata: LoraMetadataSnapshot[] | null
+  reference_metadata?: ReferenceSnapshot[] | null
   warnings: string[]
   availability: {
     current_engine_url: string
@@ -54,6 +57,6 @@ export const generationDefaults: GenerationFields = {
 }
 
 export function newCreation(): CreationForm {
-  return { ...generationDefaults, title: '未命名創作', prompt: '', engine_url: '',
+  return { ...generationDefaults, ...referenceDefaults, title: '未命名創作', prompt: '', engine_url: '',
     checkpoint: '', width: 1024, height: 1024, seed: '0', reference_ids: [], loras: [] }
 }
