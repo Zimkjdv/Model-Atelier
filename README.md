@@ -8,9 +8,9 @@
 - ComfyUI 位址保存至 SQLite，獨立呈現引擎的裝置、記憶體與版本資訊；提供手動本機 Python／PyTorch／CUDA 安裝檢查。
 - 平台不因無 GPU 而阻止使用。
 - 模型庫：同步 ComfyUI checkpoint 名稱、搜尋與狀態篩選、保存版本、架構、檔案大小、SHA256、來源、授權資訊與備註，選擇偏好模型。
-- LoRA 模型庫：獨立同步 `LoraLoader` 清單、搜尋及篩選，登記版本、基礎架構、來源、大小、SHA256、授權及備註。資料依引擎網址隔離，失敗時保留成功快照；目前尚未套用至生成流程，詳見 [LoRA 登記說明](docs/models/lora-library.md)。
+- LoRA 模型庫：獨立同步 `LoraLoader` 清單、搜尋及篩選，登記版本、基礎架構、來源、大小、SHA256、授權及備註。資料依引擎網址隔離，失敗時保留成功快照，詳見 [LoRA 說明](docs/models/lora-library.md)。
 - LoRA 相容性比較：選擇 checkpoint 後顯示「架構相容，未實測／未驗證／不相容」，依登記架構及清單狀態判定，資料更新時重算；比較操作不改變創作設定。
-- LoRA 創作設定：選擇、啟用／停用、移除單一 LoRA，保存模型與 CLIP 強度（−20～20）到草稿。停用保留設定；舊草稿預設無 LoRA。目前啟用時明確阻止生成，避免設定被忽略。
+- LoRA 創作設定：選擇、啟用／停用、移除單一 LoRA，保存模型與 CLIP 強度（−20～20）到草稿。啟用時使用標準 `LoraLoader` 八節點流程；提交前阻擋已知架構不符，檢查引擎即時名稱、節點介面及強度範圍。同架構仍未實測；停用保留設定並使用原七節點流程。
 - 創作工作台：正／負提示詞、尺寸、完整 seed、模型與取樣設定、模型預設與架構提示、畫布比例預覽，以及本機草稿保存與重載。
 - 參考素材：圖片上傳、預覽、搜尋、命名、封存／還原，以及草稿素材關聯。
 - 生成任務：標準 checkpoint 文生圖提交、任務查詢、重複請求防護及完整工作流程下載。
@@ -198,7 +198,7 @@ python -m venv runtime/ComfyUI/.venv
 
 ## ComfyUI 任務提交
 
-創作頁的「生成圖片」會提交目前表單，保存草稿仍是獨立操作。第一版採標準 checkpoint 文生圖，預設 20 steps、Euler / normal、CFG 7、denoise 1、空白負面提示詞；正／負提示詞與取樣參數可編輯、保存並提交，batch 固定為 1。平台 Steps 範圍 1–150、CFG 範圍 0–30、denoise 範圍 0–1；生成使用平台與引擎範圍的交集，取樣器及 scheduler 從 ComfyUI 同步。暫不支援 FLUX 專用流程、LoRA 或參考圖輸入。選有參考素材時明確拒絕生成，避免誤以為已套用圖片。尺寸通過驗證不代表顯存一定足夠。
+創作頁的「生成圖片」會提交目前表單，保存草稿仍是獨立操作。第一版採標準 checkpoint 文生圖，預設 20 steps、Euler / normal、CFG 7、denoise 1、空白負面提示詞；正／負提示詞與取樣參數可編輯、保存並提交，batch 固定為 1。平台 Steps 範圍 1–150、CFG 範圍 0–30、denoise 範圍 0–1；生成使用平台與引擎範圍的交集，取樣器及 scheduler 從 ComfyUI 同步。可選單一 LoRA；暫不支援 FLUX 專用流程、多個 LoRA 或參考圖輸入。選有參考素材時明確拒絕生成，避免誤以為已套用圖片。尺寸通過驗證不代表顯存一定足夠。
 
 - `POST /api/generate`：草稿欄位加 UUID `request_id`，後端建立工作流程，seed 由字串轉為精確整數。
 - `POST /api/jobs`：`request_id`、`engine_url`、`checkpoint`、完整 ComfyUI API 格式 `workflow`。僅接受目前六種標準節點，SaveImage 前綴固定為 ModelAtelier，不接受任意自訂節點或編輯器格式 JSON。
@@ -338,4 +338,4 @@ API：
 
 `GET /api/models/profile` 提供 workflow 描述（流程 ID、欄位、固定單張、參考圖／LoRA 能力）。目前只接受標準 checkpoint 文生圖描述；格式不完整或未知流程不啟用表單。SD 1.x／SDXL 及未知架構可編輯標準欄位，未知架構仍由引擎驗證；已知未支援架構顯示原因並保留原始參數，仍可保存草稿，切回支援模型可繼續編輯。尚未選模型時可先準備草稿。
 
-這不是新增 FLUX、參考圖或 LoRA 執行能力；未接入流程保持不可提交。
+流程描述包含單一 LoRA 能力及 `max_loras: 1`；未知或未接入的 FLUX、參考圖及多 LoRA 流程仍不可提交。

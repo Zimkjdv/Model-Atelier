@@ -8,6 +8,7 @@ import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
 from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures, node_preflight
+from backend import lora_preflight
 
 
 class Submission(BaseModel):
@@ -21,7 +22,7 @@ class Submission(BaseModel):
     def validate_workflow(cls, value):
         if len(json.dumps(value, allow_nan=False).encode()) > 2_000_000:
             raise ValueError('工作流程不可超過 2 MiB')
-        allowed = {'CheckpointLoaderSimple', 'CLIPTextEncode', 'EmptyLatentImage', 'KSampler', 'VAEDecode', 'SaveImage'}
+        allowed = {'CheckpointLoaderSimple', 'CLIPTextEncode', 'EmptyLatentImage', 'KSampler', 'VAEDecode', 'SaveImage', 'LoraLoader'}
         for node in value.values():
             if (not isinstance(node, dict) or not isinstance(node.get('class_type'), str)
                     or node['class_type'] not in allowed or not isinstance(node.get('inputs'), dict)):
@@ -66,6 +67,20 @@ def install(app, host):
         loaders = [n['inputs'].get('ckpt_name') for n in value.workflow.values() if n['class_type'] == 'CheckpointLoaderSimple']
         if not loaders or any(name != value.checkpoint for name in loaders):
             raise HTTPException(422, '工作流程 checkpoint 與選擇的模型不一致')
+        lora_nodes = [node for node in value.workflow.values() if node['class_type'] == 'LoraLoader']
+        choice = None
+        if lora_nodes:
+            # Raw workflows with LoRA must be the entire supported template.
+            outputs = [node_id for node_id, node in value.workflow.items() if node['class_type'] == 'SaveImage']
+            try:
+                if len(outputs) != 1:
+                    raise ValueError('LoRA 流程需唯一輸出')
+                settings = workflows.extract(dict(workflow=value.workflow, checkpoint=value.checkpoint,
+                    engine_url=value.engine_url, source={'node_id': outputs[0]}, title='LoRA 提交'),
+                    lambda data: host.DraftInput.model_validate(data).model_dump(), allow_lora=True)
+                choice = settings['loras'][0]
+            except (ValueError, IndexError) as exc:
+                raise HTTPException(422, '僅支援完整的單一 LoRA 文生圖模板；未提交任務') from exc
         try:
             model = next((m for m in catalog.read(host.DB, value.engine_url)['models'] if m['name'] == value.checkpoint), {})
             metadata = catalog.capture(model, value.checkpoint)
@@ -85,6 +100,10 @@ def install(app, host):
         initial_compatibility = model_profiles.compatibility(metadata.get('architecture'))
         if not initial_compatibility['allows_submission']:
             fail(422, initial_compatibility['message'], 'unsupported_architecture')
+        if choice:
+            _, _, assessment = lora_preflight.registration(host.DB, value.engine_url, value.checkpoint, choice['name'])
+            if assessment['status'] == 'incompatible':
+                fail(422, assessment['label'] + '；' + assessment['message'], 'unsupported_architecture')
         async with httpx.AsyncClient(timeout=15, trust_env=False) as client:
             try:
                 response = await client.get(value.engine_url + '/object_info/CheckpointLoaderSimple')
@@ -115,11 +134,17 @@ def install(app, host):
             except ValueError as exc:
                 fail(422, '工作流程參數未通過平台與原引擎能力驗證，尚未提交任務', preflight_error=str(exc))
             try:
-                await node_preflight.check(client, value.engine_url, value.workflow)
+                if choice:
+                    await lora_preflight.check(client, value.engine_url, choice)
+                await node_preflight.check(client, value.engine_url, value.workflow, checked=('LoraLoader',) if choice else ())
             except node_preflight.MissingNodes as exc:
                 fail(422, str(exc), 'missing_nodes')
             except httpx.RequestError:
                 fail(503, '必要節點檢查連線失敗，尚未提交任務', 'engine_offline')
+            except LookupError as exc:
+                fail(409, str(exc))
+            except ArithmeticError as exc:
+                fail(422, str(exc))
             except (httpx.HTTPStatusError, ValueError):
                 fail(502, '無法取得有效的必要節點定義，尚未提交任務')
             if value.engine_url != host.engine_url():
@@ -132,6 +157,11 @@ def install(app, host):
             current_compatibility = model_profiles.compatibility(current_model.get('architecture'))
             if not current_compatibility['allows_submission']:
                 fail(422, '驗證期間模型架構登記已變更，尚未提交任務；' + current_compatibility['message'], 'unsupported_architecture')
+            if choice:
+                _, _, assessment = lora_preflight.registration(host.DB, value.engine_url, value.checkpoint, choice['name'])
+                if assessment['status'] == 'incompatible':
+                    fail(422, '驗證期間架構登記已變更；' + assessment['message'], 'unsupported_architecture')
+                job = cancellation.persist(host, job, preflight_warnings=[assessment['message']])
             job = cancellation.persist(host, job, status='submitting')
             try:
                 response = await client.post(value.engine_url + '/prompt', json={
@@ -157,8 +187,6 @@ def install(app, host):
 
     @app.post('/api/generate')
     async def generate(value: Generate):
-        if any(item.enabled for item in value.loras):
-            raise HTTPException(422, 'LoRA 設定可保存草稿，但尚未接入生成流程；請先停用 LoRA 再生成。')
         if value.reference_ids:
             raise HTTPException(422, '第一版文生圖尚未套用參考素材，請先取消素材選取')
         if not value.checkpoint:

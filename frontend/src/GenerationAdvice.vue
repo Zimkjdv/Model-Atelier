@@ -11,10 +11,10 @@ onBeforeUnmount(reset)
 const gib = (value: number | null) => value === null ? '未知' : `${(value / 1024 ** 3).toFixed(2)} GiB`
 async function check() {
   reset(); const token = request; controller = new AbortController(); busy.value = true
-  const { engine_url, checkpoint, width, height, steps, cfg, sampler_name, scheduler, denoise } = props.form
+  const { engine_url, checkpoint, width, height, steps, cfg, sampler_name, scheduler, denoise, loras } = props.form
   try {
     const response = await fetch('/api/generation-advice', { method: 'POST', signal: controller.signal,
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ engine_url, checkpoint, width, height, steps, cfg, sampler_name, scheduler, denoise }) })
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ engine_url, checkpoint, width, height, steps, cfg, sampler_name, scheduler, denoise, loras }) })
     if (!response.ok) throw new Error(response.status === 409 ? '模型或引擎已變更，請重新載入後查詢。' : '提示暫時無法取得，請確認模型與參數後重試。')
     const value = await response.json()
     if (token === request) report.value = value

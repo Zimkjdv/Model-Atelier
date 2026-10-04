@@ -58,12 +58,16 @@ class LoraDraftTests(unittest.TestCase):
         self.assertEqual(self.client.get('/api/drafts').json(), [])
         self.assertEqual(self.client.get('/api/jobs').json(), [])
 
-    def test_enabled_lora_is_not_silently_dropped_by_unimplemented_generation(self):
-        with patch('backend.main.httpx.AsyncClient', side_effect=AssertionError('LoRA not implemented yet')):
+    def test_enabled_lora_is_not_silently_dropped_if_loader_is_missing(self):
+        remote = test_submissions.SubmissionTests.remote(self)
+        with patch('backend.main.httpx.AsyncClient', return_value=remote):
             result = self.client.post('/api/generate', json=self.body() | dict(request_id=str(uuid4())))
         self.assertEqual(result.status_code, 422)
-        self.assertIn('尚未接入', result.json()['detail'])
-        self.assertEqual(self.client.get('/api/jobs').json(), [])
+        self.assertIn('LoraLoader', result.json()['detail']['message'])
+        remote.post.assert_not_called()
+        job = self.client.get('/api/jobs/' + result.json()['detail']['job_id']).json()
+        self.assertEqual(job['status'], 'failed')
+        self.assertEqual(job['workflow']['8']['inputs']['lora_name'], self.body()['loras'][0]['name'])
 
     def test_disabled_lora_keeps_existing_workflow_and_seed(self):
         values = self.body()['loras']

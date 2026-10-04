@@ -42,7 +42,7 @@ class LoraCompatibilityTests(unittest.TestCase):
                 self.assertEqual(item['status'], expected)
                 self.assertFalse(item['verified'])
                 self.assertIn('未讀取權重', item['message'])
-                self.assertFalse(data['workflow_supported'])
+                self.assertEqual(data['workflow_supported'], base in ('sd1', 'sdxl', 'unknown'))
                 self.assertEqual(data['source'], 'registered_architecture')
                 if expected == 'compatible':
                     self.assertIn('未實測', item['label'])

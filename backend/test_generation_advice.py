@@ -51,6 +51,16 @@ class AdviceTests(unittest.TestCase):
         self.assertEqual(value['validation_status'], 'unverified')
         self.assertEqual(value['matching_parameter_records'], [])
 
+    def test_active_lora_is_not_covered_by_base_workflow_evidence(self):
+        payload = self.setup_model()
+        for enabled, count in [(True, 0), (False, 1)]:
+            body = payload | dict(loras=[dict(name='ink.safetensors', enabled=enabled, strength_model=1, strength_clip=1)])
+            with patch.object(main, 'engine', AsyncMock(return_value=self.report())):
+                value = self.client.post('/api/generation-advice', json=body).json()
+            self.assertEqual(len(value['matching_parameter_records']), count)
+            if enabled:
+                self.assertTrue(any('LoRA' in warning for warning in value['warnings']))
+
     def test_engine_switch_or_metadata_change_rejects_stale_advice(self):
         payload = self.setup_model()
         async def changed():

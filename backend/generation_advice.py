@@ -2,6 +2,7 @@
 from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 from backend import environment, validation_records
+from backend.lora_settings import LoraSetting
 
 
 class AdviceInput(BaseModel):
@@ -15,14 +16,18 @@ class AdviceInput(BaseModel):
     sampler_name: str = Field(min_length=1, max_length=100)
     scheduler: str = Field(min_length=1, max_length=100)
     denoise: float = Field(ge=0, le=1)
+    loras: list[LoraSetting] = Field(default_factory=list, max_length=1)
 
 
 def advise(value, model, diagnostics):
     evidence = validation_records.evaluate(model)
-    settings = value.model_dump(exclude={'engine_url', 'checkpoint'})
+    settings = value.model_dump(exclude={'engine_url', 'checkpoint', 'loras'})
+    active = [item for item in value.loras if item.enabled]
     matches = [record for record in evidence['records']
-               if all(record['settings'].get(key) == val for key, val in settings.items())]
+               if not active and all(record['settings'].get(key) == val for key, val in settings.items())]
     warnings = []
+    if active:
+        warnings.append('目前啟用 LoRA；既有七節點推論紀錄不涵蓋此組合，尚未實測。')
     if not evidence['records']:
         warnings.append('此模型沒有匹配的推論實測紀錄。')
     elif not matches:

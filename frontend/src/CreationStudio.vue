@@ -267,8 +267,9 @@ onActivated(() => { if (form.engine_url) void refresh() })
           </template>
           <p v-if="matchingProfile?.preset" class="footnote">預設僅在確認後套用。</p>
         </section>
-        <ModelValidation v-if="form.checkpoint" :engine-url="form.engine_url" :name="form.checkpoint" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
-        <p v-if="matchingProfile?.workflow" class="footnote" role="status">{{ matchingProfile.workflow.name }} · 每次 {{ matchingProfile.workflow.batch_size }} 張；參考圖與 LoRA 尚未接入此流程。</p>
+        <ModelValidation v-if="form.checkpoint && !form.loras.some(item => item.enabled)" :engine-url="form.engine_url" :name="form.checkpoint" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
+        <p v-else-if="form.checkpoint" class="footnote" role="status">目前啟用單一 LoRA 八節點流程；基礎模型的七節點實測紀錄不涵蓋此組合，GPU 載入與效果尚未實測。</p>
+        <p v-if="matchingProfile?.workflow" class="footnote" role="status">{{ matchingProfile.workflow.name }} · 每次 {{ matchingProfile.workflow.batch_size }} 張；可選單一 LoRA，參考圖尚未接入。</p>
         <div v-show="editableWorkflow">
         <label for="draft-prompt">畫面描述 <small>{{ form.prompt.length }} / 20000</small></label><textarea id="draft-prompt" v-model="form.prompt" maxlength="20000" rows="7" placeholder="描述角色、場景、光線與你想呈現的畫面…"></textarea>
         <label for="draft-negative">負面提示詞 <small>{{ form.negative_prompt.length }} / 20000</small></label><textarea id="draft-negative" v-model="form.negative_prompt" maxlength="20000" rows="3" placeholder="描述希望避免的畫面特徵…"></textarea>

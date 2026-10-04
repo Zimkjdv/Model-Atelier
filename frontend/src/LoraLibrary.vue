@@ -9,7 +9,7 @@ type Checkpoint = ModelMetadata & { name: string; listed: boolean }
 type AssessedRecord = { name: string; architecture: Architecture; listed: boolean; metadata_updated_at: string | null }
 type Compatibility = AssessedRecord & { status: 'compatible' | 'unverified' | 'incompatible'; label: string; message: string; verified: false }
 type Assessment = { engine_url: string; checkpoint: AssessedRecord; loras: Compatibility[];
-  source: 'registered_architecture'; workflow_supported: false; assessed_at: string;
+  source: 'registered_architecture'; workflow_supported: boolean; assessed_at: string;
   lora_synced_at: string | null; lora_sync_error: string | null }
 const props = defineProps<{ engineUrl: string; checkpoints: Checkpoint[]; preferredCheckpoint: string | null }>()
 const catalog = ref<Catalog | null>(null), busy = ref(false), error = ref(''), feedback = ref('')
@@ -54,7 +54,7 @@ async function checkCompatibility() {
       incoming.name === original.name && incoming.architecture === validArchitecture(original.architecture) &&
       incoming.listed === original.listed && incoming.metadata_updated_at === (original.metadata_updated_at ?? null)
     const registered = new Map(snapshot.loras.map(item => [item.name, item]))
-    if (!data || data.engine_url !== props.engineUrl || data.source !== 'registered_architecture' || data.workflow_supported !== false ||
+    if (!data || data.engine_url !== props.engineUrl || data.source !== 'registered_architecture' || typeof data.workflow_supported !== 'boolean' ||
         !sameRecord(data.checkpoint, checkpoint) || data.lora_synced_at !== snapshot.synced_at ||
         data.lora_sync_error !== snapshot.sync_error || !Array.isArray(data.loras) || data.loras.length !== snapshot.loras.length ||
         new Set(data.loras.map(item => item.name)).size !== data.loras.length || !data.loras.every(item => {
@@ -122,7 +122,7 @@ watch(catalog, () => { void checkCompatibility() })
       <button type="button" class="primary" :disabled="busy || editing !== null" @click="load(true)">{{ busy ? '處理中…' : '同步 LoRA 清單' }}</button>
     </div>
     <p class="footnote">{{ engineUrl }} · {{ catalog?.synced_at ? '最後成功同步：' + metadataTime(catalog.synced_at) : '尚未成功同步' }}</p>
-    <p class="footnote">清單及資料為登記快照；未核對實際檔案。目前創作流程尚未套用 LoRA。</p>
+    <p class="footnote">清單及資料為登記快照；未核對實際檔案。創作頁可選單一 LoRA，生成前重新檢查；尚未實測權重載入與畫面效果。</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }} <button class="secondary" :disabled="busy || editing !== null" @click="load()">重新讀取 LoRA</button></p>
     <p v-if="catalog?.sync_error" class="notice warning" role="alert">{{ catalog.sync_error }} 此處保留歷史清單，不代表目前可用。</p>
     <p v-if="feedback" class="notice success" role="status">{{ feedback }}</p>

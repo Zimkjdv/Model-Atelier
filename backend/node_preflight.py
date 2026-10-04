@@ -6,9 +6,9 @@ class MissingNodes(ValueError):
     pass
 
 
-async def check(client, engine_url, workflow):
+async def check(client, engine_url, workflow, *, checked=()):
     # CheckpointLoaderSimple and KSampler are checked by existing live validation.
-    names = sorted({node['class_type'] for node in workflow.values()} - {'CheckpointLoaderSimple', 'KSampler'})
+    names = sorted({node['class_type'] for node in workflow.values()} - {'CheckpointLoaderSimple', 'KSampler'} - set(checked))
 
     async def inspect(name):
         response = await client.get(engine_url + '/object_info/' + name)

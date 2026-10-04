@@ -48,7 +48,7 @@ def assess(db_path, url, checkpoint_name):
                 loras=[record(item) | compare(checkpoint, item, stale=stale) for item in collection['loras']],
                 checkpoint_synced_at=checkpoints.get('synced_at'), lora_synced_at=collection.get('synced_at'),
                 checkpoint_sync_error=checkpoints.get('sync_error'), lora_sync_error=collection.get('sync_error'),
-                source='registered_architecture', workflow_supported=False,
+                source='registered_architecture', workflow_supported=model_profiles.compatibility(checkpoint.get('architecture'))['allows_submission'],
                 assessed_at=datetime.now(timezone.utc).isoformat())
 
 
