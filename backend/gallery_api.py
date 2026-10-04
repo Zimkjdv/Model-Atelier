@@ -2,13 +2,29 @@
 import asyncio
 import json
 from uuid import UUID
+from typing import Literal
 
 import httpx
 from fastapi import HTTPException, Response
 from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from backend import gallery, jobs, catalog, workflows, lora_records, image_workflows
+
+
+class OrganizationInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    revision: int = Field(ge=0, le=9007199254740991)
+    favorite: bool = False
+    notes: str = Field(default='', max_length=10000)
+    archived: bool = False
+
+    @model_validator(mode='after')
+    def at_least_one_change(self):
+        if not self.model_fields_set - {'revision'}:
+            raise ValueError('至少提供收藏、筆記或封存欄位')
+        return self
 
 
 def install(app, host):
@@ -29,8 +45,21 @@ def install(app, host):
         return value
 
     @app.get('/api/artworks')
-    def list_artworks():
-        return [summary(item) for item in gallery.list_all(host.DB)]
+    def list_artworks(scope: Literal['active', 'archived', 'all'] = 'active', favorites_only: bool = False):
+        return [summary(item) for item in gallery.list_all(host.DB)
+                if (scope == 'all' or item['archived'] == (scope == 'archived'))
+                and (not favorites_only or item['favorite'])]
+
+    @app.patch('/api/artworks/{artwork_id}/organization')
+    def organize(artwork_id: UUID, value: OrganizationInput):
+        try:
+            item = gallery.organize(host.DB, str(artwork_id), value.revision,
+                                    value.model_dump(exclude_unset=True, exclude={'revision'}))
+            return summary(item)
+        except KeyError:
+            raise HTTPException(404, '找不到作品')
+        except gallery.RevisionConflict as exc:
+            raise HTTPException(409, str(exc))
 
     @app.get('/api/artworks/{artwork_id}')
     def detail(artwork_id: UUID):

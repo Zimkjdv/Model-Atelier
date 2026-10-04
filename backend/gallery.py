@@ -16,6 +16,12 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 MAX_BYTES = 32 * 1024 * 1024
 MAX_PIXELS = 32_000_000
 FORMATS = {'PNG': ('png', 'image/png'), 'JPEG': ('jpg', 'image/jpeg'), 'WEBP': ('webp', 'image/webp')}
+ORGANIZATION_DEFAULTS = dict(favorite=False, notes='', archived=False, revision=0, organization_updated_at=None)
+
+
+def organization_defaults(value):
+    # Older records receive read-only defaults; historical image/graph data is unchanged.
+    return ORGANIZATION_DEFAULTS | value
 
 
 def get(path, artwork_id):
@@ -23,13 +29,39 @@ def get(path, artwork_id):
         row = db.execute('SELECT value FROM settings WHERE key=?', ('artwork:' + artwork_id,)).fetchone()
     if not row:
         raise KeyError('找不到作品')
-    return json.loads(row[0])
+    return organization_defaults(json.loads(row[0]))
 
 
 def list_all(path):
     with closing(sqlite3.connect(path)) as db:
         rows = db.execute("SELECT value FROM settings WHERE key LIKE 'artwork:%'").fetchall()
-    return sorted((json.loads(row[0]) for row in rows), key=lambda item: item['imported_at'], reverse=True)
+    return sorted((organization_defaults(json.loads(row[0])) for row in rows), key=lambda item: item['imported_at'], reverse=True)
+
+
+class RevisionConflict(ValueError):
+    pass
+
+
+def organize(path, artwork_id, revision, changes):
+    """CAS only mutable organization fields, serialized with imports across processes."""
+    if not changes or set(changes) - {'favorite', 'notes', 'archived'}:
+        raise ValueError('必須提供至少一個作品管理欄位')
+    with closing(sqlite3.connect(path)) as db, db:
+        db.execute('BEGIN IMMEDIATE')
+        key = 'artwork:' + artwork_id
+        row = db.execute('SELECT value FROM settings WHERE key=?', (key,)).fetchone()
+        if row is None:
+            raise KeyError('找不到作品')
+        value = organization_defaults(json.loads(row[0]))
+        if value['revision'] != revision:
+            raise RevisionConflict('作品已在另一個視窗變更；請重新讀取後確認筆記再保存。')
+        if all(value[k] == v for k, v in changes.items()):
+            return value
+        if revision >= 9007199254740991:
+            raise RevisionConflict('作品修訂號已達上限，請先備份資料。')
+        value.update(changes, revision=revision + 1, organization_updated_at=datetime.now(timezone.utc).isoformat())
+        db.execute('UPDATE settings SET value=? WHERE key=?', (json.dumps(value, ensure_ascii=False), key))
+        return value
 
 
 def output_id(job, source):
@@ -128,6 +160,7 @@ def save(path, folder, job, source, raw):
                  width=width, height=height, size=len(raw), extension=extension, media_type=media_type,
                  sha256=hashlib.sha256(raw).hexdigest(), created_at=job['created_at'],
                  imported_at=datetime.now(timezone.utc).isoformat())
+    value.update(ORGANIZATION_DEFAULTS)
     folder.mkdir(parents=True, exist_ok=True)
     written = []
     try:
@@ -135,7 +168,7 @@ def save(path, folder, job, source, raw):
             db.execute('BEGIN IMMEDIATE')
             row = db.execute('SELECT value FROM settings WHERE key=?', ('artwork:' + artwork_id,)).fetchone()
             if row:
-                return json.loads(row[0]), False
+                return organization_defaults(json.loads(row[0])), False
             for name, content in [(artwork_id + '.' + extension, raw), (artwork_id + '.thumb.png', thumbnail)]:
                 target = folder / name
                 temp_name = None

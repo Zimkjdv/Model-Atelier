@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { architectureLabel, fileHash, fileSize, metadataTime, safeMetadataUrl } from './modelMetadata'
 import type { ModelMetadataSnapshot, LoraMetadataSnapshot } from './modelMetadata'
 import LoraSnapshot from './LoraSnapshot.vue'
@@ -8,18 +8,25 @@ import ReferenceSnapshot from './ReferenceSnapshot.vue'
 import { imageWorkflowId, type ReferenceSnapshot as ReferenceMetadata } from './referenceSettings'
 import type { ComponentSnapshot as ComponentMetadata } from './fluxSettings'
 const props = defineProps<{ jobId?: string }>()
-const emit = defineEmits<{ studio: []; restore: [artworkId: string, workflowId?: string | null] }>()
+const emit = defineEmits<{ studio: []; restore: [artworkId: string, workflowId?: string | null]; dirty: [value: boolean] }>()
 type Parameters = { prompt: string | null; negative_prompt: string | null; seed: string | null; steps: number | null; cfg: number | null; sampler: string | null; scheduler: string | null; denoise: number | null }
-type Artwork = { id: string; job_id: string; title: string; checkpoint: string; model_version: string; model_metadata?: ModelMetadataSnapshot | null; lora_metadata?: LoraMetadataSnapshot[] | null; workflow_id?: string | null; component_metadata?: ComponentMetadata[] | null; reference_metadata?: ReferenceMetadata[] | null; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string }
+type Artwork = { id: string; job_id: string; title: string; checkpoint: string; model_version: string; model_metadata?: ModelMetadataSnapshot | null; lora_metadata?: LoraMetadataSnapshot[] | null; workflow_id?: string | null; component_metadata?: ComponentMetadata[] | null; reference_metadata?: ReferenceMetadata[] | null; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string; favorite: boolean; notes: string; archived: boolean; revision: number; organization_updated_at: string | null }
 type Job = { id: string; status: string; checkpoint: string; created_at: string }
 type ImportResult = { imported: Artwork[]; existing: Artwork[]; errors: { source: { filename: string }; message: string }[] }
 const items = ref<Artwork[]>([]), jobs = ref<Job[]>([]), selectedJob = ref(props.jobId || '')
 const busy = ref(false), error = ref(''), message = ref(''), failures = ref<ImportResult['errors']>([])
 const search = ref(''), selected = ref<Artwork | null>(null), preview = ref<HTMLDialogElement | null>(null)
+const scope = ref<'active' | 'archived' | 'all'>('active'), favoritesOnly = ref(false), modelFilter = ref('')
+const saving = ref(false), notesDraft = ref(''), organizationError = ref(''), organizationMessage = ref('')
+const notesDirty = computed(() => selected.value !== null && notesDraft.value !== selected.value.notes)
+const modelChoices = computed(() => [...new Set(items.value.map(item => item.checkpoint))].sort())
+const archiveCount = computed(() => items.value.filter(item => item.archived).length)
 const completed = computed(() => jobs.value.filter(job => job.status === 'completed'))
-const visible = computed(() => items.value.filter(item => [item.title, item.checkpoint, item.parameters.prompt || '', ...(item.lora_metadata ?? []).map(lora => lora.name + ' ' + lora.version)].join(' ').toLowerCase().includes(search.value.toLowerCase())))
-async function api<T>(path: string, method = 'GET'): Promise<T> {
-  const response = await fetch('/api/' + path, { method })
+const visible = computed(() => items.value.filter(item => (scope.value === 'all' || item.archived === (scope.value === 'archived')) &&
+  (!favoritesOnly.value || item.favorite) && (!modelFilter.value || item.checkpoint === modelFilter.value) &&
+  [item.title, item.checkpoint, item.model_version, item.notes, item.parameters.prompt || '', ...(item.lora_metadata ?? []).map(lora => lora.name + ' ' + lora.version)].join(' ').toLowerCase().includes(search.value.trim().toLowerCase())))
+async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
+  const response = await fetch('/api/' + path, { method, ...(body === undefined ? {} : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) })
   if (!response.ok) {
     const data = await response.json().catch(() => ({}))
     throw new Error(typeof data.detail === 'string' ? data.detail : '無法讀取作品資料，請稍後再試。')
@@ -27,19 +34,19 @@ async function api<T>(path: string, method = 'GET'): Promise<T> {
   return response.json()
 }
 async function read() {
-  const [artworks, tasks] = await Promise.all([api<Artwork[]>('artworks'), api<Job[]>('jobs')])
+  const [artworks, tasks] = await Promise.all([api<Artwork[]>('artworks?scope=all'), api<Job[]>('jobs')])
   items.value = artworks; jobs.value = tasks
   if (!completed.value.some(job => job.id === selectedJob.value)) selectedJob.value = completed.value[0]?.id || ''
 }
 async function refresh() {
-  if (busy.value) return
+  if (busy.value || saving.value) return
   busy.value = true; error.value = ''
   try { await read() }
   catch (e) { error.value = e instanceof Error ? e.message : '讀取失敗' }
   finally { busy.value = false }
 }
 async function importImages() {
-  if (busy.value || !selectedJob.value) return
+  if (busy.value || saving.value || !selectedJob.value) return
   busy.value = true; error.value = ''; message.value = ''; failures.value = []
   try {
     const result = await api<ImportResult>(`jobs/${selectedJob.value}/artworks`, 'POST')
@@ -52,16 +59,64 @@ async function importImages() {
 }
 async function open(item: Artwork) {
   selected.value = item
+  notesDraft.value = item.notes; organizationError.value = ''; organizationMessage.value = ''
   await nextTick()
   preview.value?.showModal()
 }
 function restore(item: Artwork) {
-  preview.value?.close()
+  if (!closePreview()) return
   emit('restore', item.id, item.workflow_id)
 }
+function closePreview() {
+  if (saving.value) return false
+  if (notesDirty.value && !window.confirm('筆記尚未保存，確定關閉並放棄變更？')) return false
+  preview.value?.close()
+  return true
+}
+function replaceItem(item: Artwork) {
+  items.value = items.value.map(value => value.id === item.id ? item : value)
+  if (selected.value?.id === item.id) selected.value = item
+}
+async function organize(item: Artwork, changes: Partial<Pick<Artwork, 'favorite' | 'notes' | 'archived'>>, feedback: string) {
+  if (busy.value || saving.value) return
+  saving.value = true; error.value = ''; organizationError.value = ''; organizationMessage.value = ''
+  try {
+    const updated = await api<Artwork>(`artworks/${item.id}/organization`, 'PATCH', { revision: item.revision, ...changes })
+    replaceItem(updated)
+    if (Object.hasOwn(changes, 'notes')) notesDraft.value = updated.notes
+    message.value = feedback; organizationMessage.value = feedback
+  } catch (e) {
+    const text = e instanceof Error ? e.message : '保存失敗，筆記仍保留在表單。'
+    if (selected.value?.id === item.id) organizationError.value = text
+    else error.value = text
+  } finally { saving.value = false }
+}
+function archive(item: Artwork) {
+  if (selected.value?.id === item.id && notesDirty.value) {
+    organizationError.value = '請先保存筆記，再變更封存狀態。'
+    return
+  }
+  void organize(item, { archived: !item.archived }, item.archived ? '作品已還原到使用中的作品。' : '作品已封存，可在「已封存」篩選中還原。')
+}
+async function reloadNotes() {
+  const item = selected.value
+  if (!item || saving.value) return
+  if (notesDirty.value && !window.confirm('重新讀取會放棄尚未保存的筆記，確定繼續？')) return
+  saving.value = true; organizationError.value = ''; organizationMessage.value = ''
+  try {
+    const updated = await api<Artwork>(`artworks/${item.id}`)
+    replaceItem(updated); notesDraft.value = updated.notes; organizationMessage.value = '已讀取最新筆記與作品狀態。'
+  } catch (e) { organizationError.value = e instanceof Error ? e.message : '讀取失敗' }
+  finally { saving.value = false }
+}
+function beforeUnload(event: BeforeUnloadEvent) {
+  if (notesDirty.value || saving.value) { event.preventDefault(); event.returnValue = '' }
+}
+watch([notesDirty, saving], ([dirty, pending]) => emit('dirty', dirty || pending), { flush: 'sync' })
 const imageUrl = (item: Artwork, thumbnail = false) => `/api/artworks/${item.id}/image${thumbnail ? '?thumbnail=true' : ''}`
 const importedCount = (job: Job) => items.value.filter(item => item.job_id === job.id).length
-onMounted(refresh)
+onMounted(() => { window.addEventListener('beforeunload', beforeUnload); void refresh() })
+onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload); emit('dirty', false) })
 </script>
 
 <template>
@@ -77,20 +132,22 @@ onMounted(refresh)
   <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
   <p v-if="message" class="notice" role="status">{{ message }}</p>
   <ul v-if="failures.length" class="notice warning" role="alert"><li v-for="(failure, index) in failures" :key="index">{{ failure.source.filename }}：{{ failure.message }}</li></ul>
-  <div class="artwork-toolbar"><label for="artwork-search">搜尋作品<input id="artwork-search" v-model="search" type="search" placeholder="檔名、模型或畫面描述"></label><button class="secondary" :disabled="busy" @click="refresh">重新整理</button><span class="muted" role="status">{{ visible.length }} 張作品</span></div>
-  <article v-if="!visible.length" class="panel placeholder"><h2>{{ busy ? '讀取作品中…' : items.length ? '沒有符合的作品' : '第一張作品，從一次生成開始' }}</h2><p>{{ items.length ? '試試其他搜尋文字。' : '完成生成後，選擇上方任務匯入圖片。作品會保存在這台平台主機。' }}</p></article>
+  <div class="artwork-toolbar"><label for="artwork-search">搜尋作品<input id="artwork-search" v-model="search" type="search" placeholder="檔名、模型、筆記或畫面描述"></label><label for="artwork-scope">作品狀態<select id="artwork-scope" v-model="scope"><option value="active">使用中</option><option value="archived">已封存</option><option value="all">全部作品</option></select></label><label for="artwork-model">模型篩選<select id="artwork-model" v-model="modelFilter"><option value="">所有模型</option><option v-for="name in modelChoices" :key="name" :value="name">{{ name }}</option></select></label><label class="favorite-filter"><input v-model="favoritesOnly" type="checkbox">只看收藏</label><button class="secondary" :disabled="busy || saving" @click="refresh">重新整理</button><span class="muted" role="status">{{ visible.length }} / {{ items.length }} 張作品 · 已封存 {{ archiveCount }} 張</span></div>
+  <article v-if="!visible.length" class="panel placeholder"><h2>{{ busy ? '讀取作品中…' : items.length ? '沒有符合的作品' : '第一張作品，從一次生成開始' }}</h2><p>{{ items.length ? '調整搜尋、模型或收藏篩選；封存作品可在「已封存」中還原。' : '完成生成後，選擇上方任務匯入圖片。作品會保存在這台平台主機。' }}</p></article>
   <div class="artwork-grid"><article v-for="item in visible" :key="item.id" class="panel artwork-card">
     <button class="artwork-cover" :aria-label="'查看作品 ' + item.title" @click="open(item)"><img v-if="item.thumbnail_available" :src="imageUrl(item, true)" :alt="item.title" loading="lazy" @error="item.thumbnail_available = false"><span v-else>縮圖無法讀取 · 點此查看資料</span></button>
-    <h2>{{ item.title }}</h2><p>{{ item.width }} × {{ item.height }} · {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p><p>{{ item.checkpoint }} · 版本 {{ item.model_version }}</p>
+    <div class="card-title"><h2>{{ item.title }}</h2><span v-if="item.archived" class="archive-badge">已封存</span><span v-if="item.favorite" class="favorite-badge">★ 收藏</span></div><p>{{ item.width }} × {{ item.height }} · {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p><p>{{ item.checkpoint }} · 版本 {{ item.model_version }}</p>
+    <p v-if="item.notes" class="note-excerpt">{{ item.notes.slice(0, 160) }}{{ item.notes.length > 160 ? '…' : '' }}</p>
     <p v-if="item.workflow_id === imageWorkflowId">圖生圖 · 參考素材 {{ item.reference_metadata?.length ?? 0 }} 張</p>
     <p v-for="(lora, index) in item.lora_metadata ?? []" :key="index">LoRA {{ lora.name }} · 版本 {{ lora.version?.trim() || '未知' }}</p>
     <p v-if="!item.image_available" class="missing">原圖已遺失，請從備份還原；生成參數仍保留。</p>
+    <div class="organization-actions"><button class="secondary" :aria-label="(item.favorite ? '取消收藏：' : '收藏作品：') + item.title" :aria-pressed="item.favorite" :disabled="busy || saving" @click="organize(item, { favorite: !item.favorite }, item.favorite ? '已取消收藏。' : '已加入收藏。')">{{ item.favorite ? '★ 已收藏' : '☆ 收藏' }}</button><button class="secondary" :aria-label="(item.archived ? '還原作品：' : '封存作品：') + item.title" :disabled="busy || saving" @click="archive(item)">{{ item.archived ? '還原作品' : '封存作品' }}</button></div>
     <div class="artwork-actions"><button class="secondary" :aria-label="'預覽與參數：' + item.title" @click="open(item)">預覽與參數</button><button class="secondary" :aria-label="'載入創作設定：' + item.title" @click="restore(item)">載入創作設定 →</button><a v-if="item.image_available" :href="imageUrl(item) + '?download=true'">下載原圖 ↓</a></div>
   </article></div>
-  <dialog ref="preview" class="artwork-dialog" aria-labelledby="artwork-preview-title" @close="selected = null">
-    <template v-if="selected"><div class="preview-heading"><h2 id="artwork-preview-title">{{ selected.title }}</h2><button class="secondary" autofocus @click="preview?.close()">關閉 ×</button></div>
+  <dialog ref="preview" class="artwork-dialog" aria-labelledby="artwork-preview-title" @cancel.prevent="closePreview" @close="selected = null">
+    <template v-if="selected"><div class="preview-heading"><h2 id="artwork-preview-title">{{ selected.title }}<small v-if="selected.archived"> · 已封存</small></h2><button class="secondary" :disabled="saving" autofocus @click="closePreview">關閉 ×</button></div>
       <div class="preview-grid"><div class="preview-image"><img v-if="selected.image_available" :src="imageUrl(selected)" :alt="selected.title" @error="selected.image_available = false"><p v-else class="notice warning">原圖無法讀取，請重新整理作品庫或從備份還原。</p></div>
-        <div class="artwork-info"><h3>生成設定</h3><dl><dt>Checkpoint</dt><dd>{{ selected.checkpoint }}</dd><dt>模型版本（提交時登記）</dt><dd>{{ selected.model_version }}</dd><dt>圖片尺寸</dt><dd>{{ selected.width }} × {{ selected.height }}</dd><dt>Seed</dt><dd>{{ selected.parameters.seed ?? '未知' }}</dd><dt>Steps / CFG</dt><dd>{{ selected.parameters.steps ?? '未知' }} / {{ selected.parameters.cfg ?? '未知' }}</dd><dt>Sampler / Scheduler</dt><dd>{{ selected.parameters.sampler ?? '未知' }} / {{ selected.parameters.scheduler ?? '未知' }}</dd><dt>Denoise</dt><dd>{{ selected.parameters.denoise ?? '未知' }}</dd></dl>
+        <div class="artwork-info"><section class="organization-panel" aria-label="作品管理"><h3>作品管理</h3><div class="organization-actions"><button class="secondary" :aria-pressed="selected.favorite" :disabled="saving" @click="organize(selected, { favorite: !selected.favorite }, selected.favorite ? '已取消收藏。' : '已加入收藏。')">{{ selected.favorite ? '★ 已收藏' : '☆ 收藏' }}</button><button class="secondary" :disabled="saving || notesDirty" @click="archive(selected)">{{ selected.archived ? '還原作品' : '封存作品' }}</button></div><form @submit.prevent="organize(selected, { notes: notesDraft }, '筆記已保存。')"><label for="artwork-notes">作品筆記</label><textarea id="artwork-notes" v-model="notesDraft" rows="5" maxlength="10000" :disabled="saving" aria-describedby="artwork-notes-help" placeholder="記下這次實驗的觀察、用途或下次想調整的參數。"></textarea><p id="artwork-notes-help" class="footnote">最多 10,000 字 · {{ notesDirty ? '有尚未保存的變更' : '筆記已同步' }}。封存後仍可預覽、下載與還原。</p><div class="organization-actions"><button class="primary" :disabled="saving || !notesDirty">{{ saving ? '保存中…' : '保存筆記' }}</button><button type="button" class="secondary" :disabled="saving" @click="reloadNotes">重新讀取筆記</button></div></form><p class="footnote">修訂 {{ selected.revision }} · {{ selected.organization_updated_at ? new Date(selected.organization_updated_at).toLocaleString() : '尚未整理' }}</p><p v-if="organizationError" class="notice warning" role="alert">{{ organizationError }}</p><p v-if="organizationMessage" class="notice" role="status">{{ organizationMessage }}</p></section><h3>生成設定</h3><dl><dt>Checkpoint</dt><dd>{{ selected.checkpoint }}</dd><dt>模型版本（提交時登記）</dt><dd>{{ selected.model_version }}</dd><dt>圖片尺寸</dt><dd>{{ selected.width }} × {{ selected.height }}</dd><dt>Seed</dt><dd>{{ selected.parameters.seed ?? '未知' }}</dd><dt>Steps / CFG</dt><dd>{{ selected.parameters.steps ?? '未知' }} / {{ selected.parameters.cfg ?? '未知' }}</dd><dt>Sampler / Scheduler</dt><dd>{{ selected.parameters.sampler ?? '未知' }} / {{ selected.parameters.scheduler ?? '未知' }}</dd><dt>Denoise</dt><dd>{{ selected.parameters.denoise ?? '未知' }}</dd></dl>
         <h3>畫面描述</h3><p class="prompt">{{ selected.parameters.prompt ?? '無法從此工作流程解析，請查看完整 JSON。' }}</p><h3>負面提示詞</h3><p class="prompt">{{ selected.parameters.negative_prompt || '未設定或無法解析' }}</p>
         <details class="model-snapshot"><summary>提交時模型資料</summary>
           <template v-if="selected.model_metadata"><p class="footnote">保留任務提交時的使用者登記，不隨模型庫後續編輯改動；不代表平台已驗證檔案、授權或相容性。</p><dl>
@@ -119,4 +176,5 @@ onMounted(refresh)
 <style scoped>
 .import-panel{background:linear-gradient(120deg,#253b2d,#191d20)}.import-controls,.artwork-toolbar,.artwork-actions{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.import-controls label,.artwork-toolbar label{display:grid;gap:9px;font-size:12px;flex:1;min-width:0}.import-controls select{width:100%;padding:12px;border:1px solid var(--border-control);border-radius:7px;background:var(--surface-input);color:var(--text-primary);font:inherit}.artwork-toolbar{margin:24px 0}.artwork-toolbar .muted{align-self:center;font-size:12px}.artwork-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.artwork-card{min-width:0;margin-bottom:0}.artwork-cover{display:grid;place-items:center;width:100%;height:230px;padding:0;background:#101617;color:#9fb1a5;border-radius:8px;overflow:hidden}.artwork-cover img{width:100%;height:100%;object-fit:contain}.artwork-card h2{font-size:14px;overflow-wrap:anywhere;margin-top:18px}.artwork-card p{font-size:11px;overflow-wrap:anywhere}.artwork-actions{align-items:center;margin-top:18px;font-size:12px}.artwork-actions a{color:#c5dfba}.missing{color:#ebc4a1}.artwork-dialog{background:#191f20;color:var(--text-primary);border:1px solid var(--border-control);border-radius:14px;padding:24px;width:min(1160px,94vw);max-height:90vh}.artwork-dialog::backdrop{background:#000b}.preview-heading{display:flex;align-items:start;justify-content:space-between;gap:20px;margin-bottom:20px}.preview-heading h2{font-size:18px;overflow-wrap:anywhere}.preview-heading button{flex-shrink:0}.preview-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px}.preview-image{background:#101617;display:grid;place-items:center;align-self:start;min-height:200px}.preview-image img{max-width:100%;max-height:70vh;object-fit:contain}.artwork-info{font-size:12px;min-width:0;overflow-wrap:anywhere}.artwork-info h3{font-size:13px;margin-top:20px}.artwork-info dl{display:grid;grid-template-columns:1fr 1.2fr;gap:10px}.artwork-info dt{color:#9fb1a5}.artwork-info dd{margin:0}.prompt{white-space:pre-wrap;max-height:220px;overflow:auto}.artwork-info details{margin-top:24px}.artwork-info summary{cursor:pointer}@media(max-width:1100px){.artwork-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.artwork-grid,.preview-grid{grid-template-columns:1fr}.import-controls label,.artwork-toolbar label{flex-basis:100%}.artwork-dialog{padding:16px}.preview-heading h2{font-size:14px}}
 .model-snapshot a{color:#c5dfba}.file-hash{font-family:monospace;line-height:1.7}
+.artwork-toolbar select{width:100%;min-width:0;padding:11px;font-size:12px}.artwork-toolbar .favorite-filter{display:flex;align-items:center;gap:8px;flex:0 0 auto}.card-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:18px}.card-title h2{margin:0}.archive-badge,.favorite-badge{font-size:10px;border:1px solid var(--border-control);border-radius:20px;padding:4px 8px;color:#c8dfbd}.note-excerpt{white-space:pre-wrap;color:#cbd7cf;max-height:100px;overflow:hidden}.organization-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}.organization-panel{border:1px solid var(--border-control);background:#1c2824;border-radius:10px;padding:16px}.organization-panel h3{margin-top:0}.organization-panel label{display:block;margin:18px 0 10px}.organization-panel textarea{display:block;box-sizing:border-box;width:100%;padding:12px;resize:vertical;line-height:1.6}.organization-panel .notice{padding:12px;margin-bottom:0}.preview-heading small{font-size:12px;font-weight:normal;color:var(--text-muted)}
 </style>

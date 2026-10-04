@@ -14,6 +14,12 @@ import type { EngineReport } from './environmentTypes'
 type Memory = { total: number | null; used: number | null; free: number | null }
 type System = { host: string; os: string; python: string; updated_at: string; gpus: (Memory & { index: string; name: string; driver: string })[]; gpu_error: string | null; ram: Memory; disk: Memory & { path: string } }
 const page = ref('系統資訊'), system = ref<System | null>(null), engine = ref<EngineReport | null>(null)
+const artworkNotesDirty = ref(false)
+function navigate(next: string) {
+  if (next === page.value) return
+  if (page.value === '作品庫' && artworkNotesDirty.value && !window.confirm('作品筆記尚未保存或正在保存，確定離開作品庫？')) return
+  page.value = next
+}
 const systemStale = ref(false), savedUrl = ref('')
 const galleryJob = ref('')
 const restoreRequest = ref<{ artworkId: string; token: number } | null>(null)
@@ -99,9 +105,9 @@ onUnmounted(() => { alive = false; ++refreshToken; ++settingsEpoch; refreshAbort
   <div class="layout">
     <a class="skip-link" href="#main-content">跳至主要內容</a>
     <aside>
-      <a class="brand" href="#" @click.prevent="page = '系統資訊'"><span class="brand-icon">M</span><span>Model Atelier<small>個人 AI 創作工作台</small></span></a>
+      <a class="brand" href="#" @click.prevent="navigate('系統資訊')"><span class="brand-icon">M</span><span>Model Atelier<small>個人 AI 創作工作台</small></span></a>
       <div class="nav-label">WORKSPACE</div>
-      <nav aria-label="主要導覽"><button v-for="(item, i) in pages" :key="item" :class="{ active: page === item }" :aria-label="item" :aria-current="page === item ? 'page' : undefined" :title="item" @click="page = item"><span class="nav-icon" aria-hidden="true">{{ ['◈', '▦', '▧', '◉', '⚙', '▨'][i] }}</span>{{ item }}</button></nav>
+      <nav aria-label="主要導覽"><button v-for="(item, i) in pages" :key="item" :class="{ active: page === item }" :aria-label="item" :aria-current="page === item ? 'page' : undefined" :title="item" @click="navigate(item)"><span class="nav-icon" aria-hidden="true">{{ ['◈', '▦', '▧', '◉', '⚙', '▨'][i] }}</span>{{ item }}</button></nav>
       <div class="sidebar-footer"><span class="dot" :class="{ online: engine?.connected }"></span>{{ engine?.connected ? 'ComfyUI 已連線' : 'ComfyUI 未連線' }}<small>LOCAL STUDIO · v0.1</small></div>
     </aside>
     <main id="main-content" tabindex="-1">
@@ -130,7 +136,7 @@ onUnmounted(() => { alive = false; ++refreshToken; ++settingsEpoch; refreshAbort
         <template v-else-if="page === '設定'"><form class="panel settings" @submit.prevent="save"><h2>ComfyUI 連線</h2><p class="muted">先啟動 ComfyUI，再填入其服務位址。設定保存在本機資料庫。</p><label for="url">服務位址</label><input id="url" v-model="url" :disabled="saving" placeholder="http://127.0.0.1:8188" required type="url"><p class="muted">支援本機或你管理的遠端執行主機。</p><button class="primary" :disabled="saving">{{ saving ? '保存中…' : '保存並檢查連線' }}</button><p role="status">{{ message }}</p><p v-if="engine">{{ engine.connected ? 'ComfyUI 連線成功' : engine.error }}</p></form><LocalModelPaths :selected-engine-url="savedUrl"/></template>
         <ModelLibrary v-else-if="page === '模型庫'" @settings="page = '設定'" />
         <AssetLibrary v-else-if="page === '參考素材'" />
-        <ArtworkLibrary v-else-if="page === '作品庫'" :job-id="galleryJob" @studio="page = '創作工作台'" @restore="restoreArtwork" />
+        <ArtworkLibrary v-else-if="page === '作品庫'" :job-id="galleryJob" @studio="navigate('創作工作台')" @restore="restoreArtwork" @dirty="artworkNotesDirty = $event" />
       </section>
     </main>
   </div>
