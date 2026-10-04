@@ -7,9 +7,10 @@ const props = defineProps<{ form: CreationForm; blockedReason?: string; disabled
 const emit = defineEmits<{ gallery: [jobId: string]; restoreJob: [jobId: string] }>()
 const jobs = ref<Job[]>([]), busy = ref(false), error = ref('')
 const cancelChoice = ref<string | null>(null)
+const stopChoice = ref<string | null>(null)
 const pending = ref<Record<string, unknown> | null>(null)
 try { pending.value = JSON.parse(localStorage.getItem('atelier-pending-submission') || 'null') } catch { /* No valid saved request. */ }
-const labels: Record<string, string> = { validating: '確認模型中', submitting: '提交中', queued: '等待生成', running: '生成中', completed: '已完成', failed: '失敗', unknown: '結果待確認', cancelling: '確認取消中', cancel_unknown: '取消結果待確認', cancelled: '已取消排隊' }
+const labels: Record<string, string> = { validating: '確認模型中', submitting: '提交中', queued: '等待生成', running: '生成中', completed: '已完成', failed: '失敗', unknown: '結果待確認', cancelling: '確認取消中', cancel_unknown: '取消結果待確認', cancelled: '已取消排隊', stopping: '確認停止中', stop_unknown: '停止結果待確認', stopped: '已停止生成' }
 async function request(path: string, method = 'GET', body?: unknown) {
   const response = await fetch('/api/' + path, { method, headers: { 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) })
   const data = await response.json()
@@ -70,6 +71,13 @@ async function cancel(job: Job) {
   catch (e) { error.value = e instanceof Error ? e.message : '無法確認取消結果'; await load().catch(() => {}) }
   finally { busy.value = false }
 }
+async function stop(job: Job) {
+  if (busy.value) return
+  busy.value = true; error.value = ''; stopChoice.value = null
+  try { await request(`jobs/${job.id}/stop`, 'POST'); await load() }
+  catch (e) { error.value = e instanceof Error ? e.message : '無法確認停止結果'; await load().catch(() => {}) }
+  finally { busy.value = false }
+}
 const timer = window.setInterval(() => {
   if (visible.value && jobs.value.some(j => !terminal(j) && connections.value[j.id]?.state !== 'connected')) void refresh()
 }, 15000)
@@ -112,6 +120,8 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <p v-if="!terminal(job)" class="footnote" role="status">{{ connections[job.id] ? connectionLabels[connections[job.id]!.state] : '使用狀態查詢' }}<template v-if="connections[job.id]?.message"> · {{ connections[job.id]!.message }}</template><template v-if="connections[job.id]?.state !== 'connected' && job.progress"> · 上次進度可能已過期</template></p>
       <template v-if="job.status === 'queued'"><button v-if="cancelChoice !== job.id" type="button" class="secondary" :disabled="busy" @click="cancelChoice = job.id">取消排隊</button><div v-else class="notice"><p>只移除這個任務的排隊項目。若它已開始執行，平台會保留任務並提示最新狀態。</p><button type="button" class="secondary" :disabled="busy" @click="cancelChoice = null">保留任務</button><button type="button" class="secondary" :disabled="busy" @click="cancel(job)">確認取消此任務</button></div></template>
       <button v-if="['cancelling', 'cancel_unknown'].includes(job.status)" type="button" class="secondary" :disabled="busy" @click="cancel(job)">確認取消結果</button>
+      <template v-if="job.status === 'running'"><button v-if="stopChoice !== job.id" type="button" class="secondary" :disabled="busy" @click="stopChoice = job.id">停止此任務</button><div v-else class="notice warning"><p>只停止這個任務。需原引擎具備已驗證的指定任務停止能力；若已完成會保留結果，停止請求仍需歷史確認。</p><button type="button" class="secondary" :disabled="busy" @click="stopChoice = null">繼續生成</button><button type="button" class="secondary" :disabled="busy" @click="stop(job)">確認停止此任務</button></div></template>
+      <button v-if="['stopping', 'stop_unknown'].includes(job.status)" type="button" class="secondary" :disabled="busy" @click="stop(job)">確認停止結果</button>
       <template v-if="job.status === 'failed'"><button type="button" class="secondary" :aria-label="`載入原設定並調整：${job.id}`" :disabled="busy || disabled || !!pending" @click="emit('restoreJob', job.id)">載入原設定並調整</button><p class="footnote">載入後可手動調整，再按「生成圖片」建立新任務。</p></template>
       <button v-if="job.status === 'completed'" class="secondary" @click="emit('gallery', job.id)">前往作品庫匯入圖片 →</button>
       <a :href="`/api/jobs/${job.id}/workflow`">下載完整工作流程</a> · <a :href="`/api/jobs/${job.id}`" target="_blank" rel="noopener">任務／歷史 JSON</a>

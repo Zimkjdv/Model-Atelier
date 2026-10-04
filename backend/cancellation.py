@@ -13,7 +13,7 @@ from fastapi import HTTPException
 
 from backend import jobs, failures
 
-TERMINAL = {'completed', 'failed', 'cancelled'}
+TERMINAL = {'completed', 'failed', 'cancelled', 'stopped'}
 CANCEL_STATES = {'cancelling', 'cancel_unknown'}
 UNCERTAIN = '取消結果待確認；未確認任務已移除，請查詢狀態；請勿重新提交相同任務'
 UNOBSERVED = object()

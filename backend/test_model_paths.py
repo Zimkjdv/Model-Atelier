@@ -298,6 +298,7 @@ class ModelPathTests(unittest.TestCase):
         backend = self.root / 'backend'
         backend.mkdir()
         shutil.copy2(REPOSITORY / 'scripts' / 'comfy_model_paths.py', scripts)
+        shutil.copy2(REPOSITORY / 'scripts' / 'comfy_stop_capability.py', scripts)
         shutil.copy2(REPOSITORY / 'backend' / 'model_paths.py', backend)
         (backend / '__init__.py').write_text('', encoding='utf-8')
         shutil.copy2(REPOSITORY / 'start-comfyui.ps1', self.root)

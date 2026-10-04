@@ -8,7 +8,7 @@ export type JobFailure = {
 }
 export type Job = { id: string; status: string; checkpoint: string; created_at: string; updated_at?: string; revision?: number; error?: string; progress?: JobProgress; failure_info?: JobFailure | null; lora_metadata?: LoraMetadataSnapshot[] | null; preflight_warnings?: string[] }
 type Connection = { state: 'connecting' | 'connected' | 'reconnecting' | 'offline'; message?: string }
-export const terminal = (job: Job) => ['completed', 'failed', 'cancelled'].includes(job.status)
+export const terminal = (job: Job) => ['completed', 'failed', 'cancelled', 'stopped'].includes(job.status)
 
 // A REST snapshot may precede a transient, throttled progress event. Preserve
 // the newer node sample at equal revisions without masking newer persisted state.

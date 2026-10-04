@@ -8,7 +8,7 @@ import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
 from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures, node_preflight
-from backend import lora_preflight, lora_records
+from backend import lora_preflight, lora_records, stopping
 
 
 class Submission(BaseModel):
@@ -265,6 +265,11 @@ def install(app, host):
         async with job_lock(job_id):
             return await refresh_locked(job_id)
 
+    @app.post('/api/jobs/{job_id}/stop')
+    async def stop(job_id: UUID):
+        async with job_lock(job_id):
+            return await stopping.stop(host, lookup(job_id))
+
     async def refresh_locked(job_id):
         job = lookup(job_id)
         if job['status'] in cancellation.TERMINAL:
@@ -281,6 +286,8 @@ def install(app, host):
                 pass
         if job['status'] in cancellation.CANCEL_STATES:
             return await cancellation.refresh(host, job)
+        if job['status'] in stopping.STATES:
+            return await stopping.refresh(host, job)
         try:
             async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
                 status, entry = await cancellation.history_state(client, job)
