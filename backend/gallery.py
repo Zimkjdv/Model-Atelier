@@ -16,12 +16,14 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 MAX_BYTES = 32 * 1024 * 1024
 MAX_PIXELS = 32_000_000
 FORMATS = {'PNG': ('png', 'image/png'), 'JPEG': ('jpg', 'image/jpeg'), 'WEBP': ('webp', 'image/webp')}
-ORGANIZATION_DEFAULTS = dict(favorite=False, notes='', archived=False, revision=0, organization_updated_at=None)
+RATING_DEFAULTS = dict(prompt_adherence=None, character_consistency=None, visual_style=None, composition=None)
+ORGANIZATION_DEFAULTS = dict(favorite=False, notes='', archived=False, revision=0, organization_updated_at=None,
+                             ratings=RATING_DEFAULTS)
 
 
 def organization_defaults(value):
     # Older records receive read-only defaults; historical image/graph data is unchanged.
-    return ORGANIZATION_DEFAULTS | value
+    return deepcopy(ORGANIZATION_DEFAULTS) | value
 
 
 def get(path, artwork_id):
@@ -44,7 +46,7 @@ class RevisionConflict(ValueError):
 
 def organize(path, artwork_id, revision, changes):
     """CAS only mutable organization fields, serialized with imports across processes."""
-    if not changes or set(changes) - {'favorite', 'notes', 'archived'}:
+    if not changes or set(changes) - {'favorite', 'notes', 'archived', 'ratings'}:
         raise ValueError('必須提供至少一個作品管理欄位')
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
@@ -54,7 +56,7 @@ def organize(path, artwork_id, revision, changes):
             raise KeyError('找不到作品')
         value = organization_defaults(json.loads(row[0]))
         if value['revision'] != revision:
-            raise RevisionConflict('作品已在另一個視窗變更；請重新讀取後確認筆記再保存。')
+            raise RevisionConflict('作品已在另一個視窗變更；請重新讀取後確認筆記及評分再保存。')
         if all(value[k] == v for k, v in changes.items()):
             return value
         if revision >= 9007199254740991:
@@ -160,7 +162,7 @@ def save(path, folder, job, source, raw):
                  width=width, height=height, size=len(raw), extension=extension, media_type=media_type,
                  sha256=hashlib.sha256(raw).hexdigest(), created_at=job['created_at'],
                  imported_at=datetime.now(timezone.utc).isoformat())
-    value.update(ORGANIZATION_DEFAULTS)
+    value.update(deepcopy(ORGANIZATION_DEFAULTS))
     folder.mkdir(parents=True, exist_ok=True)
     written = []
     try:

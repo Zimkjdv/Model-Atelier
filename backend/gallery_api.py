@@ -13,17 +13,26 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from backend import gallery, jobs, catalog, workflows, lora_records, image_workflows
 
 
+class Ratings(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    prompt_adherence: int | None = Field(ge=1, le=5)
+    character_consistency: int | None = Field(ge=1, le=5)
+    visual_style: int | None = Field(ge=1, le=5)
+    composition: int | None = Field(ge=1, le=5)
+
+
 class OrganizationInput(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     revision: int = Field(ge=0, le=9007199254740991)
     favorite: bool = False
     notes: str = Field(default='', max_length=10000)
     archived: bool = False
+    ratings: Ratings = Field(default_factory=lambda: Ratings(**gallery.RATING_DEFAULTS))
 
     @model_validator(mode='after')
     def at_least_one_change(self):
         if not self.model_fields_set - {'revision'}:
-            raise ValueError('至少提供收藏、筆記或封存欄位')
+            raise ValueError('至少提供收藏、筆記、封存或評分欄位')
         return self
 
 

@@ -17,7 +17,7 @@ const page = ref('系統資訊'), system = ref<System | null>(null), engine = re
 const artworkNotesDirty = ref(false)
 function navigate(next: string) {
   if (next === page.value) return
-  if (page.value === '作品庫' && artworkNotesDirty.value && !window.confirm('作品筆記尚未保存或正在保存，確定離開作品庫？')) return
+  if (page.value === '作品庫' && artworkNotesDirty.value && !window.confirm('作品筆記或評分尚未保存或正在保存，確定離開作品庫？')) return
   page.value = next
 }
 const systemStale = ref(false), savedUrl = ref('')

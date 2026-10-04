@@ -21,6 +21,7 @@
 - 生成任務：標準 checkpoint 文生圖與單張圖生圖、任務查詢、重複請求防護及完整工作流程下載。圖生圖凍結素材與前處理快照、驗證原生節點並使用任務獨立圖片目錄；任務與作品頁可追溯來源並載入原設定。RTX 3060／Pony 一般風景已從 API 與介面實測，見 [圖生圖驗收](docs/validation/checkpoint-image2image-rtx3060.md)。
 - 執行中停止：針對原引擎中身分相符的單一任務；需已審查的原子取消能力，歷史確認中斷才顯示停止，未知結果只查詢。RTX 3060 已驗證後續任務正常完成，見 [停止實測](docs/validation/running-stop-rtx3060.md)。更新 ComfyUI 後未匹配來源會停用此操作能力，正常生成不受影響。
 - 作品庫：匯入已完成任務圖片、本機原圖與縮圖、大圖預覽、完整 workflow／原圖下載與創作設定還原；支援收藏、10,000 字筆記、模型／收藏／狀態組合篩選、筆記搜尋、封存及還原。跨視窗修訂檢查保留衝突中的未保存筆記，見 [作品庫管理](docs/artwork-library.md)。
+- 作品比較：最多四張原圖並排，顯示精確 seed、有序 LoRA 及取樣差異；作品預覽可保存四項 1–5 人工評分或留空，修訂衝突保留未保存內容。見 [比較與評分](docs/artwork-comparison.md)。
 - Pony V6 XL：固定作者來源的本地安裝器、大小與 SHA256 驗證，以及 RTX 3060 生成驗收工具。尚未提供訓練或通用模型下載管理。
 - Animagine XL 4.0 Opt：固定作者修訂下載、完整大小／SHA256 核對、版本登記與 RTX 3060 的 1024×1024 文生圖驗收完成；可手動確認套用作者預設，紀錄依 hash／架構匹配。見 [模型紀錄](docs/models/animagine-xl-4.0-opt.md)及 [實機條件](docs/validation/animagine-xl-4-0-opt-rtx3060.md)，其他硬體及負載仍待實測。
 - FLUX.1 [schnell]：模型庫提供固定來源、四個元件版本／雜湊與唯讀磁碟預檢；CLI：`.\.venv\Scripts\python.exe -m scripts.flux_preflight`。尚未提供下載及 GPU 生成驗收，來源條件、精度與後續驗收見 [FLUX 接入紀錄](docs/models/flux1-schnell.md)。

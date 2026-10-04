@@ -2,6 +2,8 @@
 
 作品匯入後可離線預覽、下載原圖與完整 workflow，並載入已支援流程的原始生成設定。管理資料與生成紀錄分開：收藏、筆記、封存會保存到 SQLite，圖片與任務快照保留原值。
 
+新增的四項人工評分與管理資料共用修訂號；作品卡片可加入最多四張並排比較，操作與完整 `ratings` 格式見 [比較與評分](artwork-comparison.md)。
+
 ## 使用
 
 - 在卡片或作品預覽中點「收藏」，再用「只看收藏」篩選。
@@ -18,7 +20,7 @@
 | --- | --- |
 | `GET /api/artworks` | 預設僅使用中作品；`scope=active/archived/all`；`favorites_only=true` 僅收藏 |
 | `GET /api/artworks/{id}` | 單件資料，包含封存作品 |
-| `PATCH /api/artworks/{id}/organization` | 必填整數 `revision`，至少一個 `favorite`、`notes`、`archived`；其他欄位拒絕 |
+| `PATCH /api/artworks/{id}/organization` | 必填整數 `revision`，至少一個 `favorite`、`notes`、`archived`、`ratings`；其他欄位拒絕 |
 | `GET /api/artworks/{id}/image` | 原圖；`thumbnail=true` 縮圖、`download=true` 下載 |
 | `GET /api/artworks/{id}/workflow` | 原始完整 JSON，保留精確 seed |
 | `GET /api/artworks/{id}/creation-settings` | 支援流程的完整設定還原，不提交生成 |
