@@ -136,6 +136,8 @@ python -m venv runtime/ComfyUI/.venv
 
 公開 LCM SDXL LoRA 亦可用 `scripts.install_model lcm-lora-sdxl` 安裝至 `runtime/ComfyUI/models/loras/`。Pony＋LCM 單一 LoRA 在 RTX 3060 完成生成及重啟後離線保存驗收；固定來源、參數、版本、耗時與可重跑指令見 [驗收紀錄](docs/validation/pony-lcm-rtx3060.md)。此實測驗證流程，不代表畫師風格或其他 LoRA 效果通過。
 
+公開黑白畫風 LoRA 安裝 ID 為 `ikea-instructions-lora-sdxl`；授權條款未知，版本標示固定 revision。`python -m scripts.verify_multi_lora --profile baseline|style|multi` 可逐次驗證無 LoRA、單一畫風及 LCM→畫風有序組合；RTX 3060 已完成三組生成與離線保存，但 4 步多項結果偏淡，不作為品質預設。來源、命令與限制見 [畫風／多 LoRA 紀錄](docs/validation/animagine-multi-lora-rtx3060.md)。
+
 先用唯讀檢查確認所選 manifest、剩餘下載量、安裝鎖及磁碟容量：
 
 ```powershell

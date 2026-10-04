@@ -1,0 +1,25 @@
+{
+  "id": "ikea-instructions-lora-sdxl",
+  "name": "IKEA Instructions LoRA SDXL",
+  "version": "revision eaa7f67c93be",
+  "architecture": "SDXL",
+  "filename": "ikea_instructions_xl_v1_5.safetensors",
+  "size_bytes": 185697368,
+  "sha256": "d0e5fcbe1e6e2a364011bf27a66e8a40c05d02195d3e422cc393436388b8da17",
+  "source": {
+    "provider": "Hugging Face",
+    "repository": "ostris/ikea-instructions-lora-sdxl",
+    "revision": "eaa7f67c93be0b22f00c0225d1f31232d91a052a",
+    "filename": "ikea_instructions_xl_v1_5.safetensors",
+    "page_url": "https://huggingface.co/ostris/ikea-instructions-lora-sdxl/blob/eaa7f67c93be0b22f00c0225d1f31232d91a052a/README.md",
+    "download_url": "https://huggingface.co/ostris/ikea-instructions-lora-sdxl/resolve/eaa7f67c93be0b22f00c0225d1f31232d91a052a/ikea_instructions_xl_v1_5.safetensors"
+  },
+  "license": {
+    "identifier": "other",
+    "name": "未知（作者標記 other）",
+    "url": "https://huggingface.co/ostris/ikea-instructions-lora-sdxl/blob/eaa7f67c93be0b22f00c0225d1f31232d91a052a/README.md",
+    "terms_verified": false,
+    "note": "固定模型卡沒有具體授權條款；公開可下載不代表可商用或再散布。權重不納入 Git，不推定其他授權。"
+  },
+  "purpose": "Monochrome instruction-style SDXL adapter for controlled style and ordered multi-LoRA experiments; no artist identity or quality guarantee."
+}

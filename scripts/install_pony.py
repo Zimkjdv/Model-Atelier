@@ -25,7 +25,9 @@ SOURCES = {
     'pony-v6-xl': ('AstraliteHeart/pony-diffusion-v6', 'v6.safetensors', 'pony-v6-xl.safetensors', '5ec9c05863255568f1b59753e3838107befaa712'),
     'animagine-xl-4.0-opt': ('cagliostrolab/animagine-xl-4.0', 'animagine-xl-4.0-opt.safetensors', 'animagine-xl-4.0-opt.safetensors', '2b7c1b397761bf5bd3cc42e5b39ec99314a75a96'),
     'lcm-lora-sdxl': ('latent-consistency/lcm-lora-sdxl', 'pytorch_lora_weights.safetensors', 'lcm_lora_sdxl.safetensors', 'a18548dd4956b174ec5b0d78d340c8dae0a129cd'),
+    'ikea-instructions-lora-sdxl': ('ostris/ikea-instructions-lora-sdxl', 'ikea_instructions_xl_v1_5.safetensors', 'ikea_instructions_xl_v1_5.safetensors', 'eaa7f67c93be0b22f00c0225d1f31232d91a052a'),
 }
+LORA_IDS = frozenset({'lcm-lora-sdxl', 'ikea-instructions-lora-sdxl'})
 RESERVE_BYTES = 2 * 1024**3
 CHUNK_BYTES = 1024 * 1024
 
@@ -70,7 +72,7 @@ def validate_manifest(value: dict) -> dict:
 
 def _paths(workspace: Path, filename: str, *, create=True) -> tuple[Path, Path, Path, Path]:
     root = workspace.resolve()
-    category = 'loras' if filename == SOURCES['lcm-lora-sdxl'][2] else 'checkpoints'
+    category = 'loras' if filename in {SOURCES[key][2] for key in LORA_IDS} else 'checkpoints'
     directory = (root / "runtime" / "ComfyUI" / "models" / category).resolve()
     if not directory.is_relative_to(root / "runtime"):
         raise InstallationError("模型目錄解析至 workspace/runtime 外，拒絕寫入。")
