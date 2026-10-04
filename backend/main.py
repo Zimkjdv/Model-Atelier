@@ -23,7 +23,7 @@ from starlette.concurrency import run_in_threadpool
 from uuid import UUID
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
-from backend import catalog, drafts, assets, submissions, gallery_api, model_profiles, model_paths, environment, validation_records, generation_advice, storage, loras, lora_compatibility
+from backend import catalog, drafts, assets, submissions, gallery_api, model_profiles, model_paths, environment, validation_records, generation_advice, storage, loras, lora_compatibility, lora_validation
 from backend.lora_settings import LoraSetting
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -379,6 +379,7 @@ generation_advice.install(app, sys.modules[__name__])
 storage.install(app, sys.modules[__name__])
 loras.install(app, sys.modules[__name__])
 lora_compatibility.install(app, sys.modules[__name__])
+lora_validation.install(app, sys.modules[__name__])
 
 
 if (ROOT / 'frontend' / 'dist').exists():

@@ -1,7 +1,7 @@
 """Read-only advice. Never authorizes or blocks job submission."""
 from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field
-from backend import environment, validation_records
+from backend import environment, validation_records, lora_validation
 from backend.lora_settings import LoraSetting
 
 
@@ -19,15 +19,18 @@ class AdviceInput(BaseModel):
     loras: list[LoraSetting] = Field(default_factory=list, max_length=1)
 
 
-def advise(value, model, diagnostics):
+def advise(value, model, diagnostics, lora=None, *, stale=False):
     evidence = validation_records.evaluate(model)
     settings = value.model_dump(exclude={'engine_url', 'checkpoint', 'loras'})
     active = [item for item in value.loras if item.enabled]
+    if active:
+        evidence = lora_validation.evaluate(model, lora or {}, active[0], settings | dict(batch_size=1), stale=stale)
     matches = [record for record in evidence['records']
-               if not active and all(record['settings'].get(key) == val for key, val in settings.items())]
+               if all(record['settings'].get(key) == val for key, val in settings.items())
+               and (not active or record['id'] in evidence['matching_parameter_records'])]
     warnings = []
     if active:
-        warnings.append('目前啟用 LoRA；既有七節點推論紀錄不涵蓋此組合，尚未實測。')
+        warnings.append('目前啟用 LoRA；僅比對單一 LoRA 八節點組合紀錄，不沿用基礎模型的七節點紀錄。')
     if not evidence['records']:
         warnings.append('此模型沒有匹配的推論實測紀錄。')
     elif not matches:
@@ -49,8 +52,13 @@ def install(app, host):
     async def generation_advice(value: AdviceInput):
         target = host.ModelTarget(engine_url=value.engine_url, name=value.checkpoint)
         _, before = host.current_catalog(target)
+        active = next((item for item in value.loras if item.enabled), None)
+        pair = lora_validation.read_pair(host.DB, value.engine_url, value.checkpoint, active.name) if active else None
         report = await host.engine()
         _, after = host.current_catalog(target)
+        if pair is not None and pair != lora_validation.read_pair(host.DB, value.engine_url, value.checkpoint, active.name):
+            raise HTTPException(409, 'LoRA 登記或清單已變更，請重新查詢提示。')
         if before != after or report.get('url') != value.engine_url or report.get('diagnostics', {}).get('matches_selected_engine') is False:
             raise HTTPException(409, '查詢期間模型或引擎已變更，請重新查詢提示。')
-        return advise(value, after, report.get('diagnostics') or environment.engine_diagnostics(status='invalid'))
+        return advise(value, after, report.get('diagnostics') or environment.engine_diagnostics(status='invalid'),
+                      pair[1] if pair else None, stale=pair[2] if pair else False)

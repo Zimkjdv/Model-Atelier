@@ -93,7 +93,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <strong>{{ labels[job.status] || job.status }}</strong> · {{ job.checkpoint }}
       <p class="footnote">{{ new Date(job.created_at).toLocaleString() }} · {{ job.id }}</p>
       <LoraSnapshot :items="job.lora_metadata" />
-      <p v-for="warning in job.preflight_warnings ?? []" :key="warning" class="footnote">{{ warning }}</p>
+      <details v-if="job.preflight_warnings?.length"><summary>提交時檢查提示（原紀錄）</summary><p class="footnote">以下為提交當時的提示，不代表目前狀態或後續實測結果。</p><p v-for="warning in job.preflight_warnings" :key="warning" class="footnote">{{ warning }}</p></details>
       <section v-if="job.status === 'failed' && job.failure_info" class="failure-info" aria-label="任務失敗說明">
         <h3>{{ job.failure_info.title }}</h3><p>{{ job.failure_info.message }}</p>
         <ul v-if="job.failure_info.suggestions.length"><li v-for="(suggestion, index) in job.failure_info.suggestions" :key="index">{{ suggestion }}</li></ul>

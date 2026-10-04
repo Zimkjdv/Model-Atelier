@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import LoraValidation from './LoraValidation.vue'
 import { architectures, architectureLabel, fileHash, fileSize, metadataTime, parseFileSize, safeMetadataUrl, validArchitecture } from './modelMetadata'
 import type { Architecture, ModelMetadata } from './modelMetadata'
 
@@ -18,6 +19,7 @@ const version = ref(''), architecture = ref<Architecture>('unknown'), source = r
 const sizeBytes = ref(''), sha256 = ref(''), licenseName = ref(''), licenseUrl = ref('')
 let revision = 0
 const checkpointChoice = ref(''), assessment = ref<Assessment | null>(null)
+const evidenceName = ref('')
 const assessing = ref(false), assessmentError = ref('')
 let assessmentRevision = 0
 const compared = computed(() => new Map(assessment.value?.loras.map(item => [item.name, item]) ?? []))
@@ -122,7 +124,7 @@ watch(catalog, () => { void checkCompatibility() })
       <button type="button" class="primary" :disabled="busy || editing !== null" @click="load(true)">{{ busy ? '處理中…' : '同步 LoRA 清單' }}</button>
     </div>
     <p class="footnote">{{ engineUrl }} · {{ catalog?.synced_at ? '最後成功同步：' + metadataTime(catalog.synced_at) : '尚未成功同步' }}</p>
-    <p class="footnote">清單及資料為登記快照；未核對實際檔案。創作頁可選單一 LoRA，生成前重新檢查；尚未實測權重載入與畫面效果。</p>
+    <p class="footnote">清單及資料為登記快照；未核對實際檔案。創作頁可選單一 LoRA，生成前重新檢查；組合實測僅適用個別紀錄的條件，不代表所有權重或畫風效果已驗證。</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }} <button class="secondary" :disabled="busy || editing !== null" @click="load()">重新讀取 LoRA</button></p>
     <p v-if="catalog?.sync_error" class="notice warning" role="alert">{{ catalog.sync_error }} 此處保留歷史清單，不代表目前可用。</p>
     <p v-if="feedback" class="notice success" role="status">{{ feedback }}</p>
@@ -133,7 +135,7 @@ watch(catalog, () => { void checkCompatibility() })
       <button type="button" class="secondary" :disabled="assessing || busy || editing !== null || !checkpointChoice" @click="load()">更新 LoRA 相容性</button>
       <p v-if="assessing" role="status" class="footnote">正在比較登記架構…</p>
       <p v-else-if="assessmentError" role="alert" class="notice warning">{{ assessmentError }}</p>
-      <p v-else-if="assessment && assessmentCounts" role="status" class="footnote">架構相容 {{ assessmentCounts[0] }} · 未驗證 {{ assessmentCounts[1] }} · 不相容 {{ assessmentCounts[2] }}（全部為未實測）<br>比較：{{ assessment.checkpoint.name }} · {{ metadataTime(assessment.assessed_at) }}</p>
+      <p v-else-if="assessment && assessmentCounts" role="status" class="footnote">架構相容 {{ assessmentCounts[0] }} · 未驗證 {{ assessmentCounts[1] }} · 不相容 {{ assessmentCounts[2] }}（只比較登記架構）<br>比較：{{ assessment.checkpoint.name }} · {{ metadataTime(assessment.assessed_at) }}</p>
       <p v-else class="footnote">選擇 checkpoint 後會顯示 LoRA 的架構比較結果。</p>
     </div>
     <div class="lora-toolbar">
@@ -174,6 +176,8 @@ watch(catalog, () => { void checkCompatibility() })
             <dt>登記更新時間</dt><dd>{{ metadataTime(item.metadata_updated_at) }}</dd>
           </dl></details>
           <button type="button" class="secondary" :disabled="busy || editing !== null" @click="edit(item)">編輯 LoRA 資料</button>
+          <button type="button" class="secondary" :disabled="!checkpointChoice || busy" @click="evidenceName = evidenceName === item.name ? '' : item.name">{{ evidenceName === item.name ? '收合組合實測' : '查看組合實測' }}</button>
+          <LoraValidation v-if="evidenceName === item.name && checkpointChoice" :engine-url="engineUrl" :checkpoint="checkpointChoice" :lora="{ name: item.name, enabled: true, strength_model: 1, strength_clip: 1 }" :refresh-key="JSON.stringify([item.metadata_updated_at, checkpoints.find(v => v.name === checkpointChoice)?.metadata_updated_at, catalog?.synced_at])" />
         </template>
       </article>
     </div>

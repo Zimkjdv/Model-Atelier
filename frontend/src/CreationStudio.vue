@@ -4,6 +4,7 @@ import GenerationPanel from './GenerationPanel.vue'
 import LoraControls from './LoraControls.vue'
 import LoraSnapshot from './LoraSnapshot.vue'
 import ModelValidation from './ModelValidation.vue'
+import LoraValidation from './LoraValidation.vue'
 import GenerationAdvice from './GenerationAdvice.vue'
 import { useStudioPreferences } from './studioPreferences'
 import { generationDefaults, newCreation } from './creationSettings'
@@ -20,6 +21,8 @@ type Capabilities = { engine_url: string; current_engine_url: string; engine_mat
 const emit = defineEmits<{ models: []; assets: []; gallery: [jobId: string] }>()
 const props = defineProps<{ restoreRequest?: { artworkId: string; token: number } | null }>()
 const form = reactive(newCreation())
+const activeLora = computed(() => form.loras.find(item => item.enabled))
+const loraParameters = computed(() => ({ width: form.width, height: form.height, steps: form.steps, cfg: form.cfg, sampler_name: form.sampler_name, scheduler: form.scheduler, denoise: form.denoise, batch_size: 1 }))
 const display = useStudioPreferences()
 const editorCollapsed = ref(false)
 const id = ref<string | null>(null), revision = ref<number | null>(null), records = ref<Draft[]>([]), models = ref<Catalog | null>(null)
@@ -45,7 +48,8 @@ const retainedParameters = computed(() => ({ prompt: form.prompt, negative_promp
 const profileMessage = computed(() => matchingProfile.value?.compatibility.status === 'supported'
   ? '適用目前文生圖流程；登記架構尚未驗證實際檔案。'
   : matchingProfile.value?.compatibility.message ?? '')
-const presetValidationLabel = computed(() => matchingProfile.value?.preset?.id === 'pony-v6-xl-rtx3060-landscape'
+const presetValidationLabel = computed(() => activeLora.value ? '基礎模型預設；其實測不包含目前啟用的 LoRA'
+  : matchingProfile.value?.preset?.id === 'pony-v6-xl-rtx3060-landscape'
   ? '已驗：RTX 3060 單張風景'
   : '起始參數，尚未逐模型實測')
 const presetReferenceUrl = computed(() => matchingProfile.value?.preset?.reference === 'docs/validation/pony-v6-xl-rtx3060.md'
@@ -270,7 +274,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
           <p v-if="matchingProfile?.preset" class="footnote">預設僅在確認後套用。</p>
         </section>
         <ModelValidation v-if="form.checkpoint && !form.loras.some(item => item.enabled)" :engine-url="form.engine_url" :name="form.checkpoint" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
-        <p v-else-if="form.checkpoint" class="footnote" role="status">目前啟用單一 LoRA 八節點流程；基礎模型的七節點實測紀錄不涵蓋此組合，GPU 載入與效果尚未實測。</p>
+        <LoraValidation v-else-if="form.checkpoint && activeLora" :engine-url="form.engine_url" :checkpoint="form.checkpoint" :lora="activeLora" :settings="loraParameters" :has-references="form.reference_ids.length > 0" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
         <p v-if="matchingProfile?.workflow" class="footnote" role="status">{{ matchingProfile.workflow.name }} · 每次 {{ matchingProfile.workflow.batch_size }} 張；可選單一 LoRA，參考圖尚未接入。</p>
         <div v-show="editableWorkflow">
         <label for="draft-prompt">畫面描述 <small>{{ form.prompt.length }} / 20000</small></label><textarea id="draft-prompt" v-model="form.prompt" maxlength="20000" rows="7" placeholder="描述角色、場景、光線與你想呈現的畫面…"></textarea>

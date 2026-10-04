@@ -355,3 +355,11 @@ API：
 `GET /api/models/profile` 提供 workflow 描述（流程 ID、欄位、固定單張、參考圖／LoRA 能力）。目前只接受標準 checkpoint 文生圖描述；格式不完整或未知流程不啟用表單。SD 1.x／SDXL 及未知架構可編輯標準欄位，未知架構仍由引擎驗證；已知未支援架構顯示原因並保留原始參數，仍可保存草稿，切回支援模型可繼續編輯。尚未選模型時可先準備草稿。
 
 流程描述包含單一 LoRA 能力及 `max_loras: 1`；未知或未接入的 FLUX、參考圖及多 LoRA 流程仍不可提交。
+
+## 單一 LoRA 組合實測紀錄
+
+模型庫選擇「比較用 checkpoint」後，可在 LoRA 卡片按「查看組合實測」。創作頁啟用 LoRA 後會查詢同一組合，並比對兩種強度與目前解析度、Steps、CFG、sampler、scheduler、denoise 及固定 batch 1；參數變更會清除過期回覆。資源提示使用同一比對，不沿用基礎模型七節點的紀錄。基礎預設仍需確認套用，不自動改成 LCM 參數。
+
+`POST /api/loras/validation` 是唯讀查詢，輸入 `engine_url`、`checkpoint`、`lora`（名稱、啟用及兩種強度）及選填 `settings`（上述取樣參數、`batch_size: 1`）。以兩份登記 SHA256 與架構比對 `models/lora-validation-records.json`，不讀取權重、不連接引擎、不查 GPU 或改資料庫。回傳 `recorded` 只代表有該組合紀錄；`matching_parameter_records` 才表示強度和取樣設定匹配，仍不保證目前檔案、提示詞、硬體或本次生成。清單失效、未知 hash、其他組合及訓練均不視為通過；引擎／登記在查詢期間改變回傳 409。
+
+首筆紀錄為 2026-10-04 Pony＋LCM SDXL／RTX 3060 的單張風景驗收，包含完整環境、兩種冷啟動耗時、整卡顯存取樣及明確未量測的暖機值。詳見 [實機紀錄](docs/validation/pony-lcm-rtx3060.md)。提交時的歷史提示保留原文並標明時間範圍，不用後續紀錄改寫原任務。

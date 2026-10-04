@@ -1,0 +1,37 @@
+{
+  "records": [
+    {
+      "id": "pony-lcm-sdxl-rtx3060-20261004",
+      "date": "2026-10-04",
+      "model": "Pony V6 XL",
+      "architecture": "sdxl",
+      "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+      "lora": "LCM LoRA SDXL",
+      "lora_version": "revision a18548dd4956",
+      "lora_architecture": "sdxl",
+      "lora_sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+      "strength_model": 1.0,
+      "strength_clip": 0.0,
+      "workflow": "single-lora-text2image-v1",
+      "workload": "inference",
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "vram_bytes": 12884901888,
+      "ram_gib": 63.94,
+      "os": "Windows 10 19045",
+      "python": "3.12.10",
+      "comfyui": "0.34.0",
+      "pytorch": "2.14.0+cu130",
+      "driver": "616.56",
+      "precision": "model/CLIP FP16; VAE bfloat16",
+      "offload": "ComfyUI default dynamic VRAM with CPU offload; PyTorch attention",
+      "settings": { "width": 768, "height": 768, "steps": 4, "cfg": 1.0, "sampler_name": "lcm", "scheduler": "sgm_uniform", "denoise": 1.0, "batch_size": 1 },
+      "cold_wall_seconds": 20.672,
+      "cold_engine_seconds": 19.60,
+      "warm_engine_seconds": null,
+      "sampled_device_peak_bytes": 10355736576,
+      "sample_count": 11,
+      "reference": "docs/validation/pony-lcm-rtx3060.md",
+      "conditions": "單張純風景，64 位 seed 9007199254740993；標準八節點，無 ModelSamplingDiscrete、參考圖或其他 LoRA。SDXL 788 patches attached。實測載入、作品保存與重啟後離線還原，不驗證畫師風格品質。顯存取樣含其他程序，不是最低需求；沒有暖機、訓練或 RTX 4080 實測。"
+    }
+  ]
+}

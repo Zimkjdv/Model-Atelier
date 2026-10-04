@@ -8,7 +8,7 @@ from fastapi import HTTPException, Query
 from backend import catalog, loras, model_profiles
 
 KNOWN = {'sd1', 'sdxl', 'sd3', 'flux'}
-NOTE = '此為登記資料比較，未讀取權重或執行 LoRA；同架構不保證特定基礎模型、節點或 GPU 可載入。'
+NOTE = '此查詢只比較登記資料，未讀取權重或執行 LoRA；實機證據請另看組合實測紀錄。同架構不保證特定基礎模型、節點或 GPU 可載入。'
 
 
 def compare(checkpoint, lora, *, stale=False):
@@ -24,8 +24,8 @@ def compare(checkpoint, lora, *, stale=False):
         status, label = 'unverified', '未驗證：架構資料不足'
         reason = '至少一方的登記架構未知或為「其他」，不能確認是否同一架構。'
     else:
-        status, label = 'compatible', '架構相容，未實測'
-        reason = f'兩者均登記為 {model_profiles.LABELS[base]}；尚未驗證這個 checkpoint／LoRA 組合。'
+        status, label = 'compatible', '架構相容（此查詢未實測）'
+        reason = f'兩者均登記為 {model_profiles.LABELS[base]}；此架構比較不包含實機驗收判定。'
     return dict(status=status, label=label, message=reason + NOTE, verified=False)
 
 
