@@ -26,7 +26,7 @@ from pydantic import BaseModel, Field, field_validator
 from backend import catalog, drafts, assets, submissions, gallery_api, model_profiles, model_paths, environment, validation_records, generation_advice, storage, loras, lora_compatibility, lora_validation
 from backend.lora_settings import LoraSetting
 from backend import flux_plan, flux_catalog
-from backend import reference_workflows, settings_transfer
+from backend import reference_workflows, settings_transfer, stack_validation
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -410,6 +410,7 @@ lora_validation.install(app, sys.modules[__name__])
 flux_plan.install(app, sys.modules[__name__])
 flux_catalog.install(app, sys.modules[__name__])
 settings_transfer.install(app, sys.modules[__name__])
+stack_validation.install(app, sys.modules[__name__])
 
 
 if (ROOT / 'frontend' / 'dist').exists():

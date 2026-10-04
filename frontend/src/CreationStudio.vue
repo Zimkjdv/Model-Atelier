@@ -5,6 +5,7 @@ import LoraControls from './LoraControls.vue'
 import LoraSnapshot from './LoraSnapshot.vue'
 import ModelValidation from './ModelValidation.vue'
 import LoraValidation from './LoraValidation.vue'
+import StackValidation from './StackValidation.vue'
 import GenerationAdvice from './GenerationAdvice.vue'
 import ImageInput from './ImageInput.vue'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
@@ -316,7 +317,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
         </section>
         <ModelValidation v-if="!isImage && form.checkpoint && !form.loras.some(item => item.enabled)" :engine-url="form.engine_url" :name="form.checkpoint" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
         <LoraValidation v-else-if="!isImage && form.checkpoint && activeLora && activeLoraCount === 1" :engine-url="form.engine_url" :checkpoint="form.checkpoint" :lora="activeLora" :settings="loraParameters" :has-references="form.reference_ids.length > 0" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
-        <p v-else-if="activeLoraCount > 1" class="notice" role="status">目前啟用 {{ activeLoraCount }} 個 LoRA；有序組合尚未實機驗證，不沿用單一 LoRA 紀錄。</p>
+        <StackValidation v-else-if="!isImage && form.checkpoint && activeLoraCount > 1" :engine-url="form.engine_url" :checkpoint="form.checkpoint" :loras="form.loras" :settings="loraParameters" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
         <p v-if="matchingProfile?.workflow" class="footnote" role="status">{{ isImage ? 'Checkpoint 單張圖生圖' : matchingProfile.workflow.name }} · 每次 1 張；最多 {{ matchingProfile.workflow.max_loras }} 個 LoRA。</p>
         <div v-show="editableWorkflow">
         <label for="draft-prompt">畫面描述 <small>{{ form.prompt.length }} / 20000</small></label><textarea id="draft-prompt" v-model="form.prompt" maxlength="20000" rows="7" placeholder="描述角色、場景、光線與你想呈現的畫面…"></textarea>

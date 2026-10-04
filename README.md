@@ -12,6 +12,7 @@
 - LoRA 相容性比較：選擇 checkpoint 後顯示「架構相容，未實測／未驗證／不相容」，依登記架構及清單狀態判定，資料更新時重算；比較操作不改變創作設定。
 - LoRA 創作設定：最多四個不同 LoRA 的選擇、啟用／停用、排序與移除，保存模型與 CLIP 強度（−20～20）到草稿。啟用時按順序串接標準 `LoraLoader`，使用 7～11 節點流程；提交前阻擋已知架構不符，檢查引擎即時名稱、節點介面及強度範圍。固定 Animagine 多 LoRA 已實測載入，但畫風品質需依順序與強度確認，見 [有序串接說明](docs/models/multi-lora-workflow.md)；停用保留設定並使用原七節點流程。
 - LoRA 生成追溯：任務提交時凍結登記版本、來源、架構、SHA256、授權及兩種強度；作品匯入沿用原快照。作品與已確認失敗任務可完整還原有序 LoRA 設定，保留精確 seed 並提示目前登記差異；舊紀錄版本未知且不回填。
+- 有序 LoRA 實測條件：文生圖按 checkpoint 與所有啟用 LoRA 的有序雜湊／架構比對歷史載入紀錄，強度及取樣參數另外比對；保留原品質觀察，不把對比不足的結果標成品質通過。詳見 [有序組合證據](docs/models/ordered-lora-evidence.md)。
 - 執行環境追溯：新任務保存提交前的流程規格／JSON hash、平台 Python／依賴版本及原引擎回報的 ComfyUI／Python／PyTorch／指定套件版本，作品直接沿用；查詢失敗與未提供的 CUDA／驅動／Git revision 保持未知。原 UUID 不重新取版本，舊紀錄不回填，見 [版本快照說明](docs/runtime-versions.md)。
 - 創作設定轉移：checkpoint／圖生圖／FLUX 可匯出目前參數、讀取 JSON 檔或貼上，先驗證、比較再套用為未保存的新草稿；保留字串 seed 與有序 LoRA，不自動生成。作品可匯出原來源快照與完整 workflow 字串，匯入文件來源標示未核實；權重及素材圖片不包含於檔案，見 [設定匯出／匯入](docs/creation-settings-transfer.md)。
 - LCM LoRA 實機條件：Pony 的 768×768 與 Animagine 的 1024×1024 在 RTX 3060 分別驗收；依各組合的 hash、強度及參數比對紀錄，不沿用其他模型或多 LoRA 的結論。Animagine 專用 CLI 為 `python -m scripts.verify_animagine_lora`，見 [驗收紀錄](docs/validation/animagine-lcm-rtx3060.md)。

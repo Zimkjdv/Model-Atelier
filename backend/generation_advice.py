@@ -1,7 +1,7 @@
 """Read-only advice. Never authorizes or blocks job submission."""
 from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field
-from backend import environment, validation_records, lora_validation
+from backend import environment, validation_records, lora_validation, stack_validation
 from backend.lora_settings import LoraSetting
 
 
@@ -19,12 +19,12 @@ class AdviceInput(BaseModel):
     loras: list[LoraSetting] = Field(default_factory=list, max_length=4)
 
 
-def advise(value, model, diagnostics, lora=None, *, stale=False):
+def advise(value, model, diagnostics, lora=None, *, stale=False, stack=None):
     evidence = validation_records.evaluate(model)
     settings = value.model_dump(exclude={'engine_url', 'checkpoint', 'loras'})
     active = [item for item in value.loras if item.enabled]
     if len(active) > 1:
-        evidence = dict(status='unverified', records=[], matching_parameter_records=[])
+        evidence = stack_validation.evaluate(model, stack or [], active, settings | dict(batch_size=1), stale=stale)
     elif active:
         evidence = lora_validation.evaluate(model, lora or {}, active[0], settings | dict(batch_size=1), stale=stale)
     matches = [record for record in evidence['records']
@@ -32,7 +32,8 @@ def advise(value, model, diagnostics, lora=None, *, stale=False):
                and (not active or record['id'] in evidence['matching_parameter_records'])]
     warnings = []
     if len(active) > 1:
-        warnings.append('多 LoRA 尚未有可自動匹配的組合實測紀錄；順序與每個強度都會影響結果，不沿用單一 LoRA 或基礎模型紀錄。')
+        warnings.append('多 LoRA 只比對完全相同的有序雜湊、架構、強度與取樣條件；不沿用單一或反向組合的紀錄。')
+        warnings.extend(record['quality_observation'] for record in evidence['records'])
     elif active:
         warnings.append('目前啟用 LoRA；僅比對單一 LoRA 八節點組合紀錄，不沿用基礎模型的七節點紀錄。')
     if not evidence['records']:
@@ -59,11 +60,15 @@ def install(app, host):
         choices = [item for item in value.loras if item.enabled]
         active = choices[0] if len(choices) == 1 else None
         pair = lora_validation.read_pair(host.DB, value.engine_url, value.checkpoint, active.name) if active else None
+        stack = stack_validation.read_stack(host.DB, value.engine_url, value.checkpoint, choices) if len(choices) > 1 else None
         report = await host.engine()
         _, after = host.current_catalog(target)
         if pair is not None and pair != lora_validation.read_pair(host.DB, value.engine_url, value.checkpoint, active.name):
             raise HTTPException(409, 'LoRA 登記或清單已變更，請重新查詢提示。')
+        if stack is not None and stack != stack_validation.read_stack(host.DB, value.engine_url, value.checkpoint, choices):
+            raise HTTPException(409, '有序 LoRA 登記或清單已變更，請重新查詢提示。')
         if before != after or report.get('url') != value.engine_url or report.get('diagnostics', {}).get('matches_selected_engine') is False:
             raise HTTPException(409, '查詢期間模型或引擎已變更，請重新查詢提示。')
         return advise(value, after, report.get('diagnostics') or environment.engine_diagnostics(status='invalid'),
-                      pair[1] if pair else None, stale=pair[2] if pair else False)
+                      pair[1] if pair else None, stale=pair[2] if pair else stack[2] if stack else False,
+                      stack=stack[1] if stack else None)

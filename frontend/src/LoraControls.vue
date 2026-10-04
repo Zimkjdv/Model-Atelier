@@ -82,7 +82,7 @@ onBeforeUnmount(cancelRequests)
 <template>
   <section class="lora-controls" aria-labelledby="creation-lora-heading">
     <div class="lora-heading"><h3 id="creation-lora-heading">LoRA 設定</h3><button type="button" class="secondary" :disabled="busy" @click="load">更新 LoRA 選項</button></div>
-    <p id="creation-lora-help" class="footnote">最多四個不同 LoRA，由上至下串接 MODEL 與 CLIP；順序會影響結果。選擇不載入權重；生成前逐個檢查登記架構、即時名稱與強度。多 LoRA 尚未有可自動匹配的組合實測紀錄，畫面效果需依目前順序與強度確認。</p>
+    <p id="creation-lora-help" class="footnote">最多四個不同 LoRA，由上至下串接 MODEL 與 CLIP；順序會影響結果。選擇不載入權重；生成前逐個檢查登記架構、即時名稱與強度。文生圖可查看有序雜湊的歷史實測条件，畫面效果仍需依目前順序與強度確認。</p>
     <p v-if="error" role="alert" class="notice warning">{{ error }}</p>
     <p v-if="catalog?.sync_error" role="status" class="notice warning">{{ catalog.sync_error }} 選項為歷史快照。</p>
     <label for="creation-lora">新增 LoRA</label>

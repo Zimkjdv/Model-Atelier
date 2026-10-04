@@ -1,0 +1,59 @@
+{
+  "records": [
+    {
+      "date": "2026-10-05",
+      "model": "Animagine XL 4.0 Opt",
+      "architecture": "sdxl",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "workload": "inference",
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "vram_bytes": 12884901888,
+      "ram_gib": 63.94,
+      "os": "Windows 10 19045",
+      "python": "3.12.10",
+      "comfyui": "0.34.0",
+      "pytorch": "2.14.0+cu130",
+      "driver": "616.56",
+      "precision": "model/CLIP FP16; VAE bfloat16",
+      "offload": "ComfyUI default dynamic VRAM with async CPU offload; PyTorch attention",
+      "settings": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler_name": "lcm",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0,
+        "batch_size": 1
+      },
+      "reference": "docs/validation/animagine-multi-lora-rtx3060.md",
+      "conditions": "單張椅子組裝說明書、白背景、無人物；seed 9007199254740993，標準九節點，LCM → IKEA 畫風。整卡低頻取樣含其他程序，非連續峰值、最低需求或任務專用資源。RTX 4080、圖生圖及訓練未測。",
+      "id": "animagine-lcm-ikea-ordered-rtx3060-20261005",
+      "workflow": "ordered-lora-text2image-v1",
+      "wall_seconds": 11.563,
+      "engine_seconds": 10.9,
+      "load_condition": "模型已載入；包含有序 patch 準備及歷史查詢，非純取樣 benchmark。",
+      "sampled_device_peak_bytes": 10497294336,
+      "sample_count": 7,
+      "quality_observation": "線條非常淡、對比不足，品質不視為通過；4 步 / CFG 1 不推薦作為畫風預設。單一提示本身要求線稿，無法量化風格模仿程度。",
+      "loras": [
+        {
+          "name": "LCM LoRA SDXL",
+          "version": "revision a18548dd4956",
+          "architecture": "sdxl",
+          "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+          "strength_model": 1.0,
+          "strength_clip": 0.0
+        },
+        {
+          "name": "IKEA instructions SDXL",
+          "version": "revision eaa7f67c93be",
+          "architecture": "sdxl",
+          "sha256": "d0e5fcbe1e6e2a364011bf27a66e8a40c05d02195d3e422cc393436388b8da17",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        }
+      ]
+    }
+  ]
+}
