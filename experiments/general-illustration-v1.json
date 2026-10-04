@@ -1,0 +1,11 @@
+{
+  "id": "general-illustration",
+  "version": 1,
+  "name": "一般插畫固定測試集",
+  "cases": [
+    {"id":"chair","name":"椅子說明書","prompt":"black and white line drawing, instruction manual, assembling a wooden chair, white background, no humans","character_key":null,"checks":["木椅與組裝指示是否可辨認","白背景與黑白線條是否符合","布局與線條對比是否清楚"]},
+    {"id":"lake","name":"山湖構圖","prompt":"anime illustration, a quiet mountain lake at sunrise, a small wooden boat in the lower left foreground, pine trees on the right, distant mountains, wide composition, no humans","character_key":null,"checks":["小船是否位於左下前景","松樹是否在右側","遠山、湖面與日出是否符合"]},
+    {"id":"traveler-bookshop","name":"旅人與書店","prompt":"anime illustration, one adult traveler with short black hair, round glasses and a blue coat, standing inside a bookshop, holding a red book with both hands, full body, warm window light","character_key":"adult-traveler-v1","checks":["成年旅人的短黑髮、圓眼鏡與藍外套","紅書及雙手動作是否符合","與車站案例比較角色外觀及畫風"]},
+    {"id":"traveler-station","name":"旅人與車站","prompt":"anime illustration, one adult traveler with short black hair, round glasses and a blue coat, standing on a train station platform, holding a red book with both hands, full body, soft daylight","character_key":"adult-traveler-v1","checks":["成年旅人的短黑髮、圓眼鏡與藍外套","車站場景及紅書是否符合","與書店案例比較角色外觀及畫風"]}
+  ]
+}
