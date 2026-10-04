@@ -1,5 +1,7 @@
 # LoRA 模型庫
 
+目前創作流程已擴充為最多四個不同 LoRA 的有序串接、排序、強度、快照及完整還原，見 [有序流程說明](multi-lora-workflow.md)。下方階段紀錄保留各次驗收範圍；單一實測不代表多 LoRA 的 GPU 或畫風品質已驗證。
+
 2026-10-04：模型庫新增獨立 LoRA 區塊。從目前選定 ComfyUI 的 `/object_info/LoraLoader` 讀取 `lora_name` 選項，依完整引擎網址存入 SQLite `loras:<engine_url>`，與 checkpoint、任務及作品分開。只處理名稱及登記資料，不下載、讀取權重、載入 GPU 或提交任務。
 
 ## 使用

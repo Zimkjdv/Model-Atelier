@@ -1,0 +1,71 @@
+{
+  "id": "flux1-schnell",
+  "name": "FLUX.1 [schnell]",
+  "architecture": "flux",
+  "verified_at": "2026-10-04",
+  "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell",
+  "reference_url": "https://comfyanonymous.github.io/ComfyUI_examples/flux/",
+  "license": {
+    "name": "Apache-2.0 (model card)",
+    "url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+    "note": "保留來源授權與模型卡使用條件；公開權重不代表免帳號或無使用條件。元件的來源與授權分開記錄。"
+  },
+  "components": [
+    {
+      "role": "diffusion_model",
+      "name": "FLUX.1 schnell 原始 BF16 主模型",
+      "category": "diffusion_models",
+      "filename": "flux1-schnell.safetensors",
+      "repository": "black-forest-labs/FLUX.1-schnell",
+      "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "size_bytes": 23782506688,
+      "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+      "precision": "BF16 source weights; runtime FP8 casting is an untested option",
+      "license_name": "Apache-2.0 (BFL model card)",
+      "access": "hf_gated_user_review",
+      "provenance": "BFL author weights"
+    },
+    {
+      "role": "vae",
+      "name": "FLUX Autoencoder",
+      "category": "vae",
+      "filename": "ae.safetensors",
+      "repository": "black-forest-labs/FLUX.1-schnell",
+      "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "size_bytes": 335304388,
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "precision": "runtime precision unverified",
+      "license_name": "Apache-2.0 (BFL repository)",
+      "access": "hf_gated_user_review",
+      "provenance": "BFL author autoencoder"
+    },
+    {
+      "role": "clip_l",
+      "name": "CLIP-L (ComfyUI 整合來源)",
+      "category": "text_encoders",
+      "filename": "clip_l.safetensors",
+      "repository": "comfyanonymous/flux_text_encoders",
+      "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "size_bytes": 246144152,
+      "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+      "precision": "runtime precision unverified",
+      "license_name": "Apache-2.0 (packaging repository metadata); upstream component terms require review",
+      "access": "public_at_review",
+      "provenance": "ComfyUI examples-linked packaging; not a BFL-authored encoder"
+    },
+    {
+      "role": "t5xxl",
+      "name": "T5-XXL FP8 scaled (ComfyUI 整合來源)",
+      "category": "text_encoders",
+      "filename": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "repository": "comfyanonymous/flux_text_encoders",
+      "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "size_bytes": 5157348688,
+      "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+      "precision": "FP8 e4m3fn scaled source weights; GPU execution unverified",
+      "license_name": "Apache-2.0 (packaging repository metadata); upstream component terms require review",
+      "access": "public_at_review",
+      "provenance": "ComfyUI examples-linked reduced-memory encoder packaging"
+    }
+  ]
+}

@@ -124,7 +124,7 @@ watch(catalog, () => { void checkCompatibility() })
       <button type="button" class="primary" :disabled="busy || editing !== null" @click="load(true)">{{ busy ? '處理中…' : '同步 LoRA 清單' }}</button>
     </div>
     <p class="footnote">{{ engineUrl }} · {{ catalog?.synced_at ? '最後成功同步：' + metadataTime(catalog.synced_at) : '尚未成功同步' }}</p>
-    <p class="footnote">清單及資料為登記快照；未核對實際檔案。創作頁可選單一 LoRA，生成前重新檢查；組合實測僅適用個別紀錄的條件，不代表所有權重或畫風效果已驗證。</p>
+    <p class="footnote">清單及資料為登記快照；未核對實際檔案。創作頁可有序選擇最多四個不同 LoRA，生成前逐個重新檢查；單一組合實測不涵蓋多 LoRA 或其他畫風。</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }} <button class="secondary" :disabled="busy || editing !== null" @click="load()">重新讀取 LoRA</button></p>
     <p v-if="catalog?.sync_error" class="notice warning" role="alert">{{ catalog.sync_error }} 此處保留歷史清單，不代表目前可用。</p>
     <p v-if="feedback" class="notice success" role="status">{{ feedback }}</p>

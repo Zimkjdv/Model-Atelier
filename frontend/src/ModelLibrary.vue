@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import FluxPlan from './FluxPlan.vue'
 import { computed, onMounted, ref } from 'vue'
 import ModelValidation from './ModelValidation.vue'
 import LoraLibrary from './LoraLibrary.vue'
@@ -144,6 +145,7 @@ onMounted(() => load())
       </article>
     </div>
     <LoraLibrary v-if="catalog" :engine-url="catalog.engine_url" :checkpoints="catalog.models" :preferred-checkpoint="catalog.selected" />
+    <FluxPlan />
   </div>
 </template>
 

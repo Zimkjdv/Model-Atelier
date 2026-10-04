@@ -25,6 +25,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 from backend import catalog, drafts, assets, submissions, gallery_api, model_profiles, model_paths, environment, validation_records, generation_advice, storage, loras, lora_compatibility, lora_validation
 from backend.lora_settings import LoraSetting
+from backend import flux_plan
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -387,6 +388,7 @@ storage.install(app, sys.modules[__name__])
 loras.install(app, sys.modules[__name__])
 lora_compatibility.install(app, sys.modules[__name__])
 lora_validation.install(app, sys.modules[__name__])
+flux_plan.install(app, sys.modules[__name__])
 
 
 if (ROOT / 'frontend' / 'dist').exists():
