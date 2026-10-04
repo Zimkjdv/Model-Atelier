@@ -20,6 +20,7 @@
 - Pony V6 XL：固定作者來源的本地安裝器、大小與 SHA256 驗證，以及 RTX 3060 生成驗收工具。尚未提供訓練或通用模型下載管理。
 - Animagine XL 4.0 Opt：固定作者修訂、雜湊、授權與依賴紀錄；登記 SDXL 與對應 SHA256 後可手動確認套用作者建議預設。尚未下載或進行 GPU 驗收，詳見 [選型紀錄](docs/models/animagine-xl-4.0-opt.md)。
 - FLUX.1 [schnell]：模型庫提供固定來源、四個元件版本／雜湊與唯讀磁碟預檢；CLI：`.\.venv\Scripts\python.exe -m scripts.flux_preflight`。尚未提供下載及專用生成，來源條件、精度與後續驗收見 [FLUX 接入紀錄](docs/models/flux1-schnell.md)。
+  分離元件庫已提供依引擎同步與版本／來源登記 API，見 [元件庫說明](docs/models/flux-components.md)。
 
 ## 本機安裝（PowerShell）
 
