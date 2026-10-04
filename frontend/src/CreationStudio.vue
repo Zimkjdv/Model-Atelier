@@ -8,6 +8,7 @@ import LoraValidation from './LoraValidation.vue'
 import GenerationAdvice from './GenerationAdvice.vue'
 import ImageInput from './ImageInput.vue'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
+import RuntimeSnapshot from './RuntimeSnapshot.vue'
 import { imageWorkflowId, referenceDefaults, purposeLabel, type ReferenceAsset, type ReferenceWorkflow } from './referenceSettings'
 import { useStudioPreferences } from './studioPreferences'
 import { generationDefaults, newCreation } from './creationSettings'
@@ -270,6 +271,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
     <div v-if="origin" class="notice" role="status"><p>{{ origin.kind === 'job' ? '來源任務 ' + origin.job_id.slice(0, 8) + ' · 提交時版本：' : '來源作品版本：' }}{{ origin.model_version }} · 已保留原引擎與生成設定。</p><p v-if="selected?.version && selected.version !== origin.model_version">模型庫目前登記版本：{{ selected.version }}。再次生成使用目前安裝的模型，請確認版本。</p><p v-for="warning in origin.warnings" :key="warning">{{ warning }}</p></div>
     <LoraSnapshot v-if="origin" :items="origin.lora_metadata" />
     <ReferenceSnapshot v-if="origin" :items="origin.reference_metadata" />
+    <RuntimeSnapshot v-if="origin" :item="origin.runtime_metadata" />
     <p v-if="display.error.value" class="notice" role="status">{{ display.error.value }}</p>
     <div class="studio-layout-controls"><button type="button" class="secondary" :aria-expanded="!editorCollapsed" aria-controls="studio-editor" @click="editorCollapsed = !editorCollapsed">{{ editorCollapsed ? '展開創作設定' : '收合創作設定' }}</button><p v-if="editorCollapsed" class="footnote">{{ form.checkpoint || '尚未選擇模型' }} · {{ form.width }} × {{ form.height }} · {{ form.steps }} steps · CFG {{ form.cfg }}。設定與未保存內容仍保留。</p></div>
     <div class="studio-grid" :class="{ 'editor-collapsed': editorCollapsed }">

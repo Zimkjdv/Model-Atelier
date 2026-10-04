@@ -2,10 +2,12 @@
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
+import RuntimeSnapshot from './RuntimeSnapshot.vue'
+import type { RuntimeMetadata } from './runtimeMetadata'
 import { fluxProblem, fluxRoles, fluxWorkflowId, newFlux, type FluxCatalog, type FluxForm, type ComponentSnapshot as ComponentMetadata } from './fluxSettings'
 
 type Draft = FluxForm & { id: string; revision: number; updated_at: string }
-type Restoration = { settings: FluxForm; component_metadata: ComponentMetadata[] | null; engine_matches: boolean; warnings: string[] }
+type Restoration = { settings: FluxForm; component_metadata: ComponentMetadata[] | null; runtime_metadata?: RuntimeMetadata | null; engine_matches: boolean; warnings: string[] }
 const props = defineProps<{ restoreRequest?: { artworkId: string; token: number } | null }>()
 const emit = defineEmits<{ models: []; gallery: [id: string] }>()
 const form = reactive(newFlux()), records = ref<Draft[]>([]), catalog = ref<FluxCatalog | null>(null)
@@ -124,7 +126,7 @@ onDeactivated(cancelLoad); onBeforeUnmount(cancelLoad)
     <p class="footnote">原引擎：{{ form.engine_url || '讀取中' }} · 元件同步：{{ catalog?.synced_at ? new Date(catalog.synced_at).toLocaleString() : '尚未同步' }}。清單與版本來自原引擎／使用者登記，未驗證實際檔案。</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p><p v-if="message" class="notice" role="status">{{ message }}</p>
     <div v-if="pending" class="notice warning" role="alert"><p>載入會取代目前未保存的 FLUX 內容。</p><button class="secondary" @click="pending = null">繼續編輯</button> <button class="secondary" @click="apply(pending)">捨棄變更並載入 FLUX</button></div>
-    <template v-if="origin"><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{ warning }}</p><ComponentSnapshot :items="origin.component_metadata" /></template>
+    <template v-if="origin"><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{ warning }}</p><ComponentSnapshot :items="origin.component_metadata" /><RuntimeSnapshot :item="origin.runtime_metadata" /></template>
     <div class="flux-grid">
       <form class="panel flux-editor" aria-label="FLUX 創作設定" @submit.prevent="save()"><fieldset :disabled="busy">
         <label for="flux-title">FLUX 草稿名稱</label><input id="flux-title" v-model="form.title" required maxlength="100">

@@ -1,4 +1,5 @@
 import type { ModelMetadataSnapshot, LoraMetadataSnapshot } from './modelMetadata'
+import type { RuntimeMetadata } from './runtimeMetadata'
 import { referenceDefaults, type ReferenceFields, type ReferenceSnapshot } from './referenceSettings'
 
 export type LoraSetting = { name: string; enabled: boolean; strength_model: number; strength_clip: number }
@@ -25,6 +26,7 @@ export type CreationForm = GenerationFields & ReferenceFields & {
 }
 
 export type ArtworkSettings = {
+  runtime_metadata?: RuntimeMetadata | null
   artwork_id: string
   settings: CreationForm
   model_version: string
@@ -35,6 +37,7 @@ export type ArtworkSettings = {
 }
 
 export type FailedJobSettings = {
+  runtime_metadata?: RuntimeMetadata | null
   job_id: string
   settings: CreationForm
   model_version: string

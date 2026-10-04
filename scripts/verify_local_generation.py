@@ -48,8 +48,22 @@ def local_url(value):
     return value.rstrip('/')
 
 
+def resolved(path):
+    """Normalize Windows extended spelling after physical symlink resolution.
+
+    Python 3.12 may keep the extended prefix when a parent is created while
+    resolving a missing child. Both spellings refer to the same physical path.
+    """
+    value = Path(path).resolve()
+    spelling = str(value)
+    if os.name == 'nt' and spelling.startswith('\\\\?\\'):
+        spelling = '\\\\' + spelling[8:] if spelling.startswith('\\\\?\\UNC\\') else spelling[4:]
+        value = Path(spelling)
+    return value
+
+
 def report_path(value):
-    root = ROOT.resolve()
+    root = resolved(ROOT)
     runtime = root / 'runtime'
     candidate = root / value if not Path(value).is_absolute() else Path(value)
     for part in (candidate, *candidate.parents):
@@ -57,7 +71,7 @@ def report_path(value):
             break
         if part.is_symlink() or (hasattr(part, 'is_junction') and part.is_junction()):
             raise ValueError('Report paths may not contain symlinks or junctions')
-    target = candidate.resolve()
+    target = resolved(candidate)
     if not runtime.is_relative_to(root) or not target.is_relative_to(runtime) or target.suffix.lower() != '.json':
         raise ValueError('Reports must be .json files inside this project runtime directory')
     return target
@@ -77,12 +91,12 @@ def write_report(path, value):
             json.dump(value, stream, ensure_ascii=False, indent=2, allow_nan=False)
             stream.flush()
             os.fsync(stream.fileno())
-        if temporary.is_symlink() or not temporary.resolve().is_relative_to((ROOT.resolve() / 'runtime')):
+        if temporary.is_symlink() or not resolved(temporary).is_relative_to((resolved(ROOT) / 'runtime')):
             raise ValueError('Temporary report path escaped runtime')
         os.replace(temporary, report_path(path))
     finally:
         if (temporary is not None and temporary.exists()
-                and temporary.resolve().is_relative_to(ROOT.resolve() / 'runtime')):
+                and resolved(temporary).is_relative_to(resolved(ROOT) / 'runtime')):
             temporary.unlink()
 
 

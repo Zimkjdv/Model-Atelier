@@ -268,7 +268,7 @@ class CancellationTests(unittest.TestCase):
                 remote = self.remote({'CheckpointLoaderSimple': {'input': {'required': {'ckpt_name': [['sample.safetensors']]}}}},
                                      test_submissions.sampler_capabilities(),
                                      *({name: {'input': {'required': {}}}} for name in
-                                       ('CLIPTextEncode', 'EmptyLatentImage', 'SaveImage', 'VAEDecode')))
+                                       ('CLIPTextEncode', 'EmptyLatentImage', 'SaveImage', 'VAEDecode')), {})
 
                 async def submitted(url, **kwargs):
                     # Represents another worker reconciling the accepted upstream

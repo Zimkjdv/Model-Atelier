@@ -103,6 +103,7 @@ def install(app, host):
         warnings.extend(image_workflows.restoration_warnings(host.DB, host.DATA, item.get('reference_metadata')))
         return dict(artwork_id=str(artwork_id), settings=settings, model_version=version,
                     model_metadata=item.get('model_metadata'), lora_metadata=item.get('lora_metadata'),
+                    runtime_metadata=item.get('runtime_metadata'),
                     reference_metadata=item.get('reference_metadata'), warnings=warnings,
                     availability=dict(current_engine_url=host.engine_url(), engine_matches=matches,
                                       checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at'),

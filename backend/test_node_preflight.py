@@ -35,7 +35,7 @@ class NodePreflightTests(unittest.TestCase):
         body = self.payload()
         with patch('backend.submissions.httpx.AsyncClient', return_value=remote):
             self.assertEqual(self.client.post('/api/generate', json=body).status_code, 200)
-        calls = [call.args[0] for call in remote.get.call_args_list]
+        calls = [call.args[0] for call in remote.get.call_args_list if '/object_info/' in call.args[0]]
         self.assertEqual(sum(url.endswith('/CLIPTextEncode') for url in calls), 1)
         self.assertEqual(len(calls), 6)
         with patch('backend.submissions.httpx.AsyncClient', side_effect=AssertionError('no replay')):

@@ -153,7 +153,7 @@ def save(path, folder, job, source, raw):
                  title=source['filename'], source=source, engine_url=job['engine_url'],
                  checkpoint=job['checkpoint'], model_version=job.get('model_version') or '未知',
                  model_metadata=deepcopy(job.get('model_metadata')),
-                 lora_metadata=deepcopy(job.get('lora_metadata')),
+                 lora_metadata=deepcopy(job.get('lora_metadata')), runtime_metadata=deepcopy(job.get('runtime_metadata')),
                  workflow_id=job.get('workflow_id'), component_metadata=deepcopy(job.get('component_metadata')),
                  reference_metadata=deepcopy(job.get('reference_metadata')), reference_settings=deepcopy(job.get('reference_settings')),
                  parameters=parameters(job['workflow'], source['node_id']), workflow=job['workflow'],

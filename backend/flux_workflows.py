@@ -9,7 +9,7 @@ import httpx
 from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from backend import capabilities, cancellation, drafts, failures, flux_catalog, gallery, jobs
+from backend import capabilities, cancellation, drafts, failures, flux_catalog, gallery, jobs, runtime_metadata
 
 WORKFLOW_ID = 'flux1-schnell-text2image-v1'
 ROLES = [('diffusion_model', 'diffusion_models'), ('clip_l', 'text_encoders'),
@@ -218,6 +218,10 @@ async def submit(host, value):
             fail(503, '無法讀取原 ComfyUI 的 FLUX 節點；引擎離線或服務失敗，尚未提交。', 'engine_offline')
         except ValueError as exc:
             fail(422, str(exc))
+        observation = await runtime_metadata.capture(client, job)
+        job, captured = jobs.freeze_runtime(host.DB, job, observation)
+        if not captured:
+            raise HTTPException(409, '任務狀態已更新；未改写環境快照或提交，請查詢原任務')
         if value.engine_url != host.engine_url():
             fail(409, '驗證期間引擎設定已變更，尚未提交。', 'engine_changed')
         try:
@@ -299,7 +303,7 @@ def install(app, host, job_lock):
             value = extract(job)
         except ValueError as exc:
             raise HTTPException(422, str(exc))
-        return dict(job_id=str(job_id), settings=value, component_metadata=job.get('component_metadata'),
+        return dict(job_id=str(job_id), settings=value, component_metadata=job.get('component_metadata'), runtime_metadata=job.get('runtime_metadata'),
                     engine_matches=job['engine_url'] == host.engine_url(), warnings=[WARNING, '已保留原引擎與設定；未建立任務。'])
 
     @app.get('/api/flux/artworks/{artwork_id}/creation-settings')
@@ -312,5 +316,5 @@ def install(app, host, job_lock):
             value = extract(item)
         except ValueError as exc:
             raise HTTPException(422, str(exc))
-        return dict(artwork_id=str(artwork_id), settings=value, component_metadata=item.get('component_metadata'),
+        return dict(artwork_id=str(artwork_id), settings=value, component_metadata=item.get('component_metadata'), runtime_metadata=item.get('runtime_metadata'),
                     engine_matches=item['engine_url'] == host.engine_url(), warnings=[WARNING, '已完整載入原作品設定；未建立任務。'])

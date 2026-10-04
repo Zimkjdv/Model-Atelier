@@ -33,7 +33,7 @@ def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, 
                      checkpoint=checkpoint, model_version=model_version or '未知', model_metadata=deepcopy(model_metadata),
                      lora_metadata=deepcopy(lora_metadata), workflow_id=workflow_id, component_metadata=deepcopy(component_metadata),
                      reference_metadata=deepcopy(frozen_refs) if reference_metadata is not None else None,
-                     reference_settings=deepcopy(reference_settings),
+                     reference_settings=deepcopy(reference_settings), runtime_metadata=None,
                      status='validating', error=None, history=None, failure_info=None,
                      revision=0, created_at=datetime.now(timezone.utc).isoformat())
         db.execute('INSERT INTO settings VALUES (?, ?)', ('job:' + job_id, json.dumps(value, ensure_ascii=False)))
@@ -49,7 +49,7 @@ def get(path, job_id):
 
 
 def _update(path, job_id, expected_revision, changes):
-    if any(name in changes for name in ('model_version', 'model_metadata', 'lora_metadata', 'workflow_id', 'component_metadata', 'reference_metadata', 'reference_settings')):
+    if any(name in changes for name in ('model_version', 'model_metadata', 'lora_metadata', 'workflow_id', 'component_metadata', 'reference_metadata', 'reference_settings', 'runtime_metadata')):
         raise ValueError('提交時的模型資料快照不可變更或回填')
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
@@ -72,6 +72,23 @@ def update(path, job_id, **changes):
 def compare_update(path, snapshot, **changes):
     """Reject stale remote observations without overwriting a newer job state."""
     return _update(path, snapshot['id'], snapshot.get('revision', 0), changes)
+
+
+def freeze_runtime(path, snapshot, metadata):
+    """One atomic observation before dispatch; never backfill old/terminal jobs."""
+    with closing(sqlite3.connect(path)) as db, db:
+        db.execute('BEGIN IMMEDIATE')
+        row = db.execute('SELECT value FROM settings WHERE key=?', ('job:' + snapshot['id'],)).fetchone()
+        if row is None:
+            raise KeyError(snapshot['id'])
+        value = json.loads(row[0])
+        if (value.get('revision', 0) != snapshot.get('revision', 0) or value.get('status') != 'validating'
+                or 'runtime_metadata' not in value or value['runtime_metadata'] is not None):
+            return display(value), False
+        value.update(runtime_metadata=deepcopy(metadata), revision=value.get('revision', 0) + 1,
+                     updated_at=datetime.now(timezone.utc).isoformat())
+        db.execute('UPDATE settings SET value=? WHERE key=?', (json.dumps(value, ensure_ascii=False), 'job:' + value['id']))
+        return display(value), True
 
 
 def claim_watch(path, job_id, owner, seconds=60):

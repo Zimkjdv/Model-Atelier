@@ -12,7 +12,7 @@ from starlette.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures, node_preflight
 from backend import lora_preflight, lora_records, stopping, flux_workflows
-from backend import image_workflows
+from backend import image_workflows, runtime_metadata
 from backend.reference_workflows import IMG2IMG_ID
 
 
@@ -168,6 +168,10 @@ def install(app, host):
                 fail(422, str(exc))
             except (httpx.HTTPStatusError, ValueError):
                 fail(502, '無法取得有效的必要節點定義，尚未提交任務')
+            observation = await runtime_metadata.capture(client, job)
+            job, captured = jobs.freeze_runtime(host.DB, job, observation)
+            if not captured:
+                raise HTTPException(409, '任務狀態已更新；未改写環境快照或提交，請查詢原任務')
             if value.engine_url != host.engine_url():
                 fail(409, '驗證期間引擎設定已變更，尚未提交任務；請重新載入模型庫與能力清單', 'engine_changed')
             # Metadata may change while fresh capabilities are being fetched.
@@ -335,6 +339,7 @@ def install(app, host):
         warnings.extend(image_workflows.restoration_warnings(host.DB, host.DATA, job.get('reference_metadata')))
         return dict(job_id=str(job_id), settings=settings, model_version=version,
                     model_metadata=job.get('model_metadata'), lora_metadata=job.get('lora_metadata'),
+                    runtime_metadata=job.get('runtime_metadata'),
                     reference_metadata=job.get('reference_metadata'), warnings=warnings,
                     availability=dict(current_engine_url=current_engine, engine_matches=matches,
                                       checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at'),

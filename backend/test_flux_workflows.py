@@ -60,7 +60,7 @@ class FluxWorkflowTests(unittest.TestCase):
         self.assertEqual([item['role'] for item in job['component_metadata']], [role for role, _ in flux_workflows.ROLES])
         self.assertTrue(all(item['version'] == '未知' for item in job['component_metadata']))
         self.assertEqual(remote.post.await_count, 1)
-        self.assertEqual(len(remote.get.await_args_list), 8)
+        self.assertEqual(len(remote.get.await_args_list), 9)
         request = remote.post.call_args.kwargs['json']
         self.assertEqual(request['prompt_id'], body['request_id'])
         self.assertEqual(request['extra_data']['model_atelier_job_id'], body['request_id'])

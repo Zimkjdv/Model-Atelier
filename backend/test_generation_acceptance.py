@@ -341,11 +341,33 @@ class GenerationAcceptanceTests(unittest.TestCase):
             processes = [subprocess.Popen([sys.executable, '-c', code, str(root), str(path)],
                          cwd=acceptance.ROOT, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                          creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0) for _ in range(2)]
-            for process in processes:
-                _, stderr = process.communicate(timeout=30)
-                self.assertIn(process.returncode, (0, 2), stderr.decode(errors='replace'))
+            try:
+                for process in processes:
+                    _, stderr = process.communicate(timeout=30)
+                    self.assertIn(process.returncode, (0, 2), stderr.decode(errors='replace'))
+            finally:
+                for process in processes:
+                    if process.poll() is None:
+                        process.kill()
+                    process.communicate(timeout=5)
             self.assertEqual(sorted(process.returncode for process in processes), [0, 2])
             self.assertEqual((root / 'runtime' / 'submit-markers.txt').read_text().splitlines(), ['once'])
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows extended paths')
+    def test_resolve_race_extended_prefix_still_confines_same_physical_runtime(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(acceptance, 'ROOT', Path(directory)):
+            path = Path(directory) / 'runtime/check.json'
+            original = Path.resolve
+            def resolve(candidate, *args, **kwargs):
+                result = original(candidate, *args, **kwargs)
+                return Path('\\\\?\\' + str(result)) if candidate == path else result
+            with patch.object(Path, 'resolve', resolve):
+                self.assertEqual(acceptance.report_path(path), path)
+                acceptance.reserve_report(path)
+                with self.assertRaises(FileExistsError):
+                    acceptance.reserve_report(path)
+            with self.assertRaises(ValueError):
+                acceptance.report_path(Path(directory) / 'outside.json')
 
 
 if __name__ == '__main__':
