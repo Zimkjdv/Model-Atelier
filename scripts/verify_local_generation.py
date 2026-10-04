@@ -119,13 +119,19 @@ class Acceptance:
         self.report = {}
         self.original_artworks = None
 
+    def expected_settings(self):
+        return settings(self.engine, self.checkpoint)
+
+    def preflight(self):
+        """Additional fixed-profile checks, before admitting a generation UUID."""
+
     def validate_report(self, value):
         """Validate all integrity anchors before emitting or contacting a server."""
         def identity(text):
             return isinstance(text, str) and str(UUID(text)) == text
         if (not isinstance(value, dict) or type(value.get('schema_version')) is not int
                 or value['schema_version'] != 1 or value.get('expected_engine') != self.engine
-                or value.get('settings') != settings(self.engine, self.checkpoint)
+                or value.get('settings') != self.expected_settings()
                 or value.get('mode') not in ('generate', 'verify_report')
                 or value.get('status') not in ('passed', 'failed')):
             raise ValueError('Report schema or fixed acceptance settings do not match this invocation')
@@ -272,7 +278,7 @@ class Acceptance:
                 return self.report
         self.report = copy.deepcopy(previous) if verify else dict(schema_version=1, status='running', mode='generate',
                                                        platform=str(self.client.base_url).rstrip('/'), expected_engine=self.engine,
-                                                       settings=settings(self.engine, self.checkpoint), started_at=utc_now(),
+                                                       settings=self.expected_settings(), started_at=utc_now(),
                                                        job_id=None, request_id=None, artwork_ids=[])
         if verify:
             self.report['mode'] = 'verify_report'
@@ -299,13 +305,15 @@ class Acceptance:
                 caps = self.json('POST', 'engine/capabilities/sync')
                 if (caps.get('engine_url') != self.engine or caps.get('available') is not True
                         or caps.get('stale') is not False or caps.get('engine_matches') is not True
-                        or 'dpmpp_2m' not in caps.get('sampler_names', []) or 'karras' not in caps.get('schedulers', [])):
+                        or self.report['settings']['sampler_name'] not in caps.get('sampler_names', [])
+                        or self.report['settings']['scheduler'] not in caps.get('schedulers', [])):
                     raise ValueError('Fresh original-engine KSampler capability check failed')
                 for name in ('steps', 'cfg', 'denoise'):
                     bound = caps.get('bounds', {}).get(name, {})
                     if not bound.get('min', float('inf')) <= self.report['settings'][name] <= bound.get('max', -float('inf')):
                         raise ValueError('Fixed acceptance parameter is outside fresh capability bounds: ' + name)
                 self.report['capabilities'] = caps
+                self.preflight()
                 self.report['workflow'] = build(self.report['settings'])
                 self.report['job_id'] = self.report['request_id'] = str(uuid4())
                 self.report['vram_sampling'] = dict(requested_interval_seconds=self.interval,
@@ -390,12 +398,12 @@ class Acceptance:
         return self.report
 
 
-def main(argv=None):
+def main(argv=None, *, runner_type=Acceptance, default_report='runtime/pony-v6-xl-acceptance.json'):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--platform', default='http://127.0.0.1:8000')
     parser.add_argument('--expected-engine', default='http://127.0.0.1:8188')
     parser.add_argument('--checkpoint', default='pony-v6-xl.safetensors')
-    parser.add_argument('--report', default='runtime/pony-v6-xl-acceptance.json')
+    parser.add_argument('--report', default=default_report)
     parser.add_argument('--verify-report', action='store_true', help='Only GET existing job/artwork records; no generation, sync or import')
     args = parser.parse_args(argv)
     runner = None
@@ -411,7 +419,7 @@ def main(argv=None):
                 raise ValueError('Report already exists: use --verify-report or explicitly choose a new report filename; no generation was submitted') from exc
             reserved = True
         with httpx.Client(base_url=local_url(args.platform), trust_env=False, follow_redirects=False) as client:
-            runner = Acceptance(client, args.expected_engine, args.checkpoint, emit=lambda value: write_report(path, value))
+            runner = runner_type(client, args.expected_engine, args.checkpoint, emit=lambda value: write_report(path, value))
             value = runner.run(previous)
         print(json.dumps({key: value.get(key) for key in ('status', 'stage', 'job_id', 'artwork_ids', 'error')}, ensure_ascii=False))
         return 0 if value['status'] == 'passed' else 1

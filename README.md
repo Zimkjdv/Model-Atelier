@@ -128,6 +128,8 @@ python -m venv runtime/ComfyUI/.venv
 
 ## 固定來源模型安裝與磁碟預檢
 
+公開 LCM SDXL LoRA 亦可用 `scripts.install_model lcm-lora-sdxl` 安裝至 `runtime/ComfyUI/models/loras/`。Pony＋LCM 單一 LoRA 在 RTX 3060 完成生成及重啟後離線保存驗收；固定來源、參數、版本、耗時與可重跑指令見 [驗收紀錄](docs/validation/pony-lcm-rtx3060.md)。此實測驗證流程，不代表畫師風格或其他 LoRA 效果通過。
+
 先用唯讀檢查確認所選 manifest、剩餘下載量、安裝鎖及磁碟容量：
 
 ```powershell
