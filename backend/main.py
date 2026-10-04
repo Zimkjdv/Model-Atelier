@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field, field_validator
 from backend import catalog, drafts, assets, submissions, gallery_api, model_profiles, model_paths, environment, validation_records, generation_advice, storage, loras, lora_compatibility, lora_validation
 from backend.lora_settings import LoraSetting
 from backend import flux_plan, flux_catalog
+from backend import reference_workflows
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -358,6 +359,8 @@ def asset_image(asset_id: UUID):
 class AssetUpdate(BaseModel):
     title: str = Field(min_length=1, max_length=100)
     archived: bool = False
+    purpose: Literal['unspecified', 'style', 'character', 'composition'] | None = None
+    revision: int | None = Field(default=None, strict=True, ge=0)
 
     @field_validator('title')
     @classmethod
@@ -370,11 +373,24 @@ class AssetUpdate(BaseModel):
 @app.put('/api/assets/{asset_id}')
 def update_asset(asset_id: UUID, value: AssetUpdate):
     try:
-        return assets.update(DB, str(asset_id), value.title, value.archived)
+        return assets.update(DB, str(asset_id), value.title, value.archived, value.purpose, value.revision)
     except KeyError:
         raise HTTPException(404, '找不到素材')
     except ValueError as exc:
         raise HTTPException(409, str(exc))
+
+
+@app.get('/api/assets/{asset_id}/usage')
+def asset_usage(asset_id: UUID):
+    try:
+        return assets.usage(DB, str(asset_id))
+    except KeyError:
+        raise HTTPException(404, '找不到素材')
+
+
+@app.get('/api/reference-workflows')
+def reference_capabilities():
+    return reference_workflows.descriptions()
 
 
 submissions.install(app, sys.modules[__name__])
