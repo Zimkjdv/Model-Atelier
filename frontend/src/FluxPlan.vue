@@ -38,7 +38,7 @@ onBeforeUnmount(cancel)
 <template>
   <section class="panel flux-plan" aria-labelledby="flux-plan-heading">
     <div class="plan-heading"><h2 id="flux-plan-heading">FLUX.1 接入準備</h2><button type="button" class="secondary" :disabled="busy" @click="load">{{busy ? '讀取中…' : '更新 FLUX 安裝預檢'}}</button></div>
-    <p class="footnote">固定來源、版本與本機磁碟預檢；尚未提供下載或生成。</p>
+    <p class="footnote">固定來源、版本與本機磁碟預檢；專用創作流程已接入，尚未提供下載或 GPU 出圖驗收。</p>
     <p v-if="error" class="notice warning" role="alert">{{error}}</p>
     <template v-if="plan">
       <p class="notice" :class="{warning:plan.space_status !== 'sufficient'}" role="status">{{spaces[plan.space_status]}} · 元件合計 {{gib(plan.total_size_bytes)}}，每個磁碟區另預留 2 GiB。</p>

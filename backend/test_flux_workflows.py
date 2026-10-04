@@ -1,4 +1,3 @@
-import copy
 import io
 import unittest
 from unittest.mock import patch
@@ -80,6 +79,7 @@ class FluxWorkflowTests(unittest.TestCase):
             result = self.submit(body, remote)
             self.assertEqual(result.status_code, 422, result.text)
             self.assertEqual(jobs.get(self.db, body['request_id'])['status'], 'failed')
+            self.assertEqual(jobs.get(self.db, body['request_id'])['failure_info']['message'], result.json()['detail']['message'][:400])
             remote.post.assert_not_awaited()
 
     def test_native_saveimage_old_and_new_output_interfaces(self):
@@ -152,6 +152,10 @@ class FluxWorkflowTests(unittest.TestCase):
         item, _ = gallery.save(self.db, main.DATA/'artworks', job, dict(filename='landscape.png', subfolder='', type='output', node_id='9'), image.getvalue())
         self.assertEqual(item['component_metadata'], job['component_metadata'])
         self.assertEqual(item['workflow_id'], job['workflow_id'])
+        restored = self.client.get('/api/flux/artworks/' + item['id'] + '/creation-settings')
+        self.assertEqual(restored.status_code, 200, restored.text)
+        self.assertEqual(restored.json()['settings']['seed'], body['seed'])
+        self.assertEqual(restored.json()['component_metadata'], job['component_metadata'])
 
     def test_restore_only_whole_terminal_workflow_and_read_only_preview(self):
         body = self.body()
@@ -163,6 +167,7 @@ class FluxWorkflowTests(unittest.TestCase):
             self.assertEqual(result.json()['settings']['seed'], body['seed'])
             preview = self.client.post('/api/flux/workflow', json={k:v for k,v in body.items() if k != 'request_id'})
             self.assertEqual(preview.json()['workflow'], jobs.get(self.db, body['request_id'])['workflow'])
+            self.assertIn('"seed": 18446744073709551615', preview.json()['workflow_json'])
         self.assertEqual(len(jobs.list_all(self.db)), 1)
         modified = jobs.get(self.db, body['request_id'])
         modified['workflow']['7']['inputs']['cfg'] = 7
@@ -192,3 +197,15 @@ class FluxWorkflowTests(unittest.TestCase):
         self.assertEqual(failures.from_history(job, entry)['code'], 'model_load_failed')
         data['exception_type'] = 'torch.cuda.OutOfMemoryError'
         self.assertEqual(failures.from_history(job, entry)['code'], 'cuda_oom')
+
+    def test_old_checkpoint_artwork_does_not_gain_flux_settings_or_snapshots(self):
+        body = self.body(); body['workflow_id'] = None
+        image = io.BytesIO(); Image.new('RGB', (8,8)).save(image,format='PNG')
+        job = dict(id=body['request_id'],prompt_id=body['request_id'],engine_url=ENGINE,
+                   checkpoint='old',workflow={},created_at='2026-10-01')
+        item,_ = gallery.save(self.db,main.DATA/'artworks',job,
+            dict(filename='old.png',subfolder='',type='output',node_id='7'),image.getvalue())
+        response = self.client.get('/api/flux/artworks/'+item['id']+'/creation-settings')
+        self.assertEqual(response.status_code,422)
+        self.assertIsNone(item['component_metadata'])
+        self.assertEqual(jobs.list_all(self.db),[])

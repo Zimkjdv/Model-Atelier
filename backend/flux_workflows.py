@@ -9,7 +9,7 @@ import httpx
 from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from backend import capabilities, cancellation, drafts, failures, flux_catalog, jobs
+from backend import capabilities, cancellation, drafts, failures, flux_catalog, gallery, jobs
 
 WORKFLOW_ID = 'flux1-schnell-text2image-v1'
 ROLES = [('diffusion_model', 'diffusion_models'), ('clip_l', 'text_encoders'),
@@ -200,6 +200,8 @@ async def submit(host, value):
 
     def fail(code, message, reason='preflight_invalid', **extra):
         diagnostic = failures.info(reason)
+        if reason == 'preflight_invalid':
+            diagnostic['message'] = message[:400]
         _, changed = jobs.compare_update(host.DB, job, status='failed', error=message, failure_info=diagnostic, **extra)
         if not changed:
             raise HTTPException(409, '任務狀態已更新；請查詢原任務，未覆蓋新狀態。')
@@ -275,7 +277,10 @@ def install(app, host, job_lock):
 
     @app.post('/api/flux/workflow')
     def preview(value: Input):
-        return dict(workflow_id=WORKFLOW_ID, workflow=build(value), warnings=[WARNING])
+        graph = build(value)
+        # Browsers must export this string, never stringify parsed uint64 numbers.
+        return dict(workflow_id=WORKFLOW_ID, workflow=graph,
+                    workflow_json=json.dumps(graph, ensure_ascii=False, indent=2), warnings=[WARNING])
 
     @app.post('/api/flux/generate')
     async def generate(value: Generate):
@@ -296,3 +301,16 @@ def install(app, host, job_lock):
             raise HTTPException(422, str(exc))
         return dict(job_id=str(job_id), settings=value, component_metadata=job.get('component_metadata'),
                     engine_matches=job['engine_url'] == host.engine_url(), warnings=[WARNING, '已保留原引擎與設定；未建立任務。'])
+
+    @app.get('/api/flux/artworks/{artwork_id}/creation-settings')
+    def artwork_settings(artwork_id: UUID):
+        try:
+            item = gallery.get(host.DB, str(artwork_id))
+        except KeyError:
+            raise HTTPException(404, '找不到作品')
+        try:
+            value = extract(item)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        return dict(artwork_id=str(artwork_id), settings=value, component_metadata=item.get('component_metadata'),
+                    engine_matches=item['engine_url'] == host.engine_url(), warnings=[WARNING, '已完整載入原作品設定；未建立任務。'])

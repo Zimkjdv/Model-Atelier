@@ -20,7 +20,7 @@
 - Pony V6 XL：固定作者來源的本地安裝器、大小與 SHA256 驗證，以及 RTX 3060 生成驗收工具。尚未提供訓練或通用模型下載管理。
 - Animagine XL 4.0 Opt：固定作者修訂、雜湊、授權與依賴紀錄；登記 SDXL 與對應 SHA256 後可手動確認套用作者建議預設。尚未下載或進行 GPU 驗收，詳見 [選型紀錄](docs/models/animagine-xl-4.0-opt.md)。
 - FLUX.1 [schnell]：模型庫提供固定來源、四個元件版本／雜湊與唯讀磁碟預檢；CLI：`.\.venv\Scripts\python.exe -m scripts.flux_preflight`。尚未提供下載及 GPU 生成驗收，來源條件、精度與後續驗收見 [FLUX 接入紀錄](docs/models/flux1-schnell.md)。
-  分離元件庫已提供依引擎同步與版本／來源登記 API，見 [元件庫說明](docs/models/flux-components.md)。專用 9 節點提交、獨立草稿與 JSON 預覽 API 已完成，見 [FLUX 流程說明](docs/models/flux-workflow.md)；GPU 生成仍未驗證。
+  模型庫提供依引擎同步與版本／來源登記；創作頁可切換 FLUX 專用表單，保存獨立草稿、匯出精確 JSON、提交與查詢任務、還原作品設定。見 [元件庫](docs/models/flux-components.md)、[FLUX 流程](docs/models/flux-workflow.md)與 [驗收紀錄](docs/validation/flux-integration.md)；GPU 生成仍未驗證。
 
 ## 本機安裝（PowerShell）
 
@@ -219,7 +219,7 @@ Animagine 權重約 6.46 GiB，加上 2 GiB 預留需約 8.46 GiB。2026-10-04 �
 
 ## ComfyUI 任務提交
 
-創作頁的「生成圖片」會提交目前表單，保存草稿仍是獨立操作。第一版採標準 checkpoint 文生圖，預設 20 steps、Euler / normal、CFG 7、denoise 1、空白負面提示詞；正／負提示詞與取樣參數可編輯、保存並提交，batch 固定為 1。平台 Steps 範圍 1–150、CFG 範圍 0–30、denoise 範圍 0–1；生成使用平台與引擎範圍的交集，取樣器及 scheduler 從 ComfyUI 同步。可選單一 LoRA；暫不支援 FLUX 專用流程、多個 LoRA 或參考圖輸入。選有參考素材時明確拒絕生成，避免誤以為已套用圖片。尺寸通過驗證不代表顯存一定足夠。
+創作頁的「生成圖片」會提交目前表單，保存草稿仍是獨立操作。標準 checkpoint 文生圖預設 20 steps、Euler / normal、CFG 7、denoise 1、空白負面提示詞；正／負提示詞與取樣參數可編輯、保存並提交，batch 固定為 1。平台 Steps 範圍 1–150、CFG 範圍 0–30、denoise 範圍 0–1；生成使用平台與引擎範圍的交集，取樣器及 scheduler 從 ComfyUI 同步。可選最多四個有序 LoRA；參考圖輸入尚未接入，選有參考素材時明確拒絕生成。FLUX.1 [schnell] 使用獨立表單與提交流程（詳見下方）。尺寸通過驗證不代表顯存一定足夠。
 
 - `POST /api/generate`：草稿欄位加 UUID `request_id`，後端建立工作流程，seed 由字串轉為精確整數。
 - `POST /api/jobs`：`request_id`、`engine_url`、`checkpoint`、完整 ComfyUI API 格式 `workflow`。僅接受目前六種標準節點，SaveImage 前綴固定為 ModelAtelier，不接受任意自訂節點或編輯器格式 JSON。
@@ -359,7 +359,7 @@ API：
 
 `GET /api/models/profile` 提供 workflow 描述（流程 ID、欄位、固定單張、參考圖／LoRA 能力）。目前只接受標準 checkpoint 文生圖描述；格式不完整或未知流程不啟用表單。SD 1.x／SDXL 及未知架構可編輯標準欄位，未知架構仍由引擎驗證；已知未支援架構顯示原因並保留原始參數，仍可保存草稿，切回支援模型可繼續編輯。尚未選模型時可先準備草稿。
 
-流程描述包含單一 LoRA 能力及 `max_loras: 1`；未知或未接入的 FLUX、參考圖及多 LoRA 流程仍不可提交。
+標準 checkpoint 流程描述包含 LoRA 能力及 `max_loras: 4`；未接入的參考圖流程仍不可提交。FLUX.1 [schnell] 另有 `/api/flux/workflow` 描述，不沿用 checkpoint 表單；FLUX LoRA 仍不可提交。
 
 ## 單一 LoRA 組合實測紀錄
 

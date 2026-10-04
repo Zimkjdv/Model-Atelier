@@ -2,6 +2,8 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import ModelLibrary from './ModelLibrary.vue'
 import CreationStudio from './CreationStudio.vue'
+import FluxStudio from './FluxStudio.vue'
+import { fluxWorkflowId } from './fluxSettings'
 import AssetLibrary from './AssetLibrary.vue'
 import ArtworkLibrary from './ArtworkLibrary.vue'
 import LocalModelPaths from './LocalModelPaths.vue'
@@ -15,9 +17,13 @@ const page = ref('系統資訊'), system = ref<System | null>(null), engine = re
 const systemStale = ref(false), savedUrl = ref('')
 const galleryJob = ref('')
 const restoreRequest = ref<{ artworkId: string; token: number } | null>(null)
+const fluxRestoreRequest = ref<{ artworkId: string; token: number } | null>(null)
+const studioMode = ref<'checkpoint' | 'flux'>('checkpoint')
 let restoreToken = 0
-function restoreArtwork(artworkId: string) {
-  restoreRequest.value = { artworkId, token: ++restoreToken }
+function restoreArtwork(artworkId: string, workflowId?: string | null) {
+  const value = { artworkId, token: ++restoreToken }
+  if (workflowId === fluxWorkflowId) { studioMode.value = 'flux'; fluxRestoreRequest.value = value }
+  else { studioMode.value = 'checkpoint'; restoreRequest.value = value }
   page.value = '創作工作台'
 }
 const url = ref(''), error = ref(''), message = ref(''), busy = ref(false), saving = ref(false)
@@ -103,7 +109,8 @@ onUnmounted(() => { alive = false; ++refreshToken; ++settingsEpoch; refreshAbort
       <section class="content">
         <div class="heading"><div><div class="eyebrow">YOUR CREATIVE ENVIRONMENT</div><h1>{{ page }}</h1><p>{{ page === '系統資訊' ? '了解你的創作環境，讓每一次實驗都有跡可循。' : page === '設定' ? '連接模型執行環境，建立你的個人工作空間。' : '從這裡開始，逐步建立你的創作流程。' }}</p></div><button v-if="page === '系統資訊'" class="secondary" :disabled="busy" @click="refresh()">{{ busy ? '更新中…' : '↻ 重新整理' }}</button></div>
         <p v-if="error && page === '系統資訊'" role="alert" class="notice warning">{{ error }}</p>
-        <KeepAlive><CreationStudio v-if="page === '創作工作台'" :restore-request="restoreRequest" @models="page = '模型庫'" @assets="page = '參考素材'" @gallery="galleryJob = $event; page = '作品庫'" /></KeepAlive>
+        <div v-if="page === '創作工作台'" class="workflow-switch" role="group" aria-label="創作工作流程"><button class="secondary" :aria-pressed="studioMode === 'checkpoint'" @click="studioMode = 'checkpoint'">Checkpoint／SDXL</button> <button class="secondary" :aria-pressed="studioMode === 'flux'" @click="studioMode = 'flux'">FLUX.1 [schnell]</button><p class="footnote">切換保留各自表單與待確認請求；離開頁面前請保存草稿。</p></div>
+        <KeepAlive><CreationStudio v-if="page === '創作工作台' && studioMode === 'checkpoint'" :restore-request="restoreRequest" @models="page = '模型庫'" @assets="page = '參考素材'" @gallery="galleryJob = $event; page = '作品庫'" /><FluxStudio v-else-if="page === '創作工作台' && studioMode === 'flux'" :restore-request="fluxRestoreRequest" @models="page = '模型庫'" @gallery="galleryJob = $event; page = '作品庫'" /></KeepAlive>
         <template v-if="page === '系統資訊'">
           <div class="host-bar"><span class="chip">平台主機</span><strong>{{ system?.host ?? '讀取中' }}</strong><span class="muted">{{ systemStale ? '上次資料 · 本次更新失敗' : '每 15 秒更新' }} · {{ system ? new Date(system.updated_at).toLocaleTimeString() : '等待資訊' }}</span></div>
           <p class="footnote">此區來源為平台主機：RAM／磁碟由本機系統查詢，GPU／驅動由 nvidia-smi 回報；與下方選定引擎的環境分開。</p>

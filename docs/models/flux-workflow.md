@@ -16,6 +16,7 @@
 | GET／POST `/api/flux/drafts` | 查詢／新增獨立 FLUX 草稿，不啟動生成 |
 | PUT `/api/flux/drafts/{id}` | 帶 revision 更新，衝突 409 |
 | GET `/api/flux/jobs/{id}/creation-settings` | 終止任務完整設定還原；不提交新任務 |
+| GET `/api/flux/artworks/{id}/creation-settings` | 完整作品設定還原至專用表單 |
 
 表單包含 engine_url、diffusion_model、clip_l、t5xxl、vae、prompt、seed（十進位字串）、width、height、steps、weight_dtype、encoder_device、title。兩個 encoder 不能重複；未確認的提交只查原任務，不建立新 UUID 重送。
 
@@ -30,3 +31,13 @@
 2026-10-05 本機 ComfyUI 0.34.0 已唯讀取得八種真實節點介面，schema 檢查通過；SaveImage 新版 IMAGE 輸出與舊版空輸出均支援。目前 diffusion_models、text_encoders 皆空；VAE 僅有原生 pixel_space，沒有所需 ae 權重。僅在記憶體中替換元件名稱以檢查介面，未寫入假模型、未送 /prompt、未載入權重。證據保存於忽略目錄 `runtime/flux-live-nodes-20261005.json`。
 
 FLUX 權重安裝、CUDA 生成、真實作品與資源取樣仍待完成。此輪模擬測試不當作 GPU 驗收。
+
+## 創作介面（2026-10-05）
+
+創作工作台上方可切換 Checkpoint／SDXL 與 FLUX.1 [schnell]。兩邊表單由 KeepAlive 分開保留，草稿與待確認提交請求各有獨立儲存；離開頁面前仍需保存草稿，重新載入網頁不承諾保留未保存內容。
+
+四個元件可由引擎建議清單選取，或手動填寫名稱以保存離線草稿。版本／來源在模型庫登記，未知就顯示未知；生成仍查即時清單及節點，不能以離線快照授權提交。原引擎與目前設定不符時提示確認，重新整理不改草稿原位址或參數。
+
+匯出使用後端產生的 `workflow_json` 字串，保留 64 位 seed，不對瀏覽器解析後的數字再次 stringify；頁面提供上次匯出預覽。匯出、保存與載入不增加生成任務。FLUX 作品會自動開啟專用設定表單；載入取代未保存內容前提供確認。
+
+任務狀態／取消／指定停止／SSE 共用既有元件，但依流程分開列表與 localStorage 待確認請求鍵。FLUX 頁不把失敗設定載入 checkpoint 表單，也不在新生成時自動重新傳送舊 UUID。

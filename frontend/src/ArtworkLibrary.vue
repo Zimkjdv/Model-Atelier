@@ -3,10 +3,12 @@ import { computed, nextTick, onMounted, ref } from 'vue'
 import { architectureLabel, fileHash, fileSize, metadataTime, safeMetadataUrl } from './modelMetadata'
 import type { ModelMetadataSnapshot, LoraMetadataSnapshot } from './modelMetadata'
 import LoraSnapshot from './LoraSnapshot.vue'
+import ComponentSnapshot from './ComponentSnapshot.vue'
+import type { ComponentSnapshot as ComponentMetadata } from './fluxSettings'
 const props = defineProps<{ jobId?: string }>()
-const emit = defineEmits<{ studio: []; restore: [artworkId: string] }>()
+const emit = defineEmits<{ studio: []; restore: [artworkId: string, workflowId?: string | null] }>()
 type Parameters = { prompt: string | null; negative_prompt: string | null; seed: string | null; steps: number | null; cfg: number | null; sampler: string | null; scheduler: string | null; denoise: number | null }
-type Artwork = { id: string; job_id: string; title: string; checkpoint: string; model_version: string; model_metadata?: ModelMetadataSnapshot | null; lora_metadata?: LoraMetadataSnapshot[] | null; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string }
+type Artwork = { id: string; job_id: string; title: string; checkpoint: string; model_version: string; model_metadata?: ModelMetadataSnapshot | null; lora_metadata?: LoraMetadataSnapshot[] | null; workflow_id?: string | null; component_metadata?: ComponentMetadata[] | null; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string }
 type Job = { id: string; status: string; checkpoint: string; created_at: string }
 type ImportResult = { imported: Artwork[]; existing: Artwork[]; errors: { source: { filename: string }; message: string }[] }
 const items = ref<Artwork[]>([]), jobs = ref<Job[]>([]), selectedJob = ref(props.jobId || '')
@@ -53,7 +55,7 @@ async function open(item: Artwork) {
 }
 function restore(item: Artwork) {
   preview.value?.close()
-  emit('restore', item.id)
+  emit('restore', item.id, item.workflow_id)
 }
 const imageUrl = (item: Artwork, thumbnail = false) => `/api/artworks/${item.id}/image${thumbnail ? '?thumbnail=true' : ''}`
 const importedCount = (job: Job) => items.value.filter(item => item.job_id === job.id).length
@@ -102,7 +104,8 @@ onMounted(refresh)
           </dl></template>
           <p v-else class="footnote">此作品尚無提交時的模型資料快照，當時架構、檔案識別及授權資訊未知。</p>
         </details>
-        <LoraSnapshot :items="selected.lora_metadata" />
+        <LoraSnapshot v-if="!selected.workflow_id" :items="selected.lora_metadata" />
+        <ComponentSnapshot :items="selected.component_metadata" />
         <details><summary>作品來源紀錄</summary><p>原引擎：{{ selected.engine_url }}</p><p>任務：{{ selected.job_id }}</p><p>提交：{{ new Date(selected.created_at).toLocaleString() }}</p><p>匯入：{{ new Date(selected.imported_at).toLocaleString() }}</p><p class="file-hash">作品原圖 SHA-256：{{ selected.sha256 }}</p></details>
         <div class="artwork-actions"><button class="primary" @click="restore(selected)">載入創作設定 →</button><a v-if="selected.image_available" :href="imageUrl(selected) + '?download=true'">下載原圖 ↓</a><a :href="`/api/artworks/${selected.id}/workflow`">下載完整工作流程</a><a :href="`/api/jobs/${selected.job_id}`" target="_blank" rel="noopener">原始任務 JSON ↗</a></div>
         </div></div></template>
