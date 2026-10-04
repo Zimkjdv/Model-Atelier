@@ -165,7 +165,8 @@ class Acceptance:
         entry_version = entry.get('model_version', restored.get('model_version'))
         if (not isinstance(digest, str) or len(digest) != 64 or any(c not in '0123456789abcdef' for c in digest)
                 or type(entry.get('bytes')) is not int or not 0 < entry['bytes'] <= 32 * 1024 * 1024
-                or entry.get('width') != 768 or entry.get('height') != 768 or entry_version != version):
+                or entry.get('width') != original_settings['width']
+                or entry.get('height') != original_settings['height'] or entry_version != version):
             raise ValueError('Report artwork checksum, size, dimensions or model version is invalid')
         if not isinstance(restored.get('settings'), dict) or any(
                 restored['settings'].get(name) != expected_value
@@ -221,11 +222,13 @@ class Acceptance:
         if value.get('id') != self.report['job_id'] or value.get('engine_url') != self.engine or value.get('checkpoint') != self.checkpoint:
             raise ValueError('Job identity, original engine or checkpoint changed')
         workflow = value.get('workflow')
-        if workflow != expected or type(workflow['5']['inputs']['seed']) is not int or workflow['5']['inputs']['seed'] != int(SEED):
+        if (workflow != expected or type(workflow['5']['inputs']['seed']) is not int
+                or workflow['5']['inputs']['seed'] != int(self.report['settings']['seed'])):
             raise ValueError('The full saved workflow or exact 64-bit seed differs from the submitted settings')
 
     def verify_artworks(self, expected):
         verified = []
+        width, height = self.report['settings']['width'], self.report['settings']['height']
         for artwork_id in self.report['artwork_ids']:
             UUID(artwork_id)
             prefix = 'artworks/' + artwork_id
@@ -233,7 +236,7 @@ class Acceptance:
             if (item.get('id') != artwork_id or item.get('job_id') != self.report['job_id']
                     or item.get('engine_url') != self.engine or item.get('checkpoint') != self.checkpoint
                     or item.get('model_version') != self.report['model_version']
-                    or item.get('width') != 768 or item.get('height') != 768 or item.get('image_available') is not True):
+                    or item.get('width') != width or item.get('height') != height or item.get('image_available') is not True):
                 raise ValueError('Artwork identity, dimensions or locally saved image availability mismatch')
             workflow = self.json('GET', prefix + '/workflow')
             if workflow != expected or type(workflow['5']['inputs']['seed']) is not int:
@@ -242,8 +245,8 @@ class Acceptance:
             with Image.open(io.BytesIO(raw)) as image:
                 image.verify()
             with Image.open(io.BytesIO(raw)) as image:
-                if image.size != (768, 768) or getattr(image, 'n_frames', 1) != 1:
-                    raise ValueError('Generated image is not a valid single 768 x 768 image')
+                if image.size != (width, height) or getattr(image, 'n_frames', 1) != 1:
+                    raise ValueError('Generated image dimensions or frame count differ from the fixed profile')
                 image.load()
                 image_format = image.format
             digest = hashlib.sha256(raw).hexdigest()
@@ -260,7 +263,7 @@ class Acceptance:
             if type(restored['settings'].get('seed')) is not str or restored.get('model_version') != self.report['model_version']:
                 raise ValueError('Restored seed type or original model version mismatch')
             verified.append(dict(id=artwork_id, sha256=digest, bytes=len(raw), format=image_format,
-                                 width=768, height=768, model_version=self.report['model_version'], restore_settings=restored))
+                                 width=width, height=height, model_version=self.report['model_version'], restore_settings=restored))
         if not verified:
             raise ValueError('No saved artwork available to verify')
         self.report['verified_artworks'] = verified
@@ -398,11 +401,12 @@ class Acceptance:
         return self.report
 
 
-def main(argv=None, *, runner_type=Acceptance, default_report='runtime/pony-v6-xl-acceptance.json'):
+def main(argv=None, *, runner_type=Acceptance, default_report='runtime/pony-v6-xl-acceptance.json',
+         default_checkpoint='pony-v6-xl.safetensors'):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--platform', default='http://127.0.0.1:8000')
     parser.add_argument('--expected-engine', default='http://127.0.0.1:8188')
-    parser.add_argument('--checkpoint', default='pony-v6-xl.safetensors')
+    parser.add_argument('--checkpoint', default=default_checkpoint)
     parser.add_argument('--report', default=default_report)
     parser.add_argument('--verify-report', action='store_true', help='Only GET existing job/artwork records; no generation, sync or import')
     args = parser.parse_args(argv)

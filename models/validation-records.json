@@ -24,5 +24,30 @@
     "sample_count": 12,
     "reference": "docs/validation/pony-v6-xl-rtx3060.md",
     "conditions": "單張一般風景；沒有 LoRA 或參考圖。冷啟動耗時包含載入、排隊及平台查詢；暖啟動耗時來自引擎，兩者量測定義不同。顯存為整個裝置的取樣最高用量，包含其他程序，可能漏掉瞬時峰值，不是最低顯存需求。"
+  }, {
+    "id": "animagine-xl-4-0-opt-rtx3060-20261005",
+    "date": "2026-10-05",
+    "model": "Animagine XL 4.0 Opt",
+    "architecture": "sdxl",
+    "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+    "workflow": "checkpoint-text2image-v1",
+    "workload": "inference",
+    "gpu": "NVIDIA GeForce RTX 3060",
+    "vram_bytes": 12884901888,
+    "ram_gib": 63.94,
+    "os": "Windows 10 19045",
+    "python": "3.12.10",
+    "comfyui": "0.34.0",
+    "pytorch": "2.14.0+cu130",
+    "driver": "616.56",
+    "precision": "模型及 CLIP float16；VAE bfloat16",
+    "offload": "ComfyUI 預設動態 VRAM，async CPU offload，由引擎管理",
+    "settings": {"width": 1024, "height": 1024, "steps": 28, "cfg": 5.0, "sampler_name": "euler_ancestral", "scheduler": "normal", "denoise": 1.0, "batch_size": 1},
+    "cold_wall_seconds": 36.391,
+    "warm_engine_seconds": 22.35,
+    "sampled_device_peak_bytes": 10867441664,
+    "sample_count": 18,
+    "reference": "docs/validation/animagine-xl-4-0-opt-rtx3060.md",
+    "conditions": "單張一般山湖風景；無 LoRA 或參考图。兩個不同精確 seed，冷啟動平台觀測與暖啟動引擎時間的定義不同；暖樣本改 seed 避免快取。顯存為整個裝置的取樣最高用量，包含其他程序並可能漏掉瞬時峰值，不是最低需求。只核對此固定權重、工作流程與環境。"
   }]
 }

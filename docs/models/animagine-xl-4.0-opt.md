@@ -25,9 +25,11 @@ SHA256 取自官方 API 的 LFS SHA256，非 Git blob ID 或 Xet hash。平台�
 
 第一版使用平台既有 `checkpoint-text2image-v1`：`CheckpointLoaderSimple` 必須輸出 MODEL、CLIP、VAE，接續兩個 `CLIPTextEncode`、`EmptyLatentImage`、`KSampler`、`VAEDecode`、`SaveImage`。使用 ComfyUI 獨立 venv 及其 PyTorch 依賴，無需為平台另裝 Diffusers 或自訂節點。實際權重內的元件完整性仍須載入驗證；缺元件時保留引擎錯誤，不能只憑檔案名稱確認。
 
-作者建議起始值為 1024×1024、28 steps、CFG 5、Euler Ancestral（ComfyUI 名稱 `euler_ancestral`）；平台另外選擇 normal scheduler、denoise 1、batch 1。套用需確認參數差異，保留 prompt、negative prompt、seed 與參考素材。取樣器仍需通過目前引擎的即時能力檢查，參考素材尚未進入生成流程。
+作者建議起始值為 1024×1024、28 steps、CFG 5、Euler Ancestral（ComfyUI 名稱 `euler_ancestral`）；平台另外選擇 normal scheduler、denoise 1、batch 1。套用需確認參數差異，保留 prompt、negative prompt、seed 與參考素材。取樣器仍需通過目前引擎的即時能力檢查。平台已有單張圖生圖流程，本模型的該負載尚未驗收，不沿用文生圖紀錄。
 
 ## 後續驗收
+
+2026-10-05 已完整下載、驗證大小與 SHA256、登記 `4.0 Opt`，在 RTX 3060 完成兩個不同 seed 的 1024×1024 風景生成、切回 Pony 生成及平台重啟後離線作品讀取。專用 CLI、條件與結果見 [實機驗收](../validation/animagine-xl-4-0-opt-rtx3060.md)。下面保留較早的預檢歷史；RTX 4080 與其他負載仍待測試。
 
 先規劃足夠磁碟空間，下載後驗證完整大小與 SHA256，再登記路徑及模型資料。RTX 3060／4080 分別記錄載入、生成、耗時、顯存與重啟後作品保存；未測試前不宣稱特定速度、最低 VRAM 或生成成功。
 

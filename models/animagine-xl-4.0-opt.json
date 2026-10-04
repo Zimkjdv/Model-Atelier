@@ -30,7 +30,7 @@
     "precision": "fp16 (author model card)",
     "extra_custom_nodes": [],
     "runtime": "ComfyUI and its existing Python/PyTorch dependencies",
-    "verification": "Weight loading, embedded components and RTX 3060/4080 generation remain untested."
+    "verification": "Pinned complete weights loaded with embedded MODEL/CLIP/VAE; RTX 3060 landscape text-to-image verified at 1024x1024, 28 steps. Other workloads and RTX 4080 remain untested; see docs/validation/animagine-xl-4-0-opt-rtx3060.md."
   },
-  "validation": "not_installed_or_tested"
+  "validation": "rtx3060_fixed_text2image_profile_verified"
 }

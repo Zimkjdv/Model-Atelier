@@ -18,7 +18,7 @@
 - 執行中停止：針對原引擎中身分相符的單一任務；需已審查的原子取消能力，歷史確認中斷才顯示停止，未知結果只查詢。RTX 3060 已驗證後續任務正常完成，見 [停止實測](docs/validation/running-stop-rtx3060.md)。更新 ComfyUI 後未匹配來源會停用此操作能力，正常生成不受影響。
 - 作品庫：匯入已完成任務圖片、本機原圖與縮圖、搜尋、大圖預覽、生成參數及下載，並可載入支援流程的創作設定。
 - Pony V6 XL：固定作者來源的本地安裝器、大小與 SHA256 驗證，以及 RTX 3060 生成驗收工具。尚未提供訓練或通用模型下載管理。
-- Animagine XL 4.0 Opt：固定作者修訂、雜湊、授權與依賴紀錄；登記 SDXL 與對應 SHA256 後可手動確認套用作者建議預設。尚未下載或進行 GPU 驗收，詳見 [選型紀錄](docs/models/animagine-xl-4.0-opt.md)。
+- Animagine XL 4.0 Opt：固定作者修訂下載、完整大小／SHA256 核對、版本登記與 RTX 3060 的 1024×1024 文生圖驗收完成；可手動確認套用作者預設，紀錄依 hash／架構匹配。見 [模型紀錄](docs/models/animagine-xl-4.0-opt.md)及 [實機條件](docs/validation/animagine-xl-4-0-opt-rtx3060.md)，其他硬體及負載仍待實測。
 - FLUX.1 [schnell]：模型庫提供固定來源、四個元件版本／雜湊與唯讀磁碟預檢；CLI：`.\.venv\Scripts\python.exe -m scripts.flux_preflight`。尚未提供下載及 GPU 生成驗收，來源條件、精度與後續驗收見 [FLUX 接入紀錄](docs/models/flux1-schnell.md)。
   模型庫提供依引擎同步與版本／來源登記；創作頁可切換 FLUX 專用表單，保存獨立草稿、匯出精確 JSON、提交與查詢任務、還原作品設定。見 [元件庫](docs/models/flux-components.md)、[FLUX 流程](docs/models/flux-workflow.md)與 [驗收紀錄](docs/validation/flux-integration.md)；GPU 生成仍未驗證。
 
@@ -144,7 +144,7 @@ python -m venv runtime/ComfyUI/.venv
 
 `--check` 不連網、不建目錄、不改寫檔案；可安裝回傳 0，空間不足或有安裝鎖回傳 2。正式安裝重用 Pony 安裝器的續傳、完整 SHA256、同目錄原子發布與來源紀錄。只接受程式核准的固定作者修訂；不接受任意網址或輸出路徑。已有正式檔仍須在安裝時完整驗證，預檢不是檔案或 GPU 驗收。
 
-Animagine 權重約 6.46 GiB，加上 2 GiB 預留需約 8.46 GiB。2026-10-04 本機預檢約剩 6.92 GiB，因此尚未下載；程式不刪除其他模型或使用者資料。Pony 亦可透過 `scripts.install_model pony-v6-xl` 安裝，原指令仍保留。
+Animagine 權重約 6.46 GiB，加上 2 GiB 預留需約 8.46 GiB。2026-10-05 重新預檢約有 18 GiB，已完成下載、雜湊驗證及 RTX 3060 生成驗收；程式沒有刪除其他模型或使用者資料。專用驗收 CLI 為 `python -m scripts.verify_animagine_generation`，新生成須使用新報告路徑，原報告加 `--verify-report` 只讀验证。Pony 亦可透過 `scripts.install_model pony-v6-xl` 安裝，原指令仍保留。
 
 ## Pony V6 XL 本地安裝與驗收
 

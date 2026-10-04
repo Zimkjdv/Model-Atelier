@@ -112,7 +112,8 @@ class ModelProfileTests(unittest.TestCase):
         self.assertEqual(preset['settings'], dict(width=1024, height=1024, steps=28, cfg=5.0,
                                                 sampler_name='euler_ancestral', scheduler='normal', denoise=1.0))
         self.assertIn('未驗證目前檔案', preset['description'])
-        self.assertIn('尚未', preset['validation'])
+        self.assertIn('RTX 3060', preset['validation'])
+        self.assertIn('仍待實測', preset['validation'])
         self.assertEqual(self.saved_rows(), before)
         for kind, checksum, expected in [('sdxl', 'a' * 64, 'sdxl-starter'),
                                          ('sd1', manifest['sha256'], 'sd1-starter'),

@@ -57,7 +57,7 @@ def preset(model):
         settings.update(width=1024, height=1024, steps=28, cfg=5.0, sampler_name='euler_ancestral')
         return dict(id='animagine-xl-4.0-opt-author', name='Animagine XL 4.0 Opt：作者建議起始預設',
                     description='依固定作者模型卡提供參數；只依登記 SHA256 匹配 manifest，未驗證目前檔案。Scheduler normal 與 denoise 1 為平台標準流程選擇。',
-                    validation='尚未在本專案安裝或實測；1024×1024 不代表目前 GPU 可執行，提交仍需通過引擎能力檢查。',
+                    validation='本專案 RTX 3060 12GB：1024×1024、28 steps、單張風景文生圖與離線作品讀取已驗；其他硬體、題材與附加元件仍待實測，提交仍需引擎檢查。',
                     reference='docs/models/animagine-xl-4.0-opt.md', prompt_hint='', settings=settings)
     return dict(id=kind + '-starter', name=LABELS[kind] + '：一般起始預設',
                 description='依使用者登記架構提供起始參數；僅在使用者選擇套用後修改取樣設定。',
