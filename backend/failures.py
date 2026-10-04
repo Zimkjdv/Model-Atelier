@@ -2,7 +2,8 @@
 import re
 from itertools import islice
 
-KNOWN_NODES = {'CheckpointLoaderSimple', 'CLIPTextEncode', 'EmptyLatentImage', 'KSampler', 'VAEDecode', 'SaveImage'}
+KNOWN_NODES = {'CheckpointLoaderSimple', 'CLIPTextEncode', 'EmptyLatentImage', 'KSampler', 'VAEDecode', 'SaveImage',
+               'UNETLoader', 'DualCLIPLoader', 'VAELoader', 'EmptySD3LatentImage'}
 OOM_TYPES = {'torch.OutOfMemoryError', 'torch.cuda.OutOfMemoryError', 'torch._C.OutOfMemoryError',
              'cuda.OutOfMemoryError', 'CUDAOutOfMemoryError'}
 CUDA_OOM = re.compile(r'\bcuda(?:\s+error\s*:)?\s+out\s+of\s+memory\b', re.IGNORECASE)
@@ -27,7 +28,7 @@ TEXT = {
                           ['載入原設定並檢查節點、checkpoint 與取樣參數。', '需要完整診斷時查看原任務 JSON，再確認設定後建立新任務。']),
     'cuda_oom': ('CUDA 顯存不足', '原引擎的已確認執行錯誤明確指出 CUDA 顯存不足。',
                  ['載入原設定並降低圖片寬度或高度，再建立新任務。', '關閉其他占用顯存的程式；必要時使用符合該模型的省顯存流程。']),
-    'model_load_failed': ('模型載入節點失敗', '原工作流程的 checkpoint 載入節點執行失敗；目前沒有足夠資訊判定為顯存不足。',
+    'model_load_failed': ('模型載入節點失敗', '原工作流程的模型載入節點執行失敗；目前沒有足夠資訊判定為顯存不足。',
                           ['確認原 checkpoint 檔案存在、完整且架構與流程相符。', '查看原任務 JSON 與引擎日誌，再選擇可用模型或修復檔案後建立新任務。']),
     'execution_failed': ('ComfyUI 執行失敗', '原引擎歷史已確認任務失敗，尚無足夠資訊判定為顯存不足或模型載入失敗。',
                          ['載入原設定並檢查工作流程與參數。', '需要完整診斷時查看原任務 JSON 與引擎日誌；確認原因後才建立新任務。']),
@@ -91,7 +92,7 @@ def from_history(job, entry):
         explicit_cuda = isinstance(message, str) and len(message) <= 8192 and CUDA_OOM.search(message) is not None
         if context['exception_type'] in OOM_TYPES or explicit_cuda:
             return info('cuda_oom', context)
-        if context['node_type'] == 'CheckpointLoaderSimple':
+        if context['node_type'] in ('CheckpointLoaderSimple', 'UNETLoader', 'DualCLIPLoader', 'VAELoader'):
             return info('model_load_failed', context)
         return info('execution_failed', context)
     return info('execution_failed')

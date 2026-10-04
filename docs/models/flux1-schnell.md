@@ -1,5 +1,7 @@
 # FLUX.1 [schnell]：固定來源與安裝預檢
 
+2026-10-05 更新：分離元件庫及專用提交／草稿／JSON API 已完成，見 [流程說明](flux-workflow.md)。以下保留來源選型階段紀錄；預檢的 generation_supported=false 表示尚未確認本機權重可生成，不表示不存在專用 API。安裝與 GPU 出圖仍未驗證。
+
 2026-10-04 選定第一個 FLUX 接入目標為 BFL 的原始 BF16 `FLUX.1 [schnell]`，配套採獨立 VAE、CLIP-L 及較省記憶體的 T5-XXL FP8 scaled。此為接入選型，不是已安裝或已支援生成。
 
 作者模型卡標示 Apache-2.0、1～4 步的蒸餾模型，並提供 CPU 卸載範例。查核當時 Hugging Face repository 為 gated，需要帳號及使用條件確認；本專案不代為登入、接受條件或保存憑證。它有本地權重，與 P8 官方生成 API 服務分開。[BFL 模型卡](https://huggingface.co/black-forest-labs/FLUX.1-schnell)

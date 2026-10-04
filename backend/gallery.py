@@ -122,6 +122,7 @@ def save(path, folder, job, source, raw):
                  checkpoint=job['checkpoint'], model_version=job.get('model_version') or '未知',
                  model_metadata=deepcopy(job.get('model_metadata')),
                  lora_metadata=deepcopy(job.get('lora_metadata')),
+                 workflow_id=job.get('workflow_id'), component_metadata=deepcopy(job.get('component_metadata')),
                  parameters=parameters(job['workflow'], source['node_id']), workflow=job['workflow'],
                  width=width, height=height, size=len(raw), extension=extension, media_type=media_type,
                  sha256=hashlib.sha256(raw).hexdigest(), created_at=job['created_at'],

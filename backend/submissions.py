@@ -8,7 +8,7 @@ import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
 from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures, node_preflight
-from backend import lora_preflight, lora_records, stopping
+from backend import lora_preflight, lora_records, stopping, flux_workflows
 
 
 class Submission(BaseModel):
@@ -315,3 +315,4 @@ def install(app, host):
 
     progress.install(app, host, refresh, job_lock)
     capabilities.install(app, host)
+    flux_workflows.install(app, host, job_lock)

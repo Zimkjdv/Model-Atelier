@@ -6,13 +6,13 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 
-def list_all(path):
+def list_all(path, *, prefix='draft:'):
     with closing(sqlite3.connect(path)) as db:
-        rows = db.execute("SELECT value FROM settings WHERE key LIKE 'draft:%'").fetchall()
+        rows = db.execute('SELECT value FROM settings WHERE key LIKE ?', (prefix + '%',)).fetchall()
     return sorted((json.loads(row[0]) for row in rows), key=lambda item: item['updated_at'], reverse=True)
 
 
-def save(path, payload, draft_id=None, revision=None):
+def save(path, payload, draft_id=None, revision=None, *, prefix='draft:'):
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
         for asset_id in payload.get('reference_ids', []):
@@ -21,7 +21,7 @@ def save(path, payload, draft_id=None, revision=None):
                 raise ValueError('參考素材不存在或已封存，請重新選擇素材')
         now = datetime.now(timezone.utc).isoformat()
         if draft_id:
-            row = db.execute('SELECT value FROM settings WHERE key=?', ('draft:' + draft_id,)).fetchone()
+            row = db.execute('SELECT value FROM settings WHERE key=?', (prefix + draft_id,)).fetchone()
             if not row:
                 raise KeyError('草稿不存在')
             old = json.loads(row[0])
@@ -32,5 +32,5 @@ def save(path, payload, draft_id=None, revision=None):
             old = dict(created_at=now, revision=0)
         result = dict(**payload, id=draft_id, revision=old['revision'] + 1,
                       created_at=old['created_at'], updated_at=now)
-        db.execute('INSERT OR REPLACE INTO settings VALUES (?, ?)', ('draft:' + draft_id, json.dumps(result, ensure_ascii=False)))
+        db.execute('INSERT OR REPLACE INTO settings VALUES (?, ?)', (prefix + draft_id, json.dumps(result, ensure_ascii=False)))
     return result
