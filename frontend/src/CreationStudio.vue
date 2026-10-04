@@ -47,7 +47,8 @@ const presetValidationLabel = computed(() => matchingProfile.value?.preset?.id =
   : '起始參數，尚未逐模型實測')
 const presetReferenceUrl = computed(() => matchingProfile.value?.preset?.reference === 'docs/validation/pony-v6-xl-rtx3060.md'
   ? 'https://github.com/Zimkjdv/Model-Atelier/blob/main/docs/validation/pony-v6-xl-rtx3060.md'
-  : '')
+  : matchingProfile.value?.preset?.reference === 'docs/models/animagine-xl-4.0-opt.md'
+    ? 'https://github.com/Zimkjdv/Model-Atelier/blob/main/docs/models/animagine-xl-4.0-opt.md' : '')
 const presetRows = computed(() => matchingProfile.value?.preset ? presetFields.map(field => ({
   ...field, current: form[field.key], next: matchingProfile.value!.preset!.settings[field.key],
   changed: form[field.key] !== matchingProfile.value!.preset!.settings[field.key],
@@ -253,7 +254,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
               <p class="footnote">{{ presetValidationLabel }}</p>
               <details class="preset-reference"><summary>預設來源與提示詞參考</summary>
                 <p>{{ matchingProfile.preset.description }}</p><p class="footnote">{{ matchingProfile.preset.validation }}</p>
-                <p v-if="presetReferenceUrl"><a :href="presetReferenceUrl" target="_blank" rel="noopener noreferrer">查看驗收紀錄 ↗</a></p>
+                <p v-if="presetReferenceUrl"><a :href="presetReferenceUrl" target="_blank" rel="noopener noreferrer">查看預設來源與驗證狀態 ↗</a></p>
                 <p v-if="matchingProfile.preset.prompt_hint" class="profile-hint">提示詞參考：{{ matchingProfile.preset.prompt_hint }}</p>
               </details>
               <details v-if="!presetChoice" class="preset-differences"><summary>預設參數與目前設定</summary><table><thead><tr><th scope="col">參數</th><th scope="col">目前</th><th scope="col">預設</th></tr></thead><tbody><tr v-for="row in presetRows" :key="row.key" :class="{ changed: row.changed }"><th scope="row">{{ row.label }}</th><td>{{ row.current }}</td><td>{{ row.next }}</td></tr></tbody></table></details>

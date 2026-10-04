@@ -1,0 +1,36 @@
+{
+  "id": "animagine-xl-4.0-opt",
+  "name": "Animagine XL 4.0 Opt",
+  "version": "4.0 Opt",
+  "architecture": "SDXL",
+  "verified_at": "2026-10-04",
+  "source": {
+    "provider": "Hugging Face",
+    "repository": "cagliostrolab/animagine-xl-4.0",
+    "revision": "2b7c1b397761bf5bd3cc42e5b39ec99314a75a96",
+    "filename": "animagine-xl-4.0-opt.safetensors",
+    "page_url": "https://huggingface.co/cagliostrolab/animagine-xl-4.0/blob/2b7c1b397761bf5bd3cc42e5b39ec99314a75a96/README.md",
+    "download_url": "https://huggingface.co/cagliostrolab/animagine-xl-4.0/resolve/2b7c1b397761bf5bd3cc42e5b39ec99314a75a96/animagine-xl-4.0-opt.safetensors"
+  },
+  "filename": "animagine-xl-4.0-opt.safetensors",
+  "size_bytes": 6938350040,
+  "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+  "license": {
+    "identifier": "openrail++",
+    "name": "CreativeML Open RAIL++-M",
+    "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+    "source": "author model card and referenced SDXL license",
+    "terms_verified": true,
+    "note": "已閱讀上游授權條款與使用限制；使用及再散布須遵循原文，非法律保證。"
+  },
+  "dependencies": {
+    "workflow": "checkpoint-text2image-v1",
+    "loader": "CheckpointLoaderSimple",
+    "required_outputs": ["MODEL", "CLIP", "VAE"],
+    "precision": "fp16 (author model card)",
+    "extra_custom_nodes": [],
+    "runtime": "ComfyUI and its existing Python/PyTorch dependencies",
+    "verification": "Weight loading, embedded components and RTX 3060/4080 generation remain untested."
+  },
+  "validation": "not_installed_or_tested"
+}

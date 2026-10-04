@@ -97,6 +97,41 @@ class ModelProfileTests(unittest.TestCase):
             self.assertTrue(result['compatibility']['allows_submission'])
             self.assertIsNone(result['preset'])
 
+    def test_animagine_preset_matches_registered_hash_without_claiming_file_or_gpu_validation(self):
+        manifest = json.loads((Path(__file__).resolve().parents[1] / 'models' / 'animagine-xl-4.0-opt.json').read_text(encoding='utf-8'))
+        self.assertEqual(model_profiles.ANIMAGINE_SHA256, manifest['sha256'])
+        self.assertEqual(manifest['source']['download_url'], 'https://huggingface.co/cagliostrolab/animagine-xl-4.0/resolve/'
+                         + manifest['source']['revision'] + '/' + manifest['source']['filename'])
+        # An arbitrary filename is intentional: only the registered hash and architecture match.
+        self.sync([CHECKPOINT])
+        self.register(architecture='sdxl', sha256=manifest['sha256'])
+        before = self.saved_rows()
+        with patch('backend.main.httpx.AsyncClient', side_effect=AssertionError('must not probe engine')):
+            preset = self.get_profile().json()['preset']
+        self.assertEqual(preset['id'], 'animagine-xl-4.0-opt-author')
+        self.assertEqual(preset['settings'], dict(width=1024, height=1024, steps=28, cfg=5.0,
+                                                sampler_name='euler_ancestral', scheduler='normal', denoise=1.0))
+        self.assertIn('未驗證目前檔案', preset['description'])
+        self.assertIn('尚未', preset['validation'])
+        self.assertEqual(self.saved_rows(), before)
+        for kind, checksum, expected in [('sdxl', 'a' * 64, 'sdxl-starter'),
+                                         ('sd1', manifest['sha256'], 'sd1-starter'),
+                                         ('unknown', manifest['sha256'], None)]:
+            self.register(architecture=kind, sha256=checksum, version='4.0 Opt')
+            value = self.get_profile().json()['preset']
+            self.assertEqual(value['id'] if value else None, expected)
+
+    def test_animagine_generation_does_not_automatically_apply_author_preset(self):
+        self.sync([CHECKPOINT])
+        self.register(architecture='sdxl', sha256=model_profiles.ANIMAGINE_SHA256, version='4.0 Opt')
+        body = self.body() | dict(width=640, height=768, steps=17, cfg=4.125, seed='18446744073709551615')
+        remote = self.remote()
+        with patch('backend.submissions.httpx.AsyncClient', return_value=remote):
+            response = self.client.post('/api/generate', json=body)
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(remote.post.call_args.kwargs['json']['prompt'], workflows.build(body))
+        self.assertEqual(response.json()['model_metadata']['sha256'], model_profiles.ANIMAGINE_SHA256)
+
     def test_profile_engine_scope_and_unknown_model_guards(self):
         self.sync([CHECKPOINT])
         self.register(architecture='sdxl', sha256=model_profiles.PONY_SHA256)
