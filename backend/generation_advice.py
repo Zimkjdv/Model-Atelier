@@ -32,7 +32,7 @@ def advise(value, model, diagnostics, lora=None, *, stale=False):
                and (not active or record['id'] in evidence['matching_parameter_records'])]
     warnings = []
     if len(active) > 1:
-        warnings.append('多 LoRA 組合尚未實機驗證；順序與每個強度都會影響結果，不沿用單一 LoRA 或基礎模型紀錄。')
+        warnings.append('多 LoRA 尚未有可自動匹配的組合實測紀錄；順序與每個強度都會影響結果，不沿用單一 LoRA 或基礎模型紀錄。')
     elif active:
         warnings.append('目前啟用 LoRA；僅比對單一 LoRA 八節點組合紀錄，不沿用基礎模型的七節點紀錄。')
     if not evidence['records']:

@@ -9,6 +9,8 @@ import GenerationAdvice from './GenerationAdvice.vue'
 import ImageInput from './ImageInput.vue'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
 import RuntimeSnapshot from './RuntimeSnapshot.vue'
+import SettingsTransfer from './SettingsTransfer.vue'
+import { copySettings, type ImportPreview } from './settingsTransfer'
 import { imageWorkflowId, referenceDefaults, purposeLabel, type ReferenceAsset, type ReferenceWorkflow } from './referenceSettings'
 import { useStudioPreferences } from './studioPreferences'
 import { generationDefaults, newCreation } from './creationSettings'
@@ -146,6 +148,14 @@ function chooseImage(value: string | null) {
   form.image_asset_id = value
   form.reference_ids = value ? [value] : []
 }
+function importSettings(value: ImportPreview) {
+  if (busy.value || restoring.value || pending.value || !('checkpoint' in value.bundle.settings)) return
+  ++restorationRequest
+  Object.assign(form, copySettings(value.bundle.settings))
+  id.value = null; revision.value = null; draftVersion.value = ''; origin.value = null
+  presetChoice.value = null; saved.value = ''; error.value = ''
+  message.value = '設定已載入為未保存的新草稿；原文件來源未核實。請確認模型與素材，再保存或明確生成。'
+}
 async function restoreArtwork(request: { artworkId: string; token: number }) {
   const current = ++restorationRequest
   restoring.value = true; error.value = ''; message.value = ''
@@ -272,6 +282,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
     <LoraSnapshot v-if="origin" :items="origin.lora_metadata" />
     <ReferenceSnapshot v-if="origin" :items="origin.reference_metadata" />
     <RuntimeSnapshot v-if="origin" :item="origin.runtime_metadata" />
+    <SettingsTransfer :settings="form" family="checkpoint" :dirty="dirty" :disabled="busy || restoring || !!pending" @apply="importSettings" />
     <p v-if="display.error.value" class="notice" role="status">{{ display.error.value }}</p>
     <div class="studio-layout-controls"><button type="button" class="secondary" :aria-expanded="!editorCollapsed" aria-controls="studio-editor" @click="editorCollapsed = !editorCollapsed">{{ editorCollapsed ? '展開創作設定' : '收合創作設定' }}</button><p v-if="editorCollapsed" class="footnote">{{ form.checkpoint || '尚未選擇模型' }} · {{ form.width }} × {{ form.height }} · {{ form.steps }} steps · CFG {{ form.cfg }}。設定與未保存內容仍保留。</p></div>
     <div class="studio-grid" :class="{ 'editor-collapsed': editorCollapsed }">

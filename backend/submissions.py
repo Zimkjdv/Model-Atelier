@@ -192,7 +192,7 @@ def install(app, host):
                 warnings.append(choice['name'] + '：' + assessment['message'])
             if choices:
                 if len(choices) > 1:
-                    warnings.append('多 LoRA 的有序串接尚未實機驗證；不沿用單一 LoRA 的品質或資源紀錄。')
+                    warnings.append('多 LoRA 尚未有可自動匹配的組合實測紀錄；品質及資源需依目前順序與強度驗證，不沿用單一 LoRA 紀錄。')
                 job = cancellation.persist(host, job, preflight_warnings=warnings)
             if reference:
                 try:

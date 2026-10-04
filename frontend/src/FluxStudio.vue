@@ -3,6 +3,8 @@ import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, react
 import GenerationPanel from './GenerationPanel.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
 import RuntimeSnapshot from './RuntimeSnapshot.vue'
+import SettingsTransfer from './SettingsTransfer.vue'
+import { copySettings, type ImportPreview } from './settingsTransfer'
 import type { RuntimeMetadata } from './runtimeMetadata'
 import { fluxProblem, fluxRoles, fluxWorkflowId, newFlux, type FluxCatalog, type FluxForm, type ComponentSnapshot as ComponentMetadata } from './fluxSettings'
 
@@ -73,6 +75,12 @@ function apply(value: Draft | Restoration | 'new') {
   saved.value = JSON.stringify(form); pending.value = null; message.value = '已載入設定；尚未提交生成。'
 }
 function choose(value: Draft | Restoration | 'new') { if (dirty.value) pending.value = value; else apply(value) }
+function importSettings(value: ImportPreview) {
+  if (busy.value || loading.value || pending.value || !('diffusion_model' in value.bundle.settings)) return
+  Object.assign(form, copySettings(value.bundle.settings))
+  id.value = null; revision.value = null; origin.value = null; saved.value = ''; error.value = ''
+  message.value = 'FLUX 設定已載入為未保存的新草稿；請確認元件，尚未提交生成。'
+}
 async function save(asNew = false) {
   if (busy.value || problem.value) return
   busy.value = true; error.value = ''; message.value = ''
@@ -127,6 +135,7 @@ onDeactivated(cancelLoad); onBeforeUnmount(cancelLoad)
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p><p v-if="message" class="notice" role="status">{{ message }}</p>
     <div v-if="pending" class="notice warning" role="alert"><p>載入會取代目前未保存的 FLUX 內容。</p><button class="secondary" @click="pending = null">繼續編輯</button> <button class="secondary" @click="apply(pending)">捨棄變更並載入 FLUX</button></div>
     <template v-if="origin"><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{ warning }}</p><ComponentSnapshot :items="origin.component_metadata" /><RuntimeSnapshot :item="origin.runtime_metadata" /></template>
+    <SettingsTransfer :settings="form" family="flux" :dirty="dirty" :disabled="busy || loading || !!pending" @apply="importSettings" />
     <div class="flux-grid">
       <form class="panel flux-editor" aria-label="FLUX 創作設定" @submit.prevent="save()"><fieldset :disabled="busy">
         <label for="flux-title">FLUX 草稿名稱</label><input id="flux-title" v-model="form.title" required maxlength="100">

@@ -167,6 +167,7 @@ onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload)
           <p v-else class="footnote">此作品尚無提交時的模型資料快照，當時架構、檔案識別及授權資訊未知。</p>
         </details>
         <LoraSnapshot v-if="!selected.workflow_id || selected.workflow_id === imageWorkflowId" :items="selected.lora_metadata" />
+        <a :href="`/api/artworks/${selected.id}/settings-export`">匯出創作設定（含來源快照）</a>
         <ComponentSnapshot :items="selected.component_metadata" />
         <RuntimeSnapshot :item="selected.runtime_metadata" />
         <ReferenceSnapshot :items="selected.reference_metadata" :job-id="selected.job_id" :processed-ready="true" />
