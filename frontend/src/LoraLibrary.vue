@@ -1,0 +1,118 @@
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import { architectures, architectureLabel, fileHash, fileSize, metadataTime, parseFileSize, safeMetadataUrl, validArchitecture } from './modelMetadata'
+import type { Architecture, ModelMetadata } from './modelMetadata'
+
+type Lora = ModelMetadata & { name: string; listed: boolean; version: string; notes: string; source_url: string }
+type Catalog = { engine_url: string; loras: Lora[]; synced_at: string | null; sync_error: string | null }
+const props = defineProps<{ engineUrl: string }>()
+const catalog = ref<Catalog | null>(null), busy = ref(false), error = ref(''), feedback = ref('')
+const search = ref(''), filter = ref('all'), editing = ref<string | null>(null)
+const version = ref(''), architecture = ref<Architecture>('unknown'), source = ref(''), notes = ref('')
+const sizeBytes = ref(''), sha256 = ref(''), licenseName = ref(''), licenseUrl = ref('')
+let revision = 0
+const visible = computed(() => (catalog.value?.loras ?? []).filter(item =>
+  item.name.toLocaleLowerCase().includes(search.value.toLocaleLowerCase()) &&
+  (filter.value === 'all' || (filter.value === 'listed' ? item.listed : !item.listed))))
+async function request(path = '', method = 'GET', body?: unknown): Promise<Catalog> {
+  const response = await fetch('/api/loras' + path, { method,
+    ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}) })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'LoRA 資料無效，請檢查網址、SHA256 及欄位長度。')
+  if (data.engine_url !== props.engineUrl || !Array.isArray(data.loras))
+    throw new Error('引擎設定已變更，請重新載入模型庫；目前輸入仍保留。')
+  return data
+}
+async function load(sync = false) {
+  if (busy.value) return
+  const ticket = revision, engineUrl = props.engineUrl
+  busy.value = true; error.value = ''; feedback.value = ''
+  try {
+    const next = await request(sync ? '/sync' : '', sync ? 'POST' : 'GET', sync ? { engine_url: engineUrl } : undefined)
+    if (ticket !== revision) return
+    catalog.value = next
+    if (sync && !next.sync_error) feedback.value = 'LoRA 清單已同步；尚未載入或驗證權重。'
+  } catch (e) { if (ticket === revision) error.value = e instanceof Error ? e.message : 'LoRA 模型庫讀取失敗。' }
+  finally { if (ticket === revision) busy.value = false }
+}
+function edit(item: Lora) {
+  editing.value = item.name; version.value = item.version; architecture.value = validArchitecture(item.architecture)
+  source.value = item.source_url; notes.value = item.notes; licenseName.value = item.license_name ?? ''; licenseUrl.value = item.license_url ?? ''
+  sizeBytes.value = fileSize(item.size_bytes) === '未知' ? '' : String(item.size_bytes)
+  sha256.value = fileHash(item.sha256) === '未知' ? '' : item.sha256 ?? ''
+  error.value = ''; feedback.value = ''
+}
+async function save() {
+  if (busy.value || !catalog.value || !editing.value) return
+  const ticket = revision
+  busy.value = true; error.value = ''; feedback.value = ''
+  try {
+    const hash = sha256.value.trim().toLowerCase()
+    if (hash && !/^[a-f0-9]{64}$/.test(hash)) throw new Error('SHA256 請填完整 64 位十六進位值，或留空表示未知。')
+    const next = await request('/metadata', 'PUT', { engine_url: catalog.value.engine_url, name: editing.value,
+      version: version.value, architecture: architecture.value, source_url: source.value, notes: notes.value,
+      size_bytes: parseFileSize(sizeBytes.value), sha256: hash, license_name: licenseName.value, license_url: licenseUrl.value })
+    if (ticket !== revision) return
+    catalog.value = next; editing.value = null; feedback.value = 'LoRA 登記資料已保存。'
+  } catch (e) { if (ticket === revision) error.value = e instanceof Error ? e.message : '保存失敗，輸入仍保留。' }
+  finally { if (ticket === revision) busy.value = false }
+}
+watch(() => props.engineUrl, () => {
+  revision++; catalog.value = null; editing.value = null; busy.value = false; error.value = ''; feedback.value = ''
+  void load()
+}, { immediate: true })
+</script>
+
+<template>
+  <section class="lora-library" aria-labelledby="lora-heading">
+    <div class="panel lora-intro">
+      <div><span class="chip">LORA LIBRARY</span><h2 id="lora-heading">LoRA 模型庫</h2><p>整理引擎登記的 LoRA 及基礎架構，保存版本與來源。</p></div>
+      <button type="button" class="primary" :disabled="busy || editing !== null" @click="load(true)">{{ busy ? '處理中…' : '同步 LoRA 清單' }}</button>
+    </div>
+    <p class="footnote">{{ engineUrl }} · {{ catalog?.synced_at ? '最後成功同步：' + metadataTime(catalog.synced_at) : '尚未成功同步' }}</p>
+    <p class="footnote">清單及資料為登記快照；未核對實際檔案或相容性。目前創作流程尚未套用 LoRA。</p>
+    <p v-if="error" class="notice warning" role="alert">{{ error }} <button class="secondary" :disabled="busy || editing !== null" @click="load()">重新讀取 LoRA</button></p>
+    <p v-if="catalog?.sync_error" class="notice warning" role="alert">{{ catalog.sync_error }} 此處保留歷史清單，不代表目前可用。</p>
+    <p v-if="feedback" class="notice success" role="status">{{ feedback }}</p>
+    <div class="lora-toolbar">
+      <label>搜尋 LoRA<input v-model="search" type="search" placeholder="輸入 LoRA 名稱"></label>
+      <label>LoRA 清單狀態<select v-model="filter"><option value="all">全部紀錄</option><option value="listed">最近清單內</option><option value="missing">最近清單未列出</option></select></label>
+      <span class="muted" role="status">{{ visible.length }} 個 LoRA</span>
+    </div>
+    <article v-if="!catalog && busy" class="panel" role="status">正在讀取 LoRA…</article>
+    <article v-else-if="catalog && !catalog.loras.length" class="panel"><h3>尚無 LoRA 登記</h3><p>將已有的 LoRA 放入 ComfyUI 的 loras 目錄或其額外路徑，啟動引擎後同步。平台不會自動下載模型。</p></article>
+    <p v-else-if="catalog && !visible.length" class="notice">沒有符合篩選的 LoRA。<button class="secondary" @click="search = ''; filter = 'all'">清除 LoRA 篩選</button></p>
+    <div class="lora-grid">
+      <article v-for="item in visible" :key="item.name" class="panel lora-card">
+        <div class="lora-top"><span class="chip">LORA</span><span class="status" :class="{ connected: item.listed }">{{ item.listed ? '最近清單內' : '最近清單未列出' }}</span></div>
+        <h3>{{ item.name }}</h3><p>版本：{{ item.version.trim() || '未知' }}</p><p class="footnote">登記基礎架構：{{ architectureLabel(item.architecture) }}</p>
+        <form v-if="editing === item.name" class="lora-form" @submit.prevent="save">
+          <label>LoRA 版本<input v-model="version" maxlength="100" placeholder="留空表示未知"></label>
+          <label>LoRA 基礎架構（使用者登記）<select v-model="architecture"><option v-for="option in architectures" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
+          <label>LoRA 來源網址<input v-model="source" type="url" maxlength="2048" placeholder="https://…"></label>
+          <label>LoRA 檔案大小（bytes）<input v-model="sizeBytes" inputmode="numeric" maxlength="16" placeholder="留空表示未知"></label>
+          <label>LoRA SHA256<input v-model="sha256" aria-describedby="lora-hash-help" maxlength="64" autocomplete="off" spellcheck="false"></label>
+          <p id="lora-hash-help" class="footnote">完整 64 位十六進位雜湊；登記不代表平台已驗證實際檔案。</p>
+          <label>LoRA 授權名稱<input v-model="licenseName" maxlength="200"></label>
+          <label>LoRA 授權網址<input v-model="licenseUrl" type="url" maxlength="2048" placeholder="https://…"></label>
+          <label>LoRA 備註<textarea v-model="notes" rows="3" maxlength="4000"></textarea></label>
+          <div class="lora-actions"><button class="primary" :disabled="busy">保存 LoRA 資料</button><button type="button" class="secondary" :disabled="busy" @click="editing = null">取消 LoRA 編輯</button></div>
+        </form>
+        <template v-else>
+          <p class="lora-notes">{{ item.notes || '尚未加入備註。' }}</p>
+          <a v-if="safeMetadataUrl(item.source_url)" :href="safeMetadataUrl(item.source_url)" target="_blank" rel="noopener noreferrer">查看 LoRA 登記來源 ↗</a><p v-else class="footnote">來源：未知</p>
+          <details><summary>LoRA 檔案與授權資料</summary><dl>
+            <dt>大小</dt><dd>{{ fileSize(item.size_bytes) }}</dd><dt>SHA256</dt><dd>{{ fileHash(item.sha256) }}</dd>
+            <dt>授權名稱</dt><dd>{{ item.license_name?.trim() || '未知' }}</dd><dt>授權條款</dt><dd><a v-if="safeMetadataUrl(item.license_url)" :href="safeMetadataUrl(item.license_url)" target="_blank" rel="noopener noreferrer">查看 LoRA 登記條款 ↗</a><span v-else>未知</span></dd>
+            <dt>登記更新時間</dt><dd>{{ metadataTime(item.metadata_updated_at) }}</dd>
+          </dl></details>
+          <button type="button" class="secondary" :disabled="busy || editing !== null" @click="edit(item)">編輯 LoRA 資料</button>
+        </template>
+      </article>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.lora-library{margin-top:36px;border-top:1px solid var(--border-control);padding-top:24px}.lora-intro,.lora-top,.lora-actions{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}.lora-toolbar{display:flex;gap:16px;align-items:end;margin:24px 0}.lora-toolbar label:first-child{flex:1}.lora-toolbar label,.lora-form label{display:grid;gap:8px;font-size:12px}.lora-toolbar .muted{padding-bottom:12px;white-space:nowrap}.lora-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.lora-card{margin:0;min-width:0}.lora-card h3{overflow-wrap:anywhere;font-size:19px;line-height:1.6;margin-top:20px}.lora-form{display:grid;gap:14px}.lora-form input,.lora-form select,.lora-form textarea{width:100%;min-width:0;box-sizing:border-box;padding:12px}.lora-form textarea{resize:vertical}.lora-notes{white-space:pre-wrap;overflow-wrap:anywhere}.lora-card a,.lora-card summary{color:var(--text-notice);font-size:12px}.lora-card details{margin:20px 0}.lora-card summary{cursor:pointer}.lora-card dl{display:grid;gap:8px;font-size:12px;line-height:1.7}.lora-card dt{color:var(--text-muted)}.lora-card dd{margin:0;overflow-wrap:anywhere}.lora-toolbar select{padding:12px}@media(max-width:1000px){.lora-grid{grid-template-columns:1fr}}@media(max-width:700px){.lora-toolbar{flex-wrap:wrap}.lora-toolbar label:first-child{flex-basis:100%}}
+</style>

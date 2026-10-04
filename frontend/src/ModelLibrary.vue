@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import ModelValidation from './ModelValidation.vue'
+import LoraLibrary from './LoraLibrary.vue'
 import { architectures, architectureLabel, fileHash, fileSize, metadataTime, parseFileSize, safeMetadataUrl, validArchitecture } from './modelMetadata'
 import type { Architecture, ModelMetadata } from './modelMetadata'
 type Model = ModelMetadata & { name: string; listed: boolean; notes: string; source_url: string; version?: string }
@@ -142,6 +143,7 @@ onMounted(() => load())
         </template>
       </article>
     </div>
+    <LoraLibrary v-if="catalog" :engine-url="catalog.engine_url" />
   </div>
 </template>
 
