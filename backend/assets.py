@@ -28,7 +28,7 @@ def references(db, asset_id):
         value = json.loads(raw)
         ids = value.get('reference_ids', [])
         snapshots = value.get('reference_metadata') or []
-        if asset_id in ids or any(item.get('id') == asset_id for item in snapshots):
+        if asset_id in ids or value.get('image_asset_id') == asset_id or any(item.get('id') == asset_id for item in snapshots):
             group = {'draft': 'drafts', 'job': 'jobs', 'artwork': 'artworks'}[key.split(':', 1)[0]]
             result[group].append(value.get('id', key.split(':', 1)[1]))
     return result

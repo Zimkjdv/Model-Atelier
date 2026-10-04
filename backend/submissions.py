@@ -4,11 +4,16 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 from weakref import WeakValueDictionary
 from uuid import UUID
+from types import SimpleNamespace
 import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
+from starlette.concurrency import run_in_threadpool
+from fastapi.responses import FileResponse
 from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures, node_preflight
 from backend import lora_preflight, lora_records, stopping, flux_workflows
+from backend import image_workflows
+from backend.reference_workflows import IMG2IMG_ID
 
 
 class Submission(BaseModel):
@@ -51,7 +56,7 @@ def install(app, host):
         async with job_lock(value.request_id):
             return await submit_locked(value)
 
-    async def submit_locked(value):
+    async def submit_locked(value, *, reference=None):
         # Recovery is pinned to the recorded request, including after changing
         # the current engine. Never probe fresh capabilities or replay an old ID.
         try:
@@ -59,7 +64,8 @@ def install(app, host):
         except KeyError:
             pass
         else:
-            if any(existing[name] != getattr(value, name) for name in ('engine_url', 'checkpoint', 'workflow')):
+            if (any(existing[name] != getattr(value, name) for name in ('engine_url', 'checkpoint', 'workflow'))
+                    or (reference and existing.get('reference_settings') != reference['settings'])):
                 raise HTTPException(409, '此請求 ID 已用於其他工作流程')
             return existing
         if value.engine_url != host.engine_url():
@@ -69,7 +75,9 @@ def install(app, host):
             raise HTTPException(422, '工作流程 checkpoint 與選擇的模型不一致')
         lora_nodes = [node for node in value.workflow.values() if node['class_type'] == 'LoraLoader']
         choices = []
-        if lora_nodes:
+        if reference:
+            choices = [choice for choice in reference['settings']['loras'] if choice['enabled']]
+        elif lora_nodes:
             # Raw workflows with LoRA must be the entire supported template.
             outputs = [node_id for node_id, node in value.workflow.items() if node['class_type'] == 'SaveImage']
             try:
@@ -89,7 +97,10 @@ def install(app, host):
                 lora_metadata = [lora_records.capture(record, choice) for choice, record, _ in registered]
             metadata = catalog.capture(model, value.checkpoint)
             job, fresh = jobs.reserve(host.DB, str(value.request_id), value.engine_url, value.workflow,
-                                      value.checkpoint, metadata['version'], metadata, lora_metadata)
+                                      value.checkpoint, metadata['version'], metadata, lora_metadata,
+                                      workflow_id=IMG2IMG_ID if reference else None,
+                                      reference_metadata=[reference['snapshot']] if reference else None,
+                                      reference_settings=reference['settings'] if reference else None)
         except ValueError as exc:
             raise HTTPException(409, str(exc))
         if not fresh:
@@ -104,6 +115,8 @@ def install(app, host):
         initial_compatibility = model_profiles.compatibility(metadata.get('architecture'))
         if not initial_compatibility['allows_submission']:
             fail(422, initial_compatibility['message'], 'unsupported_architecture')
+        if reference and metadata.get('architecture') not in ('sd1', 'sdxl'):
+            fail(422, '圖生圖需要明確登記 SD 1.x 或 SDXL 架構；未知或其他架構尚未支援', 'unsupported_architecture')
         for choice in choices:
             _, _, assessment = lora_preflight.registration(host.DB, value.engine_url, value.checkpoint, choice['name'])
             if assessment['status'] == 'incompatible':
@@ -140,7 +153,11 @@ def install(app, host):
             try:
                 if choices:
                     await lora_preflight.check_many(client, value.engine_url, choices)
-                await node_preflight.check(client, value.engine_url, value.workflow, checked=('LoraLoader',) if choices else ())
+                checked = ('LoraLoader',) if choices else ()
+                if reference:
+                    await image_workflows.check_nodes(client, value.engine_url)
+                    checked += ('LoadImage', 'VAEEncode')
+                await node_preflight.check(client, value.engine_url, value.workflow, checked=checked)
             except node_preflight.MissingNodes as exc:
                 fail(422, str(exc), 'missing_nodes')
             except httpx.RequestError:
@@ -161,6 +178,8 @@ def install(app, host):
             current_compatibility = model_profiles.compatibility(current_model.get('architecture'))
             if not current_compatibility['allows_submission']:
                 fail(422, '驗證期間模型架構登記已變更，尚未提交任務；' + current_compatibility['message'], 'unsupported_architecture')
+            if reference and current_model.get('architecture') not in ('sd1', 'sdxl'):
+                fail(422, '驗證期間模型架構登記已變更，圖生圖尚未提交', 'unsupported_architecture')
             warnings = []
             _, registered = lora_preflight.registrations(host.DB, value.engine_url, value.checkpoint, choices)
             for choice, _, assessment in registered:
@@ -171,6 +190,34 @@ def install(app, host):
                 if len(choices) > 1:
                     warnings.append('多 LoRA 的有序串接尚未實機驗證；不沿用單一 LoRA 的品質或資源紀錄。')
                 job = cancellation.persist(host, job, preflight_warnings=warnings)
+            if reference:
+                try:
+                    await run_in_threadpool(image_workflows.save_input, host.DATA, job_id, reference['encoded'])
+                except OSError:
+                    fail(507, '無法保存本機圖生圖輸入，請檢查磁碟空間及權限；尚未上傳或提交', 'reference_input_failed')
+                job = cancellation.persist(host, job, status='uploading_input')
+                target = image_workflows.location(job_id)
+                try:
+                    response = await client.post(value.engine_url + '/upload/image',
+                        files={'image': (target['name'], reference['encoded'], 'image/png')},
+                        data={'type': 'input', 'subfolder': target['subfolder'], 'overwrite': 'false'})
+                    response.raise_for_status()
+                    if len(response.content) > 1024 * 1024:
+                        raise ValueError('上傳回應過大')
+                    receipt = response.json()
+                    if not isinstance(receipt, dict) or any(receipt.get(key) != expected for key, expected in target.items()):
+                        raise ValueError('上傳目的地不符')
+                except (httpx.HTTPError, ValueError):
+                    fail(502, '輸入圖片上傳失敗或回應不符；未提交生成。圖片可能已上傳，此請求不會自動重試', 'reference_input_failed')
+                job = cancellation.persist(host, job, input_upload=target)
+                if value.engine_url != host.engine_url():
+                    fail(409, '圖片上傳期間引擎設定已變更，尚未提交生成', 'engine_changed')
+                latest = next((model for model in catalog.read(host.DB, value.engine_url)['models'] if model['name'] == value.checkpoint), {})
+                if latest.get('architecture') not in ('sd1', 'sdxl'):
+                    fail(422, '圖片上傳期間模型架構已變更，尚未提交生成', 'unsupported_architecture')
+                _, latest_loras = lora_preflight.registrations(host.DB, value.engine_url, value.checkpoint, choices)
+                if any(assessment['status'] == 'incompatible' for _, _, assessment in latest_loras):
+                    fail(422, '圖片上傳期間 LoRA 架構已變更，尚未提交生成', 'unsupported_architecture')
             job = cancellation.persist(host, job, status='submitting')
             try:
                 response = await client.post(value.engine_url + '/prompt', json={
@@ -196,7 +243,29 @@ def install(app, host):
 
     @app.post('/api/generate')
     async def generate(value: Generate):
-        if value.reference_ids:
+        if value.workflow_mode == 'image2image':
+            async with job_lock(value.request_id):
+                settings = value.model_dump(mode='json', exclude={'request_id', 'revision'})
+                try:
+                    existing = jobs.get(host.DB, str(value.request_id))
+                except KeyError:
+                    existing = None
+                if existing is not None:
+                    if existing.get('workflow_id') != IMG2IMG_ID or existing.get('reference_settings') != settings:
+                        raise HTTPException(409, '此請求 ID 已用於其他工作流程或輸入素材')
+                    return existing
+                if not value.checkpoint:
+                    raise HTTPException(422, '請先選擇 checkpoint')
+                if value.engine_url != host.engine_url():
+                    raise HTTPException(409, '引擎設定已變更，請重新載入模型庫')
+                try:
+                    snapshot, encoded = await run_in_threadpool(image_workflows.prepare, host.DB, host.DATA, settings)
+                except ValueError as exc:
+                    raise HTTPException(422, str(exc))
+                submission = SimpleNamespace(request_id=value.request_id, engine_url=value.engine_url,
+                    checkpoint=value.checkpoint, workflow=image_workflows.build(settings, value.request_id))
+                return await submit_locked(submission, reference=dict(settings=settings, snapshot=snapshot, encoded=encoded))
+        if value.reference_ids or value.image_asset_id:
             raise HTTPException(422, '第一版文生圖尚未套用參考素材，請先取消素材選取')
         if not value.checkpoint:
             raise HTTPException(422, '請先選擇 checkpoint')
@@ -205,11 +274,21 @@ def install(app, host):
 
     @app.get('/api/jobs')
     def history():
-        return [{k: v for k, v in job.items() if k not in ('workflow', 'history', 'submission', 'upstream_error')} for job in jobs.list_all(host.DB)]
+        return [{k: v for k, v in job.items() if k not in ('workflow', 'history', 'submission', 'upstream_error', 'reference_settings')} for job in jobs.list_all(host.DB)]
 
     @app.get('/api/jobs/{job_id}')
     def detail(job_id: UUID):
         return lookup(job_id)
+
+    @app.get('/api/jobs/{job_id}/reference-image')
+    def reference_image(job_id: UUID):
+        job = lookup(job_id)
+        if job.get('workflow_id') != IMG2IMG_ID:
+            raise HTTPException(404, '此任務沒有圖生圖輸入')
+        path = host.DATA / 'job_inputs' / (str(job_id) + '.png')
+        if not path.is_file():
+            raise HTTPException(404, '本機任務輸入尚未保存或檔案已遺失')
+        return FileResponse(path, media_type='image/png', headers={'X-Content-Type-Options': 'nosniff'})
 
     @app.get('/api/jobs/{job_id}/workflow')
     def workflow(job_id: UUID):
@@ -218,14 +297,13 @@ def install(app, host):
     @app.get('/api/jobs/{job_id}/creation-settings')
     def creation_settings(job_id: UUID):
         job = lookup(job_id)
-        if job['status'] != 'failed':
+        if job['status'] != 'failed' and not (job.get('workflow_id') == IMG2IMG_ID and job['status'] in cancellation.TERMINAL):
             raise HTTPException(409, '僅可載入已確認失敗任務的原設定；未提交或重送任何任務')
         outputs = [node_id for node_id, node in job['workflow'].items()
                    if isinstance(node, dict) and node.get('class_type') == 'SaveImage']
         if len(outputs) != 1:
             raise HTTPException(422, '此任務工作流程無法完整還原到目前創作表單，請下載原工作流程使用；未載入任何參數')
-        item = dict(workflow=job['workflow'], checkpoint=job['checkpoint'], engine_url=job['engine_url'],
-                    source={'node_id': outputs[0]}, title='失敗任務設定')
+        item = dict(job, source={'node_id': outputs[0]}, title='失敗任務設定' if job['status'] == 'failed' else '原任務設定')
         def validate(value):
             return host.DraftInput.model_validate(value).model_dump(mode='json', exclude={'revision'})
         try:
@@ -238,7 +316,7 @@ def install(app, host):
         matches = settings['engine_url'] == current_engine
         checkpoint_status = ('unknown' if original.get('synced_at') is None or original.get('sync_error')
                              else 'available' if model and model.get('listed') else 'missing')
-        warnings = ['已保留失敗任務的原始設定；未提交或重送任務，確認並調整後請建立新請求。']
+        warnings = ['已保留任務的原始設定；未提交或重送任務，確認並調整後請建立新請求。']
         if not matches:
             warnings.append('任務原引擎與目前設定不同；已保留原位址，生成前請先確認引擎設定')
         if checkpoint_status == 'missing':
@@ -254,8 +332,10 @@ def install(app, host):
             warnings.append('目前登記的模型版本與原任務不同；已保留原任務版本供比較')
         lora_info = lora_records.restoration(host.DB, settings['engine_url'], settings, job.get('lora_metadata'))
         warnings.extend(lora_info['warnings'])
+        warnings.extend(image_workflows.restoration_warnings(host.DB, host.DATA, job.get('reference_metadata')))
         return dict(job_id=str(job_id), settings=settings, model_version=version,
-                    model_metadata=job.get('model_metadata'), lora_metadata=job.get('lora_metadata'), warnings=warnings,
+                    model_metadata=job.get('model_metadata'), lora_metadata=job.get('lora_metadata'),
+                    reference_metadata=job.get('reference_metadata'), warnings=warnings,
                     availability=dict(current_engine_url=current_engine, engine_matches=matches,
                                       checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at'),
                                       loras=lora_info['loras'], lora_synced_at=lora_info['lora_synced_at']))
@@ -279,7 +359,7 @@ def install(app, host):
         job = lookup(job_id)
         if job['status'] in cancellation.TERMINAL:
             return job
-        if job['status'] in ('validating', 'submitting'):
+        if job['status'] in ('validating', 'uploading_input', 'submitting'):
             # Do not promote a live submission from a second worker. After a
             # process crash, the bounded guard expires so its original UUID can
             # still be reconciled from the upstream queue/history without replay.

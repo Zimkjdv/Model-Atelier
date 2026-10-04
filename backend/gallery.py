@@ -123,6 +123,7 @@ def save(path, folder, job, source, raw):
                  model_metadata=deepcopy(job.get('model_metadata')),
                  lora_metadata=deepcopy(job.get('lora_metadata')),
                  workflow_id=job.get('workflow_id'), component_metadata=deepcopy(job.get('component_metadata')),
+                 reference_metadata=deepcopy(job.get('reference_metadata')), reference_settings=deepcopy(job.get('reference_settings')),
                  parameters=parameters(job['workflow'], source['node_id']), workflow=job['workflow'],
                  width=width, height=height, size=len(raw), extension=extension, media_type=media_type,
                  sha256=hashlib.sha256(raw).hexdigest(), created_at=job['created_at'],

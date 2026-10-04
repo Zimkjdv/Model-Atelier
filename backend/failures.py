@@ -3,13 +3,15 @@ import re
 from itertools import islice
 
 KNOWN_NODES = {'CheckpointLoaderSimple', 'CLIPTextEncode', 'EmptyLatentImage', 'KSampler', 'VAEDecode', 'SaveImage',
-               'UNETLoader', 'DualCLIPLoader', 'VAELoader', 'EmptySD3LatentImage'}
+               'UNETLoader', 'DualCLIPLoader', 'VAELoader', 'EmptySD3LatentImage', 'LoadImage', 'VAEEncode'}
 OOM_TYPES = {'torch.OutOfMemoryError', 'torch.cuda.OutOfMemoryError', 'torch._C.OutOfMemoryError',
              'cuda.OutOfMemoryError', 'CUDAOutOfMemoryError'}
 CUDA_OOM = re.compile(r'\bcuda(?:\s+error\s*:)?\s+out\s+of\s+memory\b', re.IGNORECASE)
 IDENTIFIER = re.compile(r'[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*')
 
 TEXT = {
+    'reference_input_failed': ('參考圖片準備或上傳失敗', '圖生圖輸入無法保存或上傳，生成尚未提交。',
+                             ['檢查本機素材、磁碟與原引擎連線。', '此請求不自動重試；修正後確認設定並建立新任務。']),
     'missing_nodes': ('缺少必要節點', '原 ComfyUI 引擎未登記此流程需要的節點，任務尚未提交。',
                       ['查看任務錯誤中的節點名稱並確認引擎安裝完整。', '修復或重啟原引擎後，載入設定再建立新任務。']),
     'engine_offline': ('ComfyUI 無法連線', '原 ComfyUI 引擎離線或連線逾時，任務尚未提交。',

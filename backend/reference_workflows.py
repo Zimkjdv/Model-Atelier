@@ -6,7 +6,7 @@ DESCRIPTIONS = [
     dict(id='checkpoint-text2image-v1', name='Checkpoint 文生圖', implemented=True,
          architectures=['sd1', 'sdxl'], image_count=0, input_requirement='不套用參考圖片；草稿素材關聯僅為記錄。',
          control='提示詞與取樣參數', lora=True),
-    dict(id=IMG2IMG_ID, name='Checkpoint 圖生圖', implemented=False,
+    dict(id=IMG2IMG_ID, name='Checkpoint 圖生圖', implemented=True,
          architectures=['sd1', 'sdxl'], image_count=1, input_requirement='一張未封存的本機 PNG 素材；縮放至輸出尺寸後編碼為 latent。',
          control='以 denoise 控制改動幅度；不是獨立畫風或角色鎖定。', lora=True),
     dict(id='inpainting', name='局部編輯', implemented=False, architectures=[], image_count=1,

@@ -247,6 +247,9 @@ async def model_selection(target: ModelTarget):
 
 
 class DraftInput(BaseModel):
+    workflow_mode: Literal['text2image', 'image2image'] = 'text2image'
+    image_asset_id: UUID | None = None
+    reference_resize: Literal['fit', 'stretch'] = 'fit'
     loras: list[LoraSetting] = Field(default_factory=list, max_length=4)
     reference_ids: list[UUID] = Field(default_factory=list, max_length=8)
     title: str = Field(min_length=1, max_length=100)
@@ -304,7 +307,7 @@ def draft_payload(value):
 def list_drafts():
     # Supply the original generation defaults for old records without rewriting them.
     defaults = {name: DraftInput.model_fields[name].default for name in
-                ('negative_prompt', 'steps', 'cfg', 'sampler_name', 'scheduler', 'denoise')}
+                ('negative_prompt', 'steps', 'cfg', 'sampler_name', 'scheduler', 'denoise', 'workflow_mode', 'image_asset_id', 'reference_resize')}
     return [dict(loras=[]) | defaults | item for item in drafts.list_all(DB)]
 
 
