@@ -56,6 +56,23 @@ class LoraValidationTests(unittest.TestCase):
         self.assertEqual(data['status'], 'recorded')
         self.assertEqual(data['matching_parameter_records'], [])
 
+    def test_animagine_evidence_is_separate_from_pony_and_exact_parameter_matches(self):
+        payload = self.prepare()
+        records, error = evidence.records()
+        self.assertIsNone(error)
+        record = next(v for v in records if v['model'] == 'Animagine XL 4.0 Opt')
+        catalog.update_metadata(self.db, ENGINE, payload['checkpoint'], dict(sha256=record['sha256']))
+        payload['settings'] = record['settings']
+        before = self.db.read_bytes()
+        with patch('backend.main.httpx.AsyncClient', side_effect=AssertionError('read-only evidence')):
+            value = self.client.post('/api/loras/validation', json=payload).json()
+            self.assertEqual(value['matching_parameter_records'], [record['id']])
+            self.assertEqual([v['model'] for v in value['records']], ['Animagine XL 4.0 Opt'])
+            changed = self.client.post('/api/loras/validation', json=payload | dict(
+                settings=payload['settings'] | dict(width=768, height=768))).json()
+            self.assertEqual(changed['matching_parameter_records'], [])
+        self.assertEqual(self.db.read_bytes(), before)
+
     def test_missing_hash_changed_architecture_and_stale_catalog_do_not_verify(self):
         payload = self.prepare()
         for changes, status in [(dict(sha256=''), 'unverified'), (dict(sha256='f'*64), 'unverified'),

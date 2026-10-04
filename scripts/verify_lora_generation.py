@@ -24,19 +24,21 @@ def check_identity(item, manifest):
 
 
 class LoraAcceptance(base.Acceptance):
+    checkpoint_manifest = CHECKPOINT
+
     def expected_settings(self):
         return settings(self.engine, self.checkpoint)
 
     def preflight(self):
         # Recheck actual local bytes for this explicit GPU acceptance. This is
         # separate from platform metadata registration and never runs offline.
-        for manifest in (CHECKPOINT, LORA):
+        for manifest in (self.checkpoint_manifest, LORA):
             target, _, _, _ = downloader._paths(downloader.WORKSPACE, manifest['filename'], create=False)
             if not target.is_file() or not downloader._verified(target, manifest):
                 raise ValueError('Local pinned weight size/SHA256 check failed: ' + manifest['filename'])
         models = self.json('GET', 'models')
         loras = self.json('POST', 'loras/sync', json=dict(engine_url=self.engine))
-        for catalog, field, manifest in ((models, 'models', CHECKPOINT), (loras, 'loras', LORA)):
+        for catalog, field, manifest in ((models, 'models', self.checkpoint_manifest), (loras, 'loras', LORA)):
             if catalog.get('engine_url') != self.engine or catalog.get('sync_error'):
                 raise ValueError('Fresh original-engine catalog required')
             item = next((item for item in catalog.get(field, []) if item.get('name') == manifest['filename']), None)
@@ -44,10 +46,10 @@ class LoraAcceptance(base.Acceptance):
             if item.get('listed') is not True:
                 raise ValueError('Pinned weight is absent from the original-engine catalog')
         self.report['local_weights_verified'] = [dict(name=m['filename'], sha256=m['sha256'], size_bytes=m['size_bytes'])
-                                                 for m in (CHECKPOINT, LORA)]
+                                                 for m in (self.checkpoint_manifest, LORA)]
 
     def check_snapshots(self, item):
-        check_identity(item.get('model_metadata'), CHECKPOINT)
+        check_identity(item.get('model_metadata'), self.checkpoint_manifest)
         entries = item.get('lora_metadata')
         if not isinstance(entries, list) or len(entries) != 1:
             raise ValueError('Expected one immutable LoRA metadata snapshot')
