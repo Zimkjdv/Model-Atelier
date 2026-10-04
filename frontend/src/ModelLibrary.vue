@@ -89,7 +89,7 @@ onMounted(() => load())
       <div><span class="chip">CHECKPOINT LIBRARY</span><h2>你的模型，一目了然</h2>
         <p>讀取 ComfyUI 已登記的 checkpoint，整理版本、架構、檔案資訊與來源。</p>
         <code>{{ catalog?.engine_url ?? '正在讀取執行引擎…' }}</code></div>
-      <div class="library-actions"><button class="primary" :disabled="busy || editing !== null" @click="load(true)">{{ busy ? '處理中…' : '↻ 同步模型清單' }}</button><button class="secondary" @click="emit('settings')">連線設定</button></div>
+      <div class="library-actions"><button class="primary" :disabled="busy || editing !== null" @click="load(true)">{{ busy ? '處理中…' : '↻ 同步模型清單' }}</button><button class="secondary" :disabled="busy || editing !== null" @click="load()">重新讀取模型庫</button><button class="secondary" @click="emit('settings')">連線設定</button></div>
     </div>
     <article class="panel engine-version">
       <div class="panel-heading"><h2>ComfyUI 執行引擎</h2><span class="chip">版本 {{ engineVersion }}</span></div>
@@ -143,7 +143,7 @@ onMounted(() => load())
         </template>
       </article>
     </div>
-    <LoraLibrary v-if="catalog" :engine-url="catalog.engine_url" />
+    <LoraLibrary v-if="catalog" :engine-url="catalog.engine_url" :checkpoints="catalog.models" :preferred-checkpoint="catalog.selected" />
   </div>
 </template>
 

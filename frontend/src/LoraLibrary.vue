@@ -5,12 +5,24 @@ import type { Architecture, ModelMetadata } from './modelMetadata'
 
 type Lora = ModelMetadata & { name: string; listed: boolean; version: string; notes: string; source_url: string }
 type Catalog = { engine_url: string; loras: Lora[]; synced_at: string | null; sync_error: string | null }
-const props = defineProps<{ engineUrl: string }>()
+type Checkpoint = ModelMetadata & { name: string; listed: boolean }
+type AssessedRecord = { name: string; architecture: Architecture; listed: boolean; metadata_updated_at: string | null }
+type Compatibility = AssessedRecord & { status: 'compatible' | 'unverified' | 'incompatible'; label: string; message: string; verified: false }
+type Assessment = { engine_url: string; checkpoint: AssessedRecord; loras: Compatibility[];
+  source: 'registered_architecture'; workflow_supported: false; assessed_at: string;
+  lora_synced_at: string | null; lora_sync_error: string | null }
+const props = defineProps<{ engineUrl: string; checkpoints: Checkpoint[]; preferredCheckpoint: string | null }>()
 const catalog = ref<Catalog | null>(null), busy = ref(false), error = ref(''), feedback = ref('')
 const search = ref(''), filter = ref('all'), editing = ref<string | null>(null)
 const version = ref(''), architecture = ref<Architecture>('unknown'), source = ref(''), notes = ref('')
 const sizeBytes = ref(''), sha256 = ref(''), licenseName = ref(''), licenseUrl = ref('')
 let revision = 0
+const checkpointChoice = ref(''), assessment = ref<Assessment | null>(null)
+const assessing = ref(false), assessmentError = ref('')
+let assessmentRevision = 0
+const compared = computed(() => new Map(assessment.value?.loras.map(item => [item.name, item]) ?? []))
+const assessmentCounts = computed(() => assessment.value ? ['compatible', 'unverified', 'incompatible'].map(status =>
+  assessment.value!.loras.filter(item => item.status === status).length) : null)
 const visible = computed(() => (catalog.value?.loras ?? []).filter(item =>
   item.name.toLocaleLowerCase().includes(search.value.toLocaleLowerCase()) &&
   (filter.value === 'all' || (filter.value === 'listed' ? item.listed : !item.listed))))
@@ -22,6 +34,38 @@ async function request(path = '', method = 'GET', body?: unknown): Promise<Catal
   if (data.engine_url !== props.engineUrl || !Array.isArray(data.loras))
     throw new Error('引擎設定已變更，請重新載入模型庫；目前輸入仍保留。')
   return data
+}
+async function checkCompatibility() {
+  const ticket = ++assessmentRevision
+  assessment.value = null; assessmentError.value = ''; assessing.value = false
+  const snapshot = catalog.value, checkpoint = props.checkpoints.find(item => item.name === checkpointChoice.value)
+  if (!snapshot || snapshot.engine_url !== props.engineUrl || !checkpoint) return
+  assessing.value = true
+  try {
+    const params = new URLSearchParams({ engine_url: props.engineUrl, checkpoint: checkpoint.name })
+    const response = await fetch('/api/loras/compatibility?' + params)
+    const data: Assessment = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const detail = (data as unknown as { detail?: unknown }).detail
+      throw new Error(typeof detail === 'string' ? detail : '無法讀取 LoRA 相容性，請重新讀取模型庫。')
+    }
+    if (ticket !== assessmentRevision) return
+    const sameRecord = (incoming: AssessedRecord, original: Checkpoint) => incoming &&
+      incoming.name === original.name && incoming.architecture === validArchitecture(original.architecture) &&
+      incoming.listed === original.listed && incoming.metadata_updated_at === (original.metadata_updated_at ?? null)
+    const registered = new Map(snapshot.loras.map(item => [item.name, item]))
+    if (!data || data.engine_url !== props.engineUrl || data.source !== 'registered_architecture' || data.workflow_supported !== false ||
+        !sameRecord(data.checkpoint, checkpoint) || data.lora_synced_at !== snapshot.synced_at ||
+        data.lora_sync_error !== snapshot.sync_error || !Array.isArray(data.loras) || data.loras.length !== snapshot.loras.length ||
+        new Set(data.loras.map(item => item.name)).size !== data.loras.length || !data.loras.every(item => {
+          const original = registered.get(item.name)
+          return original && sameRecord(item, original) && item.verified === false &&
+            ['compatible', 'unverified', 'incompatible'].includes(item.status) &&
+            typeof item.label === 'string' && typeof item.message === 'string'
+        })) throw new Error('登記資料已更新或回覆不一致，請按「重新讀取模型庫」後再比較；原有編輯輸入仍保留。')
+    assessment.value = data
+  } catch (e) { if (ticket === assessmentRevision) assessmentError.value = e instanceof Error ? e.message : '相容性查詢失敗。' }
+  finally { if (ticket === assessmentRevision) assessing.value = false }
 }
 async function load(sync = false) {
   if (busy.value) return
@@ -61,6 +105,14 @@ watch(() => props.engineUrl, () => {
   revision++; catalog.value = null; editing.value = null; busy.value = false; error.value = ''; feedback.value = ''
   void load()
 }, { immediate: true })
+watch(() => [props.engineUrl, JSON.stringify(props.checkpoints), props.preferredCheckpoint], (next, previous) => {
+  const previousChoice = checkpointChoice.value
+  if (!previous || next[0] !== previous[0] || !props.checkpoints.some(item => item.name === previousChoice))
+    checkpointChoice.value = props.checkpoints.some(item => item.name === props.preferredCheckpoint) ? props.preferredCheckpoint! : ''
+  if (checkpointChoice.value === previousChoice) void checkCompatibility()
+}, { immediate: true })
+watch(checkpointChoice, () => { void checkCompatibility() })
+watch(catalog, () => { void checkCompatibility() })
 </script>
 
 <template>
@@ -70,10 +122,20 @@ watch(() => props.engineUrl, () => {
       <button type="button" class="primary" :disabled="busy || editing !== null" @click="load(true)">{{ busy ? '處理中…' : '同步 LoRA 清單' }}</button>
     </div>
     <p class="footnote">{{ engineUrl }} · {{ catalog?.synced_at ? '最後成功同步：' + metadataTime(catalog.synced_at) : '尚未成功同步' }}</p>
-    <p class="footnote">清單及資料為登記快照；未核對實際檔案或相容性。目前創作流程尚未套用 LoRA。</p>
+    <p class="footnote">清單及資料為登記快照；未核對實際檔案。目前創作流程尚未套用 LoRA。</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }} <button class="secondary" :disabled="busy || editing !== null" @click="load()">重新讀取 LoRA</button></p>
     <p v-if="catalog?.sync_error" class="notice warning" role="alert">{{ catalog.sync_error }} 此處保留歷史清單，不代表目前可用。</p>
     <p v-if="feedback" class="notice success" role="status">{{ feedback }}</p>
+    <div class="panel lora-assessment">
+      <h3>比較 checkpoint 與 LoRA</h3>
+      <p class="footnote" id="lora-assessment-help">只比較使用者登記架構，無法保證權重、基礎模型或 GPU 可載入；檔名及版本文字不影響判定。選擇只供查看，不改變偏好模型或創作設定。</p>
+      <label>比較用 checkpoint<select v-model="checkpointChoice" aria-describedby="lora-assessment-help"><option value="">請選擇 checkpoint</option><option v-for="item in checkpoints" :key="item.name" :value="item.name">{{ item.name }} · {{ architectureLabel(item.architecture) }}{{ item.listed ? '' : ' · 最近未列出' }}</option></select></label>
+      <button type="button" class="secondary" :disabled="assessing || busy || editing !== null || !checkpointChoice" @click="load()">更新 LoRA 相容性</button>
+      <p v-if="assessing" role="status" class="footnote">正在比較登記架構…</p>
+      <p v-else-if="assessmentError" role="alert" class="notice warning">{{ assessmentError }}</p>
+      <p v-else-if="assessment && assessmentCounts" role="status" class="footnote">架構相容 {{ assessmentCounts[0] }} · 未驗證 {{ assessmentCounts[1] }} · 不相容 {{ assessmentCounts[2] }}（全部為未實測）<br>比較：{{ assessment.checkpoint.name }} · {{ metadataTime(assessment.assessed_at) }}</p>
+      <p v-else class="footnote">選擇 checkpoint 後會顯示 LoRA 的架構比較結果。</p>
+    </div>
     <div class="lora-toolbar">
       <label>搜尋 LoRA<input v-model="search" type="search" placeholder="輸入 LoRA 名稱"></label>
       <label>LoRA 清單狀態<select v-model="filter"><option value="all">全部紀錄</option><option value="listed">最近清單內</option><option value="missing">最近清單未列出</option></select></label>
@@ -86,6 +148,11 @@ watch(() => props.engineUrl, () => {
       <article v-for="item in visible" :key="item.name" class="panel lora-card">
         <div class="lora-top"><span class="chip">LORA</span><span class="status" :class="{ connected: item.listed }">{{ item.listed ? '最近清單內' : '最近清單未列出' }}</span></div>
         <h3>{{ item.name }}</h3><p>版本：{{ item.version.trim() || '未知' }}</p><p class="footnote">登記基礎架構：{{ architectureLabel(item.architecture) }}</p>
+        <template v-if="compared.get(item.name)">
+          <p class="compatibility-label" :class="compared.get(item.name)!.status">{{ compared.get(item.name)!.label }}</p>
+          <details class="compatibility-reason"><summary>相容性判定說明</summary><p class="footnote">{{ compared.get(item.name)!.message }}</p></details>
+        </template>
+        <p v-else class="footnote">{{ assessing ? '正在比較架構…' : checkpointChoice ? '相容性尚未取得' : '尚未選擇比較用 checkpoint' }}</p>
         <form v-if="editing === item.name" class="lora-form" @submit.prevent="save">
           <label>LoRA 版本<input v-model="version" maxlength="100" placeholder="留空表示未知"></label>
           <label>LoRA 基礎架構（使用者登記）<select v-model="architecture"><option v-for="option in architectures" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
@@ -114,5 +181,6 @@ watch(() => props.engineUrl, () => {
 </template>
 
 <style scoped>
+.lora-assessment h3{margin-top:0}.lora-assessment label{display:grid;gap:8px;font-size:12px;margin-bottom:14px}.lora-assessment select{min-width:0;width:100%;padding:12px;box-sizing:border-box}.compatibility-label{border:1px solid var(--border-notice);border-radius:var(--radius-control);padding:10px 12px;font-size:12px;background:var(--surface-notice);color:var(--text-notice)}.compatibility-label.unverified{color:var(--text-muted);background:var(--surface-input);border-color:var(--border-control)}.compatibility-label.incompatible{color:var(--text-warning);background:var(--surface-warning);border-color:var(--border-warning)}.lora-card .compatibility-reason{margin:10px 0}
 .lora-library{margin-top:36px;border-top:1px solid var(--border-control);padding-top:24px}.lora-intro,.lora-top,.lora-actions{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}.lora-toolbar{display:flex;gap:16px;align-items:end;margin:24px 0}.lora-toolbar label:first-child{flex:1}.lora-toolbar label,.lora-form label{display:grid;gap:8px;font-size:12px}.lora-toolbar .muted{padding-bottom:12px;white-space:nowrap}.lora-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.lora-card{margin:0;min-width:0}.lora-card h3{overflow-wrap:anywhere;font-size:19px;line-height:1.6;margin-top:20px}.lora-form{display:grid;gap:14px}.lora-form input,.lora-form select,.lora-form textarea{width:100%;min-width:0;box-sizing:border-box;padding:12px}.lora-form textarea{resize:vertical}.lora-notes{white-space:pre-wrap;overflow-wrap:anywhere}.lora-card a,.lora-card summary{color:var(--text-notice);font-size:12px}.lora-card details{margin:20px 0}.lora-card summary{cursor:pointer}.lora-card dl{display:grid;gap:8px;font-size:12px;line-height:1.7}.lora-card dt{color:var(--text-muted)}.lora-card dd{margin:0;overflow-wrap:anywhere}.lora-toolbar select{padding:12px}@media(max-width:1000px){.lora-grid{grid-template-columns:1fr}}@media(max-width:700px){.lora-toolbar{flex-wrap:wrap}.lora-toolbar label:first-child{flex-basis:100%}}
 </style>
