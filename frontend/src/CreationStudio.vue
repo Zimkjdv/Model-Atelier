@@ -22,6 +22,7 @@ const emit = defineEmits<{ models: []; assets: []; gallery: [jobId: string] }>()
 const props = defineProps<{ restoreRequest?: { artworkId: string; token: number } | null }>()
 const form = reactive(newCreation())
 const activeLora = computed(() => form.loras.find(item => item.enabled))
+const activeLoraCount = computed(() => form.loras.filter(item => item.enabled).length)
 const loraParameters = computed(() => ({ width: form.width, height: form.height, steps: form.steps, cfg: form.cfg, sampler_name: form.sampler_name, scheduler: form.scheduler, denoise: form.denoise, batch_size: 1 }))
 const display = useStudioPreferences()
 const editorCollapsed = ref(false)
@@ -274,8 +275,9 @@ onActivated(() => { if (form.engine_url) void refresh() })
           <p v-if="matchingProfile?.preset" class="footnote">預設僅在確認後套用。</p>
         </section>
         <ModelValidation v-if="form.checkpoint && !form.loras.some(item => item.enabled)" :engine-url="form.engine_url" :name="form.checkpoint" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
-        <LoraValidation v-else-if="form.checkpoint && activeLora" :engine-url="form.engine_url" :checkpoint="form.checkpoint" :lora="activeLora" :settings="loraParameters" :has-references="form.reference_ids.length > 0" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
-        <p v-if="matchingProfile?.workflow" class="footnote" role="status">{{ matchingProfile.workflow.name }} · 每次 {{ matchingProfile.workflow.batch_size }} 張；可選單一 LoRA，參考圖尚未接入。</p>
+        <LoraValidation v-else-if="form.checkpoint && activeLora && activeLoraCount === 1" :engine-url="form.engine_url" :checkpoint="form.checkpoint" :lora="activeLora" :settings="loraParameters" :has-references="form.reference_ids.length > 0" :refresh-key="matchingProfile?.metadata_updated_at || ''" />
+        <p v-else-if="activeLoraCount > 1" class="notice" role="status">目前啟用 {{ activeLoraCount }} 個 LoRA；有序組合尚未實機驗證，不沿用單一 LoRA 紀錄。</p>
+        <p v-if="matchingProfile?.workflow" class="footnote" role="status">{{ matchingProfile.workflow.name }} · 每次 {{ matchingProfile.workflow.batch_size }} 張；最多 {{ matchingProfile.workflow.max_loras }} 個 LoRA，參考圖尚未接入。</p>
         <div v-show="editableWorkflow">
         <label for="draft-prompt">畫面描述 <small>{{ form.prompt.length }} / 20000</small></label><textarea id="draft-prompt" v-model="form.prompt" maxlength="20000" rows="7" placeholder="描述角色、場景、光線與你想呈現的畫面…"></textarea>
         <label for="draft-negative">負面提示詞 <small>{{ form.negative_prompt.length }} / 20000</small></label><textarea id="draft-negative" v-model="form.negative_prompt" maxlength="20000" rows="3" placeholder="描述希望避免的畫面特徵…"></textarea>

@@ -18,7 +18,7 @@ export type ModelProfile = {
   metadata_updated_at: string | null
   compatibility: { status: 'supported' | 'unknown' | 'unsupported'; message: string; allows_submission: boolean }
   preset: ModelPreset | null
-  workflow: { id: 'checkpoint-text2image-v1'; name: string; fields: string[]; batch_size: 1; reference_images: false; lora: true; max_loras: 1; verification: string } | null
+  workflow: { id: 'checkpoint-text2image-v1'; name: string; fields: string[]; batch_size: 1; reference_images: false; lora: true; max_loras: 4; verification: string } | null
 }
 
 export function profileIdentity(profile: ModelProfile): string {
@@ -35,7 +35,7 @@ export function validateProfile(value: ModelProfile): ModelProfile {
   const expectedFields = ['prompt', 'negative_prompt', 'seed', 'width', 'height', 'steps', 'cfg', 'sampler_name', 'scheduler', 'denoise', 'loras']
   if (value.compatibility.allows_submission ?
       !workflow || workflow.id !== 'checkpoint-text2image-v1' || typeof workflow.name !== 'string' ||
-      workflow.batch_size !== 1 || workflow.reference_images !== false || workflow.lora !== true || workflow.max_loras !== 1 ||
+      workflow.batch_size !== 1 || workflow.reference_images !== false || workflow.lora !== true || workflow.max_loras !== 4 ||
       !Array.isArray(workflow.fields) || workflow.fields.length !== expectedFields.length ||
       new Set(workflow.fields).size !== expectedFields.length || !expectedFields.every(key => workflow.fields.includes(key)) : workflow !== null)
     throw new Error('流程欄位描述無效，已保留目前參數，請更新模型資料。')

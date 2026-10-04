@@ -16,20 +16,24 @@ class AdviceInput(BaseModel):
     sampler_name: str = Field(min_length=1, max_length=100)
     scheduler: str = Field(min_length=1, max_length=100)
     denoise: float = Field(ge=0, le=1)
-    loras: list[LoraSetting] = Field(default_factory=list, max_length=1)
+    loras: list[LoraSetting] = Field(default_factory=list, max_length=4)
 
 
 def advise(value, model, diagnostics, lora=None, *, stale=False):
     evidence = validation_records.evaluate(model)
     settings = value.model_dump(exclude={'engine_url', 'checkpoint', 'loras'})
     active = [item for item in value.loras if item.enabled]
-    if active:
+    if len(active) > 1:
+        evidence = dict(status='unverified', records=[], matching_parameter_records=[])
+    elif active:
         evidence = lora_validation.evaluate(model, lora or {}, active[0], settings | dict(batch_size=1), stale=stale)
     matches = [record for record in evidence['records']
                if all(record['settings'].get(key) == val for key, val in settings.items())
                and (not active or record['id'] in evidence['matching_parameter_records'])]
     warnings = []
-    if active:
+    if len(active) > 1:
+        warnings.append('多 LoRA 組合尚未實機驗證；順序與每個強度都會影響結果，不沿用單一 LoRA 或基礎模型紀錄。')
+    elif active:
         warnings.append('目前啟用 LoRA；僅比對單一 LoRA 八節點組合紀錄，不沿用基礎模型的七節點紀錄。')
     if not evidence['records']:
         warnings.append('此模型沒有匹配的推論實測紀錄。')
@@ -52,7 +56,8 @@ def install(app, host):
     async def generation_advice(value: AdviceInput):
         target = host.ModelTarget(engine_url=value.engine_url, name=value.checkpoint)
         _, before = host.current_catalog(target)
-        active = next((item for item in value.loras if item.enabled), None)
+        choices = [item for item in value.loras if item.enabled]
+        active = choices[0] if len(choices) == 1 else None
         pair = lora_validation.read_pair(host.DB, value.engine_url, value.checkpoint, active.name) if active else None
         report = await host.engine()
         _, after = host.current_catalog(target)

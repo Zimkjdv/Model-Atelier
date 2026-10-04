@@ -10,7 +10,7 @@ class WorkflowDescriptionTests(unittest.TestCase):
                                                    'steps', 'cfg', 'sampler_name', 'scheduler', 'denoise', 'loras'})
             self.assertFalse(value['reference_images'])
             self.assertTrue(value['lora'])
-            self.assertEqual(value['max_loras'], 1)
+            self.assertEqual(value['max_loras'], 4)
             self.assertEqual(value['batch_size'], 1)
             if kind == 'unknown':
                 self.assertEqual(value['verification'], 'engine_validation_required')

@@ -7,14 +7,27 @@ from backend import catalog, loras, lora_compatibility, node_preflight
 
 
 def registration(db_path, url, checkpoint, name):
+    base, values = registrations(db_path, url, checkpoint, [dict(name=name)])
+    return base, values[0][1], values[0][2]
+
+
+def registrations(db_path, url, checkpoint, choices):
     with closing(sqlite3.connect(db_path)) as db:
         db.execute('BEGIN')
         base = next((item for item in catalog._read(db, url)['models'] if item['name'] == checkpoint), {})
-        choice = next((item for item in loras._read(db, url)['loras'] if item['name'] == name), {})
-    return base, choice, lora_compatibility.compare(base, choice)
+        records = loras._read(db, url)['loras']
+    values = []
+    for choice in choices:
+        record = next((item for item in records if item['name'] == choice['name']), {})
+        values.append((choice, record, lora_compatibility.compare(base, record)))
+    return base, values
 
 
 async def check(client, url, choice):
+    return await check_many(client, url, [choice])
+
+
+async def check_many(client, url, choices):
     response = await client.get(url + '/object_info/LoraLoader')
     response.raise_for_status()
     if len(response.content) > 1024 * 1024:
@@ -40,8 +53,9 @@ async def check(client, url, choice):
             bounds[field] = max(-20, low), min(20, high)
     except (KeyError, IndexError, TypeError) as exc:
         raise ValueError('LoraLoader 定義格式無效') from exc
-    if choice['name'] not in names:
-        raise LookupError('所選 LoRA 已不在 ComfyUI 即時清單，請安裝並重新同步；尚未提交任務')
-    for field, (low, high) in bounds.items():
-        if not low <= choice[field] <= high:
-            raise ArithmeticError(f'{field} 超出平台與引擎交集 {low}～{high}；尚未提交任務')
+    for choice in choices:
+        if choice['name'] not in names:
+            raise LookupError('所選 LoRA ' + choice['name'] + ' 已不在 ComfyUI 即時清單，請安裝並重新同步；尚未提交任務')
+        for field, (low, high) in bounds.items():
+            if not low <= choice[field] <= high:
+                raise ArithmeticError(f"{choice['name']} {field} 超出平台與引擎交集 {low}～{high}；尚未提交任務")

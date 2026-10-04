@@ -68,7 +68,7 @@ def install(app, host):
         if not loaders or any(name != value.checkpoint for name in loaders):
             raise HTTPException(422, '工作流程 checkpoint 與選擇的模型不一致')
         lora_nodes = [node for node in value.workflow.values() if node['class_type'] == 'LoraLoader']
-        choice = None
+        choices = []
         if lora_nodes:
             # Raw workflows with LoRA must be the entire supported template.
             outputs = [node_id for node_id, node in value.workflow.items() if node['class_type'] == 'SaveImage']
@@ -78,15 +78,15 @@ def install(app, host):
                 settings = workflows.extract(dict(workflow=value.workflow, checkpoint=value.checkpoint,
                     engine_url=value.engine_url, source={'node_id': outputs[0]}, title='LoRA 提交'),
                     lambda data: host.DraftInput.model_validate(data).model_dump(), allow_lora=True)
-                choice = settings['loras'][0]
+                choices = settings['loras']
             except (ValueError, IndexError) as exc:
-                raise HTTPException(422, '僅支援完整的單一 LoRA 文生圖模板；未提交任務') from exc
+                raise HTTPException(422, '僅支援最多四個 LoRA 的完整有序文生圖模板；未提交任務') from exc
         try:
             model = next((m for m in catalog.read(host.DB, value.engine_url)['models'] if m['name'] == value.checkpoint), {})
             lora_metadata = []
-            if choice:
-                model, record, _ = lora_preflight.registration(host.DB, value.engine_url, value.checkpoint, choice['name'])
-                lora_metadata = [lora_records.capture(record, choice)]
+            if choices:
+                model, registered = lora_preflight.registrations(host.DB, value.engine_url, value.checkpoint, choices)
+                lora_metadata = [lora_records.capture(record, choice) for choice, record, _ in registered]
             metadata = catalog.capture(model, value.checkpoint)
             job, fresh = jobs.reserve(host.DB, str(value.request_id), value.engine_url, value.workflow,
                                       value.checkpoint, metadata['version'], metadata, lora_metadata)
@@ -104,7 +104,7 @@ def install(app, host):
         initial_compatibility = model_profiles.compatibility(metadata.get('architecture'))
         if not initial_compatibility['allows_submission']:
             fail(422, initial_compatibility['message'], 'unsupported_architecture')
-        if choice:
+        for choice in choices:
             _, _, assessment = lora_preflight.registration(host.DB, value.engine_url, value.checkpoint, choice['name'])
             if assessment['status'] == 'incompatible':
                 fail(422, assessment['label'] + '；' + assessment['message'], 'unsupported_architecture')
@@ -138,9 +138,9 @@ def install(app, host):
             except ValueError as exc:
                 fail(422, '工作流程參數未通過平台與原引擎能力驗證，尚未提交任務', preflight_error=str(exc))
             try:
-                if choice:
-                    await lora_preflight.check(client, value.engine_url, choice)
-                await node_preflight.check(client, value.engine_url, value.workflow, checked=('LoraLoader',) if choice else ())
+                if choices:
+                    await lora_preflight.check_many(client, value.engine_url, choices)
+                await node_preflight.check(client, value.engine_url, value.workflow, checked=('LoraLoader',) if choices else ())
             except node_preflight.MissingNodes as exc:
                 fail(422, str(exc), 'missing_nodes')
             except httpx.RequestError:
@@ -161,11 +161,16 @@ def install(app, host):
             current_compatibility = model_profiles.compatibility(current_model.get('architecture'))
             if not current_compatibility['allows_submission']:
                 fail(422, '驗證期間模型架構登記已變更，尚未提交任務；' + current_compatibility['message'], 'unsupported_architecture')
-            if choice:
-                _, _, assessment = lora_preflight.registration(host.DB, value.engine_url, value.checkpoint, choice['name'])
+            warnings = []
+            _, registered = lora_preflight.registrations(host.DB, value.engine_url, value.checkpoint, choices)
+            for choice, _, assessment in registered:
                 if assessment['status'] == 'incompatible':
                     fail(422, '驗證期間架構登記已變更；' + assessment['message'], 'unsupported_architecture')
-                job = cancellation.persist(host, job, preflight_warnings=[assessment['message']])
+                warnings.append(choice['name'] + '：' + assessment['message'])
+            if choices:
+                if len(choices) > 1:
+                    warnings.append('多 LoRA 的有序串接尚未實機驗證；不沿用單一 LoRA 的品質或資源紀錄。')
+                job = cancellation.persist(host, job, preflight_warnings=warnings)
             job = cancellation.persist(host, job, status='submitting')
             try:
                 response = await client.post(value.engine_url + '/prompt', json={

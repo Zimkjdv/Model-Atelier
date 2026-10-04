@@ -33,5 +33,5 @@ def restoration(db_path, url, settings, snapshots):
             if any(identity(original, key) != identity(current, key) for key in fields):
                 warnings.append(f'LoRA {name} 目前登記版本或識別資料與原快照不同；已保留原快照供比較。再次生成使用目前安裝的權重。')
     if settings.get('loras'):
-        warnings.append('已完整還原單一 LoRA 的名稱與兩種強度；未載入權重或提交任務，原快照是登記資料而非檔案驗證。')
+        warnings.append('已完整還原 LoRA 的順序、名稱與兩種強度；未載入權重或提交任務，原快照是登記資料而非檔案驗證。')
     return dict(warnings=warnings, loras=available, lora_synced_at=collection.get('synced_at'))

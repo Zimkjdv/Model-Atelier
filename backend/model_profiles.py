@@ -78,7 +78,7 @@ def workflow_description(kind):
     return dict(id='checkpoint-text2image-v1', name='標準 checkpoint 單張文生圖',
                 fields=['prompt', 'negative_prompt', 'seed', 'width', 'height', 'steps', 'cfg',
                         'sampler_name', 'scheduler', 'denoise', 'loras'], batch_size=1,
-                reference_images=False, lora=True, max_loras=1,
+                reference_images=False, lora=True, max_loras=4,
                 verification='registered_architecture' if kind in ('sd1', 'sdxl') else 'engine_validation_required')
 
 

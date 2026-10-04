@@ -19,16 +19,18 @@ def build(value, node_ids=None):
         output: {'class_type': 'SaveImage', 'inputs': {'images': [decoder, 0], 'filename_prefix': 'ModelAtelier'}},
     }
     active = [item for item in value.get('loras', []) if item['enabled']]
-    if len(active) > 1:
-        raise ValueError('目前僅支援單一 LoRA')
-    if active:
-        lora = node_ids.get('lora', '8')
+    if len(active) > 4 or len({item['name'] for item in active}) != len(active):
+        raise ValueError('最多四個不同的 LoRA')
+    previous = loader
+    for index, choice in enumerate(active):
+        role = 'lora' if index == 0 else f'lora_{index + 1}'
+        lora = node_ids.get(role, str(8 + index))
         if lora in result:
             raise ValueError('LoRA 節點 ID 重複')
-        choice = active[0]
         result[lora] = dict(class_type='LoraLoader', inputs=dict(
-            model=[loader, 0], clip=[loader, 1], lora_name=choice['name'],
+            model=[previous, 0], clip=[previous, 1], lora_name=choice['name'],
             strength_model=choice['strength_model'], strength_clip=choice['strength_clip']))
+        previous = lora
         result[sampler]['inputs']['model'] = [lora, 0]
         for node in (positive, negative):
             result[node]['inputs']['clip'] = [lora, 1]
@@ -40,7 +42,7 @@ def extract(artwork, validate, *, allow_lora=True):
     message = '此作品工作流程無法完整還原到目前創作表單，請下載原工作流程使用；未載入任何參數'
     try:
         workflow = artwork['workflow']
-        if not isinstance(workflow, dict) or len(workflow) not in ((7, 8) if allow_lora else (7,)):
+        if not isinstance(workflow, dict) or len(workflow) not in (range(7, 12) if allow_lora else (7,)):
             raise ValueError(message)
         by_kind = {}
         for node_id, node in workflow.items():
@@ -57,11 +59,20 @@ def extract(artwork, validate, *, allow_lora=True):
         node_ids = dict(loader=one('CheckpointLoaderSimple'), latent=one('EmptyLatentImage'),
                         sampler=one('KSampler'), decoder=one('VAEDecode'), output=one('SaveImage'))
         choices = []
-        if len(workflow) == 8:
-            node_ids['lora'] = one('LoraLoader')
-            inputs = workflow[node_ids['lora']]['inputs']
-            choices = [dict(name=inputs['lora_name'], enabled=True,
-                            strength_model=inputs['strength_model'], strength_clip=inputs['strength_clip'])]
+        chain = []
+        cursor = workflow[node_ids['sampler']]['inputs']['model']
+        while isinstance(cursor, list) and len(cursor) == 2 and cursor[0] in by_kind.get('LoraLoader', []):
+            if len(chain) >= 4 or cursor[0] in chain or type(cursor[1]) is not int or cursor[1] != 0:
+                raise ValueError(message)
+            chain.append(cursor[0])
+            cursor = workflow[cursor[0]]['inputs']['model']
+        if len(chain) != len(by_kind.get('LoraLoader', [])):
+            raise ValueError(message)
+        for index, node_id in enumerate(reversed(chain)):
+            node_ids['lora' if index == 0 else f'lora_{index + 1}'] = node_id
+            inputs = workflow[node_id]['inputs']
+            choices.append(dict(name=inputs['lora_name'], enabled=True,
+                                strength_model=inputs['strength_model'], strength_clip=inputs['strength_clip']))
         if node_ids['output'] != artwork['source']['node_id'] or len(by_kind.get('CLIPTextEncode', [])) != 2:
             raise ValueError(message)
         sampler = workflow[node_ids['sampler']]['inputs']

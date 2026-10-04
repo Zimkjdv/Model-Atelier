@@ -245,7 +245,7 @@ async def model_selection(target: ModelTarget):
 
 
 class DraftInput(BaseModel):
-    loras: list[LoraSetting] = Field(default_factory=list, max_length=1)
+    loras: list[LoraSetting] = Field(default_factory=list, max_length=4)
     reference_ids: list[UUID] = Field(default_factory=list, max_length=8)
     title: str = Field(min_length=1, max_length=100)
     prompt: str = Field(default='', max_length=20000)
@@ -261,6 +261,13 @@ class DraftInput(BaseModel):
     scheduler: str = Field(default='normal', min_length=1, max_length=64, pattern=r'^[a-z][a-z0-9_]*$')
     denoise: float = Field(default=1.0, ge=0, le=1, strict=True, allow_inf_nan=False)
     revision: int | None = Field(default=None, ge=1)
+
+    @field_validator('loras')
+    @classmethod
+    def unique_loras(cls, value):
+        if len({item.name for item in value}) != len(value):
+            raise ValueError('同一 LoRA 不可重複選取')
+        return value
 
     @field_validator('title')
     @classmethod

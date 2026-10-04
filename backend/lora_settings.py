@@ -1,4 +1,4 @@
-"""Single-LoRA draft settings; saved choices are not load verification."""
+"""A LoRA entry in an ordered draft stack; choices are not load verification."""
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
