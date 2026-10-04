@@ -126,6 +126,19 @@ python -m venv runtime/ComfyUI/.venv
 
 2026-10-03：170 項後端測試通過（1 項既有 Windows 權限跳過），Vue 型別檢查／建置通過。真實 ComfyUI 驗證含空白的額外目錄、原 Pony 清單保留，以及移除登記後重啟恢復原清單；77 bytes 的測試檔只驗證檔名列舉，未載入權重或新增生成任務。瀏覽器驗證修訂衝突、輸入保留與其他引擎的範圍提示；測試檔已清理，服務已停止。
 
+## 固定來源模型安裝與磁碟預檢
+
+先用唯讀檢查確認所選 manifest、剩餘下載量、安裝鎖及磁碟容量：
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.install_model animagine-xl-4.0-opt --check
+.\.venv\Scripts\python.exe -m scripts.install_model animagine-xl-4.0-opt
+```
+
+`--check` 不連網、不建目錄、不改寫檔案；可安裝回傳 0，空間不足或有安裝鎖回傳 2。正式安裝重用 Pony 安裝器的續傳、完整 SHA256、同目錄原子發布與來源紀錄。只接受程式核准的固定作者修訂；不接受任意網址或輸出路徑。已有正式檔仍須在安裝時完整驗證，預檢不是檔案或 GPU 驗收。
+
+Animagine 權重約 6.46 GiB，加上 2 GiB 預留需約 8.46 GiB。2026-10-04 本機預檢約剩 6.92 GiB，因此尚未下載；程式不刪除其他模型或使用者資料。Pony 亦可透過 `scripts.install_model pony-v6-xl` 安裝，原指令仍保留。
+
 ## Pony V6 XL 本地安裝與驗收
 
 本專案提供固定來源的安裝指令，將作者 [AstraliteHeart/pony-diffusion-v6](https://huggingface.co/AstraliteHeart/pony-diffusion-v6) 的權重保存為 `runtime/ComfyUI/models/checkpoints/pony-v6-xl.safetensors`。來源固定在 commit `5ec9c05863255568f1b59753e3838107befaa712`，檔案為 6,938,041,050 bytes，SHA256 為 `67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3`；詳見 [來源 manifest](models/pony-v6-xl.json)。該修訂模型卡登記 `creativeml-openrail-m`，未附授權全文，本次僅記錄來源標記，完整條款尚未核對。

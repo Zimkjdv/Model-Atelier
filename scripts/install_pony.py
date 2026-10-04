@@ -21,6 +21,10 @@ import httpx
 
 WORKSPACE = Path(__file__).resolve().parents[1]
 MANIFEST = WORKSPACE / "models" / "pony-v6-xl.json"
+SOURCES = {
+    'pony-v6-xl': ('AstraliteHeart/pony-diffusion-v6', 'v6.safetensors', 'pony-v6-xl.safetensors', '5ec9c05863255568f1b59753e3838107befaa712'),
+    'animagine-xl-4.0-opt': ('cagliostrolab/animagine-xl-4.0', 'animagine-xl-4.0-opt.safetensors', 'animagine-xl-4.0-opt.safetensors', '2b7c1b397761bf5bd3cc42e5b39ec99314a75a96'),
+}
 RESERVE_BYTES = 2 * 1024**3
 CHUNK_BYTES = 1024 * 1024
 
@@ -37,8 +41,11 @@ def load_manifest(path: Path = MANIFEST) -> dict:
 def validate_manifest(value: dict) -> dict:
     if not isinstance(value, dict):
         raise InstallationError("manifest 必須是 JSON object。")
-    if value.get("id") != "pony-v6-xl" or value.get("filename") != "pony-v6-xl.safetensors":
+    if not isinstance(value.get('id'), str) or value['id'] not in SOURCES:
         raise InstallationError("不支援的模型 manifest 或檔名。")
+    repository, remote_filename, filename, pinned = SOURCES[value['id']]
+    if value.get('filename') != filename:
+        raise InstallationError('不支援的模型 manifest 或檔名。')
     if type(value.get("size_bytes")) is not int or value["size_bytes"] <= 0:
         raise InstallationError("manifest 檔案大小無效。")
     if not isinstance(value.get("sha256"), str) or not re.fullmatch(r"[0-9a-f]{64}", value["sha256"]):
@@ -49,8 +56,9 @@ def validate_manifest(value: dict) -> dict:
     revision = source.get("revision", "")
     if not isinstance(revision, str) or not re.fullmatch(r"[0-9a-f]{40}", revision):
         raise InstallationError("來源必須固定至完整 commit。")
-    expected = f"https://huggingface.co/AstraliteHeart/pony-diffusion-v6/resolve/{revision}/v6.safetensors"
-    if source.get("download_url") != expected:
+    expected = f"https://huggingface.co/{repository}/resolve/{pinned}/{remote_filename}"
+    if (revision != pinned or source.get('repository') != repository or source.get('filename') != remote_filename
+            or source.get("download_url") != expected):
         raise InstallationError("manifest 來源不是固定的作者 Hugging Face 檔案。")
     if any(not isinstance(value.get(key), str) or not value[key] for key in ("name", "version", "architecture")):
         raise InstallationError("manifest 名稱、版本或架構無效。")
@@ -59,12 +67,13 @@ def validate_manifest(value: dict) -> dict:
     return value
 
 
-def _paths(workspace: Path, filename: str) -> tuple[Path, Path, Path, Path]:
+def _paths(workspace: Path, filename: str, *, create=True) -> tuple[Path, Path, Path, Path]:
     root = workspace.resolve()
     directory = (root / "runtime" / "ComfyUI" / "models" / "checkpoints").resolve()
     if not directory.is_relative_to(root / "runtime"):
         raise InstallationError("模型目錄解析至 workspace/runtime 外，拒絕寫入。")
-    directory.mkdir(parents=True, exist_ok=True)
+    if create:
+        directory.mkdir(parents=True, exist_ok=True)
     target = directory / filename
     partial = directory / (filename + ".part")
     provenance = directory / (filename + ".provenance.json")
