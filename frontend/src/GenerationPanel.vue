@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from 'vue'
 import type { CreationForm } from './creationSettings'
+import LoraSnapshot from './LoraSnapshot.vue'
 import { mergeJob, terminal, useJobEvents, type Job } from './jobEvents'
 const props = defineProps<{ form: CreationForm; blockedReason?: string; disabled?: boolean }>()
 const emit = defineEmits<{ gallery: [jobId: string]; restoreJob: [jobId: string] }>()
@@ -91,6 +92,8 @@ onBeforeUnmount(() => window.clearInterval(timer))
     <div v-for="job in jobs" :key="job.id" class="job">
       <strong>{{ labels[job.status] || job.status }}</strong> · {{ job.checkpoint }}
       <p class="footnote">{{ new Date(job.created_at).toLocaleString() }} · {{ job.id }}</p>
+      <LoraSnapshot :items="job.lora_metadata" />
+      <p v-for="warning in job.preflight_warnings ?? []" :key="warning" class="footnote">{{ warning }}</p>
       <section v-if="job.status === 'failed' && job.failure_info" class="failure-info" aria-label="任務失敗說明">
         <h3>{{ job.failure_info.title }}</h3><p>{{ job.failure_info.message }}</p>
         <ul v-if="job.failure_info.suggestions.length"><li v-for="(suggestion, index) in job.failure_info.suggestions" :key="index">{{ suggestion }}</li></ul>

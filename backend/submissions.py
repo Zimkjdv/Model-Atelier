@@ -8,7 +8,7 @@ import httpx
 from fastapi import HTTPException, Response
 from pydantic import BaseModel, Field, field_validator
 from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures, node_preflight
-from backend import lora_preflight
+from backend import lora_preflight, lora_records
 
 
 class Submission(BaseModel):
@@ -83,9 +83,13 @@ def install(app, host):
                 raise HTTPException(422, '僅支援完整的單一 LoRA 文生圖模板；未提交任務') from exc
         try:
             model = next((m for m in catalog.read(host.DB, value.engine_url)['models'] if m['name'] == value.checkpoint), {})
+            lora_metadata = []
+            if choice:
+                model, record, _ = lora_preflight.registration(host.DB, value.engine_url, value.checkpoint, choice['name'])
+                lora_metadata = [lora_records.capture(record, choice)]
             metadata = catalog.capture(model, value.checkpoint)
             job, fresh = jobs.reserve(host.DB, str(value.request_id), value.engine_url, value.workflow,
-                                      value.checkpoint, metadata['version'], metadata)
+                                      value.checkpoint, metadata['version'], metadata, lora_metadata)
         except ValueError as exc:
             raise HTTPException(409, str(exc))
         if not fresh:
@@ -243,10 +247,13 @@ def install(app, host):
             warnings.append('原任務模型版本未知，無法確認目前 checkpoint 與原版本一致')
         elif model and model.get('version') and model['version'] != version:
             warnings.append('目前登記的模型版本與原任務不同；已保留原任務版本供比較')
+        lora_info = lora_records.restoration(host.DB, settings['engine_url'], settings, job.get('lora_metadata'))
+        warnings.extend(lora_info['warnings'])
         return dict(job_id=str(job_id), settings=settings, model_version=version,
-                    model_metadata=job.get('model_metadata'), warnings=warnings,
+                    model_metadata=job.get('model_metadata'), lora_metadata=job.get('lora_metadata'), warnings=warnings,
                     availability=dict(current_engine_url=current_engine, engine_matches=matches,
-                                      checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at')))
+                                      checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at'),
+                                      loras=lora_info['loras'], lora_synced_at=lora_info['lora_synced_at']))
 
     @app.post('/api/jobs/{job_id}/cancel')
     async def cancel(job_id: UUID):

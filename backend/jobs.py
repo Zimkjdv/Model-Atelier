@@ -8,10 +8,10 @@ from datetime import datetime, timedelta, timezone
 
 def display(value):
     # Old failures remain unclassified; GETs must not rewrite or guess causes.
-    return dict(value, failure_info=value.get('failure_info'))
+    return dict(value, failure_info=value.get('failure_info'), lora_metadata=value.get('lora_metadata'))
 
 
-def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, model_metadata=None):
+def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, model_metadata=None, lora_metadata=None):
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
         row = db.execute('SELECT value FROM settings WHERE key=?', ('job:' + job_id,)).fetchone()
@@ -22,6 +22,7 @@ def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, 
             return display(value), False
         value = dict(id=job_id, prompt_id=job_id, engine_url=engine_url, workflow=workflow,
                      checkpoint=checkpoint, model_version=model_version or '未知', model_metadata=deepcopy(model_metadata),
+                     lora_metadata=deepcopy(lora_metadata),
                      status='validating', error=None, history=None, failure_info=None,
                      revision=0, created_at=datetime.now(timezone.utc).isoformat())
         db.execute('INSERT INTO settings VALUES (?, ?)', ('job:' + job_id, json.dumps(value, ensure_ascii=False)))
@@ -37,7 +38,7 @@ def get(path, job_id):
 
 
 def _update(path, job_id, expected_revision, changes):
-    if any(name in changes for name in ('model_version', 'model_metadata')):
+    if any(name in changes for name in ('model_version', 'model_metadata', 'lora_metadata')):
         raise ValueError('提交時的模型資料快照不可變更或回填')
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')

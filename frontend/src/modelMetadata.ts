@@ -23,6 +23,11 @@ export type ModelMetadataSnapshot = ModelMetadata & {
   origin: 'user_registered'
   captured_at: string
 }
+export type LoraMetadataSnapshot = ModelMetadataSnapshot & {
+  enabled: true
+  strength_model: number
+  strength_clip: number
+}
 
 export function architectureLabel(value: unknown): string {
   return architectures.find(item => item.value === value)?.label ?? '未知'

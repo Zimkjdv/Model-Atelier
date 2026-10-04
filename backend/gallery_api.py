@@ -8,7 +8,7 @@ from fastapi import HTTPException, Response
 from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 
-from backend import gallery, jobs, catalog, workflows
+from backend import gallery, jobs, catalog, workflows, lora_records
 
 
 def install(app, host):
@@ -22,6 +22,7 @@ def install(app, host):
 
     def summary(item):
         value = {k: v for k, v in item.items() if k != 'workflow'}
+        value['lora_metadata'] = item.get('lora_metadata')
         folder = host.DATA / 'artworks'
         value['image_available'] = (folder / (item['id'] + '.' + item['extension'])).is_file()
         value['thumbnail_available'] = (folder / (item['id'] + '.thumb.png')).is_file()
@@ -68,10 +69,13 @@ def install(app, host):
             warnings.append('原作品模型版本未知，無法確認目前 checkpoint 與原版本一致')
         elif model and model.get('version') and model['version'] != version:
             warnings.append('目前登記的模型版本與原作品不同；已保留原作品版本供比較')
+        lora_info = lora_records.restoration(host.DB, settings['engine_url'], settings, item.get('lora_metadata'))
+        warnings.extend(lora_info['warnings'])
         return dict(artwork_id=str(artwork_id), settings=settings, model_version=version,
-                    model_metadata=item.get('model_metadata'), warnings=warnings,
+                    model_metadata=item.get('model_metadata'), lora_metadata=item.get('lora_metadata'), warnings=warnings,
                     availability=dict(current_engine_url=host.engine_url(), engine_matches=matches,
-                                      checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at')))
+                                      checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at'),
+                                      loras=lora_info['loras'], lora_synced_at=lora_info['lora_synced_at']))
 
     @app.get('/api/artworks/{artwork_id}/image')
     def image(artwork_id: UUID, download: bool = False, thumbnail: bool = False):

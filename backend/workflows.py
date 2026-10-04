@@ -35,7 +35,7 @@ def build(value, node_ids=None):
     return result
 
 
-def extract(artwork, validate, *, allow_lora=False):
+def extract(artwork, validate, *, allow_lora=True):
     """Restore only a whole template; extra inputs or branches cannot be dropped."""
     message = '此作品工作流程無法完整還原到目前創作表單，請下載原工作流程使用；未載入任何參數'
     try:

@@ -1,4 +1,4 @@
-import type { ModelMetadataSnapshot } from './modelMetadata'
+import type { ModelMetadataSnapshot, LoraMetadataSnapshot } from './modelMetadata'
 
 export type LoraSetting = { name: string; enabled: boolean; strength_model: number; strength_clip: number }
 
@@ -29,6 +29,7 @@ export type ArtworkSettings = {
   model_version: string
   warnings: string[]
   model_metadata?: ModelMetadataSnapshot | null
+  lora_metadata?: LoraMetadataSnapshot[] | null
 }
 
 export type FailedJobSettings = {
@@ -36,6 +37,7 @@ export type FailedJobSettings = {
   settings: CreationForm
   model_version: string
   model_metadata: ModelMetadataSnapshot | null
+  lora_metadata: LoraMetadataSnapshot[] | null
   warnings: string[]
   availability: {
     current_engine_url: string

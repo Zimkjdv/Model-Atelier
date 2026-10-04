@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onActivated, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
 import type { LoraSetting } from './creationSettings'
 import { architectureLabel } from './modelMetadata'
 
@@ -60,7 +60,10 @@ function update(values: Partial<LoraSetting>) {
 watch(() => props.engineUrl, () => { void load() }, { immediate: true })
 watch(() => [props.engineUrl, props.checkpoint, chosen.value?.name, chosen.value?.enabled, catalog.value], () => { void assess() }, { immediate: true })
 watch(block, reason => emit('blocked', reason), { immediate: true })
-onBeforeUnmount(() => { ++revision; ++assessmentRevision; controller?.abort(); assessmentAbort?.abort() })
+function cancelRequests() { ++revision; ++assessmentRevision; controller?.abort(); assessmentAbort?.abort(); busy.value = false; assessmentBusy.value = false }
+onActivated(() => { void load() })
+onDeactivated(cancelRequests)
+onBeforeUnmount(cancelRequests)
 </script>
 
 <template>

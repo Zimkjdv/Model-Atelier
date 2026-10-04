@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { architectureLabel, fileHash, fileSize, metadataTime, safeMetadataUrl } from './modelMetadata'
-import type { ModelMetadataSnapshot } from './modelMetadata'
+import type { ModelMetadataSnapshot, LoraMetadataSnapshot } from './modelMetadata'
+import LoraSnapshot from './LoraSnapshot.vue'
 const props = defineProps<{ jobId?: string }>()
 const emit = defineEmits<{ studio: []; restore: [artworkId: string] }>()
 type Parameters = { prompt: string | null; negative_prompt: string | null; seed: string | null; steps: number | null; cfg: number | null; sampler: string | null; scheduler: string | null; denoise: number | null }
-type Artwork = { id: string; job_id: string; title: string; checkpoint: string; model_version: string; model_metadata?: ModelMetadataSnapshot | null; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string }
+type Artwork = { id: string; job_id: string; title: string; checkpoint: string; model_version: string; model_metadata?: ModelMetadataSnapshot | null; lora_metadata?: LoraMetadataSnapshot[] | null; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string }
 type Job = { id: string; status: string; checkpoint: string; created_at: string }
 type ImportResult = { imported: Artwork[]; existing: Artwork[]; errors: { source: { filename: string }; message: string }[] }
 const items = ref<Artwork[]>([]), jobs = ref<Job[]>([]), selectedJob = ref(props.jobId || '')
 const busy = ref(false), error = ref(''), message = ref(''), failures = ref<ImportResult['errors']>([])
 const search = ref(''), selected = ref<Artwork | null>(null), preview = ref<HTMLDialogElement | null>(null)
 const completed = computed(() => jobs.value.filter(job => job.status === 'completed'))
-const visible = computed(() => items.value.filter(item => [item.title, item.checkpoint, item.parameters.prompt || ''].join(' ').toLowerCase().includes(search.value.toLowerCase())))
+const visible = computed(() => items.value.filter(item => [item.title, item.checkpoint, item.parameters.prompt || '', ...(item.lora_metadata ?? []).map(lora => lora.name + ' ' + lora.version)].join(' ').toLowerCase().includes(search.value.toLowerCase())))
 async function api<T>(path: string, method = 'GET'): Promise<T> {
   const response = await fetch('/api/' + path, { method })
   if (!response.ok) {
@@ -77,6 +78,7 @@ onMounted(refresh)
   <div class="artwork-grid"><article v-for="item in visible" :key="item.id" class="panel artwork-card">
     <button class="artwork-cover" :aria-label="'查看作品 ' + item.title" @click="open(item)"><img v-if="item.thumbnail_available" :src="imageUrl(item, true)" :alt="item.title" loading="lazy" @error="item.thumbnail_available = false"><span v-else>縮圖無法讀取 · 點此查看資料</span></button>
     <h2>{{ item.title }}</h2><p>{{ item.width }} × {{ item.height }} · {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p><p>{{ item.checkpoint }} · 版本 {{ item.model_version }}</p>
+    <p v-for="(lora, index) in item.lora_metadata ?? []" :key="index">LoRA {{ lora.name }} · 版本 {{ lora.version?.trim() || '未知' }}</p>
     <p v-if="!item.image_available" class="missing">原圖已遺失，請從備份還原；生成參數仍保留。</p>
     <div class="artwork-actions"><button class="secondary" :aria-label="'預覽與參數：' + item.title" @click="open(item)">預覽與參數</button><button class="secondary" :aria-label="'載入創作設定：' + item.title" @click="restore(item)">載入創作設定 →</button><a v-if="item.image_available" :href="imageUrl(item) + '?download=true'">下載原圖 ↓</a></div>
   </article></div>
@@ -100,6 +102,7 @@ onMounted(refresh)
           </dl></template>
           <p v-else class="footnote">此作品尚無提交時的模型資料快照，當時架構、檔案識別及授權資訊未知。</p>
         </details>
+        <LoraSnapshot :items="selected.lora_metadata" />
         <details><summary>作品來源紀錄</summary><p>原引擎：{{ selected.engine_url }}</p><p>任務：{{ selected.job_id }}</p><p>提交：{{ new Date(selected.created_at).toLocaleString() }}</p><p>匯入：{{ new Date(selected.imported_at).toLocaleString() }}</p><p class="file-hash">作品原圖 SHA-256：{{ selected.sha256 }}</p></details>
         <div class="artwork-actions"><button class="primary" @click="restore(selected)">載入創作設定 →</button><a v-if="selected.image_available" :href="imageUrl(selected) + '?download=true'">下載原圖 ↓</a><a :href="`/api/artworks/${selected.id}/workflow`">下載完整工作流程</a><a :href="`/api/jobs/${selected.job_id}`" target="_blank" rel="noopener">原始任務 JSON ↗</a></div>
         </div></div></template>

@@ -2,6 +2,7 @@
 import { computed, onActivated, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import LoraControls from './LoraControls.vue'
+import LoraSnapshot from './LoraSnapshot.vue'
 import ModelValidation from './ModelValidation.vue'
 import GenerationAdvice from './GenerationAdvice.vue'
 import { useStudioPreferences } from './studioPreferences'
@@ -238,6 +239,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
     <p v-if="restoring" class="notice" role="status">正在讀取原始創作設定…</p>
     <div v-if="pending" class="notice warning" role="alert"><p>載入其他草稿、作品或失敗任務設定會取代目前未保存的內容。</p><button class="secondary" :disabled="busy || restoring" @click="pending = null">繼續編輯</button> <button class="secondary" :disabled="busy || restoring" @click="apply(pending)">捨棄變更並載入</button></div>
     <div v-if="origin" class="notice" role="status"><p>{{ origin.kind === 'job' ? '來源失敗任務 ' + origin.job_id.slice(0, 8) + ' · 提交時版本：' : '來源作品版本：' }}{{ origin.model_version }} · 已保留原引擎與生成設定。</p><p v-if="selected?.version && selected.version !== origin.model_version">模型庫目前登記版本：{{ selected.version }}。再次生成使用目前安裝的模型，請確認版本。</p><p v-for="warning in origin.warnings" :key="warning">{{ warning }}</p></div>
+    <LoraSnapshot v-if="origin" :items="origin.lora_metadata" />
     <p v-if="display.error.value" class="notice" role="status">{{ display.error.value }}</p>
     <div class="studio-layout-controls"><button type="button" class="secondary" :aria-expanded="!editorCollapsed" aria-controls="studio-editor" @click="editorCollapsed = !editorCollapsed">{{ editorCollapsed ? '展開創作設定' : '收合創作設定' }}</button><p v-if="editorCollapsed" class="footnote">{{ form.checkpoint || '尚未選擇模型' }} · {{ form.width }} × {{ form.height }} · {{ form.steps }} steps · CFG {{ form.cfg }}。設定與未保存內容仍保留。</p></div>
     <div class="studio-grid" :class="{ 'editor-collapsed': editorCollapsed }">
