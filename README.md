@@ -18,6 +18,7 @@
 - LCM LoRA 實機條件：Pony 的 768×768 與 Animagine 的 1024×1024 在 RTX 3060 分別驗收；依各組合的 hash、強度及參數比對紀錄，不沿用其他模型或多 LoRA 的結論。Animagine 專用 CLI 為 `python -m scripts.verify_animagine_lora`，見 [驗收紀錄](docs/validation/animagine-lcm-rtx3060.md)。
 - 創作工作台：文生圖／單張圖生圖切換、輸入圖片與縮放預覽、denoise 改動幅度、正／負提示詞、尺寸、完整 seed、模型與取樣設定，以及本機草稿保存與重載。
 - 參考素材：圖片上傳、預覽、搜尋、命名、用途篩選、封存／還原與草稿關聯；保存正規化與 Pillow 版本，任務／作品引用保護及跨視窗修訂檢查，見 [參考流程說明](docs/models/reference-workflows.md)。
+- 任務量測：新任務保存平台提交至終態觀察耗時、原引擎歷史起訖及提交前 RAM／裝置記憶體快照，作品沿用；未知值不回填，非純 GPU 耗時或任務顯存峰值。見 [量測說明](docs/job-measurements.md)。
 - 生成任務：標準 checkpoint 文生圖與單張圖生圖、任務查詢、重複請求防護及完整工作流程下載。圖生圖凍結素材與前處理快照、驗證原生節點並使用任務獨立圖片目錄；任務與作品頁可追溯來源並載入原設定。RTX 3060／Pony 一般風景已從 API 與介面實測，見 [圖生圖驗收](docs/validation/checkpoint-image2image-rtx3060.md)。
 - 執行中停止：針對原引擎中身分相符的單一任務；需已審查的原子取消能力，歷史確認中斷才顯示停止，未知結果只查詢。RTX 3060 已驗證後續任務正常完成，見 [停止實測](docs/validation/running-stop-rtx3060.md)。更新 ComfyUI 後未匹配來源會停用此操作能力，正常生成不受影響。
 - 作品庫：匯入已完成任務圖片、本機原圖與縮圖、大圖預覽、完整 workflow／原圖下載與創作設定還原；支援收藏、10,000 字筆記、模型／收藏／狀態組合篩選、筆記搜尋、封存及還原。跨視窗修訂檢查保留衝突中的未保存筆記，見 [作品庫管理](docs/artwork-library.md)。

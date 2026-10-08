@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import type { CreationForm } from './creationSettings'
 import LoraSnapshot from './LoraSnapshot.vue'
+import JobMeasurements from './JobMeasurements.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
 import { imageWorkflowId } from './referenceSettings'
@@ -112,7 +113,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <p class="footnote">{{ new Date(job.created_at).toLocaleString() }} · {{ job.id }}</p>
       <p v-if="job.workflow_id === imageWorkflowId" class="footnote">單張圖生圖 · 原素材與前處理已凍結。</p>
       <LoraSnapshot v-if="checkpointForm" :items="job.lora_metadata" />
-      <ComponentSnapshot :items="job.component_metadata" />
+      <ComponentSnapshot :items="job.component_metadata" /><JobMeasurements :item="job.measurements" />
       <ReferenceSnapshot :items="job.reference_metadata" :job-id="job.id" :processed-ready="!!job.input_upload || job.status === 'completed'" />
       <details v-if="job.preflight_warnings?.length"><summary>提交時檢查提示（原紀錄）</summary><p class="footnote">以下為提交當時的提示，不代表目前狀態或後續實測結果。</p><p v-for="warning in job.preflight_warnings" :key="warning" class="footnote">{{ warning }}</p></details>
       <section v-if="job.status === 'failed' && job.failure_info" class="failure-info" aria-label="任務失敗說明">

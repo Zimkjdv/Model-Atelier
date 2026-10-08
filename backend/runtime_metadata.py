@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from importlib import metadata
 
 import httpx
-from backend import workflows
+from backend import workflows, job_measurements
 
 PACKAGES = ('fastapi', 'starlette', 'pydantic', 'httpx', 'Pillow', 'uvicorn', 'websockets')
 ENGINE_PACKAGES = frozenset({'comfyui-frontend-package', 'comfyui-workflow-templates',
@@ -67,12 +67,15 @@ async def capture(client, job):
     engine = dict(status='unavailable', source=job['engine_url'] + '/system_stats',
                   comfyui=None, python=None, pytorch=None, packages=[], cuda=None, driver=None, git_revision=None,
                   note='提交前未能取得版本；此欄位保持未知，不影響已通過的流程驗證。')
+    resource_observation = job_measurements.resources(None, job['engine_url'], timestamp)
     try:
         response = await asyncio.wait_for(client.get(engine['source']), timeout=2)
         response.raise_for_status()
         if len(response.content) > 256 * 1024:
             raise ValueError('Oversized system stats')
-        engine = engine_versions(response.json(), job['engine_url'])
+        stats = response.json()
+        engine = engine_versions(stats, job['engine_url'])
+        resource_observation = job_measurements.resources(stats, job['engine_url'], timestamp)
     except (httpx.HTTPError, ValueError, TypeError, asyncio.TimeoutError):
         pass
     graph = json.dumps(job['workflow'], ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False)
@@ -82,4 +85,4 @@ async def capture(client, job):
                               nodes=sorted({node['class_type'] for node in job['workflow'].values()}),
                               node_versions=None, note='原生節點未提供各別版本；流程 ID 是平台模板規格版本。'),
                 platform=dict(source='platform Python process', python=platform.python_version(), packages=packages),
-                engine=engine)
+                engine=engine, resource_observation=resource_observation)

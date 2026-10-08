@@ -4,11 +4,12 @@ from copy import deepcopy
 import sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta, timezone
+from backend import job_measurements
 
 
 def display(value):
     # Old failures remain unclassified; GETs must not rewrite or guess causes.
-    return dict(value, failure_info=value.get('failure_info'), lora_metadata=value.get('lora_metadata'))
+    return dict(value, failure_info=value.get('failure_info'), lora_metadata=value.get('lora_metadata'), measurements=value.get('measurements'))
 
 
 def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, model_metadata=None, lora_metadata=None,
@@ -33,7 +34,7 @@ def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, 
                      checkpoint=checkpoint, model_version=model_version or '未知', model_metadata=deepcopy(model_metadata),
                      lora_metadata=deepcopy(lora_metadata), workflow_id=workflow_id, component_metadata=deepcopy(component_metadata),
                      reference_metadata=deepcopy(frozen_refs) if reference_metadata is not None else None,
-                     reference_settings=deepcopy(reference_settings), runtime_metadata=None,
+                     reference_settings=deepcopy(reference_settings), runtime_metadata=None, measurements=job_measurements.initial(engine_url),
                      status='validating', error=None, history=None, failure_info=None,
                      revision=0, created_at=datetime.now(timezone.utc).isoformat())
         db.execute('INSERT INTO settings VALUES (?, ?)', ('job:' + job_id, json.dumps(value, ensure_ascii=False)))
@@ -49,7 +50,7 @@ def get(path, job_id):
 
 
 def _update(path, job_id, expected_revision, changes):
-    if any(name in changes for name in ('model_version', 'model_metadata', 'lora_metadata', 'workflow_id', 'component_metadata', 'reference_metadata', 'reference_settings', 'runtime_metadata')):
+    if any(name in changes for name in ('model_version', 'model_metadata', 'lora_metadata', 'workflow_id', 'component_metadata', 'reference_metadata', 'reference_settings', 'runtime_metadata', 'measurements')):
         raise ValueError('提交時的模型資料快照不可變更或回填')
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
@@ -60,7 +61,9 @@ def _update(path, job_id, expected_revision, changes):
         revision = value.get('revision', 0)
         if expected_revision is not None and revision != expected_revision:
             return display(value), False
-        value.update(changes, revision=revision + 1, updated_at=datetime.now(timezone.utc).isoformat())
+        timestamp = datetime.now(timezone.utc).isoformat()
+        value.update(changes, revision=revision + 1, updated_at=timestamp)
+        job_measurements.advance(value, timestamp)
         db.execute('UPDATE settings SET value=? WHERE key=?', (json.dumps(value, ensure_ascii=False), 'job:' + job_id))
     return display(value), True
 
@@ -85,7 +88,11 @@ def freeze_runtime(path, snapshot, metadata):
         if (value.get('revision', 0) != snapshot.get('revision', 0) or value.get('status') != 'validating'
                 or 'runtime_metadata' not in value or value['runtime_metadata'] is not None):
             return display(value), False
-        value.update(runtime_metadata=deepcopy(metadata), revision=value.get('revision', 0) + 1,
+        metadata = deepcopy(metadata)
+        resources = metadata.pop('resource_observation', None)
+        if isinstance(value.get('measurements'), dict):
+            value['measurements']['resources_before_submission'] = resources
+        value.update(runtime_metadata=metadata, revision=value.get('revision', 0) + 1,
                      updated_at=datetime.now(timezone.utc).isoformat())
         db.execute('UPDATE settings SET value=? WHERE key=?', (json.dumps(value, ensure_ascii=False), 'job:' + value['id']))
         return display(value), True
