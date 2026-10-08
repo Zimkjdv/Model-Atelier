@@ -7,8 +7,9 @@ export type ReferenceFields = {
 export type ReferenceAsset = { id: string; title: string; archived: boolean; purpose: string; width: number; height: number }
 export type ReferenceSnapshot = ReferenceAsset & {
   sha256: string
+  input_role?: 'source' | 'mask'
   preprocessing: { version: number; library_version: string } | null
-  generation_preprocessing: { version: number; library_version: string; resize: string; width: number; height: number; sha256: string }
+  generation_preprocessing: { threshold?: number; white?: string; black?: string; version: number; library_version: string; resize: string; width: number; height: number; sha256: string }
 }
 export type ReferenceWorkflow = { id: string; name: string; implemented: boolean; input_requirement: string; control: string }
 export const referenceDefaults: ReferenceFields = { workflow_mode: 'text2image', image_asset_id: null, reference_resize: 'fit' }

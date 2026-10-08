@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vue-tsc --noEmit && vite build",
-    "check:experiments": "node check-experiment-runs.mjs"
+    "check:experiments": "node check-experiment-runs.mjs",
+    "check:inpaint": "node check-inpaint.mjs"
   },
   "dependencies": {
     "vue": "^3.5.0"

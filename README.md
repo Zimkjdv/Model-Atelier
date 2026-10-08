@@ -17,6 +17,7 @@
 - 創作設定轉移：checkpoint／圖生圖／FLUX 可匯出目前參數、讀取 JSON 檔或貼上，先驗證、比較再套用為未保存的新草稿；保留字串 seed 與有序 LoRA，不自動生成。作品可匯出原來源快照與完整 workflow 字串，匯入文件來源標示未核實；權重及素材圖片不包含於檔案，見 [設定匯出／匯入](docs/creation-settings-transfer.md)。
 - LCM LoRA 實機條件：Pony 的 768×768 與 Animagine 的 1024×1024 在 RTX 3060 分別驗收；依各組合的 hash、強度及參數比對紀錄，不沿用其他模型或多 LoRA 的結論。Animagine 專用 CLI 為 `python -m scripts.verify_animagine_lora`，見 [驗收紀錄](docs/validation/animagine-lcm-rtx3060.md)。
 - 創作工作台：文生圖／單張圖生圖切換、輸入圖片與縮放預覽、denoise 改動幅度、正／負提示詞、尺寸、完整 seed、模型與取樣設定，以及本機草稿保存與重載。
+- 局部編輯：獨立 checkpoint 工作台，原圖與同尺寸遮罩；支援筆刷／擦除／反相／PNG 載入與素材保存、白色編輯／黑色保留、擴張及有序 LoRA。双輸入安全上傳、完整 workflow／快照、獨立請求恢復及任務／作品原設定還原；尚未提供一般草稿／比較方案，實機驗證接續進行。見 [局部編輯說明](docs/inpainting.md)。
 - 參考素材：圖片上傳、預覽、搜尋、命名、用途篩選、封存／還原與草稿關聯；保存正規化與 Pillow 版本，任務／作品／保存方案引用保護及跨視窗修訂檢查，見 [參考流程說明](docs/models/reference-workflows.md)。
 - 任務量測：新任務保存平台提交至終態觀察耗時、原引擎歷史起訖及提交前 RAM／裝置記憶體快照，作品沿用；未知值不回填，非純 GPU 耗時或任務顯存峰值。見 [量測說明](docs/job-measurements.md)。
 - 生成任務：標準 checkpoint 文生圖與單張圖生圖、任務查詢、重複請求防護及完整工作流程下載。圖生圖凍結素材與前處理快照、驗證原生節點並使用任務獨立圖片目錄；任務與作品頁可追溯來源並載入原設定。RTX 3060／Pony 一般風景已從 API 與介面實測，見 [圖生圖驗收](docs/validation/checkpoint-image2image-rtx3060.md)。
