@@ -7,7 +7,8 @@ export type ReferenceFields = {
 export type ReferenceAsset = { id: string; title: string; archived: boolean; purpose: string; width: number; height: number }
 export type ReferenceSnapshot = ReferenceAsset & {
   sha256: string
-  input_role?: 'source' | 'mask'
+  input_role?: 'source' | 'mask' | 'structure'
+  control_preprocessing?: { id: string; version: number; low_threshold: number; high_threshold: number; execution: string; node_version: string | null }
   preprocessing: { version: number; library_version: string } | null
   generation_preprocessing: { threshold?: number; white?: string; black?: string; version: number; library_version: string; resize: string; width: number; height: number; sha256: string }
 }

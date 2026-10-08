@@ -15,7 +15,7 @@ export const fluxRoles = [
 ] as const
 export type FluxComponent = ModelMetadataSnapshot & { listed: boolean; notes: string }
 export type FluxCatalog = { engine_url: string; groups: Record<string, FluxComponent[]>; synced_at: string | null; sync_error: string | null }
-export type ComponentSnapshot = ModelMetadataSnapshot & { role: string; category: string }
+export type ComponentSnapshot = ModelMetadataSnapshot & { role: string; category?: string; kind?: string }
 export const newFlux = (engine_url = ''): FluxForm => ({ workflow_id: fluxWorkflowId, engine_url,
   title: 'FLUX 實驗', diffusion_model: '', clip_l: '', t5xxl: '', vae: '', prompt: '', seed: '0',
   width: 512, height: 512, steps: 4, weight_dtype: 'default', encoder_device: 'default' })

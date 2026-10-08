@@ -398,4 +398,4 @@ API：
 
 ## Canny 結構參考
 
-已完成 ControlNet 清單／版本來源登記及固定 Canny 條件後端，支援同架構 SD 1.x／SDXL、單張來源與有序 LoRA；完整流程、控制參數及版本快照可離線還原。專用工作台與固定權重 GPU 驗收接續實作。API、提交保護與限制見 [docs/controlnet.md](docs/controlnet.md)。
+已完成 ControlNet 清單／版本來源登記及固定 Canny 條件後端，支援同架構 SD 1.x／SDXL、單張來源與有序 LoRA；完整流程、控制參數及版本快照可離線還原。模型庫與專用「Canny 結構參考」工作台已接入；固定權重 GPU 驗收接續實作。API、提交保護與限制見 [docs/controlnet.md](docs/controlnet.md)。

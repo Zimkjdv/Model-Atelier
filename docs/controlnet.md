@@ -1,6 +1,6 @@
 # Canny 結構參考
 
-固定 `checkpoint-canny-controlnet-v1` 使用一張素材、ComfyUI 原生 Canny 與同架構的 ControlNet。支援明確登記的 SD 1.x／SDXL checkpoint，以及最多四個有序 LoRA。這是結構條件，不是畫風或角色鎖定；本階段完成後端，介面與 GPU 驗收接續實作。
+固定 `checkpoint-canny-controlnet-v1` 使用一張素材、ComfyUI 原生 Canny 與同架構的 ControlNet。支援明確登記的 SD 1.x／SDXL checkpoint，以及最多四個有序 LoRA。這是結構條件，不是畫風或角色鎖定；後端與專用工作台已整合，GPU 驗收接續實作。
 
 ## 模型登記
 
@@ -27,3 +27,13 @@
 任務／作品的 creation-settings 可離線完整還原控制模型、參數、來源與版本。節點、角色、前處理或控制快照不一致時拒絕部分載入。清單或版本改變只提示，不改寫原設定。普通草稿、設定交換與比較方案尚未接入，不借用舊格式丟棄控制欄位。
 
 依據：[ComfyUI 官方 ControlNet 文件](https://docs.comfy.org/tutorials/controlnet/controlnet)，以及本機固定 ComfyUI 0.34.0 原始碼。新增 12 項後端測試涵蓋登記隔離／競態、精確圖、上傳／離線／未知結果、原 UUID 恢復、有序 LoRA 及完整還原。完整後端 451 項（450 通過、1 項既有權限跳過）。
+
+## 工作台操作
+
+1. 模型庫的 ControlNet 區塊同步清單，明確登記版本、來源、canny 類型及基礎架構；不把 depth／pose 自動當成 Canny。
+2. 在創作工作台切換「Canny 結構參考」，選擇 checkpoint、素材庫原圖與控制模型，更新原引擎取樣選項。清單錯誤、不同引擎／架構與未知類型會顯示原因。
+3. 手動調整尺寸、fit／stretch、強度、作用起訖、浮點閾值、提示詞與精確 seed。預覽顯示原素材，沒有假稱已計算邊緣圖；固定空 latent／denoise 1。
+4. 按生成後保存完整控制參數；待確認請求使用獨立 localStorage key，恢復不使用目前表單。任務／作品顯示控制模型與來源／前處理快照。
+5. 已終止任務或作品載入完整設定會回到結構工作台；未保存內容需明確選擇是否取代。載入不生成、不換模型、不丟棄控制欄位。切換頁面保留表單，重新整理會清除未提交內容，尚無一般草稿／比較方案。
+
+前端 `check:control` 驗證閾值／作用範圍、登記架構／類型／引擎、精確 seed、完整還原及原請求不可變；既有遮罩／比較檢查與 Vue 型別／建置通過。瀏覽器工具本輪仍因 Node kernel 啟動失敗，實際畫面操作／下載／窄視窗待驗收。

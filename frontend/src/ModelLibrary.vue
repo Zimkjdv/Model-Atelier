@@ -4,6 +4,7 @@ import FluxComponentLibrary from './FluxComponentLibrary.vue'
 import { computed, onMounted, ref } from 'vue'
 import ModelValidation from './ModelValidation.vue'
 import LoraLibrary from './LoraLibrary.vue'
+import ControlLibrary from './ControlLibrary.vue'
 import { architectures, architectureLabel, fileHash, fileSize, metadataTime, parseFileSize, safeMetadataUrl, validArchitecture } from './modelMetadata'
 import type { Architecture, ModelMetadata } from './modelMetadata'
 type Model = ModelMetadata & { name: string; listed: boolean; notes: string; source_url: string; version?: string }
@@ -145,6 +146,7 @@ onMounted(() => load())
         </template>
       </article>
     </div>
+    <ControlLibrary v-if="catalog" :engine-url="catalog.engine_url" />
     <LoraLibrary v-if="catalog" :engine-url="catalog.engine_url" :checkpoints="catalog.models" :preferred-checkpoint="catalog.selected" />
     <FluxComponentLibrary />
     <FluxPlan />
