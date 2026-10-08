@@ -18,6 +18,6 @@
 
 POST 輸入包含 `title`、完整的 `settings`、`axis`、`values`、`case_ids`；不接受 revision、任務 UUID、自訂 workflow 或未知欄位。請求最多 256 KiB，匯出文件最多 1 MiB。完整 `settings` 沿用 checkpoint 草稿欄位但排除 revision；可由創作設定匯出文件取得。不存在的案例、空模型、空目前提示詞及重複案例拒絕。測試集損壞時仍可比較目前提示詞，不能借用未驗證案例。
 
-此階段沒有自動批次提交、重試、方案持久化／匯入或結果自動關聯，也沒有耗時／VRAM 估算及自動品質評分。匯出的是比較方案，實際提交的完整 workflow 與模型／環境快照仍由原任務系統保存。固定案例的跨模型 GPU 品質比較、更多參數軸、LoRA 強度比較與 RTX 4080 實測仍待後續驗收。
+此階段沒有自動批次提交、重試、方案持久化／匯入或結果自動關聯，也沒有耗時／VRAM 估算及自動品質評分。匯出的是比較方案，實際提交的完整 workflow 與模型／環境快照仍由原任務系統保存。2026-10-08 已完成 Pony／Animagine 固定四案例的 GPU 比較與原圖觀察，見 [實測結果](validation/general-illustration-suite-rtx3060.md)；更多模型／seed／參數軸、LoRA 強度比較與 RTX 4080 仍待後續驗收。
 
 2026-10-05：382 項後端測試（381 通過、1 項既有 Windows 權限跳過）、Vue 型別／建置通過。桌面瀏覽器驗證四份案例／seed 方案、重複值拒絕、最大 seed 精確載入、原有 LoRA 順序、案例提示詞替換、基準快照保留與 JSON bytes／下載檔名；未驗證瀏覽器原生下載落盤及窄視窗。沒有新增 GPU 任務或正式資料；隔離資料仍為 4 任務／4 作品／2 checkpoint 草稿／1 FLUX 草稿，僅前一項人工評分保留。畫面與 JSON 證據保存在 `runtime/experiment-plan-ui-20261005.png`、`runtime/comparison-plan-ui-20261005.json`。

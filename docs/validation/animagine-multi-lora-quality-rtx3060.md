@@ -9,7 +9,7 @@
 | `multi-8` | LCM → IKEA | 8 | 29.734 s | 27.597 s | 10,996,416,512 bytes／15 |
 | `style-lcm-8` | IKEA → LCM | 8 | 13.907 s | 13.422 s | 9,922,674,688 bytes／8 |
 
-RTX 3060 12 GiB、Windows 10 19045、Python 3.12.10、ComfyUI 0.34.0、PyTorch 2.14.0+cu130、驅動 616.56；模型／CLIP FP16、VAE bfloat16，ComfyUI 動態 VRAM／CPU offload。第一組包含冷載入與初始化；第二組部分節點快取並重新準備 patch。耗時差異不能當作順序速度比較；整卡低頻取樣包含其他程序，不是连续峰值、任務專用顯存或最低需求。
+RTX 3060 12 GiB、Windows 10 19045、Python 3.12.10、ComfyUI 0.34.0、PyTorch 2.14.0+cu130、驅動 616.56；模型／CLIP FP16、VAE bfloat16，ComfyUI 動態 VRAM／CPU offload。第一組包含冷載入與初始化；第二組部分節點快取並重新準備 patch。耗時差異不能當作順序速度比較；整卡低頻取樣包含其他程序，不是連續峰值、任務專用顯存或最低需求。
 
 人工觀察：8 步仍偏淡、對比不足。正反順序視覺上非常接近，未見可辨識的改善，但 decoded RGB 雜湊不同（正向 `8e969e93b762993a5d2c08e4694fc4878fdca11070909b347ba6c27b581a956e`，反向 `54f15baa01435703e843a3a9ffb2c93615c68effa6da00f6f70a886138b61cfb`），不宣稱逐像素一致或所有 LoRA 順序等效。此單一提示／seed 不足以量化畫風模仿程度；兩組都不設為推薦品質預設。其他畫風、強度、多 seed、圖生圖、訓練及 RTX 4080 仍待驗證。
 
