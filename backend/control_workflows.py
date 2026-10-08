@@ -63,7 +63,8 @@ def extract(item,validate):
             or len(refs)!=1 or refs[0]['id']!=settings['image_asset_id'] or refs[0].get('input_role')!='structure' or settings['reference_ids']!=[refs[0]['id']]
             or len(components)!=1 or components[0]['role']!='controlnet' or components[0]['name']!=settings['control_net_name'] or components[0]['kind']!='canny' or components[0]['architecture'] not in ('sd1','sdxl') or components[0]['architecture']!=item['model_metadata']['architecture']): raise ValueError(message)
         prep=refs[0]['generation_preprocessing'];control=refs[0]['control_preprocessing']
-        if prep['version']!=1 or any(prep[k]!=settings[k] for k in ('width','height')) or prep['resize']!=settings['reference_resize']: raise ValueError(message)
+        if type(prep.get('version')) is not int or prep['version']!=1 or any(prep[k]!=settings[k] for k in ('width','height')) or prep['resize']!=settings['reference_resize']: raise ValueError(message)
+        if type(control.get('version')) is not int or any(type(control.get(k)) not in (int,float) for k in ('low_threshold','high_threshold')): raise ValueError(message)
         if control!=dict(id='comfy-native-canny',version=1,low_threshold=settings['canny_low'],high_threshold=settings['canny_high'],execution='original-engine',node_version=None): raise ValueError(message)
         graph={k:{n:v for n,v in node.items() if n!='_meta'} for k,node in item['workflow'].items()}
         if json.dumps(graph,sort_keys=True,allow_nan=False)!=json.dumps(build(settings,item.get('job_id',item['id'])),sort_keys=True,allow_nan=False): raise ValueError(message)

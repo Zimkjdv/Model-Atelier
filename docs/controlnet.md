@@ -1,6 +1,6 @@
 # Canny 結構參考
 
-固定 `checkpoint-canny-controlnet-v1` 使用一張素材、ComfyUI 原生 Canny 與同架構的 ControlNet。支援明確登記的 SD 1.x／SDXL checkpoint，以及最多四個有序 LoRA。這是結構條件，不是畫風或角色鎖定；後端與專用工作台已整合，GPU 驗收接續實作。
+固定 `checkpoint-canny-controlnet-v1` 使用一張素材、ComfyUI 原生 Canny 與同架構的 ControlNet。支援明確登記的 SD 1.x／SDXL checkpoint，以及最多四個有序 LoRA。這是結構條件，不是畫風或角色鎖定；後端與專用工作台已整合，Pony／Animagine 的固定 RTX 3060 驗收及離線重啟核對已完成，見 [實測與品質觀察](validation/checkpoint-canny-rtx3060.md)。
 
 ## 模型登記
 
@@ -37,3 +37,24 @@
 5. 已終止任務或作品載入完整設定會回到結構工作台；未保存內容需明確選擇是否取代。載入不生成、不換模型、不丟棄控制欄位。切換頁面保留表單，重新整理會清除未提交內容，尚無一般草稿／比較方案。
 
 前端 `check:control` 驗證閾值／作用範圍、登記架構／類型／引擎、精確 seed、完整還原及原請求不可變；既有遮罩／比較檢查與 Vue 型別／建置通過。瀏覽器工具本輪仍因 Node kernel 啟動失敗，實際畫面操作／下載／窄視窗待驗收。
+
+## 固定模型與驗收 CLI
+
+安裝採公開 safetensors，限制來源修訂與本機 controlnet 目錄。--check 唯讀、不建立目錄；下載可續傳，保留 2 GiB 磁碟預留，發布前核對大小及完整 SHA256，既有不符檔案拒絕覆寫。
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.install_model controlnet-canny-sdxl-1.0-fp16 --check
+.\.venv\Scripts\python.exe -m scripts.install_model controlnet-canny-sdxl-1.0-fp16
+```
+
+在模型庫同步並依 models/controlnet-canny-sdxl-1.0-fp16.json 明確登記 1.0 FP16／sdxl／canny、來源、大小與 hash。安裝器不修改平台偏好或自動登記；本輪正式資料不變。重新啟動 ComfyUI 可確認模型清單。
+
+先保存原素材，執行一次固定模型驗收；報告必須不存在，先保存 UUID 再送唯一一次生成。若提交回應遺失，只查原任務，不再生成。
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.verify_control_generation --model pony-v6-xl --source-id <素材UUID> --report runtime/control-pony.json
+```
+
+另一次可使用 --model animagine-xl-4.0-opt。固定條件為 768²、20 steps、CFG 5.5、dpmpp_2m／karras、空 latent／denoise 1、seed 9007199254740993、無 LoRA、strength 0.5、作用 0–1、Canny 0.4／0.8，驗收提示為一般椅子；單次最多觀察 15 分鐘，不是品質推薦。
+
+既有完整報告加 --verify-report，以相同模型／素材 ID／平台路徑僅 GET 核對保存紀錄與 PNG，不能補提交或匯入。非法 workflow、控制來源／hash／型別或完整參數會先拒絕，不覆寫原報告。權重在新生成前重新全檔驗證，離線報告核對不需載入或重讀權重。原生 Canny 節點版本保持未知，完整引擎版本另存在 runtime 快照。

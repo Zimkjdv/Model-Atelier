@@ -2,6 +2,8 @@
 
 個人 AI 圖像創作與實驗工作台。Vue 3 + TypeScript 前端、Python + FastAPI 後端，優先在 RTX 3060 本機開發，再於 RTX 4080 驗證。
 
+2026-10-09 本輪三項：ControlNet 安全提交後端、專用 Canny 工作台、固定官方 FP16 安裝及 RTX 3060／離線重啟驗收。459 項後端（458 通過、1 項既有權限跳過），Canny／遮罩／比較邏輯及 Vue 型別／建置通過；正式資料不變，測試服務停止。瀏覽器工具仍無法啟動，實際畫面／窄視窗待驗收。
+
 ## 目前功能
 
 - 系統資訊：NVIDIA GPU、VRAM、RAM、平台資料磁碟、更新時間與失敗狀態。
@@ -17,6 +19,7 @@
 - 創作設定轉移：checkpoint／圖生圖／FLUX 可匯出目前參數、讀取 JSON 檔或貼上，先驗證、比較再套用為未保存的新草稿；保留字串 seed 與有序 LoRA，不自動生成。作品可匯出原來源快照與完整 workflow 字串，匯入文件來源標示未核實；權重及素材圖片不包含於檔案，見 [設定匯出／匯入](docs/creation-settings-transfer.md)。
 - LCM LoRA 實機條件：Pony 的 768×768 與 Animagine 的 1024×1024 在 RTX 3060 分別驗收；依各組合的 hash、強度及參數比對紀錄，不沿用其他模型或多 LoRA 的結論。Animagine 專用 CLI 為 `python -m scripts.verify_animagine_lora`，見 [驗收紀錄](docs/validation/animagine-lcm-rtx3060.md)。
 - 創作工作台：文生圖／單張圖生圖切換、輸入圖片與縮放預覽、denoise 改動幅度、正／負提示詞、尺寸、完整 seed、模型與取樣設定，以及本機草稿保存與重載。
+- Canny 結構參考：獨立 ControlNet 模型庫與工作台，明確登記同架構／控制類型、強度、作用範圍、浮點閾值、來源素材及完整版本快照；固定 SDXL Canny／Pony／Animagine 在 RTX 3060 驗收，見 [流程及 CLI](docs/controlnet.md)。
 - 局部編輯：獨立 checkpoint 工作台，原圖與同尺寸遮罩；支援筆刷／擦除／反相／PNG 載入與素材保存、白色編輯／黑色保留、擴張及有序 LoRA。雙輸入安全上傳、完整 workflow／快照、獨立請求恢復及任務／作品原設定還原；尚未提供一般草稿／比較方案，RTX 3060 的 Pony／Animagine 固定條件與離線重啟核對已完成，修補接縫仍需改善。見 [局部編輯說明](docs/inpainting.md)及 [驗收結果](docs/validation/checkpoint-inpaint-rtx3060.md)。
 - 參考素材：圖片上傳、預覽、搜尋、命名、用途篩選、封存／還原與草稿關聯；保存正規化與 Pillow 版本，任務／作品／保存方案引用保護及跨視窗修訂檢查，見 [參考流程說明](docs/models/reference-workflows.md)。
 - 任務量測：新任務保存平台提交至終態觀察耗時、原引擎歷史起訖及提交前 RAM／裝置記憶體快照，作品沿用；未知值不回填，非純 GPU 耗時或任務顯存峰值。見 [量測說明](docs/job-measurements.md)。
@@ -398,4 +401,4 @@ API：
 
 ## Canny 結構參考
 
-已完成 ControlNet 清單／版本來源登記及固定 Canny 條件後端，支援同架構 SD 1.x／SDXL、單張來源與有序 LoRA；完整流程、控制參數及版本快照可離線還原。模型庫與專用「Canny 結構參考」工作台已接入；固定權重 GPU 驗收接續實作。API、提交保護與限制見 [docs/controlnet.md](docs/controlnet.md)。
+已完成 ControlNet 清單／版本來源登記及固定 Canny 條件後端，支援同架構 SD 1.x／SDXL、單張來源與有序 LoRA；完整流程、控制參數及版本快照可離線還原。模型庫與專用「Canny 結構參考」工作台已接入；固定 SDXL Canny FP16、Pony／Animagine 各一個 RTX 3060 任務及離線重啟核對通過，輪廓／材質偏差如實保留，見 [驗收紀錄](docs/validation/checkpoint-canny-rtx3060.md)。API、提交保護與限制見 [docs/controlnet.md](docs/controlnet.md)。

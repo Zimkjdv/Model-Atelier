@@ -1,7 +1,7 @@
 """Shared pinned-weight downloader, with Pony as the legacy CLI default.
 
 Run from the repository: python -m scripts.install_pony
-Only fixed repository runtime/ComfyUI/models checkpoint or LoRA paths are used.
+Only fixed repository runtime/ComfyUI/models checkpoint, LoRA or ControlNet paths are used.
 """
 
 import argparse
@@ -22,11 +22,13 @@ import httpx
 WORKSPACE = Path(__file__).resolve().parents[1]
 MANIFEST = WORKSPACE / "models" / "pony-v6-xl.json"
 SOURCES = {
+    'controlnet-canny-sdxl-1.0-fp16': ('diffusers/controlnet-canny-sdxl-1.0', 'diffusion_pytorch_model.fp16.safetensors', 'controlnet-canny-sdxl-1.0-fp16.safetensors', 'eb115a19a10d14909256db740ed109532ab1483c'),
     'pony-v6-xl': ('AstraliteHeart/pony-diffusion-v6', 'v6.safetensors', 'pony-v6-xl.safetensors', '5ec9c05863255568f1b59753e3838107befaa712'),
     'animagine-xl-4.0-opt': ('cagliostrolab/animagine-xl-4.0', 'animagine-xl-4.0-opt.safetensors', 'animagine-xl-4.0-opt.safetensors', '2b7c1b397761bf5bd3cc42e5b39ec99314a75a96'),
     'lcm-lora-sdxl': ('latent-consistency/lcm-lora-sdxl', 'pytorch_lora_weights.safetensors', 'lcm_lora_sdxl.safetensors', 'a18548dd4956b174ec5b0d78d340c8dae0a129cd'),
     'ikea-instructions-lora-sdxl': ('ostris/ikea-instructions-lora-sdxl', 'ikea_instructions_xl_v1_5.safetensors', 'ikea_instructions_xl_v1_5.safetensors', 'eaa7f67c93be0b22f00c0225d1f31232d91a052a'),
 }
+CONTROL_IDS = frozenset({'controlnet-canny-sdxl-1.0-fp16'})
 LORA_IDS = frozenset({'lcm-lora-sdxl', 'ikea-instructions-lora-sdxl'})
 RESERVE_BYTES = 2 * 1024**3
 CHUNK_BYTES = 1024 * 1024
@@ -72,7 +74,7 @@ def validate_manifest(value: dict) -> dict:
 
 def _paths(workspace: Path, filename: str, *, create=True) -> tuple[Path, Path, Path, Path]:
     root = workspace.resolve()
-    category = 'loras' if filename in {SOURCES[key][2] for key in LORA_IDS} else 'checkpoints'
+    category = 'controlnet' if filename in {SOURCES[key][2] for key in CONTROL_IDS} else 'loras' if filename in {SOURCES[key][2] for key in LORA_IDS} else 'checkpoints'
     directory = (root / "runtime" / "ComfyUI" / "models" / category).resolve()
     if not directory.is_relative_to(root / "runtime"):
         raise InstallationError("模型目錄解析至 workspace/runtime 外，拒絕寫入。")

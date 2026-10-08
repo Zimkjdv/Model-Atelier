@@ -117,11 +117,13 @@ class ControlTests(unittest.TestCase):
             for prefix in ('/api/jobs/'+job['id'],'/api/artworks/'+item['id']):
                 response=self.client.get(prefix+'/creation-settings');self.assertEqual(response.status_code,200,response.text);v=response.json()
                 self.assertEqual(v['settings'],job['reference_settings']);self.assertEqual(v['component_metadata'],job['component_metadata']);self.assertTrue(any('ControlNet' in w for w in v['warnings']))
-        for part in ('graph','control','component'):
+        for part in ('graph','control','component','resize_version','canny_version'):
             altered=copy.deepcopy(item)
             if part=='graph': altered['workflow']['15']['inputs']['strength']=2
             if part=='control': altered['reference_metadata'][0]['control_preprocessing']['high_threshold']=.9
             if part=='component': altered['component_metadata'][0]['architecture']='sd1'
+            if part=='resize_version': altered['reference_metadata'][0]['generation_preprocessing']['version']=True
+            if part=='canny_version': altered['reference_metadata'][0]['control_preprocessing']['version']=True
             with self.assertRaises(ValueError): flow.extract(altered,lambda d:main.ControlInput.model_validate(d).model_dump(mode='json',exclude={'revision'}))
     def test_lora_keeps_order_clip_control_conditioning_and_vae(self):
         body=self.body();name=test_lora_submissions.NAME;loras.merge(self.db,body['engine_url'],[name]);loras.update_metadata(self.db,body['engine_url'],name,dict(architecture='sdxl'));body['loras']=[dict(name=name,enabled=True,strength_model=.8,strength_clip=.7)]

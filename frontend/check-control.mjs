@@ -15,6 +15,7 @@ assert.equal(controlProblem(form,source),'')
 for(const change of [{seed:'18446744073709551616'},{seed:'1e2'},{seed:'01'},{seed:9007199254740993},{width:8192,height:8192},{width:65},{steps:1.5},{cfg:Infinity},{control_strength:0},{control_strength:true},{control_strength:NaN},{control_start:0.5,control_end:0.5},{control_end:1.1},{canny_low:0.009},{canny_high:Infinity},{canny_low:0.8,canny_high:0.8},{workflow_mode:'image2image'},{denoise:0.5},{reference_ids:[]},{reference_resize:'crop'}]) assert.notEqual(controlProblem({...form,...change},source),'')
 assert.notEqual(controlProblem(form,{...source,archived:true}),'')
 form.loras=[{name:'first',enabled:true,strength_model:0.5,strength_clip:1},{name:'second',enabled:false,strength_model:0.25,strength_clip:0.9}]
+const limits=copyControl({...form,loras:[{name:'boundary',enabled:true,strength_model:20,strength_clip:-20}]});assert.equal(limits.loras[0].strength_model,20);assert.equal(limits.loras[0].strength_clip,-20);assert.throws(()=>copyControl({...limits,loras:[{...limits.loras[0],strength_model:20.01}]}))
 const copied=copyControl(form),pending=JSON.parse(JSON.stringify({...copied,request_id:'original'}))
 chooseSource(form,'new-source');form.control_strength=0.9;form.loras.reverse()
 assert.deepEqual(copied.reference_ids,['source']);assert.equal(copied.control_strength,0.5);assert.equal(copied.loras[0].name,'first');assert.equal(pending.seed,'18446744073709551615');assert.equal(pending.request_id,'original');assert.equal(pending.image_asset_id,'source')

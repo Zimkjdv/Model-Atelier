@@ -1,0 +1,35 @@
+{
+  "id": "controlnet-canny-sdxl-1.0-fp16",
+  "name": "SDXL ControlNet Canny 1.0 FP16",
+  "version": "1.0 FP16",
+  "architecture": "SDXL",
+  "kind": "canny",
+  "verified_at": "2026-10-09",
+  "filename": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+  "size_bytes": 2502139136,
+  "sha256": "b2e7d3921058a442cc80430d1ec8847f42599c705e2451c95e77cf4dcf8d6c25",
+  "source": {
+    "provider": "Hugging Face",
+    "repository": "diffusers/controlnet-canny-sdxl-1.0",
+    "revision": "eb115a19a10d14909256db740ed109532ab1483c",
+    "filename": "diffusion_pytorch_model.fp16.safetensors",
+    "page_url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/blob/eb115a19a10d14909256db740ed109532ab1483c/README.md",
+    "download_url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/resolve/eb115a19a10d14909256db740ed109532ab1483c/diffusion_pytorch_model.fp16.safetensors"
+  },
+  "license": {
+    "identifier": "openrail++",
+    "name": "CreativeML Open RAIL++-M",
+    "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+    "source": "official model card and SDXL upstream license",
+    "terms_verified": true,
+    "note": "保留上游條款與使用限制；來源授權登記不是無限制使用聲明。"
+  },
+  "dependencies": {
+    "loader": "ControlNetLoader",
+    "workflow": "checkpoint-canny-controlnet-v1",
+    "precision": "fp16 safetensors",
+    "extra_custom_nodes": [],
+    "verification": "Model card body and pinned config identify SDXL (cross_attention_dim 2048, text_time); model-card base_model header conflicts with its body, not used as architecture evidence. Native ComfyUI Canny differs from OpenCV examples. Full native load and one 768x768 generation each with Pony/Animagine verified; other workloads, SD1 and RTX4080 remain untested. See docs/validation/checkpoint-canny-rtx3060.md."
+  },
+  "validation": "rtx3060_fixed_pony_and_animagine_canny_verified"
+}

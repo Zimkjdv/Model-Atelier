@@ -36,7 +36,7 @@ export function copyControl(value: ControlForm): ControlForm {
     const keys=Object.keys(newControl())
     if (!value || Object.keys(value).length!==keys.length || keys.some(k=>!(k in value))) throw new Error()
     if (['title','prompt','negative_prompt','engine_url','checkpoint','control_net_name','sampler_name','scheduler','seed'].some(k=>typeof (value as unknown as Record<string,unknown>)[k]!=='string') || !value.engine_url || !value.checkpoint || !value.image_asset_id) throw new Error()
-    if (!Array.isArray(value.loras)||value.loras.length>4 || new Set(value.loras.map(v=>v.name)).size!==value.loras.length || value.loras.some(v=>!v.name?.trim()||typeof v.enabled!=='boolean'||[v.strength_model,v.strength_clip].some(n=>!Number.isFinite(n)||n< -10||n>10))) throw new Error()
+    if (!Array.isArray(value.loras)||value.loras.length>4 || new Set(value.loras.map(v=>v.name)).size!==value.loras.length || value.loras.some(v=>!v.name?.trim()||typeof v.enabled!=='boolean'||[v.strength_model,v.strength_clip].some(n=>!Number.isFinite(n)||n< -20||n>20))) throw new Error()
     if (controlProblem(value,{id:value.image_asset_id,title:'',width:0,height:0,purpose:'unspecified',archived:false})) throw new Error()
     return JSON.parse(JSON.stringify(value))
   } catch { throw new Error('不是完整 Canny 結構參考設定，未載入部分內容。') }

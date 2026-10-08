@@ -1,4 +1,4 @@
-"""Install an explicitly selected, reviewed checkpoint; --check performs no writes."""
+"""Install an explicitly selected, reviewed model weight; --check performs no writes."""
 import argparse
 import json
 import sys
