@@ -28,6 +28,8 @@
 - FLUX.1 [schnell]：模型庫提供固定來源、四個元件版本／雜湊與唯讀磁碟預檢；CLI：`.\.venv\Scripts\python.exe -m scripts.flux_preflight`。尚未提供下載及 GPU 生成驗收，來源條件、精度與後續驗收見 [FLUX 接入紀錄](docs/models/flux1-schnell.md)。
   模型庫提供依引擎同步與版本／來源登記；創作頁可切換 FLUX 專用表單，保存獨立草稿、匯出精確 JSON、提交與查詢任務、還原作品設定。見 [元件庫](docs/models/flux-components.md)、[FLUX 流程](docs/models/flux-workflow.md)與 [驗收紀錄](docs/validation/flux-integration.md)；GPU 生成仍未驗證。
 
+2026-10-08 多 LoRA 品質實測：固定 8 步及反向順序均可載入，但仍對比不足，不設為品質預設。新增可重跑 CLI profiles 與條件紀錄，見 [實機觀察](docs/validation/animagine-multi-lora-quality-rtx3060.md)。
+
 ## 本機安裝（PowerShell）
 
 目前已驗證 Python 3.12.10 與 Node.js 24.19.0。於專案根目錄執行：

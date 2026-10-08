@@ -27,7 +27,8 @@ class StackEvidenceTests(unittest.TestCase):
 
     def test_only_ordered_hashes_and_exact_strengths_match_readonly(self):
         body = self.prepare(); before = self.db.read_bytes()
-        with patch('backend.main.httpx.AsyncClient', side_effect=AssertionError('no engine')):
+        original = evidence.records()[0][0]
+        with patch.object(evidence, 'records', return_value=([original], None)), patch('backend.main.httpx.AsyncClient', side_effect=AssertionError('no engine')):
             value = self.client.post('/api/loras/stack-validation', json=body).json()
             self.assertEqual(value['status'], 'recorded')
             self.assertEqual(len(value['matching_parameter_records']), 1)
@@ -88,3 +89,12 @@ class StackEvidenceTests(unittest.TestCase):
             loras.update_metadata(self.db,ENGINE,'second',dict(sha256='f'*64)); return report
         with patch.object(main,'engine',race):
             self.assertEqual(self.client.post('/api/generation-advice',json=body).status_code,409)
+
+    def test_reviewed_eight_step_records_match_their_own_order_not_other_parameters(self):
+        body = self.prepare()
+        for choices in [body['loras'], list(reversed(body['loras']))]:
+            value = self.client.post('/api/loras/stack-validation', json=body | dict(loras=choices, settings=body['settings'] | dict(steps=8))).json()
+            self.assertEqual(len(value['matching_parameter_records']), 1)
+            self.assertIn('20261008', value['matching_parameter_records'][0])
+            changed = self.client.post('/api/loras/stack-validation', json=body | dict(loras=choices, settings=body['settings'] | dict(steps=9))).json()
+            self.assertEqual(changed['matching_parameter_records'], [])

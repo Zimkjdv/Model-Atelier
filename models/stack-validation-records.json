@@ -54,6 +54,116 @@
           "strength_clip": 1.0
         }
       ]
+    },
+    {
+      "date": "2026-10-08",
+      "model": "Animagine XL 4.0 Opt",
+      "architecture": "sdxl",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "workload": "inference",
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "vram_bytes": 12884901888,
+      "ram_gib": 63.94,
+      "os": "Windows 10 19045",
+      "python": "3.12.10",
+      "comfyui": "0.34.0",
+      "pytorch": "2.14.0+cu130",
+      "driver": "616.56",
+      "precision": "model/CLIP FP16; VAE bfloat16",
+      "offload": "ComfyUI default dynamic VRAM with async CPU offload; PyTorch attention",
+      "settings": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "lcm",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0,
+        "batch_size": 1
+      },
+      "reference": "docs/validation/animagine-multi-lora-quality-rtx3060.md",
+      "conditions": "相同椅子說明書 prompt、seed 9007199254740993、1024²、CFG 1、lcm/sgm_uniform；LCM → IKEA。整卡低頻取樣含其他程序；無法當作最低需求或純模型效能。",
+      "id": "animagine-multi-8-rtx3060-20261008",
+      "workflow": "ordered-lora-text2image-v1",
+      "wall_seconds": 29.734,
+      "engine_seconds": 27.597,
+      "load_condition": "首個生成包含冷載入及初始化，非純 GPU 取樣。",
+      "sampled_device_peak_bytes": 10996416512,
+      "sample_count": 15,
+      "quality_observation": "8 步仍線條偏淡、對比不足，未改善至推薦品質。正反順序的 decoded RGB 雜湊不同，但人工觀察皆偏淡，未見畫風改善。僅一個提示與 seed，不能推定所有 LoRA 順序等效。",
+      "loras": [
+        {
+          "name": "LCM LoRA SDXL",
+          "version": "revision a18548dd4956",
+          "architecture": "sdxl",
+          "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+          "strength_model": 1.0,
+          "strength_clip": 0.0
+        },
+        {
+          "name": "IKEA instructions SDXL",
+          "version": "revision eaa7f67c93be",
+          "architecture": "sdxl",
+          "sha256": "d0e5fcbe1e6e2a364011bf27a66e8a40c05d02195d3e422cc393436388b8da17",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        }
+      ]
+    },
+    {
+      "date": "2026-10-08",
+      "model": "Animagine XL 4.0 Opt",
+      "architecture": "sdxl",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "workload": "inference",
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "vram_bytes": 12884901888,
+      "ram_gib": 63.94,
+      "os": "Windows 10 19045",
+      "python": "3.12.10",
+      "comfyui": "0.34.0",
+      "pytorch": "2.14.0+cu130",
+      "driver": "616.56",
+      "precision": "model/CLIP FP16; VAE bfloat16",
+      "offload": "ComfyUI default dynamic VRAM with async CPU offload; PyTorch attention",
+      "settings": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "lcm",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0,
+        "batch_size": 1
+      },
+      "reference": "docs/validation/animagine-multi-lora-quality-rtx3060.md",
+      "conditions": "相同椅子說明書 prompt、seed 9007199254740993、1024²、CFG 1、lcm/sgm_uniform；IKEA → LCM。整卡低頻取樣含其他程序；無法當作最低需求或純模型效能。",
+      "id": "animagine-style-lcm-8-rtx3060-20261008",
+      "workflow": "ordered-lora-text2image-v1",
+      "wall_seconds": 13.907,
+      "engine_seconds": 13.422,
+      "load_condition": "同一引擎已載入模型，部分節點快取及 patch 重建，非純 GPU 取樣。",
+      "sampled_device_peak_bytes": 9922674688,
+      "sample_count": 8,
+      "quality_observation": "8 步仍線條偏淡、對比不足，未改善至推薦品質。正反順序的 decoded RGB 雜湊不同，但人工觀察皆偏淡，未見畫風改善。僅一個提示與 seed，不能推定所有 LoRA 順序等效。",
+      "loras": [
+        {
+          "name": "IKEA instructions SDXL",
+          "version": "revision eaa7f67c93be",
+          "architecture": "sdxl",
+          "sha256": "d0e5fcbe1e6e2a364011bf27a66e8a40c05d02195d3e422cc393436388b8da17",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        },
+        {
+          "name": "LCM LoRA SDXL",
+          "version": "revision a18548dd4956",
+          "architecture": "sdxl",
+          "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+          "strength_model": 1.0,
+          "strength_clip": 0.0
+        }
+      ]
     }
   ]
 }

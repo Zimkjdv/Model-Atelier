@@ -8,23 +8,27 @@ from scripts.verify_animagine_generation import MODEL
 
 STYLE = install_model.manifest('ikea-instructions-lora-sdxl')
 LCM = install_model.manifest('lcm-lora-sdxl')
+PROFILES = ('baseline', 'style', 'multi', 'multi-8', 'style-lcm-8')
 
 
 def settings(engine, checkpoint, profile):
-    if checkpoint != MODEL['filename'] or profile not in ('baseline', 'style', 'multi'):
+    if checkpoint != MODEL['filename'] or profile not in PROFILES:
         raise ValueError('Unsupported fixed style acceptance profile')
     choices = []
-    if profile == 'multi':
+    multi = profile in ('multi', 'multi-8', 'style-lcm-8')
+    if multi:
         choices.append(dict(name=LCM['filename'], enabled=True, strength_model=1.0, strength_clip=0.0))
     if profile != 'baseline':
         choices.append(dict(name=STYLE['filename'], enabled=True, strength_model=1.0, strength_clip=1.0))
+    if profile == 'style-lcm-8':
+        choices.reverse()
     return base.settings(engine, checkpoint) | dict(
         title='Animagine ' + profile + ' LoRA acceptance', width=1024, height=1024,
         prompt='black and white line drawing, instruction manual, assembling a wooden chair, white background, no humans',
         negative_prompt='blurry, low quality, people, watermark', loras=choices,
-        steps=4 if profile == 'multi' else 28, cfg=1.0 if profile == 'multi' else 5.0,
-        sampler_name='lcm' if profile == 'multi' else 'euler_ancestral',
-        scheduler='sgm_uniform' if profile == 'multi' else 'normal')
+        steps=(4 if profile == 'multi' else 8) if multi else 28, cfg=1.0 if multi else 5.0,
+        sampler_name='lcm' if multi else 'euler_ancestral',
+        scheduler='sgm_uniform' if multi else 'normal')
 
 
 class StyleAcceptance(base.Acceptance):
@@ -34,7 +38,8 @@ class StyleAcceptance(base.Acceptance):
         return settings(self.engine, self.checkpoint, self.profile)
 
     def manifests(self):
-        return [MODEL] + ([LCM] if self.profile == 'multi' else []) + ([STYLE] if self.profile != 'baseline' else [])
+        by_name = {v['filename']: v for v in (LCM, STYLE)}
+        return [MODEL] + [by_name[v['name']] for v in self.expected_settings()['loras']]
 
     def preflight(self):
         manifests = self.manifests()
@@ -92,8 +97,8 @@ def main(argv=None):
     profile = 'multi'
     if '--profile' in arguments:
         index = arguments.index('--profile')
-        if index + 1 >= len(arguments) or arguments[index + 1] not in ('baseline', 'style', 'multi'):
-            print('--profile must be baseline, style, or multi', file=sys.stderr)
+        if index + 1 >= len(arguments) or arguments[index + 1] not in PROFILES:
+            print('--profile must be ' + ', '.join(PROFILES), file=sys.stderr)
             return 2
         profile = arguments[index + 1]
         del arguments[index:index+2]

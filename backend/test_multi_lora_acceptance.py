@@ -49,7 +49,7 @@ class MultiLoraAcceptanceTests(unittest.TestCase):
             return cls(client, platform.engine, platform.checkpoint, clock=clock.now, sleep=clock.sleep).run(previous)
 
     def test_three_profiles_and_once_only_offline_ordered_snapshot_verification(self):
-        for profile, count in [('baseline', 7), ('style', 8), ('multi', 9)]:
+        for profile, count in [('baseline', 7), ('style', 8), ('multi', 9), ('multi-8', 9), ('style-lcm-8', 9)]:
             platform = StylePlatform(profile, lose_submission=True)
             original = self.check(platform)
             self.assertEqual(original['status'], 'passed', original)
@@ -60,6 +60,21 @@ class MultiLoraAcceptanceTests(unittest.TestCase):
                 result = self.check(platform, original)
             self.assertEqual(result['status'], 'passed', result)
             self.assertTrue(all(method == 'GET' for method, _ in platform.seen))
+
+    def test_eight_step_profiles_change_only_steps_or_order_and_reject_other_report(self):
+        old = acceptance.settings('http://127.0.0.1:8188', acceptance.MODEL['filename'], 'multi')
+        eight = acceptance.settings('http://127.0.0.1:8188', acceptance.MODEL['filename'], 'multi-8')
+        reverse = acceptance.settings('http://127.0.0.1:8188', acceptance.MODEL['filename'], 'style-lcm-8')
+        self.assertEqual(eight['steps'], 8)
+        self.assertEqual(reverse['loras'], list(reversed(eight['loras'])))
+        for key in old:
+            if key not in ('steps', 'title'): self.assertEqual(eight[key], old[key], key)
+            if key not in ('loras', 'title'): self.assertEqual(reverse[key], eight[key], key)
+        platform = StylePlatform('multi-8')
+        previous = self.check(platform)
+        other = StylePlatform('style-lcm-8')
+        self.assertEqual(self.check(other, previous)['stage'], 'validate_report')
+        self.assertEqual(other.seen, [])
 
     def test_order_strength_and_other_profile_cannot_be_reverified(self):
         platform = StylePlatform()
