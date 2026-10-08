@@ -67,7 +67,7 @@ class InpaintTests(unittest.TestCase):
             self.assertEqual(self.client.put('/api/assets/'+body['reference_ids'][i],json=dict(title='x',archived=True)).status_code,409)
         with Image.open(io.BytesIO(remote.post.await_args_list[1].kwargs['files']['image'][1])) as mask:
             self.assertEqual(mask.getpixel((0,0)),(0,0,0));self.assertEqual(mask.getpixel((400,256)),(255,255,255))
-            self.assertEqual(set(mask.getdata()),{(0,0,0),(255,255,255)})
+            self.assertEqual({color for _,color in mask.getcolors(3)},{(0,0,0),(255,255,255)})
         self.assertEqual(job['input_uploads'],[flow.location(body['request_id']),flow.location(body['request_id'],'mask')])
 
     def test_strict_schema_and_unavailable_assets_never_call_engine(self):

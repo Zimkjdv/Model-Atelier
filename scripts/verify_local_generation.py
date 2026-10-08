@@ -133,8 +133,13 @@ class Acceptance:
         self.report = {}
         self.original_artworks = None
 
+    generate_path = 'generate'
+
     def expected_settings(self):
         return settings(self.engine, self.checkpoint)
+
+    def build_workflow(self, settings, job_id=None):
+        return build(settings)
 
     def preflight(self):
         """Additional fixed-profile checks, before admitting a generation UUID."""
@@ -163,7 +168,7 @@ class Acceptance:
         version = value.get('model_version')
         if not isinstance(version, str) or not version or len(version) > 100:
             raise ValueError('Report original model version is invalid')
-        expected = build(value['settings'])
+        expected = self.build_workflow(value['settings'], value['job_id'])
         if value.get('workflow') != expected or type(value['workflow']['5']['inputs']['seed']) is not int:
             raise ValueError('Report full workflow or exact seed is invalid')
         entries = value.get('verified_artworks')
@@ -331,8 +336,8 @@ class Acceptance:
                         raise ValueError('Fixed acceptance parameter is outside fresh capability bounds: ' + name)
                 self.report['capabilities'] = caps
                 self.preflight()
-                self.report['workflow'] = build(self.report['settings'])
                 self.report['job_id'] = self.report['request_id'] = str(uuid4())
+                self.report['workflow'] = self.build_workflow(self.report['settings'], self.report['job_id'])
                 self.report['vram_sampling'] = dict(requested_interval_seconds=self.interval,
                     source='platform /api/system NVIDIA aggregate device used memory; sampled peak, not continuous or process-exclusive',
                     attempts=0, samples_with_gpu_values=0, samples=[], sampled_max_used_bytes_by_gpu={})
@@ -342,7 +347,7 @@ class Acceptance:
                 submitted_at = self.clock()
                 deadline = submitted_at + self.max_wait
                 try:
-                    response = self.json('POST', 'generate', deadline=deadline,
+                    response = self.json('POST', self.generate_path, deadline=deadline,
                                          json=self.report['settings'] | {'request_id': self.report['request_id']})
                     if response.get('id') != self.report['job_id']:
                         raise ValueError('Submission response returned another job ID')
@@ -363,7 +368,7 @@ class Acceptance:
                             self.warning('Original job query temporarily unavailable: ' + str(exc))
                         job = None
                     if job:
-                        self.assert_job(job, build(self.report['settings']))
+                        self.assert_job(job, self.build_workflow(self.report['settings'], self.report['job_id']))
                         self.report['last_job_status'] = job.get('status')
                         if job.get('status') == 'completed':
                             history = job.get('history') or {}
@@ -390,7 +395,7 @@ class Acceptance:
                     raise ValueError('Expected exactly one imported or already saved artwork')
                 self.report['artwork_ids'] = [value['id'] for value in values]
             self.record('verify_saved_outputs')
-            expected = build(self.report['settings'])
+            expected = self.build_workflow(self.report['settings'], self.report['job_id'])
             job = self.json('GET', 'jobs/' + self.report['job_id'])
             self.assert_job(job, expected)
             history = job.get('history') or {}

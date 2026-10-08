@@ -1,6 +1,6 @@
 # Checkpoint 局部編輯
 
-平台提供自有的 `checkpoint-inpaint-v1` 模板：原圖與遮罩各一張，使用已明確登記為 SD 1.x 或 SDXL 的 checkpoint，可依原順序掛載最多四個 LoRA。後端與局部編輯工作台已整合；RTX 3060 實機驗證接續進行。
+平台提供自有的 `checkpoint-inpaint-v1` 模板：原圖與遮罩各一張，使用已明確登記為 SD 1.x 或 SDXL 的 checkpoint，可依原順序掛載最多四個 LoRA。後端與局部編輯工作台已整合；Pony／Animagine 的 RTX 3060 固定實機驗證已完成，修補接縫及色彩偏差如實保留。見 [驗收紀錄](validation/checkpoint-inpaint-rtx3060.md)。
 
 ## 輸入與遮罩
 
@@ -39,3 +39,15 @@
 這個專用表單在頁面切換時保留，重新整理會清除未提交的內容；沒有普通草稿保存功能。已保存遮罩是持久素材，提交後的原設定是不可變任務紀錄。引擎資料更新失敗時阻擋新的生成，不取用舊資料悄悄替換模型或取樣器。
 
 前端驗證：`npm.cmd --prefix frontend run check:inpaint`（尺寸、素材切換、精確 seed、不可變還原、CSS 座標、二值閾值／透明背景／反相）、`check:experiments` 及 Vue 型別／建置。Windows 瀏覽器工具仍因 sandbox helper 啟動失敗，實際畫面點擊、觸控與窄視窗待驗收。
+
+## 實機驗收 CLI
+
+先在素材庫明確保存不同的原圖及同尺寸二值遮罩，再執行單一固定模型的驗收。只接受 loopback 平台／引擎與已安裝固定來源的 Pony／Animagine 權重；不下載、不自動建立素材或批次跑圖。
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.verify_inpaint_generation --model pony-v6-xl --source-id <原圖UUID> --mask-id <遮罩UUID> --report runtime/inpaint-pony.json
+```
+
+使用 `--model animagine-xl-4.0-opt` 執行另一模型；完整固定條件為 768²、20 steps、CFG 5.5、dpmpp_2m／karras、denoise 1、grow 6、seed 9007199254740993，無 LoRA。這是驗收條件，不是品質推薦。報告必須不存在，先排他保存原 UUID 再送唯一一次生成；最多觀察 15 分鐘。回應遺失只查原任務，不再送生成。
+
+既有完整報告只讀核對，加同一素材 ID、模型、平台與 `--verify-report`。此模式只 GET 已保存紀錄及圖片，不能修復未完成／缺少完整證據的報告，也不補提交或匯入。非法 workflow／seed／素材 hash／遮罩政策／量測先拒絕，不改原報告；資料源差異保留失敗診斷。報告與圖片保存在本機 runtime，正式資料使用者可自行備份。

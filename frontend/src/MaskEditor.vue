@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, onActivated, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
 import type { ReferenceAsset } from './referenceSettings'
-import { binaryMask, maskPoint } from './inpaintSettings'
+import { binaryMask, maskPoint, uploadMaskAsset } from './inpaintSettings'
 const props=defineProps<{ source?:ReferenceAsset; mask?:ReferenceAsset; disabled?:boolean }>()
 const emit=defineEmits<{ saved:[value:ReferenceAsset]; dirty:[value:boolean]; busy:[value:boolean] }>()
 const canvas=ref<HTMLCanvasElement|null>(null),ready=ref(false),dirty=ref(false),busy=ref(false),error=ref(''),message=ref('')
@@ -41,9 +41,8 @@ function stop(event?:PointerEvent) {if(event && event.pointerId!==pointer) retur
 function clear() {if(!ready.value || busy.value || props.disabled) return;const ctx=context();ctx.fillStyle='black';ctx.fillRect(0,0,canvas.value!.width,canvas.value!.height);dirty.value=true;white.value=0}
 function invert() {if(!ready.value || busy.value || props.disabled) return;const ctx=context(),pixels=ctx.getImageData(0,0,canvas.value!.width,canvas.value!.height);white.value=binaryMask(pixels.data,true);ctx.putImageData(pixels,0,0);dirty.value=true}
 async function upload(blob:Blob,name:string,current:number,sourceId:string) {
-  const data=new FormData();data.append('file',blob,name)
-  const response=await fetch('/api/assets',{method:'POST',body:data}),value=await response.json()
-  if(!response.ok) throw new Error(typeof value.detail==='string'?value.detail:'保存遮罩失敗')
+  const value=await uploadMaskAsset(blob,name)
+  if(value.width!==props.source?.width || value.height!==props.source?.height) throw new Error('保存後的遮罩尺寸不同，未套用。')
   if(current!==ticket || props.source?.id!==sourceId) return
   emit('saved',value as ReferenceAsset);message.value='遮罩已保存為素材；請確認參數後生成。';dirty.value=false
 }
@@ -63,7 +62,7 @@ async function selectFile(event:Event) {
   const current=ticket,source=props.source;busy.value=true;error.value=''
   let url=''
   try {
-    if(chosen.size>32*1024*1024) throw new Error('遮罩檔案不可超過 32 MiB。')
+    if(chosen.size>20*1024*1024) throw new Error('遮罩檔案不可超過 20 MiB。')
     url=URL.createObjectURL(chosen);const loaded=await image(url)
     if(current!==ticket) return
     if(loaded.naturalWidth!==source.width || loaded.naturalHeight!==source.height) throw new Error('遮罩須與原圖尺寸完全相同。')

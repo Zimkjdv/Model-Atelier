@@ -31,3 +31,15 @@ const rgba=new Uint8ClampedArray([127,127,127,255,128,128,128,255,0,0,0,0,0,0,0,
 assert.equal(binaryMask(rgba),2);assert.deepEqual([...rgba],[0,0,0,255,255,255,255,255,255,255,255,255,0,0,0,255])
 assert.equal(binaryMask(rgba,true),2);assert.deepEqual([...rgba],[255,255,255,255,0,0,0,255,0,0,0,255,255,255,255,255]);assert.throws(()=>binaryMask(new Uint8ClampedArray(1)))
 console.log('Inpainting source changes, dimensions, exact seed, immutable restoration, pointer coordinates and binary-mask checks passed.')
+
+const {uploadMaskAsset}=await import(modules.inpaintSettings)
+const blob=new Blob(['PNG bytes'],{type:'image/png'})
+let observed=false
+const saved=await uploadMaskAsset(blob,'遮罩 example.png',async(url,options)=>{
+  assert.equal(new URL(url,'http://local').searchParams.get('filename'),'遮罩 example.png');assert.equal(options.method,'POST');assert.equal(options.body,blob);assert.equal(options.headers['Content-Type'],'application/octet-stream');observed=true
+  return Response.json({id:'mask',width:80,height:64,archived:false})
+})
+assert.equal(observed,true);assert.equal(saved.id,'mask')
+await assert.rejects(()=>uploadMaskAsset(blob,'mask.png',async()=>Response.json({detail:'invalid image'},{status:422})),/invalid image/)
+await assert.rejects(()=>uploadMaskAsset(blob,'mask.png',async()=>Response.json({id:'mask'})),/格式/)
+console.log('Raw image-body asset upload and error contract checks passed.')

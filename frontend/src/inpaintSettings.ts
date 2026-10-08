@@ -45,3 +45,12 @@ export function binaryMask(rgba: Uint8ClampedArray, invert = false) {
   }
   return white
 }
+
+export async function uploadMaskAsset(blob: Blob, name: string, fetcher: typeof fetch = fetch): Promise<ReferenceAsset> {
+  if (blob.size > 20 * 1024 * 1024) throw new Error('遮罩不可超過 20 MiB。')
+  const response=await fetcher('/api/assets?'+new URLSearchParams({filename:name}),{method:'POST',headers:{'Content-Type':'application/octet-stream'},body:blob})
+  const value=await response.json()
+  if(!response.ok) throw new Error(typeof value.detail==='string'?value.detail:'保存遮罩失敗')
+  if(typeof value.id!=='string' || !Number.isInteger(value.width) || !Number.isInteger(value.height)) throw new Error('遮罩保存回應格式不同，未套用。')
+  return value as ReferenceAsset
+}
