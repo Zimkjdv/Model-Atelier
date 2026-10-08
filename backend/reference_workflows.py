@@ -11,8 +11,8 @@ DESCRIPTIONS = [
          control='以 denoise 控制改動幅度；不是獨立畫風或角色鎖定。', lora=True),
     dict(id='checkpoint-inpaint-v1', name='局部編輯', implemented=True, architectures=['sd1','sdxl'], image_count=2,
          input_requirement='相同原始尺寸的原圖及遮罩；白色編輯、黑色保留，需原生節點。', control='二值遮罩與 grow_mask_by；結果合成回原輸入。', lora=True),
-    dict(id='structure-reference', name='結構參考', implemented=False, architectures=[], image_count=1,
-         input_requirement='需匹配架構的 ControlNet、前處理器與權重，尚未整合。', control='姿勢或結構', lora=False),
+    dict(id='checkpoint-canny-controlnet-v1', name='Canny 結構參考', implemented=True, architectures=['sd1','sdxl'], image_count=1,
+         input_requirement='一張素材、同架構且登記 canny 的 ControlNet；需原生 Canny 與 ControlNet 節點。', control='邊緣結構與強度／起訖；非姿勢或畫風鎖定。', lora=True),
     dict(id='style-reference', name='風格／角色參考', implemented=False, architectures=[], image_count=1,
          input_requirement='需匹配架構的影像編碼器與 adapter；用途標籤不會自動啟用此能力。', control='風格或外觀', lora=False),
 ]

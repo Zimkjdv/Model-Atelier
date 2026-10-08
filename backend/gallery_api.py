@@ -83,7 +83,7 @@ def install(app, host):
     def creation_settings(artwork_id: UUID):
         item = lookup(artwork_id)
         def validate(value):
-            schema = host.InpaintInput if item.get('workflow_id') == 'checkpoint-inpaint-v1' else host.DraftInput
+            schema = host.ControlInput if item.get('workflow_id') == 'checkpoint-canny-controlnet-v1' else host.InpaintInput if item.get('workflow_id') == 'checkpoint-inpaint-v1' else host.DraftInput
             return schema.model_validate(value).model_dump(mode='json', exclude={'revision'})
         try:
             settings = workflows.extract(item, validate)
@@ -111,10 +111,13 @@ def install(app, host):
         lora_info = lora_records.restoration(host.DB, settings['engine_url'], settings, item.get('lora_metadata'))
         warnings.extend(lora_info['warnings'])
         warnings.extend(image_workflows.restoration_warnings(host.DB, host.DATA, item.get('reference_metadata')))
+        from backend import control_catalog
+        warnings.extend(control_catalog.restoration_warnings(host.DB,settings['engine_url'],item.get('component_metadata')))
         return dict(artwork_id=str(artwork_id), settings=settings, model_version=version,
                     model_metadata=item.get('model_metadata'), lora_metadata=item.get('lora_metadata'),
                     runtime_metadata=item.get('runtime_metadata'),
                     reference_metadata=item.get('reference_metadata'), warnings=warnings,
+                    **(dict(component_metadata=item.get('component_metadata')) if item.get('workflow_id')=='checkpoint-canny-controlnet-v1' else {}),
                     availability=dict(current_engine_url=host.engine_url(), engine_matches=matches,
                                       checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at'),
                                       loras=lora_info['loras'], lora_synced_at=lora_info['lora_synced_at']))

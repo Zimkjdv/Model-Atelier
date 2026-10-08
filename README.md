@@ -394,3 +394,8 @@ API：
 `POST /api/loras/validation` 是唯讀查詢，輸入 `engine_url`、`checkpoint`、`lora`（名稱、啟用及兩種強度）及選填 `settings`（上述取樣參數、`batch_size: 1`）。以兩份登記 SHA256 與架構比對 `models/lora-validation-records.json`，不讀取權重、不連接引擎、不查 GPU 或改資料庫。回傳 `recorded` 只代表有該組合紀錄；`matching_parameter_records` 才表示強度和取樣設定匹配，仍不保證目前檔案、提示詞、硬體或本次生成。清單失效、未知 hash、其他組合及訓練均不視為通過；引擎／登記在查詢期間改變回傳 409。
 
 首筆紀錄為 2026-10-04 Pony＋LCM SDXL／RTX 3060 的單張風景驗收，包含完整環境、兩種冷啟動耗時、整卡顯存取樣及明確未量測的暖機值。詳見 [實機紀錄](docs/validation/pony-lcm-rtx3060.md)。提交時的歷史提示保留原文並標明時間範圍，不用後續紀錄改寫原任務。
+
+
+## Canny 結構參考
+
+已完成 ControlNet 清單／版本來源登記及固定 Canny 條件後端，支援同架構 SD 1.x／SDXL、單張來源與有序 LoRA；完整流程、控制參數及版本快照可離線還原。專用工作台與固定權重 GPU 驗收接續實作。API、提交保護與限制見 [docs/controlnet.md](docs/controlnet.md)。

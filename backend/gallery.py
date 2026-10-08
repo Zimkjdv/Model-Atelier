@@ -116,8 +116,9 @@ def parameters(workflow, output_node):
     composite = inputs(output.get('images'), 'ImageCompositeMasked')
     decoder = inputs(composite.get('source') if composite else output.get('images'), 'VAEDecode')
     sampler = inputs(decoder.get('samples'), 'KSampler')
-    positive = inputs(sampler.get('positive'), 'CLIPTextEncode')
-    negative = inputs(sampler.get('negative'), 'CLIPTextEncode')
+    controlled = inputs(sampler.get('positive'),'ControlNetApplyAdvanced')
+    positive = inputs(controlled.get('positive') if controlled else sampler.get('positive'), 'CLIPTextEncode')
+    negative = inputs(controlled.get('negative') if controlled else sampler.get('negative'), 'CLIPTextEncode')
     return dict(prompt=positive.get('text'), negative_prompt=negative.get('text'),
                 seed=str(sampler['seed']) if isinstance(sampler.get('seed'), int) else None,
                 steps=sampler.get('steps'), cfg=sampler.get('cfg'),

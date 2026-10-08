@@ -399,6 +399,9 @@ def reference_capabilities():
 checkpoint_submissions = submissions.install(app, sys.modules[__name__])
 from backend import inpaint_api
 inpaint_api.install(app, sys.modules[__name__], checkpoint_submissions)
+from backend import control_api, control_catalog
+control_catalog.install(app,sys.modules[__name__])
+control_api.install(app,sys.modules[__name__],checkpoint_submissions)
 gallery_api.install(app, sys.modules[__name__])
 model_profiles.install(app, sys.modules[__name__])
 model_paths.install(app, sys.modules[__name__])
