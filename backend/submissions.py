@@ -12,11 +12,13 @@ from starlette.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures, node_preflight
 from backend import lora_preflight, lora_records, stopping, flux_workflows
-from backend import image_workflows, runtime_metadata
+from backend import image_workflows, runtime_metadata, experiment_context
 from backend.reference_workflows import IMG2IMG_ID
 
 
 class Submission(BaseModel):
+    # Associations require the complete supported form, never arbitrary graph input.
+    experiment: None = None
     request_id: UUID
     engine_url: str
     checkpoint: str = Field(min_length=1, max_length=2048)
@@ -45,6 +47,7 @@ def install(app, host):
 
     class Generate(host.DraftInput):
         request_id: UUID
+        experiment: experiment_context.Selection | None = None
 
     def lookup(job_id):
         try:
@@ -52,11 +55,11 @@ def install(app, host):
         except KeyError:
             raise HTTPException(404, '找不到任務')
 
-    async def submit(value):
+    async def submit(value, *, experiment=None, generation_settings=None):
         async with job_lock(value.request_id):
-            return await submit_locked(value)
+            return await submit_locked(value, experiment=experiment, generation_settings=generation_settings)
 
-    async def submit_locked(value, *, reference=None):
+    async def submit_locked(value, *, reference=None, experiment=None, generation_settings=None):
         # Recovery is pinned to the recorded request, including after changing
         # the current engine. Never probe fresh capabilities or replay an old ID.
         try:
@@ -65,7 +68,8 @@ def install(app, host):
             pass
         else:
             if (any(existing[name] != getattr(value, name) for name in ('engine_url', 'checkpoint', 'workflow'))
-                    or (reference and existing.get('reference_settings') != reference['settings'])):
+                    or (reference and existing.get('reference_settings') != reference['settings'])
+                    or not experiment_context.matches(existing.get('experiment_context'), experiment, generation_settings)):
                 raise HTTPException(409, '此請求 ID 已用於其他工作流程')
             return existing
         if value.engine_url != host.engine_url():
@@ -100,7 +104,8 @@ def install(app, host):
                                       value.checkpoint, metadata['version'], metadata, lora_metadata,
                                       workflow_id=IMG2IMG_ID if reference else None,
                                       reference_metadata=[reference['snapshot']] if reference else None,
-                                      reference_settings=reference['settings'] if reference else None)
+                                      reference_settings=reference['settings'] if reference else None,
+                                      experiment=experiment, generation_settings=generation_settings)
         except ValueError as exc:
             raise HTTPException(409, str(exc))
         if not fresh:
@@ -247,15 +252,17 @@ def install(app, host):
 
     @app.post('/api/generate')
     async def generate(value: Generate):
+        settings = value.model_dump(mode='json', exclude={'request_id', 'revision', 'experiment'})
+        experiment = value.experiment.model_dump(mode='json') if value.experiment else None
         if value.workflow_mode == 'image2image':
             async with job_lock(value.request_id):
-                settings = value.model_dump(mode='json', exclude={'request_id', 'revision'})
                 try:
                     existing = jobs.get(host.DB, str(value.request_id))
                 except KeyError:
                     existing = None
                 if existing is not None:
-                    if existing.get('workflow_id') != IMG2IMG_ID or existing.get('reference_settings') != settings:
+                    if (existing.get('workflow_id') != IMG2IMG_ID or existing.get('reference_settings') != settings
+                            or not experiment_context.matches(existing.get('experiment_context'), experiment, settings)):
                         raise HTTPException(409, '此請求 ID 已用於其他工作流程或輸入素材')
                     return existing
                 if not value.checkpoint:
@@ -268,13 +275,15 @@ def install(app, host):
                     raise HTTPException(422, str(exc))
                 submission = SimpleNamespace(request_id=value.request_id, engine_url=value.engine_url,
                     checkpoint=value.checkpoint, workflow=image_workflows.build(settings, value.request_id))
-                return await submit_locked(submission, reference=dict(settings=settings, snapshot=snapshot, encoded=encoded))
+                return await submit_locked(submission, reference=dict(settings=settings, snapshot=snapshot, encoded=encoded),
+                                           experiment=experiment, generation_settings=settings)
         if value.reference_ids or value.image_asset_id:
             raise HTTPException(422, '第一版文生圖尚未套用參考素材，請先取消素材選取')
         if not value.checkpoint:
             raise HTTPException(422, '請先選擇 checkpoint')
         workflow = workflows.build(value.model_dump())
-        return await submit(Submission(request_id=value.request_id, engine_url=value.engine_url, checkpoint=value.checkpoint, workflow=workflow))
+        return await submit(Submission(request_id=value.request_id, engine_url=value.engine_url, checkpoint=value.checkpoint, workflow=workflow),
+                            experiment=experiment, generation_settings=settings)
 
     @app.get('/api/jobs')
     def history():

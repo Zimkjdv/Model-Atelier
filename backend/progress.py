@@ -36,7 +36,7 @@ ELIGIBLE = {'queued', 'running', 'unknown'}
 def summary(job):
     keys = ('id', 'prompt_id', 'engine_url', 'checkpoint', 'model_version',
             'status', 'error', 'failure_info', 'revision', 'created_at', 'updated_at', 'progress',
-            'lora_metadata', 'preflight_warnings', 'runtime_metadata', 'measurements')
+            'lora_metadata', 'preflight_warnings', 'runtime_metadata', 'measurements', 'experiment_context')
     value = {key: job[key] for key in keys if key in job}
     value.update({key: job[key] for key in ('workflow_id', 'component_metadata', 'reference_metadata') if job.get(key) is not None})
     return value

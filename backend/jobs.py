@@ -4,25 +4,28 @@ from copy import deepcopy
 import sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta, timezone
-from backend import job_measurements
+from backend import job_measurements, experiment_context
 
 
 def display(value):
     # Old failures remain unclassified; GETs must not rewrite or guess causes.
-    return dict(value, failure_info=value.get('failure_info'), lora_metadata=value.get('lora_metadata'), measurements=value.get('measurements'))
+    return dict(value, failure_info=value.get('failure_info'), lora_metadata=value.get('lora_metadata'), measurements=value.get('measurements'), experiment_context=value.get('experiment_context'))
 
 
 def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, model_metadata=None, lora_metadata=None,
-            *, workflow_id=None, component_metadata=None, reference_metadata=None, reference_settings=None):
+            *, workflow_id=None, component_metadata=None, reference_metadata=None, reference_settings=None,
+            experiment=None, generation_settings=None):
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
         row = db.execute('SELECT value FROM settings WHERE key=?', ('job:' + job_id,)).fetchone()
         if row:
             value = json.loads(row[0])
             if (any(value[k] != v for k, v in dict(engine_url=engine_url, workflow=workflow, checkpoint=checkpoint).items())
-                    or value.get('workflow_id') != workflow_id or value.get('reference_settings') != reference_settings):
+                    or value.get('workflow_id') != workflow_id or value.get('reference_settings') != reference_settings
+                    or not experiment_context.matches(value.get('experiment_context'), experiment, generation_settings)):
                 raise ValueError('此請求 ID 已用於其他工作流程')
             return display(value), False
+        context = experiment_context.freeze(db, experiment, generation_settings)
         frozen_refs = []
         for snapshot in reference_metadata or []:
             asset = db.execute('SELECT value FROM settings WHERE key=?', ('asset:' + snapshot['id'],)).fetchone()
@@ -34,7 +37,7 @@ def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, 
                      checkpoint=checkpoint, model_version=model_version or '未知', model_metadata=deepcopy(model_metadata),
                      lora_metadata=deepcopy(lora_metadata), workflow_id=workflow_id, component_metadata=deepcopy(component_metadata),
                      reference_metadata=deepcopy(frozen_refs) if reference_metadata is not None else None,
-                     reference_settings=deepcopy(reference_settings), runtime_metadata=None, measurements=job_measurements.initial(engine_url),
+                     reference_settings=deepcopy(reference_settings), experiment_context=context, runtime_metadata=None, measurements=job_measurements.initial(engine_url),
                      status='validating', error=None, history=None, failure_info=None,
                      revision=0, created_at=datetime.now(timezone.utc).isoformat())
         db.execute('INSERT INTO settings VALUES (?, ?)', ('job:' + job_id, json.dumps(value, ensure_ascii=False)))
@@ -50,7 +53,7 @@ def get(path, job_id):
 
 
 def _update(path, job_id, expected_revision, changes):
-    if any(name in changes for name in ('model_version', 'model_metadata', 'lora_metadata', 'workflow_id', 'component_metadata', 'reference_metadata', 'reference_settings', 'runtime_metadata', 'measurements')):
+    if any(name in changes for name in ('model_version', 'model_metadata', 'lora_metadata', 'workflow_id', 'component_metadata', 'reference_metadata', 'reference_settings', 'experiment_context', 'runtime_metadata', 'measurements')):
         raise ValueError('提交時的模型資料快照不可變更或回填')
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')

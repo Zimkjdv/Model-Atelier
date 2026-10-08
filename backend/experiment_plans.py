@@ -7,7 +7,7 @@ from uuid import UUID
 from fastapi import HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
-from backend import assets, experiment_store, settings_transfer
+from backend import assets, experiment_store, settings_transfer, experiment_results
 
 SUITE = Path(__file__).resolve().parents[1] / 'experiments/general-illustration-v1.json'
 MAX_VARIANTS = 8
@@ -257,6 +257,14 @@ def install(app, host):
             return shown(experiment_store.get(host.DB,str(identifier)))
         except KeyError:
             raise HTTPException(404, '找不到比較方案')
+
+    @app.get('/api/experiments/plans/{identifier}/results')
+    def results(identifier: UUID):
+        try:
+            record = shown(experiment_store.get(host.DB, str(identifier)))
+        except KeyError:
+            raise HTTPException(404, '找不到比較方案')
+        return experiment_results.read(host.DB, record, host.DATA / 'artworks')
 
     @app.post('/api/experiments/plans')
     async def save_plan(request: Request):

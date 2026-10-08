@@ -21,6 +21,6 @@
 | `POST /api/experiments/plans` | `{request_id, plan}`，最多 1 MiB；新增 201，同 ID 重讀 200，不同方案 409 |
 | `PUT /api/experiments/plans/{id}` | `{revision, archived}`；僅改封存狀態，原方案不可覆寫 |
 
-現有 `/preview`、`/export` 的輸入維持 256 KiB；新鮮預覽匯出仍核對 expected_plan_sha256，案例改變時 409。已保存／匯入文件使用 document-export 保留歷史內容。所有方案每次最多 8 組，不提供自動批次、重試、結果自動關聯或品質評分。
+現有 `/preview`、`/export` 的輸入維持 256 KiB；新鮮預覽匯出仍核對 expected_plan_sha256，案例改變時 409。已保存／匯入文件使用 document-export 保留歷史內容。所有方案每次最多 8 組，不提供自動批次、重試或品質評分。保存方案的任務／作品關聯後端已接入，見 [關聯說明](experiment-runs.md)。
 
 2026-10-08：408 項後端測試（407 通過、1 項既有 Windows 權限跳過），Vue 型別／建置通過。隔離真實 HTTP 驗證精確 seed、LoRA 強度與圖生圖 denoise 三份保存方案、冪等保存、修訂衝突、來源引用，平台停止／重啟後 GET-only 原樣核對通過。證據 `runtime/experiment-api-acceptance-20261008.json`、`runtime/experiment-live-data-20261008`：3 方案／1 素材／0 任務／0 作品／0 草稿。正式 5 任務／3 作品／0 草稿／0 方案不變，所有測試服務已關閉。UI 工具 sandbox 啟動失敗，本輪畫面及實際瀏覽器下載／窄視窗仍未驗收；沒有新增 GPU 品質測試。

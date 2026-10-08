@@ -23,7 +23,7 @@ ORGANIZATION_DEFAULTS = dict(favorite=False, notes='', archived=False, revision=
 
 def organization_defaults(value):
     # Older records receive read-only defaults; historical image/graph data is unchanged.
-    return dict(measurements=None) | deepcopy(ORGANIZATION_DEFAULTS) | value
+    return dict(measurements=None, experiment_context=None) | deepcopy(ORGANIZATION_DEFAULTS) | value
 
 
 def get(path, artwork_id):
@@ -156,7 +156,7 @@ def save(path, folder, job, source, raw):
                  checkpoint=job['checkpoint'], model_version=job.get('model_version') or '未知',
                  model_metadata=deepcopy(job.get('model_metadata')),
                  lora_metadata=deepcopy(job.get('lora_metadata')), runtime_metadata=deepcopy(job.get('runtime_metadata')),
-                 measurements=deepcopy(job.get('measurements')),
+                 measurements=deepcopy(job.get('measurements')), experiment_context=deepcopy(job.get('experiment_context')),
                  workflow_id=job.get('workflow_id'), component_metadata=deepcopy(job.get('component_metadata')),
                  reference_metadata=deepcopy(job.get('reference_metadata')), reference_settings=deepcopy(job.get('reference_settings')),
                  parameters=parameters(job['workflow'], source['node_id']), workflow=job['workflow'],
