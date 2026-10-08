@@ -5,14 +5,16 @@ import type { ImportPreview } from './settingsTransfer'
 type Case = { id: string; name: string; prompt: string; character_key: string | null; checks: string[] }
 type Suite = { id: string; version: number; name: string; sha256: string; cases: Case[] }
 type Variant = { id: string; case_id: string; value: string | number; settings: CreationForm }
-type Plan = { title: string; workflow_id: 'checkpoint-text2image-v1'; plan_sha256: string; baseline: CreationForm; expected_job_count: number; axis: string; suite: Suite | null; variants: Variant[]; warnings: string[] }
+type Plan = { title: string; workflow_id: 'checkpoint-text2image-v1'; plan_sha256: string; baseline: CreationForm; expected_job_count: number; axis: string; target_lora?: string; suite: Suite | null; variants: Variant[]; warnings: string[] }
 const props = defineProps<{ settings: CreationForm; dirty: boolean; disabled?: boolean }>()
 const emit = defineEmits<{ apply: [value: ImportPreview] }>()
-const title = ref('插畫參數比較'), axis = ref('steps'), values = ref('[4, 8]'), caseIds = ref<string[]>([])
+const title = ref('插畫參數比較'), axis = ref('steps'), values = ref('[4, 8]'), caseIds = ref<string[]>([]), targetLora = ref('')
 const suite = ref<Suite | null>(null), plan = ref<Plan | null>(null), error = ref(''), message = ref(''), busy = ref(false)
 const previewBody = ref(''), exported = ref(''), exportedUrl = ref(''), loaded = ref<string[]>([])
 let ticket = 0, controller: AbortController | null = null, suiteAbort: AbortController | null = null
 const blocked = computed(() => props.disabled || busy.value)
+const isLoraAxis = computed(() => axis.value.startsWith('lora_strength_'))
+const activeLoras = computed(() => props.settings.loras.filter(item => item.enabled))
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']'
   if (value !== null && typeof value === 'object') return '{' + Object.keys(value).sort().map(key => JSON.stringify(key) + ':' + canonical((value as Record<string,unknown>)[key])).join(',') + '}'
@@ -21,7 +23,7 @@ function canonical(value: unknown): string {
 const changed = computed(() => plan.value && canonical(props.settings) !== canonical(plan.value.baseline))
 function stop() { ++ticket; controller?.abort(); controller = null; busy.value = false }
 function reset() { stop(); plan.value = null; previewBody.value = ''; loaded.value = []; message.value = '' }
-watch(() => JSON.stringify([title.value, axis.value, values.value, caseIds.value]), reset)
+watch(() => JSON.stringify([title.value, axis.value, values.value, caseIds.value, targetLora.value]), reset)
 async function loadSuite() {
   suiteAbort?.abort(); const abort = new AbortController(); suiteAbort = abort
   try {
@@ -47,7 +49,7 @@ async function preview() {
   try {
     const parsed: unknown = JSON.parse(values.value)
     if (!Array.isArray(parsed)) throw new Error('參數值需為 JSON 陣列，例如 [4, 8]；seed 用字串陣列。')
-    const body = JSON.stringify({ title:title.value, settings:props.settings, axis:axis.value, values:parsed, case_ids:caseIds.value })
+    const body = JSON.stringify({ title:title.value, settings:props.settings, axis:axis.value, values:parsed, case_ids:caseIds.value, ...(isLoraAxis.value ? { target_lora:targetLora.value } : {}) })
     const value: Plan = JSON.parse(await request('preview', body, abort.signal))
     if (current === ticket) { plan.value = value; previewBody.value = body; message.value = '已建立比較預覽，尚未保存草稿或生成。' }
   } catch(e) { if (current === ticket && !abort.signal.aborted) error.value = e instanceof Error ? e.message : '預覽失敗。' }
@@ -78,15 +80,16 @@ async function exportPlan() {
   <details class="experiment-planner"><summary>固定測試集與參數比較</summary>
     <p class="footnote">僅 checkpoint 文生圖、無參考素材。一次一個參數、1–4 個值、最多 8 次生成預覽；每個方案需分別載入並明確生成。</p>
     <label for="experiment-title">比較名稱</label><input id="experiment-title" v-model="title" maxlength="100" :disabled="blocked">
-    <label for="experiment-axis">比較參數</label><select id="experiment-axis" v-model="axis" :disabled="blocked"><option value="steps">Steps</option><option value="cfg">CFG</option><option value="seed">Seed（字串）</option></select>
-    <label for="experiment-values">參數值（JSON 陣列）</label><textarea id="experiment-values" v-model="values" rows="2" :disabled="blocked" aria-describedby="experiment-values-help"/><p id="experiment-values-help" class="footnote">例如 [4, 8] 或 [1, 5]；Seed 用 ["9007199254740993", "18446744073709551615"]。重複值及超界會拒絕。</p>
+    <label for="experiment-axis">比較參數</label><select id="experiment-axis" v-model="axis" :disabled="blocked"><option value="steps">Steps</option><option value="cfg">CFG</option><option value="seed">Seed（字串）</option><option value="lora_strength_model">LoRA 模型強度</option><option value="lora_strength_clip">LoRA CLIP 強度</option></select>
+    <template v-if="isLoraAxis"><label for="experiment-lora">要比較的已啟用 LoRA</label><select id="experiment-lora" v-model="targetLora" :disabled="blocked"><option value="">請選擇 LoRA</option><option v-for="item in activeLoras" :key="item.name" :value="item.name">{{ item.name }}</option></select><p class="footnote">每次只改這個 LoRA 的一種強度，其餘強度、啟用狀態與順序保留。沒有已啟用的 LoRA 時，請先在創作設定加入。</p></template>
+    <label for="experiment-values">參數值（JSON 陣列）</label><textarea id="experiment-values" v-model="values" rows="2" :disabled="blocked" aria-describedby="experiment-values-help"/><p id="experiment-values-help" class="footnote">例如 [4, 8] 或 [1, 5]；Seed 用 ["9007199254740993", "18446744073709551615"]。LoRA 強度例如 [0.5, 1]；支援 -20 至 20，但實際可用範圍仍由生成前的引擎檢查決定。重複值及超界會拒絕。</p>
     <fieldset :disabled="blocked"><legend>固定案例（不選擇時沿用目前提示詞）</legend><template v-if="suite"><p class="footnote">{{ suite.name }} · v{{ suite.version }} · 相同角色案例需人工比較，未接入角色鎖定。</p><label v-for="item in suite.cases" :key="item.id" class="case-choice"><input v-model="caseIds" type="checkbox" :value="item.id" :aria-label="item.name">{{ item.name }}<span v-if="item.character_key"> · {{ item.character_key }}</span></label><details v-for="item in suite.cases" :key="item.id"><summary>{{ item.name }}：提示詞與評估要點</summary><p>{{ item.prompt }}</p><ul><li v-for="check in item.checks" :key="check">{{ check }}</li></ul></details></template></fieldset>
     <button type="button" class="secondary" :disabled="blocked" @click="preview">預覽比較方案</button>
     <p v-if="error" role="alert" class="notice warning">{{ error }}</p><p v-if="message" role="status" class="notice">{{ message }}</p>
     <section v-if="plan" aria-label="參數比較預覽"><h3>預計 {{ plan.expected_job_count }} 次生成 · 每次 1 張</h3>
       <p v-if="dirty" class="notice warning">目前有未保存變更；「載入這組設定」會取代目前表單，原已保存草稿及任務仍保留。</p>
       <p v-if="changed" class="footnote">目前表單已更動；下面仍是原比較方案的完整快照。要使用新的基準設定，請重新預覽。</p>
-      <ul><li v-for="warning in plan.warnings" :key="warning">{{ warning }}</li></ul><p class="footnote">方案 SHA256：{{ plan.plan_sha256 }}<span v-if="plan.suite"> · 測試集 v{{ plan.suite.version }} / {{ plan.suite.sha256 }}</span></p>
+      <p v-if="plan.target_lora" class="footnote">強度比較 LoRA：{{ plan.target_lora }}；原有順序保留。</p><ul><li v-for="warning in plan.warnings" :key="warning">{{ warning }}</li></ul><p class="footnote">方案 SHA256：{{ plan.plan_sha256 }}<span v-if="plan.suite"> · 測試集 v{{ plan.suite.version }} / {{ plan.suite.sha256 }}</span></p>
       <article v-for="variant in plan.variants" :key="variant.id" class="variant"><h4>{{ variant.id }} · {{ variant.case_id }} · {{ plan.axis }} = {{ variant.value }}</h4><p>{{ variant.settings.width }} × {{ variant.settings.height }} · {{ variant.settings.steps }} steps · CFG {{ variant.settings.cfg }} · Seed {{ variant.settings.seed }}</p><p>{{ variant.settings.prompt }}</p><details><summary>完整設定快照</summary><pre>{{ JSON.stringify(variant.settings,null,2) }}</pre></details><button type="button" class="secondary" :disabled="blocked" :aria-label="'載入比較設定 ' + variant.id" @click="apply(variant)">載入這組設定</button><span v-if="loaded.includes(variant.id)" class="footnote"> 已載入過；生成狀態請看任務區</span></article>
       <button type="button" class="secondary" :disabled="blocked" @click="exportPlan">匯出比較方案 JSON</button>
     </section>

@@ -24,7 +24,7 @@
 - 作品庫：匯入已完成任務圖片、本機原圖與縮圖、大圖預覽、完整 workflow／原圖下載與創作設定還原；支援收藏、10,000 字筆記、模型／收藏／狀態組合篩選、筆記搜尋、封存及還原。跨視窗修訂檢查保留衝突中的未保存筆記，見 [作品庫管理](docs/artwork-library.md)。
 - 作品比較：最多四張原圖並排，顯示精確 seed、有序 LoRA 及取樣差異；作品預覽可保存四項 1–5 人工評分或留空，修訂衝突保留未保存內容。見 [比較與評分](docs/artwork-comparison.md)。
 - 固定案例實機驗收：Pony／Animagine 各四個一般插畫案例；單案例 CLI 保存測試集版本／hash、原圖與完整快照，結果保留提示偏差，見 [操作說明](docs/illustration-suite.md)及 [RTX 3060 比較結果](docs/validation/general-illustration-suite-rtx3060.md)。
-- 固定測試集與參數比較：四個一般插畫案例；checkpoint 文生圖可比較 Steps／CFG／字串 Seed，預覽最多八次單張生成、完整設定及版本／hash，匯出方案並逐組手動載入。載入不自動生成，見 [比較方案說明](docs/experiment-plans.md)。
+- 固定測試集與參數比較：四個一般插畫案例；checkpoint 文生圖可比較 Steps／CFG／字串 Seed／指定 LoRA 模型或 CLIP 強度，預覽最多八次單張生成、完整設定及版本／hash，匯出方案並逐組手動載入。載入不自動生成，見 [比較方案說明](docs/experiment-plans.md)。
 - Pony V6 XL：固定作者來源的本地安裝器、大小與 SHA256 驗證，以及 RTX 3060 生成驗收工具。尚未提供訓練或通用模型下載管理。
 - Animagine XL 4.0 Opt：固定作者修訂下載、完整大小／SHA256 核對、版本登記與 RTX 3060 的 1024×1024 文生圖驗收完成；可手動確認套用作者預設，紀錄依 hash／架構匹配。見 [模型紀錄](docs/models/animagine-xl-4.0-opt.md)及 [實機條件](docs/validation/animagine-xl-4-0-opt-rtx3060.md)，其他硬體及負載仍待實測。
 - FLUX.1 [schnell]：模型庫提供固定來源、四個元件版本／雜湊與唯讀磁碟預檢；CLI：`.\.venv\Scripts\python.exe -m scripts.flux_preflight`。尚未提供下載及 GPU 生成驗收，來源條件、精度與後續驗收見 [FLUX 接入紀錄](docs/models/flux1-schnell.md)。

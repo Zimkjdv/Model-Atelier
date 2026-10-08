@@ -45,7 +45,8 @@ class Input(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     title: str = Field(min_length=1, max_length=100)
     settings: dict = Field(min_length=1, max_length=64)
-    axis: Literal['steps', 'cfg', 'seed']
+    axis: Literal['steps', 'cfg', 'seed', 'lora_strength_model', 'lora_strength_clip']
+    target_lora: str | None = Field(default=None, min_length=1, max_length=2048)
     values: list[Any] = Field(min_length=1, max_length=4)
     case_ids: list[str] = Field(default_factory=list, max_length=4)
     expected_plan_sha256: str | None = Field(default=None, pattern=r'^[a-f0-9]{64}$')
@@ -93,20 +94,32 @@ def install(app, host):
             raise HTTPException(422, '案例不存在或目前提示詞空白；請選擇固定案例或先填寫提示詞。')
         if len(cases) * len(value.values) > MAX_VARIANTS:
             raise HTTPException(422, '最多預覽 8 次生成，請減少案例或參數值；未建立任何任務。')
-        normalized = [normalize(base | {value.axis: item}) for item in value.values]
-        values = [v[value.axis] for v in normalized]
+        is_lora = value.axis.startswith('lora_strength_')
+        selected = next((v for v in base['loras'] if v['name'] == value.target_lora and v['enabled']), None)
+        if (is_lora and selected is None) or (not is_lora and value.target_lora is not None):
+            raise HTTPException(422, 'LoRA 強度比較需選擇基準中已啟用的 LoRA；其他參數軸不可指定 LoRA。')
+        field = value.axis.removeprefix('lora_') if is_lora else value.axis
+        def vary(item):
+            changes = {'loras': [v | {field: item} if v['name'] == value.target_lora else dict(v) for v in base['loras']]} if is_lora else {field: item}
+            return normalize(base | changes)
+        def axis_value(settings):
+            return next(v[field] for v in settings['loras'] if v['name'] == value.target_lora) if is_lora else settings[field]
+        normalized = [vary(item) for item in value.values]
+        values = [axis_value(v) for v in normalized]
         if len(set(values)) != len(values):
             raise HTTPException(422, '參數值正規化後重複，請移除重複值。')
         variants = []
         for case in cases:
             for settings in normalized:
                 index = len(variants) + 1
-                row = settings | dict(prompt=case['prompt'], title=f'{value.title.strip()} / {case["name"]} / {value.axis}={settings[value.axis]}'[:100])
-                variants.append(dict(id=f'variant-{index}', case_id=case['id'], value=settings[value.axis], settings=row))
+                row = settings | dict(prompt=case['prompt'], title=f'{value.title.strip()} / {case["name"]} / {value.axis}={axis_value(settings)}'[:100])
+                variants.append(dict(id=f'variant-{index}', case_id=case['id'], value=axis_value(settings), settings=row))
         document = dict(kind='model-atelier-comparison-plan', schema_version=1, title=value.title.strip(),
                         workflow_id=settings_transfer.STANDARD, baseline=base, axis=value.axis, values=values,
                         suite=(original | dict(cases=cases)) if original else None, variants=variants,
                         expected_job_count=len(variants), batch_size=1)
+        if is_lora:
+            document['target_lora'] = value.target_lora
         canonical = json.dumps(document, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False)
         document['plan_sha256'] = hashlib.sha256(canonical.encode()).hexdigest()
         if value.expected_plan_sha256 and value.expected_plan_sha256 != document['plan_sha256']:
