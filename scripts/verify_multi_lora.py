@@ -8,7 +8,7 @@ from scripts.verify_animagine_generation import MODEL
 
 STYLE = install_model.manifest('ikea-instructions-lora-sdxl')
 LCM = install_model.manifest('lcm-lora-sdxl')
-PROFILES = ('baseline', 'style', 'multi', 'multi-8', 'style-lcm-8')
+PROFILES = ('baseline', 'style', 'style-half', 'style-seed2', 'style-half-seed2', 'multi', 'multi-8', 'style-lcm-8')
 
 
 def settings(engine, checkpoint, profile):
@@ -19,11 +19,12 @@ def settings(engine, checkpoint, profile):
     if multi:
         choices.append(dict(name=LCM['filename'], enabled=True, strength_model=1.0, strength_clip=0.0))
     if profile != 'baseline':
-        choices.append(dict(name=STYLE['filename'], enabled=True, strength_model=1.0, strength_clip=1.0))
+        choices.append(dict(name=STYLE['filename'], enabled=True, strength_model=0.5 if profile in ('style-half', 'style-half-seed2') else 1.0, strength_clip=1.0))
     if profile == 'style-lcm-8':
         choices.reverse()
     return base.settings(engine, checkpoint) | dict(
         title='Animagine ' + profile + ' LoRA acceptance', width=1024, height=1024,
+        seed='9007199254740995' if profile in ('style-seed2', 'style-half-seed2') else base.SEED,
         prompt='black and white line drawing, instruction manual, assembling a wooden chair, white background, no humans',
         negative_prompt='blurry, low quality, people, watermark', loras=choices,
         steps=(4 if profile == 'multi' else 8) if multi else 28, cfg=1.0 if multi else 5.0,

@@ -49,7 +49,8 @@ class MultiLoraAcceptanceTests(unittest.TestCase):
             return cls(client, platform.engine, platform.checkpoint, clock=clock.now, sleep=clock.sleep).run(previous)
 
     def test_three_profiles_and_once_only_offline_ordered_snapshot_verification(self):
-        for profile, count in [('baseline', 7), ('style', 8), ('multi', 9), ('multi-8', 9), ('style-lcm-8', 9)]:
+        for profile in acceptance.PROFILES:
+            count = 7 if profile == 'baseline' else 9 if profile.startswith('multi') or profile == 'style-lcm-8' else 8
             platform = StylePlatform(profile, lose_submission=True)
             original = self.check(platform)
             self.assertEqual(original['status'], 'passed', original)
@@ -91,6 +92,21 @@ class MultiLoraAcceptanceTests(unittest.TestCase):
             result = self.check(platform, previous)
             self.assertEqual(result['stage'], 'validate_report', result)
             self.assertEqual(platform.seen, [])
+
+    def test_strength_seed_matrix_changes_only_the_selected_values(self):
+        original = acceptance.settings('http://127.0.0.1:8188', acceptance.MODEL['filename'], 'style')
+        for profile in ('style-half', 'style-seed2', 'style-half-seed2'):
+            value = acceptance.settings('http://127.0.0.1:8188', acceptance.MODEL['filename'], profile)
+            expected = copy.deepcopy(original)
+            expected['title'] = value['title']
+            if 'half' in profile: expected['loras'][0]['strength_model'] = 0.5
+            if 'seed2' in profile: expected['seed'] = '9007199254740995'
+            self.assertEqual(value, expected)
+            platform = StylePlatform(profile)
+            report = self.check(platform)
+            other = StylePlatform('style')
+            self.assertEqual(self.check(other, report)['stage'], 'validate_report')
+            self.assertEqual(other.seen, [])
 
     def test_style_install_uses_lora_path_and_unknown_license_provenance(self):
         content = b'fixed style fixture'
