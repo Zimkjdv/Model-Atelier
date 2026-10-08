@@ -396,7 +396,9 @@ def reference_capabilities():
     return reference_workflows.descriptions()
 
 
-submissions.install(app, sys.modules[__name__])
+checkpoint_submissions = submissions.install(app, sys.modules[__name__])
+from backend import inpaint_api
+inpaint_api.install(app, sys.modules[__name__], checkpoint_submissions)
 gallery_api.install(app, sys.modules[__name__])
 model_profiles.install(app, sys.modules[__name__])
 model_paths.install(app, sys.modules[__name__])

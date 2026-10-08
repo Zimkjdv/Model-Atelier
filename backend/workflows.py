@@ -39,6 +39,9 @@ def build(value, node_ids=None):
 
 def extract(artwork, validate, *, allow_lora=True):
     """Restore only a whole template; extra inputs or branches cannot be dropped."""
+    if artwork.get('workflow_id') == 'checkpoint-inpaint-v1':
+        from backend import inpaint_workflows
+        return inpaint_workflows.extract(artwork, validate)
     if artwork.get('workflow_id') == 'checkpoint-image2image-v1':
         from backend import image_workflows
         return image_workflows.extract(artwork, validate)

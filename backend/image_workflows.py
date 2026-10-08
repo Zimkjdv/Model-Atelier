@@ -11,6 +11,10 @@ from backend import assets, node_preflight, workflows
 from backend.reference_workflows import IMG2IMG_ID
 
 MAX_ENCODED = 64 * 1024 * 1024
+CHECKED_NODES = ('LoadImage', 'VAEEncode')
+
+def uploads(job_id, encoded):
+    return [(location(job_id), encoded)]
 
 
 def location(job_id):
@@ -96,7 +100,7 @@ def save_input(data_folder, job_id, encoded):
         raise
 
 
-async def check_nodes(client, engine_url):
+async def check_nodes(client, engine_url, *, settings=None):
     async def inspect(name, required, output):
         response = await client.get(engine_url + '/object_info/' + name)
         response.raise_for_status()

@@ -12,7 +12,7 @@ from starlette.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures, node_preflight
 from backend import lora_preflight, lora_records, stopping, flux_workflows
-from backend import image_workflows, runtime_metadata, experiment_context
+from backend import image_workflows, runtime_metadata, experiment_context, inpaint_workflows
 from backend.reference_workflows import IMG2IMG_ID
 
 
@@ -48,6 +48,8 @@ def install(app, host):
     class Generate(host.DraftInput):
         request_id: UUID
         experiment: experiment_context.Selection | None = None
+        mask_asset_id: None = None
+        grow_mask_by: None = None
 
     def lookup(job_id):
         try:
@@ -102,8 +104,8 @@ def install(app, host):
             metadata = catalog.capture(model, value.checkpoint)
             job, fresh = jobs.reserve(host.DB, str(value.request_id), value.engine_url, value.workflow,
                                       value.checkpoint, metadata['version'], metadata, lora_metadata,
-                                      workflow_id=IMG2IMG_ID if reference else None,
-                                      reference_metadata=[reference['snapshot']] if reference else None,
+                                      workflow_id=reference.get('workflow_id', IMG2IMG_ID) if reference else None,
+                                      reference_metadata=(reference.get('snapshots') or [reference['snapshot']]) if reference else None,
                                       reference_settings=reference['settings'] if reference else None,
                                       experiment=experiment, generation_settings=generation_settings)
         except ValueError as exc:
@@ -160,8 +162,9 @@ def install(app, host):
                     await lora_preflight.check_many(client, value.engine_url, choices)
                 checked = ('LoraLoader',) if choices else ()
                 if reference:
-                    await image_workflows.check_nodes(client, value.engine_url)
-                    checked += ('LoadImage', 'VAEEncode')
+                    adapter = reference.get('adapter', image_workflows)
+                    await adapter.check_nodes(client, value.engine_url, settings=reference['settings'])
+                    checked += adapter.CHECKED_NODES
                 await node_preflight.check(client, value.engine_url, value.workflow, checked=checked)
             except node_preflight.MissingNodes as exc:
                 fail(422, str(exc), 'missing_nodes')
@@ -201,24 +204,30 @@ def install(app, host):
                 job = cancellation.persist(host, job, preflight_warnings=warnings)
             if reference:
                 try:
-                    await run_in_threadpool(image_workflows.save_input, host.DATA, job_id, reference['encoded'])
+                    adapter = reference.get('adapter', image_workflows)
+                    await run_in_threadpool(adapter.save_input, host.DATA, job_id, reference['encoded'])
                 except OSError:
                     fail(507, '無法保存本機圖生圖輸入，請檢查磁碟空間及權限；尚未上傳或提交', 'reference_input_failed')
                 job = cancellation.persist(host, job, status='uploading_input')
-                target = image_workflows.location(job_id)
-                try:
-                    response = await client.post(value.engine_url + '/upload/image',
-                        files={'image': (target['name'], reference['encoded'], 'image/png')},
-                        data={'type': 'input', 'subfolder': target['subfolder'], 'overwrite': 'false'})
-                    response.raise_for_status()
-                    if len(response.content) > 1024 * 1024:
-                        raise ValueError('上傳回應過大')
-                    receipt = response.json()
-                    if not isinstance(receipt, dict) or any(receipt.get(key) != expected for key, expected in target.items()):
-                        raise ValueError('上傳目的地不符')
-                except (httpx.HTTPError, ValueError):
-                    fail(502, '輸入圖片上傳失敗或回應不符；未提交生成。圖片可能已上傳，此請求不會自動重試', 'reference_input_failed')
-                job = cancellation.persist(host, job, input_upload=target)
+                receipts = []
+                for target, encoded in adapter.uploads(job_id, reference['encoded']):
+                    if value.engine_url != host.engine_url():
+                        fail(409, '雙輸入上傳期間引擎設定已變更，尚未提交生成', 'engine_changed')
+                    try:
+                        response = await client.post(value.engine_url + '/upload/image',
+                            files={'image': (target['name'], encoded, 'image/png')},
+                            data={'type': 'input', 'subfolder': target['subfolder'], 'overwrite': 'false'})
+                        response.raise_for_status()
+                        if len(response.content) > 1024 * 1024:
+                            raise ValueError('上傳回應過大')
+                        receipt = response.json()
+                        if not isinstance(receipt, dict) or any(receipt.get(key) != expected for key, expected in target.items()):
+                            raise ValueError('上傳目的地不符')
+                    except (httpx.HTTPError, ValueError):
+                        fail(502, '輸入圖片上傳失敗或回應不符；未提交生成。圖片可能已上傳，此請求不會自動重試', 'reference_input_failed')
+                    receipts.append(target)
+                job = cancellation.persist(host, job, input_upload=receipts[0],
+                    **(dict(input_uploads=receipts) if len(receipts) > 1 else {}))
                 if value.engine_url != host.engine_url():
                     fail(409, '圖片上傳期間引擎設定已變更，尚未提交生成', 'engine_changed')
                 latest = next((model for model in catalog.read(host.DB, value.engine_url)['models'] if model['name'] == value.checkpoint), {})
@@ -252,7 +261,7 @@ def install(app, host):
 
     @app.post('/api/generate')
     async def generate(value: Generate):
-        settings = value.model_dump(mode='json', exclude={'request_id', 'revision', 'experiment'})
+        settings = value.model_dump(mode='json', exclude={'request_id', 'revision', 'experiment', 'mask_asset_id', 'grow_mask_by'})
         experiment = value.experiment.model_dump(mode='json') if value.experiment else None
         if value.workflow_mode == 'image2image':
             async with job_lock(value.request_id):
@@ -296,7 +305,7 @@ def install(app, host):
     @app.get('/api/jobs/{job_id}/reference-image')
     def reference_image(job_id: UUID):
         job = lookup(job_id)
-        if job.get('workflow_id') != IMG2IMG_ID:
+        if job.get('workflow_id') not in (IMG2IMG_ID, inpaint_workflows.ID):
             raise HTTPException(404, '此任務沒有圖生圖輸入')
         path = host.DATA / 'job_inputs' / (str(job_id) + '.png')
         if not path.is_file():
@@ -310,7 +319,7 @@ def install(app, host):
     @app.get('/api/jobs/{job_id}/creation-settings')
     def creation_settings(job_id: UUID):
         job = lookup(job_id)
-        if job['status'] != 'failed' and not (job.get('workflow_id') == IMG2IMG_ID and job['status'] in cancellation.TERMINAL):
+        if job['status'] != 'failed' and not (job.get('workflow_id') in (IMG2IMG_ID, inpaint_workflows.ID) and job['status'] in cancellation.TERMINAL):
             raise HTTPException(409, '僅可載入已確認失敗任務的原設定；未提交或重送任何任務')
         outputs = [node_id for node_id, node in job['workflow'].items()
                    if isinstance(node, dict) and node.get('class_type') == 'SaveImage']
@@ -318,7 +327,8 @@ def install(app, host):
             raise HTTPException(422, '此任務工作流程無法完整還原到目前創作表單，請下載原工作流程使用；未載入任何參數')
         item = dict(job, source={'node_id': outputs[0]}, title='失敗任務設定' if job['status'] == 'failed' else '原任務設定')
         def validate(value):
-            return host.DraftInput.model_validate(value).model_dump(mode='json', exclude={'revision'})
+            schema = host.InpaintInput if job.get('workflow_id') == inpaint_workflows.ID else host.DraftInput
+            return schema.model_validate(value).model_dump(mode='json', exclude={'revision'})
         try:
             settings = workflows.extract(item, validate)
         except ValueError as exc:
@@ -410,3 +420,4 @@ def install(app, host):
     progress.install(app, host, refresh, job_lock)
     capabilities.install(app, host)
     flux_workflows.install(app, host, job_lock)
+    return SimpleNamespace(job_lock=job_lock, submit_locked=submit_locked)

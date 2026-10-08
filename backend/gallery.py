@@ -113,7 +113,8 @@ def parameters(workflow, output_node):
         node = workflow.get(str(link[0]), {})
         return node.get('inputs', {}) if node.get('class_type') == kind else {}
     output = workflow.get(output_node, {}).get('inputs', {})
-    decoder = inputs(output.get('images'), 'VAEDecode')
+    composite = inputs(output.get('images'), 'ImageCompositeMasked')
+    decoder = inputs(composite.get('source') if composite else output.get('images'), 'VAEDecode')
     sampler = inputs(decoder.get('samples'), 'KSampler')
     positive = inputs(sampler.get('positive'), 'CLIPTextEncode')
     negative = inputs(sampler.get('negative'), 'CLIPTextEncode')

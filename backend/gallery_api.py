@@ -83,7 +83,8 @@ def install(app, host):
     def creation_settings(artwork_id: UUID):
         item = lookup(artwork_id)
         def validate(value):
-            return host.DraftInput.model_validate(value).model_dump(mode='json', exclude={'revision'})
+            schema = host.InpaintInput if item.get('workflow_id') == 'checkpoint-inpaint-v1' else host.DraftInput
+            return schema.model_validate(value).model_dump(mode='json', exclude={'revision'})
         try:
             settings = workflows.extract(item, validate)
         except ValueError as exc:
