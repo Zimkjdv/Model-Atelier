@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Literal
 from fastapi import HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
-from backend import settings_transfer
+from backend import assets, settings_transfer
 
 SUITE = Path(__file__).resolve().parents[1] / 'experiments/general-illustration-v1.json'
 MAX_VARIANTS = 8
@@ -45,7 +45,7 @@ class Input(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     title: str = Field(min_length=1, max_length=100)
     settings: dict = Field(min_length=1, max_length=64)
-    axis: Literal['steps', 'cfg', 'seed', 'lora_strength_model', 'lora_strength_clip']
+    axis: Literal['steps', 'cfg', 'seed', 'denoise', 'lora_strength_model', 'lora_strength_clip']
     target_lora: str | None = Field(default=None, min_length=1, max_length=2048)
     values: list[Any] = Field(min_length=1, max_length=4)
     case_ids: list[str] = Field(default_factory=list, max_length=4)
@@ -78,16 +78,21 @@ def install(app, host):
             if set(raw) != set(Settings.model_fields) - {'revision'}:
                 raise ValueError('Incomplete or unknown fields')
             value = Settings.model_validate(raw).model_dump(mode='json', exclude={'revision'})
-            if value['workflow_mode'] != 'text2image' or value['image_asset_id'] or value['reference_ids']:
-                raise ValueError('Only reference-free checkpoint text2image')
+            if value['workflow_mode'] == 'image2image':
+                if not value['image_asset_id'] or value['reference_ids'] != [value['image_asset_id']]:
+                    raise ValueError('Exactly one matching source image required')
+            elif value['image_asset_id'] or value['reference_ids']:
+                raise ValueError('Reference-free text2image required')
             if not value['checkpoint'].strip():
                 raise ValueError('Checkpoint required')
             return value
         except (ValidationError, ValueError, TypeError) as exc:
-            raise HTTPException(422, '比較僅支援完整、無參考圖的 checkpoint 文生圖設定；請確認模型、字串 seed、參數及欄位。') from exc
+            raise HTTPException(422, '比較需完整 checkpoint 設定；文生圖不套用素材，圖生圖需一個相符的素材 ID。請確認模型、字串 seed、參數及欄位。') from exc
 
     def preview(value):
         base = normalize(value.settings)
+        if value.axis == 'denoise' and base['workflow_mode'] != 'image2image':
+            raise HTTPException(422, 'Denoise 比較僅支援單張 checkpoint 圖生圖；未變更流程模式。')
         original = suite() if value.case_ids else None
         cases = [next((c for c in original['cases'] if c['id'] == identifier), None) for identifier in value.case_ids] if original else [dict(id='current-prompt', name='目前提示詞', prompt=base['prompt'], character_key=None, checks=[])]
         if any(c is None for c in cases) or any(not c['prompt'].strip() for c in cases):
@@ -115,7 +120,7 @@ def install(app, host):
                 row = settings | dict(prompt=case['prompt'], title=f'{value.title.strip()} / {case["name"]} / {value.axis}={axis_value(settings)}'[:100])
                 variants.append(dict(id=f'variant-{index}', case_id=case['id'], value=axis_value(settings), settings=row))
         document = dict(kind='model-atelier-comparison-plan', schema_version=1, title=value.title.strip(),
-                        workflow_id=settings_transfer.STANDARD, baseline=base, axis=value.axis, values=values,
+                        workflow_id=settings_transfer.IMAGE if base['workflow_mode'] == 'image2image' else settings_transfer.STANDARD, baseline=base, axis=value.axis, values=values,
                         suite=(original | dict(cases=cases)) if original else None, variants=variants,
                         expected_job_count=len(variants), batch_size=1)
         if is_lora:
@@ -129,6 +134,14 @@ def install(app, host):
             '每個方案需載入設定後再明確生成；載入次數不是已生成數，沒有自動批次、重試或耗時／VRAM 估算。']
         if base['engine_url'] != host.engine_url():
             document['warnings'].append('原引擎與目前設定不同，已保留原網址；生成前請確認引擎與模型。')
+        if base['workflow_mode'] == 'image2image':
+            document['warnings'].append('每組沿用同一素材 ID 與前處理；文件不包含原圖片，固定案例只替換文字，不代表畫風或角色鎖定。')
+            try:
+                asset = assets.get(host.DB, base['image_asset_id'])
+            except KeyError:
+                asset = None
+            if not asset or asset.get('archived') or not (host.DATA / 'assets' / (base['image_asset_id'] + '.png')).is_file():
+                document['warnings'].append('原素材在本機不可用；保留原 ID，請修復或重新選擇後再生成。')
         return document
 
     async def read(request):
