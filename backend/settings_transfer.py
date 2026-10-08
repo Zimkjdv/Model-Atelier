@@ -49,11 +49,11 @@ def document(workflow_id, settings, source_snapshot=None):
                 settings=settings, source_snapshot=source_snapshot)
 
 
-async def read_json(request):
+async def read_json(request, *, max_bytes=MAX_BYTES):
     raw = bytearray()
     async for chunk in request.stream():
-        if len(raw) + len(chunk) > MAX_BYTES:
-            raise HTTPException(413, '創作設定檔不可超過 256 KiB')
+        if len(raw) + len(chunk) > max_bytes:
+            raise HTTPException(413, f'JSON 文件不可超過 {max_bytes // 1024} KiB')
         raw.extend(chunk)
     def pairs(entries):
         result = {}

@@ -23,13 +23,14 @@ def display(value):
 
 
 def references(db, asset_id):
-    result = dict(drafts=[], jobs=[], artworks=[])
-    for key, raw in db.execute("SELECT key, value FROM settings WHERE key LIKE 'draft:%' OR key LIKE 'job:%' OR key LIKE 'artwork:%'"):
+    result = dict(drafts=[], jobs=[], artworks=[], experiments=[])
+    for key, raw in db.execute("SELECT key, value FROM settings WHERE key LIKE 'draft:%' OR key LIKE 'job:%' OR key LIKE 'artwork:%' OR key LIKE 'experiment:%'"):
         value = json.loads(raw)
-        ids = value.get('reference_ids', [])
+        reference = value.get('plan', {}).get('baseline', {}) if key.startswith('experiment:') else value
+        ids = reference.get('reference_ids', [])
         snapshots = value.get('reference_metadata') or []
-        if asset_id in ids or value.get('image_asset_id') == asset_id or any(item.get('id') == asset_id for item in snapshots):
-            group = {'draft': 'drafts', 'job': 'jobs', 'artwork': 'artworks'}[key.split(':', 1)[0]]
+        if asset_id in ids or reference.get('image_asset_id') == asset_id or any(item.get('id') == asset_id for item in snapshots):
+            group = {'draft': 'drafts', 'job': 'jobs', 'artwork': 'artworks', 'experiment': 'experiments'}[key.split(':', 1)[0]]
             result[group].append(value.get('id', key.split(':', 1)[1]))
     return result
 
@@ -110,6 +111,8 @@ def update(db_path, asset_id, title, archived, purpose=None, revision=None):
             used = references(db, asset_id)
             if used['jobs'] or used['artworks']:
                 raise ValueError('素材正被任務或作品引用，為保留來源與重建能力，無法封存')
+            if used['experiments']:
+                raise ValueError('素材正被已保存比較方案引用；封存方案仍保留來源，無法封存素材')
             if used['drafts']:
                 raise ValueError('素材正被草稿引用，請先在草稿移除參考並保存，再封存素材')
         value.update(title=title, archived=archived, purpose=purpose if purpose is not None else value.get('purpose', 'unspecified'),

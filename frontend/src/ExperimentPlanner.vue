@@ -2,17 +2,16 @@
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue'
 import type { CreationForm } from './creationSettings'
 import type { ImportPreview } from './settingsTransfer'
-type Case = { id: string; name: string; prompt: string; character_key: string | null; checks: string[] }
-type Suite = { id: string; version: number; name: string; sha256: string; cases: Case[] }
-type Variant = { id: string; case_id: string; value: string | number; settings: CreationForm }
-type Plan = { title: string; workflow_id: 'checkpoint-text2image-v1' | 'checkpoint-image2image-v1'; plan_sha256: string; baseline: CreationForm; expected_job_count: number; axis: string; target_lora?: string; suite: Suite | null; variants: Variant[]; warnings: string[] }
+import SavedExperimentPlans from './SavedExperimentPlans.vue'
+import type { ComparisonPlan as Plan, ExperimentSuite as Suite, ExperimentVariant as Variant } from './experimentSettings'
 const props = defineProps<{ settings: CreationForm; dirty: boolean; disabled?: boolean }>()
 const emit = defineEmits<{ apply: [value: ImportPreview] }>()
 const title = ref('插畫參數比較'), axis = ref('steps'), values = ref('[4, 8]'), caseIds = ref<string[]>([]), targetLora = ref('')
 const suite = ref<Suite | null>(null), plan = ref<Plan | null>(null), error = ref(''), message = ref(''), busy = ref(false)
 const previewBody = ref(''), exported = ref(''), exportedUrl = ref(''), loaded = ref<string[]>([])
 let ticket = 0, controller: AbortController | null = null, suiteAbort: AbortController | null = null
-const blocked = computed(() => props.disabled || busy.value)
+const documentBusy = ref(false)
+const blocked = computed(() => props.disabled || busy.value || documentBusy.value)
 const isLoraAxis = computed(() => axis.value.startsWith('lora_strength_'))
 const activeLoras = computed(() => props.settings.loras.filter(item => item.enabled))
 function canonical(value: unknown): string {
@@ -61,12 +60,17 @@ function apply(variant: Variant) {
   if (!loaded.value.includes(variant.id)) loaded.value.push(variant.id)
   message.value = `已載入 ${variant.id} 為新草稿；請檢查後另按生成。其他方案保留，未自動提交。`
 }
+function openPlan(value: Plan) {
+  if (props.disabled || busy.value) return
+  reset(); plan.value = JSON.parse(JSON.stringify(value)) as Plan
+  error.value = ''; message.value = '已載入保存／匯入方案的完整預覽；創作表單保持原值。每組仍需明確載入並生成。'
+}
 async function exportPlan() {
   if (blocked.value || !plan.value) return
   stop(); const current = ticket, abort = new AbortController(); controller = abort; busy.value = true; error.value = ''
   try {
-    const body = JSON.stringify({ ...JSON.parse(previewBody.value), expected_plan_sha256:plan.value.plan_sha256 })
-    const text = await request('export', body, abort.signal)
+    const body = previewBody.value ? JSON.stringify({ ...JSON.parse(previewBody.value), expected_plan_sha256:plan.value.plan_sha256 }) : JSON.stringify(plan.value)
+    const text = await request(previewBody.value ? 'export' : 'document-export', body, abort.signal)
     if (current !== ticket) return
     exported.value = text
     if (exportedUrl.value) URL.revokeObjectURL(exportedUrl.value)
@@ -79,6 +83,7 @@ async function exportPlan() {
 <template>
   <details class="experiment-planner"><summary>固定測試集與參數比較</summary>
     <p class="footnote">支援 checkpoint 文生圖與單張圖生圖；圖生圖每組沿用同一輸入。一次一個參數、1–4 個值、最多 8 次生成預覽；每個方案需分別載入並明確生成。</p>
+    <SavedExperimentPlans :plan="plan" :disabled="props.disabled || busy" @busy="documentBusy = $event" @open="openPlan" />
     <label for="experiment-title">比較名稱</label><input id="experiment-title" v-model="title" maxlength="100" :disabled="blocked">
     <label for="experiment-axis">比較參數</label><select id="experiment-axis" v-model="axis" :disabled="blocked"><option value="steps">Steps</option><option value="cfg">CFG</option><option value="denoise" :disabled="settings.workflow_mode !== 'image2image'">Denoise（圖生圖改動幅度）</option><option value="seed">Seed（字串）</option><option value="lora_strength_model">LoRA 模型強度</option><option value="lora_strength_clip">LoRA CLIP 強度</option></select>
     <template v-if="isLoraAxis"><label for="experiment-lora">要比較的已啟用 LoRA</label><select id="experiment-lora" v-model="targetLora" :disabled="blocked"><option value="">請選擇 LoRA</option><option v-for="item in activeLoras" :key="item.name" :value="item.name">{{ item.name }}</option></select><p class="footnote">每次只改這個 LoRA 的一種強度，其餘強度、啟用狀態與順序保留。沒有已啟用的 LoRA 時，請先在創作設定加入。</p></template>
