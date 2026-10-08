@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import ExperimentSnapshot from './ExperimentSnapshot.vue'
+import { experimentForSubmission, type ExperimentLoad } from './experimentSettings'
 import type { CreationForm } from './creationSettings'
 import LoraSnapshot from './LoraSnapshot.vue'
 import JobMeasurements from './JobMeasurements.vue'
@@ -8,18 +10,20 @@ import ReferenceSnapshot from './ReferenceSnapshot.vue'
 import { imageWorkflowId } from './referenceSettings'
 import { fluxWorkflowId, type FluxForm } from './fluxSettings'
 import { mergeJob, terminal, useJobEvents, type Job } from './jobEvents'
-const props = defineProps<{ form: CreationForm | FluxForm; workflow?: 'flux'; blockedReason?: string; disabled?: boolean }>()
+const props = defineProps<{ form: CreationForm | FluxForm; experiment?:ExperimentLoad|null; workflow?: 'flux'; blockedReason?: string; disabled?: boolean }>()
 const checkpointForm = computed(() => 'checkpoint' in props.form ? props.form : null)
 const pendingKey = props.workflow === 'flux' ? 'atelier-pending-flux-submission' : 'atelier-pending-submission'
 const generatePath = props.workflow === 'flux' ? '/api/flux/generate' : '/api/generate'
 const imageMode = computed(() => checkpointForm.value?.workflow_mode === 'image2image')
 const missingModel = computed(() => checkpointForm.value ? !checkpointForm.value.checkpoint || (imageMode.value ? !checkpointForm.value.image_asset_id : !!checkpointForm.value.reference_ids.length) : !('diffusion_model' in props.form && props.form.diffusion_model))
-const emit = defineEmits<{ gallery: [jobId: string]; restoreJob: [jobId: string] }>()
+const emit = defineEmits<{ gallery: [jobId: string]; restoreJob: [jobId: string]; busy:[value:boolean]; pending:[value:boolean] }>()
 const jobs = ref<Job[]>([]), busy = ref(false), error = ref('')
 const cancelChoice = ref<string | null>(null)
 const stopChoice = ref<string | null>(null)
 const pending = ref<Record<string, unknown> | null>(null)
 try { pending.value = JSON.parse(localStorage.getItem(pendingKey) || 'null') } catch { /* No valid saved request. */ }
+watch(busy,value => emit('busy',value),{immediate:true,flush:'sync'})
+watch(pending,value => emit('pending',!!value),{immediate:true,flush:'sync'})
 const labels: Record<string, string> = { uploading_input: '上傳輸入圖片中', validating: '確認模型中', submitting: '提交中', queued: '等待生成', running: '生成中', completed: '已完成', failed: '失敗', unknown: '結果待確認', cancelling: '確認取消中', cancel_unknown: '取消結果待確認', cancelled: '已取消排隊', stopping: '確認停止中', stop_unknown: '停止結果待確認', stopped: '已停止生成' }
 async function request(path: string, method = 'GET', body?: unknown) {
   const response = await fetch('/api/' + path, { method, headers: { 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) })
@@ -40,7 +44,8 @@ async function generate() {
   busy.value = true; error.value = ''
   try {
     if (!pending.value) {
-      const candidate = { ...JSON.parse(JSON.stringify(props.form)), request_id: crypto.randomUUID() }
+      const experiment = experimentForSubmission(props.experiment,props.form)
+      const candidate = { ...JSON.parse(JSON.stringify(props.form)), request_id: crypto.randomUUID(), ...(experiment ? {experiment} : {}) }
       // Do not make an unpersisted request eligible for the recovery path.
       localStorage.setItem(pendingKey, JSON.stringify(candidate))
       pending.value = candidate
@@ -102,6 +107,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
     <p v-else-if="checkpointForm && !checkpointForm.checkpoint" class="notice">請先安裝並同步 checkpoint，再選擇模型。</p>
     <p v-if="blockedReason" class="notice warning">{{ blockedReason }}</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
+    <p v-if="pending?.experiment" class="footnote">恢復原請求會保留原比較組關聯與設定，不使用現在的表單或比較預覽。</p>
     <p v-if="pending" class="notice warning">尚有未確認的提交 {{ pending.request_id }}。恢復時使用原始參數，重複請求不會再次入列。請先確認原提交，再載入失敗任務的設定。</p>
     <button type="button" class="primary" :disabled="busy || disabled || (!pending && (missingModel || !!blockedReason))" @click="generate">{{ busy ? '處理中…' : pending ? '恢復原提交請求' : '生成圖片' }}</button>
     <button type="button" class="secondary" :disabled="busy" @click="refresh">更新任務狀態</button>
@@ -112,6 +118,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <strong>{{ labels[job.status] || job.status }}</strong> · {{ job.checkpoint }}
       <p class="footnote">{{ new Date(job.created_at).toLocaleString() }} · {{ job.id }}</p>
       <p v-if="job.workflow_id === imageWorkflowId" class="footnote">單張圖生圖 · 原素材與前處理已凍結。</p>
+      <ExperimentSnapshot :item="job.experiment_context" />
       <LoraSnapshot v-if="checkpointForm" :items="job.lora_metadata" />
       <ComponentSnapshot :items="job.component_metadata" /><JobMeasurements :item="job.measurements" />
       <ReferenceSnapshot :items="job.reference_metadata" :job-id="job.id" :processed-ready="!!job.input_upload || job.status === 'completed'" />

@@ -2,7 +2,7 @@
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue'
 import type { ComparisonPlan, ExperimentSummary, SavedExperiment } from './experimentSettings'
 const props = defineProps<{ plan:ComparisonPlan|null; disabled?:boolean }>()
-const emit = defineEmits<{ open:[value:ComparisonPlan]; busy:[value:boolean] }>()
+const emit = defineEmits<{ open:[value:ComparisonPlan, saved:SavedExperiment|null]; saved:[value:SavedExperiment]; changed:[value:SavedExperiment]; busy:[value:boolean] }>()
 const records = ref<ExperimentSummary[]>([]), showArchived = ref(false), busy = ref(false)
 const input = ref(''), imported = ref<ComparisonPlan|null>(null), error = ref(''), message = ref('')
 const blocked = computed(() => props.disabled || busy.value)
@@ -52,6 +52,7 @@ async function save() {
   const identifier = saveIds.get(plan.plan_sha256)!
   await run(async(signal,current) => {
     const value:SavedExperiment = await request('plans',signal,'POST',JSON.stringify({request_id:identifier,plan}))
+    if(ticket === current) emit('saved',value)
     const list:ExperimentSummary[] = await request('plans',signal)
     if(ticket === current) { records.value = list; message.value = `已保存「${value.plan.title}」。${value.archived ? '原封存狀態保留，可在清單還原。' : ''}沒有保存草稿或生成。` }
   })
@@ -59,12 +60,13 @@ async function save() {
 async function open(item:ExperimentSummary) {
   await run(async(signal,current) => {
     const value:SavedExperiment = await request('plans/'+item.id,signal)
-    if(ticket === current) { emit('open',value.plan); message.value = '已重載原方案預覽，創作表單保持原值。' }
+    if(ticket === current) { emit('open',value.plan,value); message.value = '已重載原方案預覽，創作表單保持原值。' }
   })
 }
 async function archive(item:ExperimentSummary) {
   await run(async(signal,current) => {
-    await request('plans/'+item.id,signal,'PUT',JSON.stringify({revision:item.revision,archived:!item.archived}))
+    const value:SavedExperiment = await request('plans/'+item.id,signal,'PUT',JSON.stringify({revision:item.revision,archived:!item.archived}))
+    if(ticket === current) emit('changed',value)
     const list:ExperimentSummary[] = await request('plans',signal)
     if(ticket === current) { records.value = list; message.value = item.archived ? '方案已還原。' : '方案已封存，完整設定及素材引用保留。' }
   })
@@ -89,7 +91,7 @@ async function validate() {
 }
 function adopt() {
   if(blocked.value || !imported.value) return
-  emit('open',imported.value); imported.value = null; message.value = '已使用匯入方案的預覽；需要另按保存，或逐組載入與生成。'
+  emit('open',imported.value,null); imported.value = null; message.value = '已使用匯入方案的預覽；需要另按保存，或逐組載入與生成。'
 }
 </script>
 <template>

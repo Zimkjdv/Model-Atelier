@@ -12,6 +12,7 @@ import ReferenceSnapshot from './ReferenceSnapshot.vue'
 import RuntimeSnapshot from './RuntimeSnapshot.vue'
 import SettingsTransfer from './SettingsTransfer.vue'
 import ExperimentPlanner from './ExperimentPlanner.vue'
+import { matchesExperiment, type ExperimentLoad, type SavedExperiment } from './experimentSettings'
 import { copySettings, type ImportPreview } from './settingsTransfer'
 import { imageWorkflowId, referenceDefaults, purposeLabel, type ReferenceAsset, type ReferenceWorkflow } from './referenceSettings'
 import { useStudioPreferences } from './studioPreferences'
@@ -29,6 +30,8 @@ type Capabilities = { engine_url: string; current_engine_url: string; engine_mat
 const emit = defineEmits<{ models: []; assets: []; gallery: [jobId: string] }>()
 const props = defineProps<{ restoreRequest?: { artworkId: string; token: number } | null }>()
 const form = reactive(newCreation())
+const experimentLoad = ref<ExperimentLoad|null>(null), generationBusy = ref(false), generationPending = ref(false)
+const experimentChanged = computed(() => !!experimentLoad.value && !matchesExperiment(experimentLoad.value,form))
 const activeLora = computed(() => form.loras.find(item => item.enabled))
 const activeLoraCount = computed(() => form.loras.filter(item => item.enabled).length)
 const loraParameters = computed(() => ({ width: form.width, height: form.height, steps: form.steps, cfg: form.cfg, sampler_name: form.sampler_name, scheduler: form.scheduler, denoise: form.denoise, batch_size: 1 }))
@@ -80,6 +83,8 @@ const matchingCapabilities = computed(() => capabilities.value?.engine_url === f
 const samplers = computed(() => matchingCapabilities.value?.sampler_names ?? [])
 const schedulers = computed(() => matchingCapabilities.value?.schedulers ?? [])
 const submissionBlock = computed(() => {
+  if(experimentLoad.value?.archived) return '比較方案已封存，請先還原並重新載入該組，或解除關聯再生成。'
+  if(experimentChanged.value) return '設定已與原比較組不同；請重新載入原組或解除比較關聯再生成。'
   if (loraBlock.value) return loraBlock.value
   if (models.value && models.value.engine_url !== form.engine_url) return '此草稿使用的引擎與目前設定不同。請到設定頁連接原引擎，再更新模型庫。'
   if (form.checkpoint && profileBusy.value) return '正在確認模型工作流程資料，請稍候；草稿仍可保存。'
@@ -115,6 +120,7 @@ async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> 
   return response.json()
 }
 function apply(record: Draft | 'new' | Restoration) {
+  experimentLoad.value = null
   ++restorationRequest; restoring.value = false
   presetChoice.value = null
   if (typeof record === 'object' && 'kind' in record) {
@@ -150,10 +156,14 @@ function chooseImage(value: string | null) {
   form.image_asset_id = value
   form.reference_ids = value ? [value] : []
 }
-function importSettings(value: ImportPreview) {
-  if (busy.value || restoring.value || pending.value || !('checkpoint' in value.bundle.settings)) return
+function experimentState(value:SavedExperiment) {
+  if(experimentLoad.value?.selection.plan_id === value.id) experimentLoad.value.archived = value.archived
+}
+function importSettings(value: ImportPreview, experiment:ExperimentLoad|null = null) {
+  if (busy.value || restoring.value || pending.value || generationBusy.value || generationPending.value || !('checkpoint' in value.bundle.settings)) return
   ++restorationRequest
   Object.assign(form, copySettings(value.bundle.settings))
+  experimentLoad.value = experiment ? JSON.parse(JSON.stringify(experiment)) : null
   id.value = null; revision.value = null; draftVersion.value = ''; origin.value = null
   presetChoice.value = null; saved.value = ''; error.value = ''
   message.value = '設定已載入為未保存的新草稿；請確認模型與素材，再保存或明確生成。'
@@ -284,8 +294,9 @@ onActivated(() => { if (form.engine_url) void refresh() })
     <LoraSnapshot v-if="origin" :items="origin.lora_metadata" />
     <ReferenceSnapshot v-if="origin" :items="origin.reference_metadata" />
     <RuntimeSnapshot v-if="origin" :item="origin.runtime_metadata" />
-    <SettingsTransfer :settings="form" family="checkpoint" :dirty="dirty" :disabled="busy || restoring || !!pending" @apply="importSettings" />
-    <ExperimentPlanner :settings="form" :dirty="dirty" :disabled="busy || restoring || !!pending" @apply="importSettings" />
+    <SettingsTransfer :settings="form" family="checkpoint" :dirty="dirty" :disabled="busy || restoring || !!pending || generationBusy || generationPending" @apply="importSettings" />
+    <ExperimentPlanner :settings="form" :dirty="dirty" :disabled="busy || restoring || !!pending || generationBusy || generationPending" @apply="importSettings" @gallery="emit('gallery',$event)" @state="experimentState" />
+    <section v-if="experimentLoad" class="notice" aria-label="目前比較組關聯"><strong>{{ experimentLoad.plan_title }} · {{ experimentLoad.selection.variant_id }}</strong><p>{{ experimentChanged ? '設定已改動，生成前需解除關聯或重新載入原組。' : '目前完整設定符合原比較組；另按生成才建立任務及結果關聯。' }}</p><p class="footnote">比較關聯跟隨目前載入的組別；保存草稿不保存關聯，重載草稿、作品或一般設定會解除。</p><button type="button" class="secondary" :disabled="generationBusy || generationPending" @click="experimentLoad = null">解除比較關聯，保留目前設定</button></section>
     <p v-if="display.error.value" class="notice" role="status">{{ display.error.value }}</p>
     <div class="studio-layout-controls"><button type="button" class="secondary" :aria-expanded="!editorCollapsed" aria-controls="studio-editor" @click="editorCollapsed = !editorCollapsed">{{ editorCollapsed ? '展開創作設定' : '收合創作設定' }}</button><p v-if="editorCollapsed" class="footnote">{{ form.checkpoint || '尚未選擇模型' }} · {{ form.width }} × {{ form.height }} · {{ form.steps }} steps · CFG {{ form.cfg }}。設定與未保存內容仍保留。</p></div>
     <div class="studio-grid" :class="{ 'editor-collapsed': editorCollapsed }">
@@ -344,7 +355,7 @@ onActivated(() => { if (form.engine_url) void refresh() })
       </fieldset></form>
       <div><GenerationAdvice v-if="!isImage" :form="form" />
       <article v-else class="panel"><h3>圖生圖流程驗證範圍</h3><p class="footnote">Pony V6 XL／RTX 3060 的單張一般風景流程已驗證；其他 checkpoint、參考圖加 LoRA、畫風品質與 RTX 4080 仍待實測。文生圖的驗證紀錄不代表圖生圖結果。</p><a href="https://github.com/Zimkjdv/Model-Atelier/blob/main/docs/validation/checkpoint-image2image-rtx3060.md" target="_blank" rel="noopener">查看圖生圖驗收紀錄 ↗</a></article>
-      <GenerationPanel :form="form" :blocked-reason="submissionBlock" :disabled="busy || restoring || !!pending" @gallery="emit('gallery', $event)" @restore-job="restoreJob"/><article class="panel canvas-panel"><div class="panel-heading"><h2>畫布比例預覽</h2><span class="badge">{{ form.width }} × {{ form.height }}</span></div><div class="canvas-area"><div class="canvas" :style="{aspectRatio:aspect,width:`min(100%, ${Math.min(300, 320 * Number(form.width) / Number(form.height))}px)`}"><span>◈</span><p>為下一張作品留下構想</p><small>此處僅預覽比例，不是生成結果</small></div></div><p>使用「生成圖片」提交目前表單。保存草稿不會啟動 GPU 任務。</p></article>
+      <GenerationPanel :experiment="experimentLoad" @busy="generationBusy = $event" @pending="generationPending = $event" :form="form" :blocked-reason="submissionBlock" :disabled="busy || restoring || !!pending" @gallery="emit('gallery', $event)" @restore-job="restoreJob"/><article class="panel canvas-panel"><div class="panel-heading"><h2>畫布比例預覽</h2><span class="badge">{{ form.width }} × {{ form.height }}</span></div><div class="canvas-area"><div class="canvas" :style="{aspectRatio:aspect,width:`min(100%, ${Math.min(300, 320 * Number(form.width) / Number(form.height))}px)`}"><span>◈</span><p>為下一張作品留下構想</p><small>此處僅預覽比例，不是生成結果</small></div></div><p>使用「生成圖片」提交目前表單。保存草稿不會啟動 GPU 任務。</p></article>
       <article class="panel"><h2>已保存草稿 <span class="muted">{{ records.length }}</span></h2><p v-if="!records.length" class="muted">保存第一份草稿後，可以在這裡接續編輯。</p><button v-for="record in records" :key="record.id" class="draft-row" :class="{chosen:id===record.id}" :disabled="busy || restoring" @click="choose(record)"><strong>{{ record.title }}</strong><span>{{ record.workflow_mode === 'image2image' ? '圖生圖' : '文生圖' }} · {{ record.width }} × {{ record.height }} · {{ new Date(record.updated_at).toLocaleString() }}</span><small>{{ record.checkpoint || '未選擇模型' }} · 版本 {{ record.model_version || '未知' }}</small></button></article></div>
     </div>
   </div>

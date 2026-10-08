@@ -6,6 +6,8 @@ import LoraSnapshot from './LoraSnapshot.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
 import RuntimeSnapshot from './RuntimeSnapshot.vue'
+import ExperimentSnapshot from './ExperimentSnapshot.vue'
+import type { ExperimentContext } from './experimentSettings'
 import JobMeasurements from './JobMeasurements.vue'
 import type { JobMeasurements as Measurements } from './jobMeasurements'
 import ArtworkComparison from './ArtworkComparison.vue'
@@ -16,7 +18,7 @@ import type { ComponentSnapshot as ComponentMetadata } from './fluxSettings'
 const props = defineProps<{ jobId?: string }>()
 const emit = defineEmits<{ studio: []; restore: [artworkId: string, workflowId?: string | null]; dirty: [value: boolean] }>()
 type Parameters = { prompt: string | null; negative_prompt: string | null; seed: string | null; steps: number | null; cfg: number | null; sampler: string | null; scheduler: string | null; denoise: number | null }
-type Artwork = { measurements?: Measurements | null; ratings: Ratings; runtime_metadata?: RuntimeMetadata | null; id: string; job_id: string; title: string; checkpoint: string; model_version: string; model_metadata?: ModelMetadataSnapshot | null; lora_metadata?: LoraMetadataSnapshot[] | null; workflow_id?: string | null; component_metadata?: ComponentMetadata[] | null; reference_metadata?: ReferenceMetadata[] | null; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string; favorite: boolean; notes: string; archived: boolean; revision: number; organization_updated_at: string | null }
+type Artwork = { experiment_context?:ExperimentContext|null; measurements?: Measurements | null; ratings: Ratings; runtime_metadata?: RuntimeMetadata | null; id: string; job_id: string; title: string; checkpoint: string; model_version: string; model_metadata?: ModelMetadataSnapshot | null; lora_metadata?: LoraMetadataSnapshot[] | null; workflow_id?: string | null; component_metadata?: ComponentMetadata[] | null; reference_metadata?: ReferenceMetadata[] | null; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string; favorite: boolean; notes: string; archived: boolean; revision: number; organization_updated_at: string | null }
 type Job = { id: string; status: string; checkpoint: string; created_at: string }
 type ImportResult = { imported: Artwork[]; existing: Artwork[]; errors: { source: { filename: string }; message: string }[] }
 const items = ref<Artwork[]>([]), jobs = ref<Job[]>([]), selectedJob = ref(props.jobId || '')
@@ -185,7 +187,7 @@ onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload)
         <LoraSnapshot v-if="!selected.workflow_id || selected.workflow_id === imageWorkflowId" :items="selected.lora_metadata" />
         <a :href="`/api/artworks/${selected.id}/settings-export`">匯出創作設定（含來源快照）</a>
         <ComponentSnapshot :items="selected.component_metadata" />
-        <RuntimeSnapshot :item="selected.runtime_metadata" /><JobMeasurements :item="selected.measurements" />
+        <ExperimentSnapshot :item="selected.experiment_context" /><RuntimeSnapshot :item="selected.runtime_metadata" /><JobMeasurements :item="selected.measurements" />
         <ReferenceSnapshot :items="selected.reference_metadata" :job-id="selected.job_id" :processed-ready="true" />
         <details><summary>作品來源紀錄</summary><p>原引擎：{{ selected.engine_url }}</p><p>任務：{{ selected.job_id }}</p><p>提交：{{ new Date(selected.created_at).toLocaleString() }}</p><p>匯入：{{ new Date(selected.imported_at).toLocaleString() }}</p><p class="file-hash">作品原圖 SHA-256：{{ selected.sha256 }}</p></details>
         <div class="artwork-actions"><button class="primary" @click="restore(selected)">載入創作設定 →</button><a v-if="selected.image_available" :href="imageUrl(selected) + '?download=true'">下載原圖 ↓</a><a :href="`/api/artworks/${selected.id}/workflow`">下載完整工作流程</a><a :href="`/api/jobs/${selected.job_id}`" target="_blank" rel="noopener">原始任務 JSON ↗</a></div>

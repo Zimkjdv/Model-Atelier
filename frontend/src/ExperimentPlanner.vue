@@ -3,14 +3,15 @@ import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, 
 import type { CreationForm } from './creationSettings'
 import type { ImportPreview } from './settingsTransfer'
 import SavedExperimentPlans from './SavedExperimentPlans.vue'
-import type { ComparisonPlan as Plan, ExperimentSuite as Suite, ExperimentVariant as Variant } from './experimentSettings'
+import ExperimentResults from './ExperimentResults.vue'
+import type { ComparisonPlan as Plan, ExperimentSuite as Suite, ExperimentVariant as Variant, SavedExperiment, ExperimentLoad } from './experimentSettings'
 const props = defineProps<{ settings: CreationForm; dirty: boolean; disabled?: boolean }>()
-const emit = defineEmits<{ apply: [value: ImportPreview] }>()
+const emit = defineEmits<{ apply: [value: ImportPreview, experiment:ExperimentLoad|null]; gallery:[jobId:string]; state:[value:SavedExperiment] }>()
 const title = ref('插畫參數比較'), axis = ref('steps'), values = ref('[4, 8]'), caseIds = ref<string[]>([]), targetLora = ref('')
 const suite = ref<Suite | null>(null), plan = ref<Plan | null>(null), error = ref(''), message = ref(''), busy = ref(false)
 const previewBody = ref(''), exported = ref(''), exportedUrl = ref(''), loaded = ref<string[]>([])
 let ticket = 0, controller: AbortController | null = null, suiteAbort: AbortController | null = null
-const documentBusy = ref(false)
+const documentBusy = ref(false), savedRecord = ref<SavedExperiment|null>(null)
 const blocked = computed(() => props.disabled || busy.value || documentBusy.value)
 const isLoraAxis = computed(() => axis.value.startsWith('lora_strength_'))
 const activeLoras = computed(() => props.settings.loras.filter(item => item.enabled))
@@ -21,7 +22,7 @@ function canonical(value: unknown): string {
 }
 const changed = computed(() => plan.value && canonical(props.settings) !== canonical(plan.value.baseline))
 function stop() { ++ticket; controller?.abort(); controller = null; busy.value = false }
-function reset() { stop(); plan.value = null; previewBody.value = ''; loaded.value = []; message.value = '' }
+function reset() { stop(); plan.value = null; savedRecord.value = null; previewBody.value = ''; loaded.value = []; message.value = '' }
 watch(() => JSON.stringify([title.value, axis.value, values.value, caseIds.value, targetLora.value]), reset)
 async function loadSuite() {
   suiteAbort?.abort(); const abort = new AbortController(); suiteAbort = abort
@@ -56,13 +57,26 @@ async function preview() {
 }
 function apply(variant: Variant) {
   if (blocked.value || !plan.value) return
-  emit('apply',{bundle:{kind:'model-atelier-creation',schema_version:1,workflow_id:plan.value.workflow_id,settings:variant.settings,source_snapshot:null},warnings:plan.value.warnings})
+  const record = savedRecord.value
+  const experiment:ExperimentLoad|null = record ? JSON.parse(JSON.stringify({selection:{plan_id:record.id,plan_sha256:record.plan.plan_sha256,variant_id:variant.id},plan_title:record.plan.title,archived:record.archived,settings:variant.settings})) : null
+  emit('apply',{bundle:{kind:'model-atelier-creation',schema_version:1,workflow_id:plan.value.workflow_id,settings:variant.settings,source_snapshot:null},warnings:plan.value.warnings},experiment)
   if (!loaded.value.includes(variant.id)) loaded.value.push(variant.id)
-  message.value = `已載入 ${variant.id} 為新草稿；請檢查後另按生成。其他方案保留，未自動提交。`
+  message.value = `已載入 ${variant.id} 為新草稿；${record ? '已帶入保存方案關聯。' : '這是未保存方案，生成不記錄比較關聯；請先保存，再重新載入這組。'}請檢查後另按生成。`
 }
-function openPlan(value: Plan) {
+function rememberSaved(value:SavedExperiment) {
+  if(plan.value?.plan_sha256 === value.plan.plan_sha256) savedRecord.value = value
+  emit('state',value)
+}
+function savedChanged(value:SavedExperiment) {
+  if(savedRecord.value?.id === value.id) savedRecord.value = value
+  emit('state',value)
+}
+function archiveObserved(archived:boolean) {
+  if(savedRecord.value) savedChanged({...savedRecord.value,archived})
+}
+function openPlan(value: Plan, record:SavedExperiment|null) {
   if (props.disabled || busy.value) return
-  reset(); plan.value = JSON.parse(JSON.stringify(value)) as Plan
+  reset(); plan.value = JSON.parse(JSON.stringify(value)) as Plan; savedRecord.value = record
   error.value = ''; message.value = '已載入保存／匯入方案的完整預覽；創作表單保持原值。每組仍需明確載入並生成。'
 }
 async function exportPlan() {
@@ -83,7 +97,7 @@ async function exportPlan() {
 <template>
   <details class="experiment-planner"><summary>固定測試集與參數比較</summary>
     <p class="footnote">支援 checkpoint 文生圖與單張圖生圖；圖生圖每組沿用同一輸入。一次一個參數、1–4 個值、最多 8 次生成預覽；每個方案需分別載入並明確生成。</p>
-    <SavedExperimentPlans :plan="plan" :disabled="props.disabled || busy" @busy="documentBusy = $event" @open="openPlan" />
+    <SavedExperimentPlans :plan="plan" :disabled="props.disabled || busy" @busy="documentBusy = $event" @open="openPlan" @saved="rememberSaved" @changed="savedChanged" />
     <label for="experiment-title">比較名稱</label><input id="experiment-title" v-model="title" maxlength="100" :disabled="blocked">
     <label for="experiment-axis">比較參數</label><select id="experiment-axis" v-model="axis" :disabled="blocked"><option value="steps">Steps</option><option value="cfg">CFG</option><option value="denoise" :disabled="settings.workflow_mode !== 'image2image'">Denoise（圖生圖改動幅度）</option><option value="seed">Seed（字串）</option><option value="lora_strength_model">LoRA 模型強度</option><option value="lora_strength_clip">LoRA CLIP 強度</option></select>
     <template v-if="isLoraAxis"><label for="experiment-lora">要比較的已啟用 LoRA</label><select id="experiment-lora" v-model="targetLora" :disabled="blocked"><option value="">請選擇 LoRA</option><option v-for="item in activeLoras" :key="item.name" :value="item.name">{{ item.name }}</option></select><p class="footnote">每次只改這個 LoRA 的一種強度，其餘強度、啟用狀態與順序保留。沒有已啟用的 LoRA 時，請先在創作設定加入。</p></template>
@@ -91,11 +105,13 @@ async function exportPlan() {
     <fieldset :disabled="blocked"><legend>固定案例（不選擇時沿用目前提示詞）</legend><template v-if="suite"><p class="footnote">{{ suite.name }} · v{{ suite.version }} · 相同角色案例需人工比較，未接入角色鎖定。</p><label v-for="item in suite.cases" :key="item.id" class="case-choice"><input v-model="caseIds" type="checkbox" :value="item.id" :aria-label="item.name">{{ item.name }}<span v-if="item.character_key"> · {{ item.character_key }}</span></label><details v-for="item in suite.cases" :key="item.id"><summary>{{ item.name }}：提示詞與評估要點</summary><p>{{ item.prompt }}</p><ul><li v-for="check in item.checks" :key="check">{{ check }}</li></ul></details></template></fieldset>
     <button type="button" class="secondary" :disabled="blocked" @click="preview">預覽比較方案</button>
     <p v-if="error" role="alert" class="notice warning">{{ error }}</p><p v-if="message" role="status" class="notice">{{ message }}</p>
+    <ExperimentResults v-if="savedRecord" :record="savedRecord" @gallery="emit('gallery',$event)" @archived="archiveObserved" />
     <section v-if="plan" aria-label="參數比較預覽"><h3>預計 {{ plan.expected_job_count }} 次生成 · 每次 1 張</h3>
+      <p v-if="savedRecord" class="notice">保存方案：{{ savedRecord.plan.title }}{{ savedRecord.archived ? '（封存，先還原並重新載入）' : '' }}。載入這組後再明確生成，結果才會關聯。</p><p v-else class="notice">此預覽尚未關聯保存方案。先保存目前方案，再重新載入組別，可保留生成結果關聯。</p>
       <p v-if="dirty" class="notice warning">目前有未保存變更；「載入這組設定」會取代目前表單，原已保存草稿及任務仍保留。</p>
       <p v-if="changed" class="footnote">目前表單已更動；下面仍是原比較方案的完整快照。要使用新的基準設定，請重新預覽。</p>
       <p v-if="plan.baseline.workflow_mode === 'image2image'" class="footnote">圖生圖來源：{{ plan.baseline.image_asset_id }} · {{ plan.baseline.reference_resize === 'fit' ? '等比補白' : '拉伸' }}；每組保留此輸入，生成前重新驗證素材。</p><p v-if="plan.target_lora" class="footnote">強度比較 LoRA：{{ plan.target_lora }}；原有順序保留。</p><ul><li v-for="warning in plan.warnings" :key="warning">{{ warning }}</li></ul><p class="footnote">方案 SHA256：{{ plan.plan_sha256 }}<span v-if="plan.suite"> · 測試集 v{{ plan.suite.version }} / {{ plan.suite.sha256 }}</span></p>
-      <article v-for="variant in plan.variants" :key="variant.id" class="variant"><h4>{{ variant.id }} · {{ variant.case_id }} · {{ plan.axis }} = {{ variant.value }}</h4><p>{{ variant.settings.width }} × {{ variant.settings.height }} · {{ variant.settings.steps }} steps · CFG {{ variant.settings.cfg }} · Seed {{ variant.settings.seed }}<span v-if="variant.settings.workflow_mode === 'image2image'"> · Denoise {{ variant.settings.denoise }}</span></p><p>{{ variant.settings.prompt }}</p><details><summary>完整設定快照</summary><pre>{{ JSON.stringify(variant.settings,null,2) }}</pre></details><button type="button" class="secondary" :disabled="blocked" :aria-label="'載入比較設定 ' + variant.id" @click="apply(variant)">載入這組設定</button><span v-if="loaded.includes(variant.id)" class="footnote"> 已載入過；生成狀態請看任務區</span></article>
+      <article v-for="variant in plan.variants" :key="variant.id" class="variant"><h4>{{ variant.id }} · {{ variant.case_id }} · {{ plan.axis }} = {{ variant.value }}</h4><p>{{ variant.settings.width }} × {{ variant.settings.height }} · {{ variant.settings.steps }} steps · CFG {{ variant.settings.cfg }} · Seed {{ variant.settings.seed }}<span v-if="variant.settings.workflow_mode === 'image2image'"> · Denoise {{ variant.settings.denoise }}</span></p><p>{{ variant.settings.prompt }}</p><details><summary>完整設定快照</summary><pre>{{ JSON.stringify(variant.settings,null,2) }}</pre></details><button type="button" class="secondary" :disabled="blocked" :aria-label="'載入比較設定 ' + variant.id" @click="apply(variant)">載入這組設定</button><span v-if="loaded.includes(variant.id)" class="footnote"> 已載入過；不代表已生成</span></article>
       <button type="button" class="secondary" :disabled="blocked" @click="exportPlan">匯出比較方案 JSON</button>
     </section>
     <a v-if="exportedUrl" :href="exportedUrl" download="model-atelier-comparison-plan.json">下載上次匯出的比較方案</a><details v-if="exported"><summary>上次匯出的完整比較 JSON</summary><pre>{{ exported }}</pre></details>
