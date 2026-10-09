@@ -83,7 +83,7 @@ def install(app, host):
     def creation_settings(artwork_id: UUID):
         item = lookup(artwork_id)
         def validate(value):
-            schema = host.ControlInput if item.get('workflow_id') == 'checkpoint-canny-controlnet-v1' else host.InpaintInput if item.get('workflow_id') == 'checkpoint-inpaint-v1' else host.DraftInput
+            schema = host.ControlInput if item.get('workflow_id') in ('checkpoint-canny-controlnet-v1','checkpoint-canny-controlnet-edge-v2') else host.InpaintInput if item.get('workflow_id') == 'checkpoint-inpaint-v1' else host.DraftInput
             return schema.model_validate(value).model_dump(mode='json', exclude={'revision'})
         try:
             settings = workflows.extract(item, validate)
@@ -117,7 +117,7 @@ def install(app, host):
                     model_metadata=item.get('model_metadata'), lora_metadata=item.get('lora_metadata'),
                     runtime_metadata=item.get('runtime_metadata'),
                     reference_metadata=item.get('reference_metadata'), warnings=warnings,
-                    **(dict(component_metadata=item.get('component_metadata')) if item.get('workflow_id')=='checkpoint-canny-controlnet-v1' else {}),
+                    **(dict(component_metadata=item.get('component_metadata')) if item.get('workflow_id')in ('checkpoint-canny-controlnet-v1','checkpoint-canny-controlnet-edge-v2') else {}),
                     availability=dict(current_engine_url=host.engine_url(), engine_matches=matches,
                                       checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at'),
                                       loras=lora_info['loras'], lora_synced_at=lora_info['lora_synced_at']))

@@ -16,7 +16,7 @@
 
 來源先驗檔，再以 fit 等比補白或 stretch 拉伸至輸出尺寸。模型從 EmptyLatentImage 生成，Canny 只提供正／負條件，沒有以來源圖 latent 作圖生圖。控制範圍用原生節點的 start_percent／end_percent，不能解讀成毫秒。Canny 閾值為原生 Kornia 的浮點參數，不能直接當成 OpenCV 的 0–255 閾值。
 
-基礎十一個節點，已啟用 LoRA 各增加一個。凍結完整 workflow JSON、原始素材與處理後 PNG 大小／雜湊、縮放方法、原生 Canny 參數、checkpoint／ControlNet／LoRA 版本及提交環境。Canny 在原引擎執行，個別節點版本無法取得時保持未知；目前只保存縮放後來源 PNG，沒有另存 Canny 邊緣圖。`GET /api/jobs/{id}/reference-image` 提供該來源。
+基礎十一個節點，已啟用 LoRA 各增加一個。凍結完整 workflow JSON、原始素材與處理後 PNG 大小／雜湊、縮放方法、原生 Canny 參數、checkpoint／ControlNet／LoRA 版本及提交環境。Canny 在原引擎執行，個別節點版本無法取得時保持未知；v1 只保存縮放後來源 PNG，不回填邊緣圖；v2 另保存同次原生邊緣輸出。`GET /api/jobs/{id}/reference-image` 提供該來源。
 
 ## 保護與還原
 
@@ -58,3 +58,16 @@
 另一次可使用 --model animagine-xl-4.0-opt。固定條件為 768²、20 steps、CFG 5.5、dpmpp_2m／karras、空 latent／denoise 1、seed 9007199254740993、無 LoRA、strength 0.5、作用 0–1、Canny 0.4／0.8，驗收提示為一般椅子；單次最多觀察 15 分鐘，不是品質推薦。
 
 既有完整報告加 --verify-report，以相同模型／素材 ID／平台路徑僅 GET 核對保存紀錄與 PNG，不能補提交或匯入。非法 workflow、控制來源／hash／型別或完整參數會先拒絕，不覆寫原報告。權重在新生成前重新全檔驗證，離線報告核對不需載入或重讀權重。原生 Canny 節點版本保持未知，完整引擎版本另存在 runtime 快照。
+
+## v2 實際邊緣輸出
+
+`checkpoint-canny-controlnet-edge-v2`／`POST /api/control-edge/generate` 接收與 v1 完全相同的設定，追加 SaveImage 節點 16，直接連到本次 Canny 節點 13；最終作品仍為節點 7。沒有另開生成或更換前處理。十二個基礎節點，LoRA 另計。v1 的 UUID、流程與原設定保留，不能跨端點恢復 UUID。
+
+- `GET /api/jobs/{id}/control-edge`：只讀保存狀態、原流程／參考／控制版本來源、PNG hash、bytes、尺寸與白色邊緣像素數；不連線引擎。未保存顯示 not_saved。
+- `POST /api/jobs/{id}/control-edge`：使用已確認成功歷史的唯一節點 16 output，從原引擎 /view 明確匯入；不提交 /prompt、不重新計算。固定 UUID 目錄與檔名檢查，串流 32 MiB 限制，須為同尺寸 RGB 二值 PNG。空邊緣也是可保存的結果。
+- `GET /api/jobs/{id}/control-edge/image`（可加 download=true）：僅本機 PNG，驗證 SHA256 與尺寸／像素快照；不可用時提示備份還原。
+- `GET /api/artworks/{id}/control-edge`：檢查作品完整流程與原任務相符，再取得同份邊緣記錄；圖片使用回傳的 job_id 路徑。
+
+作品匯入只接受 v2 的節點 7，不把條件圖變成作品。邊緣快照獨立保存於 data/control_edges 與 control_edge:<job_id>，不回寫原任務／作品。併發與重複匯入只留一份；已有圖片遺失／hash 改變或 orphan 檔案都拒絕覆寫／自動重抓。檔案及交易失敗只清理本次建立的檔案。停止平台後備份整個 data，才能同時保留證據。
+
+這是已提交任務的實際條件圖，不是目前未提交表單的即時預覽；不能由來源圖重新計算後冒充舊任務輸出。第一項後端已完成 12 項新增測試；後端共 471 項測試通過（含 1 項既有 Windows skip），專用介面及兩 seed／兩強度 GPU 比較接續第二／三項。

@@ -25,7 +25,7 @@ def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, 
                     or not experiment_context.matches(value.get('experiment_context'), experiment, generation_settings)):
                 raise ValueError('此請求 ID 已用於其他工作流程')
             return display(value), False
-        if workflow_id == 'checkpoint-canny-controlnet-v1':
+        if workflow_id in ('checkpoint-canny-controlnet-v1','checkpoint-canny-controlnet-edge-v2'):
             from backend import control_catalog
             control_catalog.validate_snapshot(db,engine_url,checkpoint,component_metadata,model_metadata)
         context = experiment_context.freeze(db, experiment, generation_settings)

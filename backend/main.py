@@ -402,6 +402,8 @@ inpaint_api.install(app, sys.modules[__name__], checkpoint_submissions)
 from backend import control_api, control_catalog
 control_catalog.install(app,sys.modules[__name__])
 control_api.install(app,sys.modules[__name__],checkpoint_submissions)
+from backend import control_edges_api
+control_edges_api.install(app,sys.modules[__name__])
 gallery_api.install(app, sys.modules[__name__])
 model_profiles.install(app, sys.modules[__name__])
 model_paths.install(app, sys.modules[__name__])

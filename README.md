@@ -402,3 +402,6 @@ API：
 ## Canny 結構參考
 
 已完成 ControlNet 清單／版本來源登記及固定 Canny 條件後端，支援同架構 SD 1.x／SDXL、單張來源與有序 LoRA；完整流程、控制參數及版本快照可離線還原。模型庫與專用「Canny 結構參考」工作台已接入；固定 SDXL Canny FP16、Pony／Animagine 各一個 RTX 3060 任務及離線重啟核對通過，輪廓／材質偏差如實保留，見 [驗收紀錄](docs/validation/checkpoint-canny-rtx3060.md)。API、提交保護與限制見 [docs/controlnet.md](docs/controlnet.md)。
+
+
+Canny v2 邊緣輸出後端已提供獨立的明確匯入與離線查看，保留本次原生條件 PNG／hash／版本來源，不重新計算歷史圖；作品與條件圖分開保存。v1 相容、使用方式與備份見 [ControlNet 說明](docs/controlnet.md)。介面及比較驗收接續實作。

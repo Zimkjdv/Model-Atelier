@@ -12,7 +12,7 @@ from starlette.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 from backend import jobs, catalog, workflows, cancellation, progress, capabilities, model_profiles, failures, node_preflight
 from backend import lora_preflight, lora_records, stopping, flux_workflows
-from backend import image_workflows, runtime_metadata, experiment_context, inpaint_workflows, control_workflows, control_catalog
+from backend import image_workflows, runtime_metadata, experiment_context, inpaint_workflows, control_workflows, control_catalog, control_edge_workflows
 from backend.reference_workflows import IMG2IMG_ID
 
 
@@ -318,7 +318,7 @@ def install(app, host):
     @app.get('/api/jobs/{job_id}/reference-image')
     def reference_image(job_id: UUID):
         job = lookup(job_id)
-        if job.get('workflow_id') not in (IMG2IMG_ID, inpaint_workflows.ID, control_workflows.ID):
+        if job.get('workflow_id') not in (IMG2IMG_ID, inpaint_workflows.ID, control_workflows.ID, control_edge_workflows.ID):
             raise HTTPException(404, '此任務沒有圖生圖輸入')
         path = host.DATA / 'job_inputs' / (str(job_id) + '.png')
         if not path.is_file():
@@ -332,15 +332,16 @@ def install(app, host):
     @app.get('/api/jobs/{job_id}/creation-settings')
     def creation_settings(job_id: UUID):
         job = lookup(job_id)
-        if job['status'] != 'failed' and not (job.get('workflow_id') in (IMG2IMG_ID, inpaint_workflows.ID, control_workflows.ID) and job['status'] in cancellation.TERMINAL):
+        if job['status'] != 'failed' and not (job.get('workflow_id') in (IMG2IMG_ID, inpaint_workflows.ID, control_workflows.ID, control_edge_workflows.ID) and job['status'] in cancellation.TERMINAL):
             raise HTTPException(409, '僅可載入已確認失敗任務的原設定；未提交或重送任何任務')
         outputs = [node_id for node_id, node in job['workflow'].items()
                    if isinstance(node, dict) and node.get('class_type') == 'SaveImage']
+        if job.get('workflow_id') == control_edge_workflows.ID: outputs=[node for node in outputs if node=='7']
         if len(outputs) != 1:
             raise HTTPException(422, '此任務工作流程無法完整還原到目前創作表單，請下載原工作流程使用；未載入任何參數')
         item = dict(job, source={'node_id': outputs[0]}, title='失敗任務設定' if job['status'] == 'failed' else '原任務設定')
         def validate(value):
-            schema = host.ControlInput if job.get('workflow_id') == control_workflows.ID else host.InpaintInput if job.get('workflow_id') == inpaint_workflows.ID else host.DraftInput
+            schema = host.ControlInput if job.get('workflow_id') in (control_workflows.ID,control_edge_workflows.ID) else host.InpaintInput if job.get('workflow_id') == inpaint_workflows.ID else host.DraftInput
             return schema.model_validate(value).model_dump(mode='json', exclude={'revision'})
         try:
             settings = workflows.extract(item, validate)
@@ -374,7 +375,7 @@ def install(app, host):
                     model_metadata=job.get('model_metadata'), lora_metadata=job.get('lora_metadata'),
                     runtime_metadata=job.get('runtime_metadata'),
                     reference_metadata=job.get('reference_metadata'), warnings=warnings,
-                    **(dict(component_metadata=job.get('component_metadata')) if job.get('workflow_id')==control_workflows.ID else {}),
+                    **(dict(component_metadata=job.get('component_metadata')) if job.get('workflow_id') in (control_workflows.ID,control_edge_workflows.ID) else {}),
                     availability=dict(current_engine_url=current_engine, engine_matches=matches,
                                       checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at'),
                                       loras=lora_info['loras'], lora_synced_at=lora_info['lora_synced_at']))

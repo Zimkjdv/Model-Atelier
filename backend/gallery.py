@@ -71,6 +71,9 @@ def output_id(job, source):
 
 
 def outputs(job):
+    if job.get('workflow_id') == 'checkpoint-canny-controlnet-edge-v2':
+        from backend import control_edge_workflows
+        control_edge_workflows.extract(dict(job,source=dict(node_id='7')),lambda settings:settings)
     history = job.get('history') or {}
     state = history.get('status', {}) if isinstance(history, dict) else {}
     if not isinstance(state, dict):
@@ -82,6 +85,8 @@ def outputs(job):
     if not isinstance(raw, dict):
         raise ValueError('任務輸出資料格式不正確')
     for node_id, output in raw.items():
+        if job.get('workflow_id') == 'checkpoint-canny-controlnet-edge-v2' and node_id != '7':
+            continue
         if job['workflow'].get(node_id, {}).get('class_type') != 'SaveImage':
             continue
         images = output.get('images', []) if isinstance(output, dict) else None
