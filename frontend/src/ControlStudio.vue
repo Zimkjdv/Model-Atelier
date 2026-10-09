@@ -86,8 +86,8 @@ onBeforeUnmount(()=>{alive=false;++ticket;++restoreTicket;controller?.abort();re
 </script>
 <template>
   <section aria-label="結構參考工作台">
-    <div class="toolbar"><strong>Checkpoint 結構參考</strong><button class="secondary" :disabled="locked" @click="load(true)">更新清單與引擎選項</button><button class="secondary" @click="emit('assets')">管理結構素材素材 →</button><button class="secondary" @click="emit('models')">模型版本與來源 →</button></div>
-    <p class="footnote">表單在工作台切換時保留；重新整理會清除未提交的表單。生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。</p>
+    <div class="toolbar"><strong>Checkpoint 結構參考</strong><button class="secondary" :disabled="locked" @click="load(true)">更新清單與引擎選項</button><button class="secondary" @click="emit('assets')">管理結構素材 →</button><button class="secondary" @click="emit('models')">模型版本與來源 →</button></div>
+    <p class="footnote">表單在工作台切換時保留；重新整理會清除未提交的表單。生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新提交使用 Canny v2，完成後可在任務與作品明確保存／查看實際邊緣圖；舊設定重新生成會建立新的 v2 任務。</p>
     <p class="footnote">原引擎 {{form.engine_url || '讀取中'}} · 模型版本 {{catalog?.engine_url===form.engine_url ? catalog.models.find(m=>m.name===form.checkpoint)?.version || '未知':'未知'}}。Canny 引導輪廓／構圖，不保證畫風、角色或逐像素相同。</p>
     <p v-if="error" class="notice warning" role="alert">{{error}}</p><p v-if="message" class="notice" role="status">{{message}}</p>
     <div v-if="pendingRestore" class="notice warning"><p>載入將取代目前未提交表單。</p><button class="secondary" @click="pendingRestore=null">繼續編輯</button><button class="secondary" :disabled="generationBusy || generationPending" @click="apply(pendingRestore)">捨棄變更並載入</button></div>

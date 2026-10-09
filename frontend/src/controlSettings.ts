@@ -2,6 +2,17 @@ import { newCreation, type CreationForm } from './creationSettings'
 import type { ReferenceAsset } from './referenceSettings'
 import type { ModelMetadata, ModelMetadataSnapshot } from './modelMetadata'
 export const controlWorkflowId = 'checkpoint-canny-controlnet-v1'
+export const controlEdgeWorkflowId = 'checkpoint-canny-controlnet-edge-v2'
+export const controlPendingMarker = '_atelier_control_workflow_id'
+export function isControlWorkflow(id: unknown): boolean { return id === controlWorkflowId || id === controlEdgeWorkflowId }
+// The marker is local storage metadata; it never belongs to the strict API body.
+export function controlSubmission(value: Record<string, unknown>) {
+  if (!value || Array.isArray(value) || typeof value !== 'object') throw new Error('待確認請求格式無效，請保留原紀錄。')
+  const version = controlPendingMarker in value ? value[controlPendingMarker] : controlWorkflowId
+  if (!isControlWorkflow(version)) throw new Error('待確認請求的流程版本未知，未提交；請保留原紀錄。')
+  const body = { ...value }; delete body[controlPendingMarker]
+  return { path: version === controlEdgeWorkflowId ? '/api/control-edge/generate' : '/api/control/generate', body }
+}
 export type ControlForm = CreationForm & { workflow_mode: 'text2image'; control_net_name: string; control_strength: number; control_start: number; control_end: number; canny_low: number; canny_high: number }
 export type ControlModel = ModelMetadata & { name: string; listed: boolean; version: string; source_url: string; notes: string; kind: string }
 export type ControlCatalog = { engine_url: string; controlnets: ControlModel[]; synced_at: string | null; sync_error: string | null }

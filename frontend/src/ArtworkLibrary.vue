@@ -5,7 +5,8 @@ import type { ModelMetadataSnapshot, LoraMetadataSnapshot } from './modelMetadat
 import LoraSnapshot from './LoraSnapshot.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
 import ControlSnapshot from './ControlSnapshot.vue'
-import { controlWorkflowId } from './controlSettings'
+import ControlEdgePreview from './ControlEdgePreview.vue'
+import { controlEdgeWorkflowId, isControlWorkflow } from './controlSettings'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
 import RuntimeSnapshot from './RuntimeSnapshot.vue'
 import ExperimentSnapshot from './ExperimentSnapshot.vue'
@@ -160,7 +161,7 @@ onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload)
     <button class="artwork-cover" :aria-label="'查看作品 ' + item.title" @click="open(item)"><img v-if="item.thumbnail_available" :src="imageUrl(item, true)" :alt="item.title" loading="lazy" @error="item.thumbnail_available = false"><span v-else>縮圖無法讀取 · 點此查看資料</span></button>
     <div class="card-title"><h2>{{ item.title }}</h2><span v-if="item.archived" class="archive-badge">已封存</span><span v-if="item.favorite" class="favorite-badge">★ 收藏</span></div><p>{{ item.width }} × {{ item.height }} · {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p><p>{{ item.checkpoint }} · 版本 {{ item.model_version }}</p>
     <p v-if="item.notes" class="note-excerpt">{{ item.notes.slice(0, 160) }}{{ item.notes.length > 160 ? '…' : '' }}</p>
-    <p v-if="item.workflow_id === controlWorkflowId">Canny 結構參考 · 輪廓條件</p>
+    <p v-if="isControlWorkflow(item.workflow_id)">Canny 結構參考 · 輪廓條件</p>
     <p v-if="item.workflow_id === inpaintWorkflowId">局部編輯 · 原圖與遮罩</p>
     <p v-if="item.workflow_id === imageWorkflowId">圖生圖 · 參考素材 {{ item.reference_metadata?.length ?? 0 }} 張</p>
     <p v-for="(lora, index) in item.lora_metadata ?? []" :key="index">LoRA {{ lora.name }} · 版本 {{ lora.version?.trim() || '未知' }}</p>
@@ -189,10 +190,12 @@ onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload)
           </dl></template>
           <p v-else class="footnote">此作品尚無提交時的模型資料快照，當時架構、檔案識別及授權資訊未知。</p>
         </details>
-        <LoraSnapshot v-if="!selected.workflow_id || selected.workflow_id === imageWorkflowId || selected.workflow_id === inpaintWorkflowId || selected.workflow_id === controlWorkflowId" :items="selected.lora_metadata" />
+        <LoraSnapshot v-if="!selected.workflow_id || selected.workflow_id === imageWorkflowId || selected.workflow_id === inpaintWorkflowId || isControlWorkflow(selected.workflow_id)" :items="selected.lora_metadata" />
         <a :href="`/api/artworks/${selected.id}/settings-export`">匯出創作設定（含來源快照）</a>
-        <ControlSnapshot v-if="selected.workflow_id === controlWorkflowId" :items="selected.component_metadata" /><ComponentSnapshot v-else :items="selected.component_metadata" />
+        <ControlSnapshot v-if="isControlWorkflow(selected.workflow_id)" :items="selected.component_metadata" /><ComponentSnapshot v-else :items="selected.component_metadata" />
         <ExperimentSnapshot :item="selected.experiment_context" /><RuntimeSnapshot :item="selected.runtime_metadata" /><JobMeasurements :item="selected.measurements" />
+        <ControlEdgePreview v-if="selected.workflow_id === controlEdgeWorkflowId" :key="selected.id" :job-id="selected.job_id" :artwork-id="selected.id" />
+        <p v-else-if="isControlWorkflow(selected.workflow_id)" class="footnote">舊版 v1 沒有保存同次邊緣輸出，不會重新計算歷史圖。</p>
         <ReferenceSnapshot :items="selected.reference_metadata" :job-id="selected.job_id" :processed-ready="true" />
         <details><summary>作品來源紀錄</summary><p>原引擎：{{ selected.engine_url }}</p><p>任務：{{ selected.job_id }}</p><p>提交：{{ new Date(selected.created_at).toLocaleString() }}</p><p>匯入：{{ new Date(selected.imported_at).toLocaleString() }}</p><p class="file-hash">作品原圖 SHA-256：{{ selected.sha256 }}</p></details>
         <div class="artwork-actions"><button class="primary" @click="restore(selected)">載入創作設定 →</button><a v-if="selected.image_available" :href="imageUrl(selected) + '?download=true'">下載原圖 ↓</a><a :href="`/api/artworks/${selected.id}/workflow`">下載完整工作流程</a><a :href="`/api/jobs/${selected.job_id}`" target="_blank" rel="noopener">原始任務 JSON ↗</a></div>

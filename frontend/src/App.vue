@@ -5,7 +5,7 @@ import CreationStudio from './CreationStudio.vue'
 import FluxStudio from './FluxStudio.vue'
 import InpaintStudio from './InpaintStudio.vue'
 import ControlStudio from './ControlStudio.vue'
-import { controlWorkflowId } from './controlSettings'
+import { isControlWorkflow } from './controlSettings'
 import { inpaintWorkflowId } from './inpaintSettings'
 import { fluxWorkflowId } from './fluxSettings'
 import AssetLibrary from './AssetLibrary.vue'
@@ -35,7 +35,7 @@ let restoreToken = 0
 function restoreArtwork(artworkId: string, workflowId?: string | null) {
   const value = { artworkId, token: ++restoreToken }
   if (workflowId === fluxWorkflowId) { studioMode.value = 'flux'; fluxRestoreRequest.value = value }
-  else if (workflowId === controlWorkflowId) { studioMode.value = 'control'; controlRestoreRequest.value = value }
+  else if (isControlWorkflow(workflowId)) { studioMode.value = 'control'; controlRestoreRequest.value = value }
   else if (workflowId === inpaintWorkflowId) { studioMode.value = 'inpaint'; inpaintRestoreRequest.value = value }
   else { studioMode.value = 'checkpoint'; restoreRequest.value = value }
   page.value = '創作工作台'
