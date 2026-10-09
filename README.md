@@ -2,7 +2,7 @@
 
 個人 AI 圖像創作與實驗工作台。Vue 3 + TypeScript 前端、Python + FastAPI 後端，優先在 RTX 3060 本機開發，再於 RTX 4080 驗證。
 
-2026-10-09 本輪三項：ControlNet 安全提交後端、專用 Canny 工作台、固定官方 FP16 安裝及 RTX 3060／離線重啟驗收。459 項後端（458 通過、1 項既有權限跳過），Canny／遮罩／比較邏輯及 Vue 型別／建置通過；正式資料不變，測試服務停止。瀏覽器工具仍無法啟動，實際畫面／窄視窗待驗收。
+2026-10-09 本輪三項：Canny v2 實際邊緣輸出後端、任務／作品保存查看介面、兩 seed × 兩強度 RTX 3060 比較與離線重啟驗收；另修正 Windows 原歷史子目錄驗證。477 項後端（476 通過、1 項既有權限跳過），Canny／遮罩／比較邏輯及 Vue 型別／建置通過；正式資料不變，測試服務停止。瀏覽器工具仍無法啟動，實際畫面／窄視窗待驗收。
 
 ## 目前功能
 
@@ -404,4 +404,4 @@ API：
 已完成 ControlNet 清單／版本來源登記及固定 Canny 條件後端，支援同架構 SD 1.x／SDXL、單張來源與有序 LoRA；完整流程、控制參數及版本快照可離線還原。模型庫與專用「Canny 結構參考」工作台已接入；固定 SDXL Canny FP16、Pony／Animagine 各一個 RTX 3060 任務及離線重啟核對通過，輪廓／材質偏差如實保留，見 [驗收紀錄](docs/validation/checkpoint-canny-rtx3060.md)。API、提交保護與限制見 [docs/controlnet.md](docs/controlnet.md)。
 
 
-Canny v2 邊緣輸出後端已提供獨立的明確匯入與離線查看，保留本次原生條件 PNG／hash／版本來源，不重新計算歷史圖；作品與條件圖分開保存。v1 相容、使用方式與備份見 [ControlNet 說明](docs/controlnet.md)。任務／作品可展開只讀狀態、明確保存原邊緣圖，離線預覽／下載及查看像素量測；v1 pending 保留原端點。兩 seed／兩強度比較接續驗收；瀏覽器操作驗收仍待完成。
+Canny v2 邊緣輸出後端已提供獨立的明確匯入與離線查看，保留本次原生條件 PNG／hash／版本來源，不重新計算歷史圖；作品與條件圖分開保存。v1 相容、使用方式與備份見 [ControlNet 說明](docs/controlnet.md)。任務／作品可展開只讀狀態、明確保存原邊緣圖，離線預覽／下載及查看像素量測；v1 pending 保留原端點。兩 seed／兩強度 RTX 3060、原 UUID 恢復、離線及平台重啟驗收通過，見 [比較紀錄](docs/validation/canny-edges-rtx3060.md)；瀏覽器操作驗收仍待完成。

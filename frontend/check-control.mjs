@@ -39,6 +39,7 @@ const unsaved={job_id:id,workflow_id:controlEdgeWorkflowId,state:'not_saved',ima
 assert.deepEqual(edgeMetadata(unsaved,id),unsaved)
 const saved={...unsaved,state:'saved',image_available:true,import_allowed:false,sha256:'a'.repeat(64),size_bytes:123,width:768,height:768,edge_pixels:0,total_pixels:768*768,saved_at:'2026-10-09T00:00:00Z',anchor:{workflow_sha256:'b'.repeat(64)},source:{node_id:'16',type:'output',filename:'canny_00001_.png',subfolder:'model_atelier/'+id}}
 assert.equal(edgeMetadata(saved,id).edge_pixels,0)
+assert.equal(edgeMetadata({...saved,source:{...saved.source,subfolder:'model_atelier'+String.fromCharCode(92)+id}},id).state,'saved')
 assert.equal(edgeMetadata({...saved,state:'unavailable',image_available:false},id).state,'unavailable')
 for(const change of [{job_id:'other'},{workflow_id:controlWorkflowId},{state:'unknown'},{image_available:false},{import_allowed:true},{sha256:'bad'},{size_bytes:32*1024*1024+1},{width:8193},{edge_pixels:-1},{edge_pixels:768*768+1},{edge_pixels:true},{total_pixels:64},{anchor:{workflow_sha256:'wrong'}},{source:{...saved.source,node_id:'7'}},{source:{...saved.source,subfolder:'other'}},{source:{...saved.source,filename:'../canny.png'}},{source:null}]) assert.throws(()=>edgeMetadata({...saved,...change},id))
 assert.throws(()=>edgeMetadata({...unsaved,image_available:true},id))

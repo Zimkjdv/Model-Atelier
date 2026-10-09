@@ -70,7 +70,7 @@
 
 作品匯入只接受 v2 的節點 7，不把條件圖變成作品。邊緣快照獨立保存於 data/control_edges 與 control_edge:<job_id>，不回寫原任務／作品。併發與重複匯入只留一份；已有圖片遺失／hash 改變或 orphan 檔案都拒絕覆寫／自動重抓。檔案及交易失敗只清理本次建立的檔案。停止平台後備份整個 data，才能同時保留證據。
 
-這是已提交任務的實際條件圖，不是目前未提交表單的即時預覽；不能由來源圖重新計算後冒充舊任務輸出。第一項後端已完成 12 項新增測試；後端共 471 項測試通過（含 1 項既有 Windows skip），專用介面及兩 seed／兩強度 GPU 比較接續第二／三項。
+這是已提交任務的實際條件圖，不是目前未提交表單的即時預覽；不能由來源圖重新計算後冒充舊任務輸出。第一項後端已完成 12 項新增測試；後端共 471 項（470 通過、1 項既有 Windows skip），專用介面及兩 seed／兩強度 GPU 比較已於第二／三項完成。
 
 
 ## 任務與作品的邊緣圖介面
@@ -80,3 +80,16 @@
 使用原有的 pending localStorage key。沒有流程標記的舊請求仍使用 v1 端點與精確原 body；新請求保存本機 `_atelier_control_workflow_id` 標記，送 v2 時移除標記，不傳入嚴格 API。未知標記會拒絕提交且保留 pending。還原 v1／v2 原設定後，手動生成會建立新的 v2 UUID。介面切換、來源更換及卸載會取消讀取並忽略過期回覆；圖片驗證失敗不沿用舊預覽。
 
 Vue 型別／建置、Canny 請求遷移／來源檢查、既有遮罩與比較檢查通過。瀏覽器控制工具本輪無法啟動，實際點擊／窄視窗視覺驗收仍待完成；尚未宣稱通過瀏覽器操作驗收。
+
+
+## v2 固定 seed／強度實機驗收 CLI
+
+每次只執行一個固定 profile，不自動批次。先保存素材、成功同步且按 manifest 登記 checkpoint／控制模型；新生成前重新核對兩份本機權重大小與 SHA256。報告需位於 runtime 且不存在，先保存唯一 UUID 再提交一次；回應遺失只查原任務，不重送。
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.verify_control_edge_generation --source-id <素材UUID> --profile seed-a-strength-05 --report runtime/control-edge-a05.json
+```
+
+預設 Animagine 4.0 Opt，也可明確指定 --model pony-v6-xl（本輪 v2 未實測 Pony）。四個 profile 為 seed-a-strength-05／seed-a-strength-10／seed-b-strength-05／seed-b-strength-10；seed A 9007199254740993、B 9007199254740995，強度 0.5／1.0，其餘固定為上一節 CLI 條件。生成成功後保存唯一作品與原邊緣 PNG，核對原成功歷史、PNG hash／bytes、尺寸／白色像素及解碼 RGB hash；不是品質分數。
+
+同一指令加 --verify-report 只 GET 保存證據，不能同步、匯入缺失邊緣或補提交；profile、來源、完整 workflow／原版本／hash 不符先拒絕且不改原報告。原引擎 Windows／POSIX 固定目錄的兩種分隔符均可驗證，保留原歷史拼法；不接受 ..、重複分隔符或外部路徑。完整本輪 [RTX 3060 比較與離線重啟證據](validation/canny-edges-rtx3060.md)已通過，品質偏差與限制如實記錄。

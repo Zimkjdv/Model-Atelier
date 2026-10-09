@@ -20,6 +20,7 @@ def checksum(value):
 
 class ControlAcceptance(base.Acceptance):
     generate_path='control/generate'
+    workflow_id=flow.ID
     model_id='pony-v6-xl'
     source_id=None
     def __init__(self,*args,**kwargs):
@@ -70,7 +71,7 @@ class ControlAcceptance(base.Acceptance):
         self.identity(item[0],CONTROL,True)
     def check_snapshots(self,item):
         self.identity(item.get('model_metadata'),self.manifest);self.components(item.get('component_metadata'))
-        if item.get('workflow_id')!=flow.ID or item.get('reference_settings')!=self.expected_settings() or item.get('lora_metadata'): raise ValueError('Control settings differ')
+        if item.get('workflow_id')!=self.workflow_id or item.get('reference_settings')!=self.expected_settings() or item.get('lora_metadata'): raise ValueError('Control settings differ')
         self.anchors(item.get('reference_metadata'),self.report['original_assets'])
         for key in ('reference_metadata','component_metadata','model_metadata','runtime_metadata','measurements'):
             if key in self.report and self.report[key]!=item.get(key): raise ValueError('Immutable snapshot changed: '+key)

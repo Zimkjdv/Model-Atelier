@@ -33,7 +33,7 @@ class ControlEdgeTests(unittest.TestCase):
     def import_response(self,job,raw,status=200):
         seen=[]
         def handle(request):
-            seen.append(request);self.assertEqual(request.method,'GET');self.assertEqual(request.url.path,'/view');self.assertEqual(request.url.params['subfolder'],'model_atelier/'+job['id'])
+            seen.append(request);self.assertEqual(request.method,'GET');self.assertEqual(request.url.path,'/view');self.assertEqual(request.url.params['subfolder'],job['history']['outputs']['16']['images'][0]['subfolder'])
             return httpx.Response(status,content=raw)
         remote=httpx.AsyncClient(transport=httpx.MockTransport(handle))
         with patch('backend.control_edges_api.httpx.AsyncClient',return_value=remote): response=self.client.post('/api/jobs/'+job['id']+'/control-edge')
@@ -78,6 +78,15 @@ class ControlEdgeTests(unittest.TestCase):
         with patch('backend.submissions.httpx.AsyncClient',return_value=self.remote(body)): old_job=self.client.post('/api/control/generate',json=body).json()
         self.assertEqual(self.client.get('/api/jobs/'+old_job['id']+'/control-edge').status_code,409)
         self.assertEqual(self.client.get('/api/jobs/'+str(uuid4())+'/control-edge').status_code,404)
+    def test_windows_history_folder_is_exact_but_retains_original_spelling(self):
+        _,job,_,raw=self.complete()
+        job['history']['outputs']['16']['images'][0]['subfolder']='model_atelier'+chr(92)+job['id']
+        job=jobs.update(self.db,job['id'],history=job['history'])
+        response,seen=self.import_response(job,raw);self.assertEqual(response.status_code,200,response.text)
+        self.assertEqual(response.json()['source']['subfolder'],'model_atelier'+chr(92)+job['id']);self.assertEqual(len(seen),1)
+        for folder in ('model_atelier/../'+job['id'],'model_atelier'+chr(92)+'..'+chr(92)+job['id'],'model_atelier//'+job['id'],'other/'+job['id']):
+            changed=copy.deepcopy(job);changed['history']['outputs']['16']['images'][0]['subfolder']=folder
+            with self.assertRaises(ValueError): edges.source(changed,self.validate)
     def test_offline_or_missing_remote_output_never_creates_local_snapshot(self):
         _,job,_,_=self.complete();remote=httpx.AsyncClient(transport=httpx.MockTransport(lambda r:(_ for _ in ()).throw(httpx.ConnectError('offline',request=r))))
         with patch('backend.control_edges_api.httpx.AsyncClient',return_value=remote): self.assertEqual(self.client.post('/api/jobs/'+job['id']+'/control-edge').status_code,502)

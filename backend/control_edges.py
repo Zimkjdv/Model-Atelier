@@ -34,7 +34,7 @@ def source(job,validate):
     images=entry.get('images') if isinstance(entry,dict) else None
     if not isinstance(images,list) or len(images)!=1 or not isinstance(images[0],dict): raise ValueError('原歷史缺少唯一 Canny 邊緣輸出；不重新生成。')
     image=images[0];name=image.get('filename');folder=image.get('subfolder','')
-    if image.get('type')!='output' or not isinstance(name,str) or len(name)>255 or not re.fullmatch(r'canny_[0-9]+_\.png',name) or folder!='model_atelier/'+str(UUID(job['id'])): raise ValueError('邊緣輸出位置與平台流程不同，未讀取檔案。')
+    if image.get('type')!='output' or not isinstance(name,str) or len(name)>255 or not re.fullmatch(r'canny_[0-9]+_\.png',name) or not isinstance(folder,str) or folder.replace(chr(92),'/')!='model_atelier/'+str(UUID(job['id'])): raise ValueError('邊緣輸出位置與平台流程不同，未讀取檔案。')
     return anchors,dict(node_id=flow.EDGE_NODE,filename=name,subfolder=folder,type='output')
 
 
