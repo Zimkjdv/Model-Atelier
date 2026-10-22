@@ -31,6 +31,8 @@ def install(app,host,submissions):
             max_pixels=16_000_000,batch_size=1,comparison=False)
 
     async def submit(value,adapter):
+        from backend import diagnostics
+        diagnostics.bind_submission(value.request_id, adapter.ID)
         settings=value.model_dump(mode='json',exclude={'request_id','revision'})
         async with submissions.job_lock(value.request_id):
             try: existing=jobs.get(host.DB,str(value.request_id))
@@ -38,6 +40,7 @@ def install(app,host,submissions):
             if existing is not None:
                 if existing.get('workflow_id')!=adapter.ID or existing.get('reference_settings')!=settings or existing.get('experiment_context') is not None:
                     raise HTTPException(409,'此請求 ID 已用於不同局部編輯設定')
+                diagnostics.record_job('submission_recovered', existing)
                 return existing
             if not value.checkpoint: raise HTTPException(422,'請先選擇 checkpoint')
             if value.engine_url!=host.engine_url(): raise HTTPException(409,'引擎設定已變更，請確認原引擎')

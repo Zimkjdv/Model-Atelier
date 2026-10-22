@@ -2,7 +2,7 @@ export type ApiErrorKind = 'http' | 'network' | 'aborted' | 'invalid-response'
 
 export class ApiError extends Error {
   constructor(message: string, readonly kind: ApiErrorKind, readonly status: number | null = null,
-    readonly detail: unknown = null, readonly conclusive = false) {
+    readonly detail: unknown = null, readonly conclusive = false, readonly requestId: string | null = null) {
     super(message)
     this.name = kind === 'aborted' ? 'AbortError' : 'ApiError'
   }
@@ -48,8 +48,10 @@ async function httpError(response: Response): Promise<ApiError> {
   }
   const detail = payload && typeof payload === 'object' && 'detail' in payload ? payload.detail : null
   const hasJob = detail && typeof detail === 'object' && 'job_id' in detail && typeof detail.job_id === 'string' && detail.job_id.length > 0
+  const requestId = response.headers.get('x-request-id')
   return new ApiError(message(detail, response.status), 'http', response.status, detail,
-    parsed && ((response.status >= 400 && response.status < 500) || !!hasJob))
+    parsed && ((response.status >= 400 && response.status < 500) || !!hasJob),
+    requestId && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(requestId) ? requestId : null)
 }
 
 function cancelled(signal?: AbortSignal | null): ApiError | null {

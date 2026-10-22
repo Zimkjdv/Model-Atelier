@@ -4,7 +4,7 @@ from copy import deepcopy
 import sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta, timezone
-from backend import job_measurements, experiment_context
+from backend import job_measurements, experiment_context, diagnostics
 
 
 def display(value):
@@ -13,6 +13,16 @@ def display(value):
 
 
 def reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, model_metadata=None, lora_metadata=None,
+            *, workflow_id=None, component_metadata=None, reference_metadata=None, reference_settings=None,
+            experiment=None, generation_settings=None):
+    value, fresh = _reserve(path, job_id, engine_url, workflow, checkpoint, model_version, model_metadata, lora_metadata,
+        workflow_id=workflow_id, component_metadata=component_metadata, reference_metadata=reference_metadata,
+        reference_settings=reference_settings, experiment=experiment, generation_settings=generation_settings)
+    diagnostics.record_job('submission_new' if fresh else 'submission_recovered', value)
+    return value, fresh
+
+
+def _reserve(path, job_id, engine_url, workflow, checkpoint, model_version=None, model_metadata=None, lora_metadata=None,
             *, workflow_id=None, component_metadata=None, reference_metadata=None, reference_settings=None,
             experiment=None, generation_settings=None):
     with closing(sqlite3.connect(path)) as db, db:
@@ -52,7 +62,9 @@ def get(path, job_id):
         row = db.execute('SELECT value FROM settings WHERE key=?', ('job:' + job_id,)).fetchone()
     if not row:
         raise KeyError(job_id)
-    return display(json.loads(row[0]))
+    value = display(json.loads(row[0]))
+    diagnostics.bind_job(value)
+    return value
 
 
 def _update(path, job_id, expected_revision, changes):
@@ -66,11 +78,14 @@ def _update(path, job_id, expected_revision, changes):
         value = json.loads(row[0])
         revision = value.get('revision', 0)
         if expected_revision is not None and revision != expected_revision:
+            diagnostics.record_job('observation_stale', value, attempted_state=changes.get('status'))
             return display(value), False
         timestamp = datetime.now(timezone.utc).isoformat()
+        previous_state = value.get('status')
         value.update(changes, revision=revision + 1, updated_at=timestamp)
         job_measurements.advance(value, timestamp)
         db.execute('UPDATE settings SET value=? WHERE key=?', (json.dumps(value, ensure_ascii=False), 'job:' + job_id))
+    diagnostics.record_job('job_transition', value, previous_state=previous_state)
     return display(value), True
 
 

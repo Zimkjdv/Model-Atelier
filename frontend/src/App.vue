@@ -17,6 +17,7 @@ import LocalModelPaths from './LocalModelPaths.vue'
 import EngineEnvironment from './EngineEnvironment.vue'
 import LocalEnvironmentCheck from './LocalEnvironmentCheck.vue'
 import StorageOverview from './StorageOverview.vue'
+import DiagnosticsPanel from './DiagnosticsPanel.vue'
 import type { EngineReport } from './environmentTypes'
 type Memory = { total: number | null; used: number | null; free: number | null }
 type System = { host: string; os: string; python: string; updated_at: string; gpus: (Memory & { index: string; name: string; driver: string })[]; gpu_error: string | null; ram: Memory; disk: Memory & { path: string } }
@@ -143,7 +144,8 @@ onUnmounted(() => { alive = false; ++settingsEpoch; refreshRequests.dispose(); c
           <p class="footnote">硬體資訊供資源評估使用。平台不依顯卡型號限制存取；模型能否執行仍取決於完整工作流程。</p>
         </template>
         <template v-else-if="page === '設定'"><form class="panel settings" @submit.prevent="save"><h2>ComfyUI 連線</h2><p class="muted">先啟動 ComfyUI，再填入其服務位址。設定保存在本機資料庫。</p><label for="url">服務位址</label><input id="url" v-model="url" :disabled="saving" placeholder="http://127.0.0.1:8188" required type="url"><p class="muted">支援本機或你管理的遠端執行主機。</p><button class="primary" :disabled="saving">{{ saving ? '保存中…' : '保存並檢查連線' }}</button><p role="status">{{ message }}</p><p v-if="engine">{{ engine.connected ? 'ComfyUI 連線成功' : engine.error }}</p></form><LocalModelPaths :selected-engine-url="savedUrl"/></template>
-        <ModelLibrary v-else-if="page === '模型庫'" @settings="navigate('設定')" />
+        <DiagnosticsPanel v-if="page === '設定'" />
+        <ModelLibrary v-if="page === '模型庫'" @settings="navigate('設定')" />
         <AssetLibrary v-else-if="page === '參考素材'" />
         <ArtworkLibrary v-else-if="page === '作品庫'" :job-id="galleryJob" @studio="navigate('創作工作台')" @restore="restoreArtwork" @dirty="artworkNotesDirty = $event" />
       </section>

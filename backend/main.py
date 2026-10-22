@@ -70,6 +70,8 @@ def create_app(*, data_root: str | Path | None = None, database: str | Path | No
 
     app = FastAPI(title='Model Atelier', version='0.1.0', lifespan=lifespan)
     app.state.context = context
+    from backend import diagnostics_api
+    diagnostics_api.install(app, context)
     core_api.install(app, context)
     from backend import listing_api
     listing_api.install(app, context)

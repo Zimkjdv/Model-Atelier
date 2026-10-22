@@ -14,6 +14,7 @@ from backend import jobs, catalog, workflows, cancellation, progress, capabiliti
 from backend import lora_preflight, lora_records, stopping, flux_workflows
 from backend import image_workflows, runtime_metadata, experiment_context, inpaint_workflows, control_workflows, control_catalog, control_edge_workflows, inpaint_feather_workflows
 from backend.reference_workflows import IMG2IMG_ID
+from backend import diagnostics
 
 
 class Submission(BaseModel):
@@ -68,6 +69,7 @@ def install(app, host):
             return await submit_locked(value, experiment=experiment, generation_settings=generation_settings)
 
     async def submit_locked(value, *, reference=None, experiment=None, generation_settings=None):
+        diagnostics.bind_submission(value.request_id, reference.get('workflow_id', IMG2IMG_ID) if reference else 'checkpoint-text2image-v1')
         # Recovery is pinned to the recorded request, including after changing
         # the current engine. Never probe fresh capabilities or replay an old ID.
         try:
@@ -79,6 +81,7 @@ def install(app, host):
                     or (reference and existing.get('reference_settings') != reference['settings'])
                     or not experiment_context.matches(existing.get('experiment_context'), experiment, generation_settings)):
                 raise HTTPException(409, '此請求 ID 已用於其他工作流程')
+            diagnostics.record_job('submission_recovered', existing)
             return existing
         if value.engine_url != host.engine_url():
             raise HTTPException(409, '引擎設定已變更，請重新載入模型庫')
@@ -276,6 +279,7 @@ def install(app, host):
 
     @app.post('/api/generate')
     async def generate(value: Generate):
+        diagnostics.bind_submission(value.request_id, IMG2IMG_ID if value.workflow_mode == 'image2image' else 'checkpoint-text2image-v1')
         settings = value.model_dump(mode='json', exclude={'request_id', 'revision', 'experiment', 'mask_asset_id', 'grow_mask_by', 'control_net_name', 'control_strength', 'control_start', 'control_end', 'canny_low', 'canny_high'})
         experiment = value.experiment.model_dump(mode='json') if value.experiment else None
         if value.workflow_mode == 'image2image':
@@ -288,6 +292,7 @@ def install(app, host):
                     if (existing.get('workflow_id') != IMG2IMG_ID or existing.get('reference_settings') != settings
                             or not experiment_context.matches(existing.get('experiment_context'), experiment, settings)):
                         raise HTTPException(409, '此請求 ID 已用於其他工作流程或輸入素材')
+                    diagnostics.record_job('submission_recovered', existing)
                     return existing
                 if not value.checkpoint:
                     raise HTTPException(422, '請先選擇 checkpoint')

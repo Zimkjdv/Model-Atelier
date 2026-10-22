@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { api as request } from './apiClient'
+import { api as request, ApiError } from './apiClient'
 import { submitOnce } from './generationRequest'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import ExperimentSnapshot from './ExperimentSnapshot.vue'
@@ -83,6 +83,7 @@ async function generate() {
     await load()
   } catch (e) {
     error.value = e instanceof Error ? e.message : '提交失敗'
+    if (e instanceof ApiError && e.requestId) error.value += `（平台請求 ID：${e.requestId}）`
     if (pending.value) error.value += '。請保留原請求 ID 並使用下方恢復按鈕。'
     await load().catch(() => {})
   } finally { busy.value = false }

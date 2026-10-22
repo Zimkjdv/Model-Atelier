@@ -7,6 +7,7 @@ from typing import Callable, ClassVar
 
 import httpx
 from backend.schemas import Settings, ModelTarget, ModelMetadata, DraftInput
+from backend.diagnostics import Recorder, EngineClient
 
 
 @dataclass
@@ -19,6 +20,7 @@ class AppContext:
     engine: Callable | None = field(default=None, init=False)
     current_catalog: Callable | None = field(default=None, init=False)
     local_environment_state: object = field(default=None, init=False)
+    diagnostics: Recorder = field(default_factory=Recorder, init=False)
     # Immutable request types; specialized installers add their derived types.
     Settings: ClassVar[type] = Settings
     ModelTarget: ClassVar[type] = ModelTarget
@@ -38,4 +40,4 @@ class AppContext:
 
     def http_client(self, **options):
         factory = self.engine_client_factory or httpx.AsyncClient
-        return factory(**options)
+        return EngineClient(factory(**options))

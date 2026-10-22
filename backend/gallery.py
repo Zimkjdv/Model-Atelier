@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from uuid import UUID, uuid5
 
 from PIL import Image, ImageOps, UnidentifiedImageError
+from backend import diagnostics
 
 MAX_BYTES = 32 * 1024 * 1024
 MAX_PIXELS = 32_000_000
@@ -31,7 +32,9 @@ def get(path, artwork_id):
         row = db.execute('SELECT value FROM settings WHERE key=?', ('artwork:' + artwork_id,)).fetchone()
     if not row:
         raise KeyError('找不到作品')
-    return organization_defaults(json.loads(row[0]))
+    value = organization_defaults(json.loads(row[0]))
+    diagnostics.bind_job(dict(id=value.get('job_id'), workflow_id=value.get('workflow_id')))
+    return value
 
 
 def list_all(path):
@@ -55,6 +58,7 @@ def organize(path, artwork_id, revision, changes):
         if row is None:
             raise KeyError('找不到作品')
         value = organization_defaults(json.loads(row[0]))
+        diagnostics.bind_job(dict(id=value.get('job_id'), workflow_id=value.get('workflow_id')))
         if value['revision'] != revision:
             raise RevisionConflict('作品已在另一個視窗變更；請重新讀取後確認筆記及評分再保存。')
         if all(value[k] == v for k, v in changes.items()):

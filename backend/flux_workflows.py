@@ -176,6 +176,8 @@ def architecture_guard(metadata):
 
 
 async def submit(host, value):
+    from backend import diagnostics
+    diagnostics.bind_submission(value.request_id, WORKFLOW_ID)
     graph, job_id = build(value), str(value.request_id)
     try:
         existing = jobs.get(host.DB, job_id)
@@ -185,6 +187,7 @@ async def submit(host, value):
         if (existing.get('workflow_id') != WORKFLOW_ID or existing['workflow'] != graph or
                 existing['engine_url'] != value.engine_url):
             raise HTTPException(409, '此請求 ID 已用於其他工作流程')
+        diagnostics.record_job('submission_recovered', existing)
         return existing
     if value.engine_url != host.engine_url():
         raise HTTPException(409, '引擎設定已變更，請重新載入 FLUX 元件。')

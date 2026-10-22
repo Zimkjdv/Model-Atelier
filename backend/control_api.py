@@ -29,12 +29,15 @@ def install(app,host,submissions):
     def descriptor():
         return dict(id=flow.ID,name='Canny 結構參考',architectures=['sd1','sdxl'],image_count=1,lora=True,implemented=True,preprocessor='ComfyUI native Canny',batch_size=1,denoise=1,comparison=False)
     async def submit(value,adapter):
+        from backend import diagnostics
+        diagnostics.bind_submission(value.request_id, adapter.ID)
         settings=value.model_dump(mode='json',exclude={'request_id','revision'})
         async with submissions.job_lock(value.request_id):
             try: existing=jobs.get(host.DB,str(value.request_id))
             except KeyError: existing=None
             if existing is not None:
                 if existing.get('workflow_id')!=adapter.ID or existing.get('reference_settings')!=settings or existing.get('experiment_context') is not None: raise HTTPException(409,'此 UUID 已用於不同的結構參考設定')
+                diagnostics.record_job('submission_recovered', existing)
                 return existing
             if not value.checkpoint: raise HTTPException(422,'請選擇 checkpoint')
             if value.engine_url!=host.engine_url(): raise HTTPException(409,'引擎設定已變更，請連接原引擎')
