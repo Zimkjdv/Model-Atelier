@@ -6,11 +6,13 @@ import argparse
 import asyncio
 from contextlib import closing
 import io
+import json
 from pathlib import Path
 import sqlite3
 import sys
 import tempfile
 from uuid import uuid4
+from typing import Literal
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -26,14 +28,27 @@ ENGINE = 'http://mock-engine.invalid:8188'
 
 
 def fixture(data, count=None, legacy_ui=False):
-    state = {'prompts': 0}
+    state = {'prompts': 0, 'mode': 'uncertain'}
+    generated = {}
 
     def engine(request):
         assert request.url.host == 'mock-engine.invalid', 'fixture cannot contact another engine'
+        if state['mode'] == 'offline':
+            raise httpx.ConnectError('fixture offline')
         name = request.url.path.rsplit('/', 1)[-1]
         if request.url.path == '/prompt':
             state['prompts'] += 1
-            raise httpx.ReadTimeout('fixture: lost upstream response')
+            if state['mode'] == 'uncertain':
+                raise httpx.ReadTimeout('fixture: lost upstream response')
+            payload = json.loads(request.content)
+            identifier = payload['prompt_id']
+            generated[identifier] = {'status': {'completed': True, 'status_str': 'success'},
+                'outputs': {'7': {'images': [{'filename': identifier + '.png', 'subfolder': '', 'type': 'output'}]}}}
+            return httpx.Response(200, json={'prompt_id': identifier})
+        if request.url.path.startswith('/history/'):
+            return httpx.Response(200, json={name: generated[name]} if name in generated else {})
+        if request.url.path == '/view':
+            return httpx.Response(200, content=raw.getvalue(), headers={'content-type': 'image/png'})
         if name == 'CheckpointLoaderSimple':
             value = {name: {'input': {'required': {'ckpt_name': [['demo.safetensors']]}}}}
         elif name == 'KSampler':
@@ -102,6 +117,16 @@ def fixture(data, count=None, legacy_ui=False):
     def conflict():
         value = gallery.get(context.DB, artwork['id'])
         gallery.organize(context.DB, artwork['id'], value['revision'], {'notes': 'another window'})
+        return {'ok': True}
+
+    @wrapper.post('/qa/engine/{mode}')
+    def engine_mode(mode: Literal['offline', 'success', 'uncertain']):
+        state['mode'] = mode
+        return {'ok': True}
+
+    @wrapper.post('/qa/model-selection/reset')
+    def reset_selection():
+        catalog.mutate(context.DB, ENGINE, lambda value: value.update(selected=None))
         return {'ok': True}
 
     @wrapper.post('/qa/populate')

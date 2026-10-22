@@ -124,6 +124,8 @@ onBeforeUnmount(() => window.clearInterval(timer))
 <template>
   <article class="panel">
     <h2>生成任務</h2>
+    <p class="submission-state" role="status" aria-label="提交能力狀態">{{ pending ? '原提交待確認：恢復會沿用原 UUID 與參數。' : busy || disabled ? '暫不可提交：正在載入、保存或處理中。' : missingModel || blockedReason ? '尚缺必要條件：請依下方提示補齊模型、素材或元件。' : '表單預檢可提交：按下生成後仍會檢查引擎與元件。' }}</p>
+    <details class="footnote"><summary>能力與實機驗證範圍</summary><p>{{ workflow === 'flux' ? 'FLUX 已接入專用工作流程，實機 GPU 尚未驗證。' : '此流程已有程式接入；既有實測限文件記錄的硬體、模型與參數。' }}目前表單與清單預檢不驗證實際權重 hash、可用記憶體或生成品質；未知資訊不當作已通過。模型來源／版本可在模型庫查看，任務保存當次快照。</p></details>
     <p v-if="checkpointForm" class="footnote">Checkpoint {{ workflow === 'control' ? 'Canny 結構參考' : workflow === 'inpaint' ? '局部編輯' : imageMode ? '圖生圖' : '文生圖' }} · {{ form.steps }} steps · {{ checkpointForm.sampler_name }} / {{ checkpointForm.scheduler }} · CFG {{ checkpointForm.cfg }} · denoise {{ checkpointForm.denoise }} · 每次 1 張。工作流程與精確 seed 會保存到本機。</p>
     <p v-else class="footnote">FLUX.1 [schnell] · {{ form.steps }} steps · Euler / simple · CFG 1 · 每次 1 張。完整流程與四元件快照會保存到本機；GPU 尚未驗證。</p>
     <p v-if="!imageMode && checkpointForm?.reference_ids.length" class="notice warning">文生圖不使用參考素材，請先取消選取，或切換圖生圖流程。</p>
