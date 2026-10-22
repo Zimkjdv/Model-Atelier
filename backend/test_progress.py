@@ -76,7 +76,7 @@ class ProgressTests(unittest.IsolatedAsyncioTestCase):
         return self.locks.setdefault(str(job_id), asyncio.Lock())
 
     def hub(self, reconcile=None):
-        hub = progress.Hub(main, reconcile or self.reconcile, self.lock)
+        hub = progress.Hub(self.host, reconcile or self.reconcile, self.lock)
         self.hubs.append(hub)
         return hub
 
@@ -345,7 +345,7 @@ class ProgressTests(unittest.IsolatedAsyncioTestCase):
     async def test_header_disconnect_before_stream_starts_still_releases_listener(self):
         job = self.job()
         app = FastAPI()
-        hub = progress.install(app, main, self.reconcile, self.lock)
+        hub = progress.install(app, self.host, self.reconcile, self.lock)
         self.hubs.append(hub)
         request = AsyncMock()
         request.is_disconnected.return_value = False

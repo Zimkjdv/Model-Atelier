@@ -145,7 +145,7 @@ def install(app, host):
             except ValueError as exc:
                 raise HTTPException(409, str(exc))
             imported, existing, errors = [], [], []
-            async with httpx.AsyncClient(timeout=30, trust_env=False, follow_redirects=False) as client:
+            async with host.http_client(timeout=30, trust_env=False, follow_redirects=False) as client:
                 for source in sources:
                     artwork_id = gallery.output_id(job, source)
                     try:

@@ -85,7 +85,7 @@ class ExecutionDeviceSubmissionTests(unittest.TestCase):
                 self.assertEqual(self.client.get('/api/settings').status_code, 200)
                 self.assertEqual(self.client.get('/api/artworks').status_code, 200)
                 self.assertEqual(self.client.get('/api/assets').status_code, 200)
-                self.assertFalse((main.DATA / 'job_inputs' / body['request_id']).exists())
+                self.assertFalse((self.host.DATA / 'job_inputs' / body['request_id']).exists())
 
     def test_raw_job_submission_uses_same_guard(self):
         body = self.payload()
@@ -168,7 +168,7 @@ class ExecutionDeviceSubmissionTests(unittest.TestCase):
             job = self.client.post('/api/generate', json=body).json()
         image = io.BytesIO()
         Image.new('RGB', (8, 8), 'white').save(image, format='PNG')
-        artwork, _ = gallery.save(self.db, main.DATA / 'artworks', job,
+        artwork, _ = gallery.save(self.db, self.host.DATA / 'artworks', job,
                                  dict(node_id='7', filename='old.png', subfolder='', type='output'), image.getvalue())
         body = self.payload()
         with patch('backend.submissions.httpx.AsyncClient', return_value=device_remote(test_submissions.SubmissionTests.remote(self))):

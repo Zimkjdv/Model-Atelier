@@ -133,7 +133,7 @@ async def refresh(host, job):
     if active(job):
         return job
     try:
-        async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
+        async with host.http_client(timeout=10, trust_env=False) as client:
             return await reconcile(host, client, job)
     except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError):
         uncertain(host, job)
@@ -152,7 +152,7 @@ async def cancel(host, job):
         'id': str(uuid4()), 'phase': 'prepared', 'started_at': timestamp.isoformat(),
         'active_until': (timestamp + timedelta(seconds=60)).isoformat(), 'result': 'checking'})
     try:
-        async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
+        async with host.http_client(timeout=10, trust_env=False) as client:
             state = await queue_state(client, job)
             if state != 'queued':
                 # No request is sent when the exact prompt is absent or running.

@@ -23,7 +23,7 @@ class LoraTests(unittest.TestCase):
         remote = AsyncMock()
         remote.__aenter__.return_value = remote
         def response(url):
-            self.assertEqual(url, main.engine_url() + '/object_info/LoraLoader')
+            self.assertEqual(url, self.host.engine_url() + '/object_info/LoraLoader')
             if during:
                 during()
             if failure:
@@ -32,7 +32,7 @@ class LoraTests(unittest.TestCase):
                 'LoraLoader': {'input': {'required': {'lora_name': [names]}}}}, request=httpx.Request('GET', url))
         remote.get.side_effect = response
         with patch('backend.loras.httpx.AsyncClient', return_value=remote) as client:
-            result = self.client.post('/api/loras/sync', json={'engine_url': main.engine_url()})
+            result = self.client.post('/api/loras/sync', json={'engine_url': self.host.engine_url()})
         client.assert_called_once_with(timeout=10, trust_env=False)
         remote.post.assert_not_called()
         return result
@@ -47,7 +47,7 @@ class LoraTests(unittest.TestCase):
     def test_empty_read_is_read_only_and_does_not_contact_engine_or_gpu(self):
         before = self.rows()
         with (patch('backend.loras.httpx.AsyncClient', side_effect=AssertionError('no engine access')),
-              patch.object(main, 'gpu_info', side_effect=AssertionError('no GPU access'))):
+              patch.object(self.host, 'gpu_info', side_effect=AssertionError('no GPU access'))):
             result = self.client.get('/api/loras')
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json(), dict(engine_url=ENGINE, loras=[], synced_at=None, sync_error=None))
@@ -76,7 +76,7 @@ class LoraTests(unittest.TestCase):
         missing = next(item for item in result['loras'] if item['name'] == NAME)
         self.assertEqual(missing, saved | {'listed': False})
         self.client.close()
-        self.client = TestClient(main.app)
+        self.client = TestClient(main.create_app(data_root=self.db.parent, database=self.db))
         self.assertEqual(self.client.get('/api/loras').json(), result)
         self.assertEqual(catalog.read(self.db, ENGINE), original)
 

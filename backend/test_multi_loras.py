@@ -153,7 +153,7 @@ class MultiLoraTests(unittest.TestCase):
         self.prepare()
         body = self.body()
         fields = dict(width=512, height=512, steps=4, cfg=1, sampler_name='lcm', scheduler='sgm_uniform', denoise=1)
-        with patch.object(main, 'engine', AsyncMock(return_value=dict(url=ENGINE, diagnostics=environment.engine_diagnostics(status='offline')))):
+        with patch.object(self.host, 'engine', AsyncMock(return_value=dict(url=ENGINE, diagnostics=environment.engine_diagnostics(status='offline')))):
             result = self.client.post('/api/generation-advice', json=fields | dict(engine_url=ENGINE, checkpoint=body['checkpoint'], loras=body['loras']))
         self.assertEqual(result.status_code, 200, result.text)
         self.assertEqual(result.json()['validation_status'], 'unverified')

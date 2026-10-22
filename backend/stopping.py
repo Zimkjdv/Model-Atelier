@@ -69,7 +69,7 @@ async def refresh(host, job):
             from datetime import datetime
             if datetime.fromisoformat(job['stop_attempt']['active_until']) > c.now():
                 return job
-        async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
+        async with host.http_client(timeout=10, trust_env=False) as client:
             return await reconcile(host, client, job)
     except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError):
         persist(host, job, status='stop_unknown', error=UNCERTAIN,
@@ -86,7 +86,7 @@ async def stop(host, job):
         raise HTTPException(409, '僅可停止已確認執行中的任務；請先更新狀態。')
     # Check support before mutating the ledger. Lack of support is not a failed
     # generation and must not produce a global interrupt fallback.
-    async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
+    async with host.http_client(timeout=10, trust_env=False) as client:
         try:
             supported = await capability(client, job)
         except (httpx.HTTPError, ValueError):

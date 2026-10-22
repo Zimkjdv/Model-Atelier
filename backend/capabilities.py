@@ -118,7 +118,7 @@ def install(app, host):
         async with locks.setdefault(engine_url, asyncio.Lock()):
             error = None
             try:
-                async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
+                async with host.http_client(timeout=10, trust_env=False) as client:
                     value = write(host.DB, engine_url, await fetch(client, engine_url))
             except httpx.RequestError:
                 error = 'ComfyUI 離線或連線逾時；顯示上次能力快照，生成時仍需重新確認'

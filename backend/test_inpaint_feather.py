@@ -24,7 +24,7 @@ class FeatherTests(unittest.TestCase):
     def submit(self,body,remote=None):
         remote=remote or self.remote(body)
         with patch('backend.submissions.httpx.AsyncClient',return_value=remote): return self.client.post('/api/inpaint-feather/generate',json=body)
-    def validate(self,value): return main.InpaintFeatherInput.model_validate(value).model_dump(mode='json',exclude={'revision'})
+    def validate(self,value): return self.host.InpaintFeatherInput.model_validate(value).model_dump(mode='json',exclude={'revision'})
     def test_three_uploads_separate_noise_and_blend_and_frozen_hashes(self):
         body=self.body();remote=self.remote(body);result=self.submit(body,remote);self.assertEqual(result.status_code,200,result.text);job=result.json()
         self.assertEqual(job['workflow_id'],flow.ID);self.assertEqual(len(job['workflow']),11);self.assertEqual(job['workflow']['4']['inputs']['mask'],['13',0]);self.assertEqual(job['workflow']['14']['inputs']['mask'],['15',0]);self.assertEqual(job['workflow']['5']['inputs']['seed'],2**64-1)

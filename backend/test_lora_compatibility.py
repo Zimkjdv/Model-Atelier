@@ -52,7 +52,7 @@ class LoraCompatibilityTests(unittest.TestCase):
         self.prepare()
         before = self.rows()
         with (patch('backend.main.httpx.AsyncClient', side_effect=AssertionError('no engine access')),
-              patch.object(main, 'gpu_info', side_effect=AssertionError('no GPU access'))):
+              patch.object(self.host, 'gpu_info', side_effect=AssertionError('no GPU access'))):
             data = self.get().json()
         self.assertEqual(data['checkpoint']['metadata_updated_at'], catalog.read(self.db, ENGINE)['models'][0]['metadata_updated_at'])
         self.assertEqual(data['loras'][0]['metadata_updated_at'], loras.read(self.db, ENGINE)['loras'][0]['metadata_updated_at'])

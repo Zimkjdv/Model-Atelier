@@ -82,11 +82,11 @@ class PreviewTests(unittest.TestCase):
         state = preview.Preview()
         state.lock.acquire()
         with self.assertRaises(preview.PreviewBusy):
-            state.run(main.ROOT, self.db, self.db.parent, preview.Input.model_validate(body))
+            state.run(self.host.ROOT, self.db, self.db.parent, preview.Input.model_validate(body))
         state.lock.release()
         with patch.object(preview, 'run_worker', side_effect=preview.PreviewError('failed')):
             with self.assertRaises(preview.PreviewError):
-                state.run(main.ROOT, self.db, self.db.parent, preview.Input.model_validate(body))
+                state.run(self.host.ROOT, self.db, self.db.parent, preview.Input.model_validate(body))
         self.assertTrue(state.lock.acquire(blocking=False))
         state.lock.release()
 

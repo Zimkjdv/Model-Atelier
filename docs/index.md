@@ -5,6 +5,7 @@
 ## 安裝與維護
 
 - [安裝、首次生成、埠與備份](setup-and-operations.md)、[架構與資料流](architecture.md)、[UI 規範](ui-guidelines.md)
+- [應用程式工廠、配置與測試隔離](application-factory.md)
 - [裝置回報](execution-device.md)、[環境版本](runtime-versions.md)、[效能條件](execution-context.md)、[量測](job-measurements.md)
 
 ## 創作與作品

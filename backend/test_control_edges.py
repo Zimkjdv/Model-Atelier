@@ -29,7 +29,7 @@ class ControlEdgeTests(unittest.TestCase):
         job=jobs.update(self.db,job['id'],status='completed',history=history)
         image=Image.new('RGB',(body['width'],body['height']),'black');image.putpixel((10,10),(255,255,255))
         stream=io.BytesIO();image.save(stream,format='PNG');return body,job,source,stream.getvalue()
-    def validate(self,value): return main.ControlInput.model_validate(value).model_dump(mode='json',exclude={'revision'})
+    def validate(self,value): return self.host.ControlInput.model_validate(value).model_dump(mode='json',exclude={'revision'})
     def import_response(self,job,raw,status=200):
         seen=[]
         def handle(request):

@@ -135,7 +135,7 @@ def install(app, host):
             _, _, assessment = lora_preflight.registration(host.DB, value.engine_url, value.checkpoint, choice['name'])
             if assessment['status'] == 'incompatible':
                 fail(422, assessment['label'] + '；' + assessment['message'], 'unsupported_architecture')
-        async with httpx.AsyncClient(timeout=15, trust_env=False) as client:
+        async with host.http_client(timeout=15, trust_env=False) as client:
             try:
                 response = await client.get(value.engine_url + '/object_info/CheckpointLoaderSimple')
                 response.raise_for_status()
@@ -416,7 +416,7 @@ def install(app, host):
         if job['status'] in stopping.STATES:
             return await stopping.refresh(host, job)
         try:
-            async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
+            async with host.http_client(timeout=10, trust_env=False) as client:
                 status, entry = await cancellation.history_state(client, job)
                 if entry is not None:
                     return cancellation.persist(host, job, status=status, history=entry,

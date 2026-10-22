@@ -46,7 +46,7 @@ class ImageExperimentTests(unittest.TestCase):
 
     def test_missing_image_warns_and_fixed_cases_keep_source_and_precise_seed(self):
         body=self.payload()|dict(case_ids=['chair','lake'],axis='seed',values=['9007199254740993','18446744073709551615'])
-        (main.DATA/'assets'/(body['settings']['image_asset_id']+'.png')).unlink()
+        (self.host.DATA/'assets'/(body['settings']['image_asset_id']+'.png')).unlink()
         plan=self.client.post('/api/experiments/preview',json=body).json()
         self.assertTrue(any('本機不可用' in v for v in plan['warnings']))
         self.assertEqual(plan['expected_job_count'],4)

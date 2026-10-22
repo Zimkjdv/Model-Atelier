@@ -211,7 +211,7 @@ async def submit(host, value):
         architecture_guard(metadata)
     except ValueError as exc:
         fail(422, str(exc))
-    async with httpx.AsyncClient(timeout=15, trust_env=False) as client:
+    async with host.http_client(timeout=15, trust_env=False) as client:
         try:
             await preflight(client, value.engine_url, graph)
         except httpx.HTTPError:

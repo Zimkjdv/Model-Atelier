@@ -84,7 +84,7 @@ class SettingsTransferTests(unittest.TestCase):
         buffer = io.BytesIO()
         Image.new('RGB', (8, 8), 'white').save(buffer, 'PNG')
         source = dict(node_id='7', filename='result.png', subfolder='', type='output')
-        artwork, _ = gallery.save(self.db, main.DATA/'artworks', job, source, buffer.getvalue())
+        artwork, _ = gallery.save(self.db, self.host.DATA/'artworks', job, source, buffer.getvalue())
         for kind, item in [('jobs', job), ('artworks', artwork)]:
             response = self.client.get(f'/api/{kind}/{item["id"]}/settings-export')
             self.assertEqual(response.status_code, 200, response.text)

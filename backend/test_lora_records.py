@@ -35,7 +35,7 @@ class LoraRecordTests(unittest.TestCase):
         raw = io.BytesIO()
         Image.new('RGB', (400, 300), '#718d76').save(raw, 'PNG')
         source = dict(node_id='7', filename='lora-result.png', subfolder='', type='output')
-        return gallery.save(self.db, main.DATA / 'artworks', job, source, raw.getvalue())[0]
+        return gallery.save(self.db, self.host.DATA / 'artworks', job, source, raw.getvalue())[0]
 
     def rows(self):
         with closing(sqlite3.connect(self.db)) as db:

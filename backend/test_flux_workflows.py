@@ -149,7 +149,7 @@ class FluxWorkflowTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 jobs.update(self.db, job['id'], **{field: None})
         image = io.BytesIO(); Image.new('RGB', (8,8)).save(image, format='PNG')
-        item, _ = gallery.save(self.db, main.DATA/'artworks', job, dict(filename='landscape.png', subfolder='', type='output', node_id='9'), image.getvalue())
+        item, _ = gallery.save(self.db, self.host.DATA/'artworks', job, dict(filename='landscape.png', subfolder='', type='output', node_id='9'), image.getvalue())
         self.assertEqual(item['component_metadata'], job['component_metadata'])
         self.assertEqual(item['workflow_id'], job['workflow_id'])
         restored = self.client.get('/api/flux/artworks/' + item['id'] + '/creation-settings')
@@ -203,7 +203,7 @@ class FluxWorkflowTests(unittest.TestCase):
         image = io.BytesIO(); Image.new('RGB', (8,8)).save(image,format='PNG')
         job = dict(id=body['request_id'],prompt_id=body['request_id'],engine_url=ENGINE,
                    checkpoint='old',workflow={},created_at='2026-10-01')
-        item,_ = gallery.save(self.db,main.DATA/'artworks',job,
+        item,_ = gallery.save(self.db,self.host.DATA/'artworks',job,
             dict(filename='old.png',subfolder='',type='output',node_id='7'),image.getvalue())
         response = self.client.get('/api/flux/artworks/'+item['id']+'/creation-settings')
         self.assertEqual(response.status_code,422)

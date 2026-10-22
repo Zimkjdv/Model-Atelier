@@ -23,7 +23,7 @@ class ModelPathTests(unittest.TestCase):
         test_api.ApiTests.setUp(self)
         self.root = Path(self.temp.name) / 'managed workspace with spaces'
         self.root.mkdir()
-        self.root_patcher = patch.object(main, 'ROOT', self.root)
+        self.root_patcher = patch.object(self.host, 'ROOT', self.root)
         self.root_patcher.start()
         model_paths.default_directory(self.root).mkdir(parents=True)
         self.first = self.root / 'models one'

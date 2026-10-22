@@ -20,13 +20,13 @@ class ReferenceAssetTests(unittest.TestCase):
         self.db = self.folder / 'test.sqlite3'
         with closing(sqlite3.connect(self.db)) as db, db:
             db.execute('CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
-        self.db_patch = patch.object(main, 'DB', self.db)
-        self.data_patch = patch.object(main, 'DATA', self.folder)
-        self.db_patch.start(); self.data_patch.start()
-        self.client = TestClient(main.app)
+        self.app = main.create_app(data_root=self.folder, database=self.db)
+        self.host = self.app.state.context
+        self.host.initialize()
+        self.client = TestClient(self.app)
 
     def tearDown(self):
-        self.client.close(); self.db_patch.stop(); self.data_patch.stop(); self.temp.cleanup()
+        self.client.close(); self.temp.cleanup()
 
     def create(self):
         data = io.BytesIO()

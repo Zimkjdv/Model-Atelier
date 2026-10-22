@@ -110,7 +110,7 @@ def install(app, host):
             url = target.engine_url
             require_engine(url)
             try:
-                async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
+                async with host.http_client(timeout=10, trust_env=False) as client:
                     response = await client.get(url + '/object_info/LoraLoader')
                     response.raise_for_status()
                     names = names_from(response.json())

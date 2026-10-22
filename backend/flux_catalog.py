@@ -154,7 +154,7 @@ def install(app, host):
         async with lock:
             require_engine(target.engine_url)
             try:
-                async with httpx.AsyncClient(timeout=10, trust_env=False) as client:
+                async with host.http_client(timeout=10, trust_env=False) as client:
                     listed, _ = await fetch(client, target.engine_url)
             except (httpx.HTTPError, ValueError) as exc:
                 require_engine(target.engine_url)

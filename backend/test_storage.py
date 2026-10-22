@@ -76,7 +76,7 @@ class StorageApiTests(unittest.TestCase):
     def test_readonly_api_without_gpu_or_engine_calls(self):
         original = self.db.read_bytes()
         with (patch.object(main.httpx, 'AsyncClient', side_effect=AssertionError('no network')),
-              patch.object(main, 'gpu_info', side_effect=AssertionError('no GPU'))):
+              patch.object(self.host, 'gpu_info', side_effect=AssertionError('no GPU'))):
             result = self.client.get('/api/storage')
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json()['scope'], 'platform_and_managed_local_paths')

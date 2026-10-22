@@ -24,9 +24,9 @@ class EnvironmentTests(unittest.TestCase):
         test_api.ApiTests.setUp(self)
         self.root = Path(self.temp.name) / 'managed workspace with spaces'
         self.root.mkdir()
-        self.root_patcher = patch.object(main, 'ROOT', self.root)
+        self.root_patcher = patch.object(self.host, 'ROOT', self.root)
         self.root_patcher.start()
-        self.state = main.local_environment_state
+        self.state = self.host.local_environment_state
         with self.state.cache_lock:
             self.state.last = None
 
@@ -64,7 +64,7 @@ class EnvironmentTests(unittest.TestCase):
 
     def engine(self, payload=None, **changes):
         remote = self.remote(payload, **changes)
-        with patch.object(main.httpx, 'AsyncClient', return_value=remote), patch.object(main, 'gpu_info', side_effect=AssertionError('platform GPU must not fill engine data')):
+        with patch.object(main.httpx, 'AsyncClient', return_value=remote), patch.object(self.host, 'gpu_info', side_effect=AssertionError('platform GPU must not fill engine data')):
             result = self.client.get('/api/engine')
         self.assertEqual(result.status_code, 200)
         return result.json(), remote

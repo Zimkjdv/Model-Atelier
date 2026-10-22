@@ -127,7 +127,7 @@ class LoraValidationTests(unittest.TestCase):
             engine_url=ENGINE, checkpoint=payload['checkpoint'], loras=[payload['lora']])
         report = dict(url=ENGINE, diagnostics=environment.engine_diagnostics(status='offline'))
         before = self.db.read_bytes()
-        with patch.object(main, 'engine', AsyncMock(return_value=report)):
+        with patch.object(self.host, 'engine', AsyncMock(return_value=report)):
             data = self.client.post('/api/generation-advice', json=body).json()
             self.assertEqual(data['validation_status'], 'recorded')
             self.assertEqual(len(data['matching_parameter_records']), 1)
@@ -137,7 +137,7 @@ class LoraValidationTests(unittest.TestCase):
         async def changed():
             loras.update_metadata(self.db, ENGINE, payload['lora']['name'], dict(sha256='a'*64))
             return report
-        with patch.object(main, 'engine', changed):
+        with patch.object(self.host, 'engine', changed):
             self.assertEqual(self.client.post('/api/generation-advice', json=body).status_code, 409)
 
 

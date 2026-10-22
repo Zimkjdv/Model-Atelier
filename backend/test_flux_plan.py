@@ -45,7 +45,7 @@ class FluxPlanTests(unittest.TestCase):
     def test_no_network_no_database_changes_and_no_directory_creation(self):
         before = sorted(str(p.relative_to(self.root())) for p in self.root().rglob('*'))
         database = self.db.read_bytes()
-        with patch.object(main, 'ROOT', self.root()), patch('httpx.AsyncClient', side_effect=AssertionError('no network')):
+        with patch.object(self.host, 'ROOT', self.root()), patch('httpx.AsyncClient', side_effect=AssertionError('no network')):
             response = self.client.get('/api/model-plans/flux1-schnell')
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(self.db.read_bytes(), database)

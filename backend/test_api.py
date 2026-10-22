@@ -10,7 +10,7 @@ import httpx
 from PIL import Image
 
 from fastapi.testclient import TestClient
-from backend import main
+from backend import main, assets
 
 
 class ApiTests(unittest.TestCase):
@@ -19,16 +19,13 @@ class ApiTests(unittest.TestCase):
         self.db = Path(self.temp.name) / 'test.sqlite3'
         with closing(sqlite3.connect(self.db)) as db, db:
             db.execute('CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
-        self.patcher = patch.object(main, 'DB', self.db)
-        self.patcher.start()
-        self.data_patcher = patch.object(main, 'DATA', Path(self.temp.name))
-        self.data_patcher.start()
-        self.client = TestClient(main.app)
+        self.app = main.create_app(data_root=Path(self.temp.name), database=self.db)
+        self.host = self.app.state.context
+        self.host.initialize()
+        self.client = TestClient(self.app)
 
     def tearDown(self):
         self.client.close()
-        self.patcher.stop()
-        self.data_patcher.stop()
         self.temp.cleanup()
 
     def test_settings_persist_and_invalid_url_does_not_replace(self):
@@ -39,7 +36,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.get('/api/settings').json()['comfy_url'], 'http://127.0.0.1:9000')
 
     def test_no_gpu_does_not_block_platform(self):
-        with patch.object(main, 'gpu_info', return_value=([], 'unavailable')):
+        with patch.object(self.host, 'gpu_info', return_value=([], 'unavailable')):
             result = self.client.get('/api/system')
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json()['gpus'], [])
@@ -172,7 +169,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.post('/api/drafts', json=self.draft(reference_ids=[item['id']])).status_code, 409)
 
     def test_asset_limits_and_missing_reference(self):
-        with patch.object(main.assets, 'MAX_BYTES', 5):
+        with patch.object(assets, 'MAX_BYTES', 5):
             self.assertEqual(self.client.post('/api/assets', content=b'123456').status_code, 413)
         self.assertEqual(self.client.post('/api/drafts', json=self.draft(reference_ids=['00000000-0000-0000-0000-000000000000'])).status_code, 409)
         self.assertEqual(self.client.get('/api/assets/not-a-uuid/image').status_code, 422)

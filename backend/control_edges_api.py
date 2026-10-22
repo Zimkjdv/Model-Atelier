@@ -37,7 +37,7 @@ def install(app,host):
             try: anchors,source=edges.source(job,validate)
             except ValueError as exc: raise HTTPException(409,str(exc)) from exc
             try:
-                async with httpx.AsyncClient(timeout=30,trust_env=False,follow_redirects=False) as client:
+                async with host.http_client(timeout=30,trust_env=False,follow_redirects=False) as client:
                     async with client.stream('GET',job['engine_url']+'/view',params={k:source[k] for k in ('filename','subfolder','type')}) as response:
                         if response.status_code==404: raise HTTPException(404,'原引擎邊緣輸出已遺失，不會重新生成。')
                         response.raise_for_status();raw=bytearray()

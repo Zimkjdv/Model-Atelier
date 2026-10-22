@@ -1,5 +1,11 @@
 # Model Atelier — Changelog
 
+## 2026-10-22 · Q02 明確配置與應用程式工廠
+
+新增 create_app 與每 app 的 AppContext，將目錄／SQLite 初始化移至 lifespan；主入口保留 backend.main:app。純請求型別移至 schemas，核心端點移至 core_api，其餘功能逐個以 context 組裝，不再傳入整個 main 模組。引擎 HTTP 可注入，現有 timeout／來源綁定與重送保護保留。
+
+既有 API 測試改用工廠與自身臨時資料／context，不再 patch main 全域路徑。新增雙 app 同時運作、匯入不建立資料、重開舊資料不改寫測試；548 項後端回歸（547 通過、1 項既有 symlink 權限跳過）、編譯與文件連結檢查通過。無 schema／資料遷移，配置及回退見 [說明](docs/application-factory.md)。Q02 及兩子項完成，剩餘 44 主項／80 子項。
+
 ## 2026-10-22 · Q01 文件入口與現況一致性
 
 README 收斂為安裝、首次生成、現有功能／限制與日常操作入口；新增操作指南、文件索引、架構／任務狀態／資料流說明。整理前 README 全文保存於 [歷史快照](docs/history/readme-before-q01-20261022.md)，僅調整相對連結並明示舊限制不是現況，歷史測試與硬體證據沒有刪除。

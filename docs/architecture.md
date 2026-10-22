@@ -1,6 +1,6 @@
 # 架構與資料流
 
-目前為本機單人工作台：Vue 編輯與顯示，FastAPI 驗證、保存及通訊，獨立 ComfyUI 推論。SQLite 與本地檔案共同構成可恢復資料。現行組裝仍透過 main.py 與 `install(app, host)`；顯式配置重構見 Q02。
+目前為本機單人工作台：Vue 編輯與顯示，FastAPI 驗證、保存及通訊，獨立 ComfyUI 推論。SQLite 與本地檔案共同構成可恢復資料。`backend.main.create_app` 為每個 app 建立獨立 AppContext，功能模組的 `install(app, host)` 接收該 context；匯入不建立使用者資料，初始化在 ASGI lifespan。配置與測試見 [應用程式工廠](application-factory.md)。
 
 ```mermaid
 flowchart LR
@@ -19,7 +19,8 @@ flowchart LR
 | --- | --- |
 | frontend/src/App.vue | 導覽、平台／引擎資訊、KeepAlive 工作台 |
 | 四種 Studio、GenerationPanel、jobEvents.ts | 專用表單、提交／恢復、任務與進度 |
-| backend/main.py、各 install 函式 | 設定／草稿／素材端點及功能組裝 |
+| backend/main.py、app_context.py | app 工廠、明確配置、啟動時初始化與引擎 HTTP 介面 |
+| core_api.py、schemas.py、各 install 函式 | 每 app 的端點／鎖、純請求型別與功能註冊 |
 | submissions、flux_workflows、專用 *_api | 完整流程／來源驗證、輸入上傳與明確提交 |
 | jobs、cancellation、stopping、progress | UUID 帳本、修訂、取消／停止、租約與歷史核對 |
 | catalog、loras、flux_catalog、control_catalog | 引擎範圍清單及登記版本／來源 |

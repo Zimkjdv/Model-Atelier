@@ -157,7 +157,7 @@ class InpaintTests(unittest.TestCase):
         self.assertEqual(self.submit(body,remote).json()['status'],'unknown');self.assertEqual(remote.post.await_count,3)
 
     def test_atomic_reservation_checks_both_assets(self):
-        body=self.body();settings=main.InpaintInput.model_validate({k:v for k,v in body.items() if k!='request_id'}).model_dump(mode='json',exclude={'revision'})
+        body=self.body();settings=self.host.InpaintInput.model_validate({k:v for k,v in body.items() if k!='request_id'}).model_dump(mode='json',exclude={'revision'})
         snapshots,_=flow.prepare(self.db,self.db.parent,settings)
         assets.update(self.db,self.mask['id'],'mask',True)
         with self.assertRaises(ValueError): jobs.reserve(self.db,body['request_id'],body['engine_url'],flow.build(settings,body['request_id']),body['checkpoint'],workflow_id=flow.ID,reference_metadata=snapshots,reference_settings=settings)
@@ -177,7 +177,7 @@ class InpaintTests(unittest.TestCase):
             if target=='graph': changed['workflow']['14']['inputs']['mask']=['12',1]
             if target=='mask_policy': changed['reference_metadata'][1]['generation_preprocessing']['white']='preserve'
             if target=='role': changed['reference_metadata'][1]['input_role']='source'
-            with self.assertRaises(ValueError): flow.extract(changed,lambda s:main.InpaintInput.model_validate(s).model_dump(mode='json',exclude={'revision'}))
+            with self.assertRaises(ValueError): flow.extract(changed,lambda s:self.host.InpaintInput.model_validate(s).model_dump(mode='json',exclude={'revision'}))
 
     def test_lora_preserves_clip_vae_and_exact_restore(self):
         body=self.body();name=test_lora_submissions.NAME
@@ -185,7 +185,7 @@ class InpaintTests(unittest.TestCase):
         body['loras']=[dict(name=name,enabled=True,strength_model=0.8,strength_clip=0.7)]
         result=self.submit(body,self.remote(body));self.assertEqual(result.status_code,200,result.text);job=result.json();graph=job['workflow']
         self.assertEqual(graph['5']['inputs']['model'],['8',0]);self.assertEqual(graph['2']['inputs']['clip'],['8',1]);self.assertEqual(graph['4']['inputs']['vae'],['1',2])
-        self.assertEqual(flow.extract(dict(job,source=dict(node_id='7')),lambda s:main.InpaintInput.model_validate(s).model_dump(mode='json',exclude={'revision'}))['loras'],body['loras'])
+        self.assertEqual(flow.extract(dict(job,source=dict(node_id='7')),lambda s:self.host.InpaintInput.model_validate(s).model_dump(mode='json',exclude={'revision'}))['loras'],body['loras'])
 
     def test_exclusive_files_never_overwrite_and_cleanup_partial_write(self):
         job_id=str(uuid4());folder=self.db.parent;inputs=folder/'job_inputs';inputs.mkdir()
@@ -198,7 +198,7 @@ class InpaintTests(unittest.TestCase):
         image.paste((127,127,127,255),(0,0,20,64));image.paste((128,128,128,255),(20,0,40,64));image.paste((0,0,0,0),(60,0,80,64))
         stream=io.BytesIO();image.save(stream,format='PNG');mask=assets.create(self.db,self.db.parent/'assets',stream.getvalue(),'alpha.png')
         body.update(mask_asset_id=mask['id'],reference_ids=[self.asset['id'],mask['id']],reference_resize='stretch')
-        settings=main.InpaintInput.model_validate({k:v for k,v in body.items() if k!='request_id'}).model_dump(mode='json')
+        settings=self.host.InpaintInput.model_validate({k:v for k,v in body.items() if k!='request_id'}).model_dump(mode='json')
         _,encoded=flow.prepare(self.db,self.db.parent,settings)
         with Image.open(io.BytesIO(encoded['mask'])) as result:
             self.assertEqual([result.getpixel((x,256))[0] for x in (32,160,288,448)],[0,255,0,255])

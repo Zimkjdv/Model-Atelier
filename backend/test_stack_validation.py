@@ -78,7 +78,7 @@ class StackEvidenceTests(unittest.TestCase):
     def test_advice_uses_stack_scope_and_rejects_concurrent_registration(self):
         body=self.prepare(); report=dict(url=ENGINE,diagnostics=environment.engine_diagnostics(status='offline'))
         body={k:v for k,v in body.items() if k!='settings'}|{k:v for k,v in body['settings'].items() if k!='batch_size'}
-        with patch.object(main,'engine',AsyncMock(return_value=report)):
+        with patch.object(self.host, 'engine',AsyncMock(return_value=report)):
             data=self.client.post('/api/generation-advice',json=body).json()
             self.assertEqual(data['validation_status'],'recorded')
             self.assertEqual(len(data['matching_parameter_records']),1)
@@ -87,7 +87,7 @@ class StackEvidenceTests(unittest.TestCase):
             self.assertEqual(self.client.post('/api/generation-advice',json=body|dict(loras=list(reversed(body['loras'])))).json()['matching_parameter_records'],[])
         async def race():
             loras.update_metadata(self.db,ENGINE,'second',dict(sha256='f'*64)); return report
-        with patch.object(main,'engine',race):
+        with patch.object(self.host, 'engine',race):
             self.assertEqual(self.client.post('/api/generation-advice',json=body).status_code,409)
 
     def test_reviewed_eight_step_records_match_their_own_order_not_other_parameters(self):

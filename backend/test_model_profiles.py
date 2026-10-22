@@ -34,7 +34,7 @@ class ModelProfileTests(unittest.TestCase):
         registered = self.register(architecture='sdxl')
         before = self.saved_rows()
         with (patch('backend.main.httpx.AsyncClient', side_effect=AssertionError('must not probe engine')),
-              patch.object(main, 'gpu_info', side_effect=AssertionError('must not inspect GPU'))):
+              patch.object(self.host, 'gpu_info', side_effect=AssertionError('must not inspect GPU'))):
             response = self.get_profile()
         self.assertEqual(response.status_code, 200, response.text)
         result = response.json()
@@ -179,7 +179,7 @@ class ModelProfileTests(unittest.TestCase):
                                       seed='18446744073709551615')
             remote = self.remote()
             with (patch('backend.submissions.httpx.AsyncClient', return_value=remote),
-                  patch.object(main, 'gpu_info', side_effect=AssertionError('must not gate by GPU'))):
+                  patch.object(self.host, 'gpu_info', side_effect=AssertionError('must not gate by GPU'))):
                 response = self.client.post('/api/generate', json=body)
             self.assertEqual(response.status_code, 200, response.text)
             self.assertEqual(response.json()['status'], 'queued')

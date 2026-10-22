@@ -11,20 +11,20 @@ class AdviceTests(unittest.TestCase):
     def setup_model(self):
         self.sync(['model.safetensors'])
         record = validation_records.records()[0][0]
-        catalog.update_metadata(self.db, main.engine_url(), 'model.safetensors',
+        catalog.update_metadata(self.db, self.host.engine_url(), 'model.safetensors',
                                 dict(architecture='sdxl', sha256=record['sha256']))
-        return dict(engine_url=main.engine_url(), checkpoint='model.safetensors',
+        return dict(engine_url=self.host.engine_url(), checkpoint='model.safetensors',
                     **{k: v for k, v in record['settings'].items() if k != 'batch_size'})
 
     def report(self, offline=False):
         stats = dict(system={}, devices=[dict(name='Small GPU', type='cuda', vram_total=1024, vram_free=0)])
-        return dict(url=main.engine_url(), diagnostics=environment.scoped_engine_diagnostics(
-            stats, main.engine_url(), main.engine_url(), 'offline' if offline else 'available'))
+        return dict(url=self.host.engine_url(), diagnostics=environment.scoped_engine_diagnostics(
+            stats, self.host.engine_url(), self.host.engine_url(), 'offline' if offline else 'available'))
 
     def test_zero_free_memory_does_not_gate_or_mutate(self):
         payload = self.setup_model()
         original = self.db.read_bytes()
-        with patch.object(main, 'engine', AsyncMock(return_value=self.report())):
+        with patch.object(self.host, 'engine', AsyncMock(return_value=self.report())):
             response = self.client.post('/api/generation-advice', json=payload)
         self.assertEqual(response.status_code, 200)
         value = response.json()
@@ -37,7 +37,7 @@ class AdviceTests(unittest.TestCase):
 
     def test_changed_parameters_and_offline_still_return_advice(self):
         payload = self.setup_model() | {'width': 1024}
-        with patch.object(main, 'engine', AsyncMock(return_value=self.report(True))):
+        with patch.object(self.host, 'engine', AsyncMock(return_value=self.report(True))):
             value = self.client.post('/api/generation-advice', json=payload).json()
         self.assertEqual(value['matching_parameter_records'], [])
         self.assertTrue(any('離線' in warning for warning in value['warnings']))
@@ -45,8 +45,8 @@ class AdviceTests(unittest.TestCase):
 
     def test_unknown_identity_never_claims_parameter_verification(self):
         payload = self.setup_model()
-        catalog.update_metadata(self.db, main.engine_url(), 'model.safetensors', dict(sha256=''))
-        with patch.object(main, 'engine', AsyncMock(return_value=self.report())):
+        catalog.update_metadata(self.db, self.host.engine_url(), 'model.safetensors', dict(sha256=''))
+        with patch.object(self.host, 'engine', AsyncMock(return_value=self.report())):
             value = self.client.post('/api/generation-advice', json=payload).json()
         self.assertEqual(value['validation_status'], 'unverified')
         self.assertEqual(value['matching_parameter_records'], [])
@@ -55,7 +55,7 @@ class AdviceTests(unittest.TestCase):
         payload = self.setup_model()
         for enabled, count in [(True, 0), (False, 1)]:
             body = payload | dict(loras=[dict(name='ink.safetensors', enabled=enabled, strength_model=1, strength_clip=1)])
-            with patch.object(main, 'engine', AsyncMock(return_value=self.report())):
+            with patch.object(self.host, 'engine', AsyncMock(return_value=self.report())):
                 value = self.client.post('/api/generation-advice', json=body).json()
             self.assertEqual(len(value['matching_parameter_records']), count)
             if enabled:
@@ -65,16 +65,16 @@ class AdviceTests(unittest.TestCase):
         payload = self.setup_model()
         async def changed():
             report = self.report()
-            catalog.update_metadata(self.db, main.engine_url(), 'model.safetensors', dict(sha256='f' * 64))
+            catalog.update_metadata(self.db, self.host.engine_url(), 'model.safetensors', dict(sha256='f' * 64))
             return report
-        with patch.object(main, 'engine', changed):
+        with patch.object(self.host, 'engine', changed):
             self.assertEqual(self.client.post('/api/generation-advice', json=payload).status_code, 409)
-        with patch.object(main, 'engine', AsyncMock(return_value=self.report() | {'url': 'http://127.0.0.1:9000'})):
+        with patch.object(self.host, 'engine', AsyncMock(return_value=self.report() | {'url': 'http://127.0.0.1:9000'})):
             self.assertEqual(self.client.post('/api/generation-advice', json=payload).status_code, 409)
 
     def test_invalid_parameters_and_missing_model_do_not_query_engine(self):
         payload = self.setup_model()
-        with patch.object(main, 'engine', AsyncMock(side_effect=AssertionError('must not query'))):
+        with patch.object(self.host, 'engine', AsyncMock(side_effect=AssertionError('must not query'))):
             for change in ({'width': 0}, {'steps': True}, {'cfg': 'nan'}, {'prompt': 'unexpected'}):
                 self.assertEqual(self.client.post('/api/generation-advice', json=payload | change).status_code, 422)
             self.assertEqual(self.client.post('/api/generation-advice', json=payload | {'checkpoint': 'missing'}).status_code, 404)

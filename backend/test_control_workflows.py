@@ -61,7 +61,7 @@ class ControlTests(unittest.TestCase):
         body=self.body();records.mutate(self.db,body['engine_url'],lambda v:v.update(sync_error='offline'))
         self.assertEqual(self.submit(body,self.remote(body)).status_code,409);self.assertEqual(jobs.list_all(self.db),[])
     def test_registration_changed_between_capture_and_reserve_is_atomic(self):
-        body=self.body();settings=main.ControlInput.model_validate({k:v for k,v in body.items() if k!='request_id'}).model_dump(mode='json',exclude={'revision'})
+        body=self.body();settings=self.host.ControlInput.model_validate({k:v for k,v in body.items() if k!='request_id'}).model_dump(mode='json',exclude={'revision'})
         snapshot=records.capture(records.read(self.db,body['engine_url'])['controlnets'][0]);source,_=flow.prepare(self.db,self.db.parent,settings)
         records.update_metadata(self.db,body['engine_url'],body['control_net_name'],dict(version='2'))
         with self.assertRaises(ValueError): jobs.reserve(self.db,body['request_id'],body['engine_url'],flow.build(settings,body['request_id']),body['checkpoint'],model_metadata=catalog.capture(catalog.read(self.db,body['engine_url'])['models'][0],body['checkpoint']),workflow_id=flow.ID,component_metadata=[snapshot],reference_metadata=[source],reference_settings=settings)
@@ -124,7 +124,7 @@ class ControlTests(unittest.TestCase):
             if part=='component': altered['component_metadata'][0]['architecture']='sd1'
             if part=='resize_version': altered['reference_metadata'][0]['generation_preprocessing']['version']=True
             if part=='canny_version': altered['reference_metadata'][0]['control_preprocessing']['version']=True
-            with self.assertRaises(ValueError): flow.extract(altered,lambda d:main.ControlInput.model_validate(d).model_dump(mode='json',exclude={'revision'}))
+            with self.assertRaises(ValueError): flow.extract(altered,lambda d:self.host.ControlInput.model_validate(d).model_dump(mode='json',exclude={'revision'}))
     def test_lora_keeps_order_clip_control_conditioning_and_vae(self):
         body=self.body();name=test_lora_submissions.NAME;loras.merge(self.db,body['engine_url'],[name]);loras.update_metadata(self.db,body['engine_url'],name,dict(architecture='sdxl'));body['loras']=[dict(name=name,enabled=True,strength_model=.8,strength_clip=.7)]
         response=self.submit(body,self.remote(body));self.assertEqual(response.status_code,200,response.text);g=response.json()['workflow']

@@ -116,7 +116,7 @@ class RuntimeMetadataTests(unittest.TestCase):
         image = io.BytesIO()
         Image.new('RGB', (8, 8), 'white').save(image, format='PNG')
         source = dict(node_id='7', filename='result.png', subfolder='', type='output')
-        item, _ = gallery.save(self.db, main.DATA/'artworks', job, source, image.getvalue())
+        item, _ = gallery.save(self.db, self.host.DATA/'artworks', job, source, image.getvalue())
         self.assertEqual(item['runtime_metadata'], job['runtime_metadata'])
         path = '/api/artworks/' + item['id']
         with patch('backend.submissions.httpx.AsyncClient', side_effect=AssertionError('offline')):
