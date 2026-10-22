@@ -96,7 +96,7 @@ model-atelier/
 
 ## 開發與文件
 
-後端：`.venv/Scripts/python.exe -m unittest discover -s backend -p 'test_*.py'`。前端在 frontend 執行 `npm.cmd run build`、`check:api`、`check:experiments`、`check:inpaint`、`check:control`；不等同實機 GPU 或完整 UI 驗收。
+完整品質檢查：`.venv/Scripts/python.exe scripts/check_quality.py`，依序執行後端測試、前端型別／建置、四組契約檢查及隔離瀏覽器回歸，失敗立即停止。首次需安裝測試瀏覽器，見 [乾淨安裝與檢查指南](docs/quality-checks.md)。單獨後端可執行 unittest，前端可執行 `npm.cmd run build`、`npm.cmd test`、`npm.cmd run test:browser`；不等同實機 GPU 或完整 UI 驗收。
 
 | 閱讀目的 | 文件與用途 |
 | --- | --- |

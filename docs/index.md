@@ -8,6 +8,7 @@
 - [應用程式工廠、配置與測試隔離](application-factory.md)
 - [前端 HTTP 契約、取消與原請求恢復](frontend-api.md)
 - [四工作台未保存內容與離頁保護](unsaved-changes.md)
+- [品質檢查、隔離瀏覽器回歸與 CI](quality-checks.md)
 - [裝置回報](execution-device.md)、[環境版本](runtime-versions.md)、[效能條件](execution-context.md)、[量測](job-measurements.md)
 
 ## 創作與作品

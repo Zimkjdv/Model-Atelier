@@ -1,5 +1,9 @@
 # Model Atelier — Changelog
 
+## 2026-10-22 · Q06 可重跑品質入口與瀏覽器 CI
+
+加入 fail-fast 品質入口，串接後端、前端建置／四組契約及 8 項 Playwright 瀏覽器回歸。fixture 使用全新臨時資料與 MockTransport，涵蓋原請求恢復、409、真實 workflow 下載、鍵盤焦點與 390px 操作；CI 以 lock 安裝並保存失敗畫面／錄影／trace。全新隔離 venv 與 npm ci 的完整驗證通過（後端 550 項，1 項既有權限跳過）；失敗注入確認非零退出及證據。相容修補 Vite／source-map-js 後 npm audit 為 0；TestClient 棄用與故障注入警告明示保留，不宣稱 GPU／全站 UI 驗收完成。詳見 [品質指南](docs/quality-checks.md)。剩餘 41 主項／74 子項。
+
 ## 2026-10-22 · Q05 四工作台未保存內容保護
 
 共用離頁監聽與保存狀態提示，涵蓋 KeepAlive 隱藏表單、草稿保存中與筆刷／遮罩保存；FLUX 載入原設定保持未保存狀態。未提供新的專用草稿格式，生成不會清除 dirty，離開也不提交任務。前端建置、四組檢查及隔離 Chrome 四流程驗證通過，模擬引擎生成呼叫為 0；行動瀏覽器限制與操作證據見 [說明](docs/unsaved-changes.md)。剩餘 42 主項／76 子項。

@@ -9,15 +9,18 @@
     "check:experiments": "node check-experiment-runs.mjs",
     "check:inpaint": "node check-inpaint.mjs",
     "check:control": "node check-control.mjs",
-    "check:api": "node check-api.mjs && node check-studio-reads.mjs"
+    "check:api": "node check-api.mjs && node check-studio-reads.mjs",
+    "test": "npm run check:api && npm run check:experiments && npm run check:inpaint && npm run check:control",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "vue": "^3.5.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@vitejs/plugin-vue": "^6.0.0",
-    "vite": "^7.0.0",
     "typescript": "~5.9.0",
+    "vite": "^7.0.0",
     "vue-tsc": "^3.0.0"
   }
 }
