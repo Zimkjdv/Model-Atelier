@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from importlib import metadata
 
 import httpx
-from backend import workflows, job_measurements
+from backend import workflows, job_measurements, execution_context
 
 PACKAGES = ('fastapi', 'starlette', 'pydantic', 'httpx', 'Pillow', 'uvicorn', 'websockets')
 ENGINE_PACKAGES = frozenset({'comfyui-frontend-package', 'comfyui-workflow-templates',
@@ -68,6 +68,7 @@ async def capture(client, job):
                   comfyui=None, python=None, pytorch=None, packages=[], cuda=None, driver=None, git_revision=None,
                   note='提交前未能取得版本；此欄位保持未知，不影響已通過的流程驗證。')
     resource_observation = job_measurements.resources(None, job['engine_url'], timestamp)
+    stats = None
     try:
         response = await asyncio.wait_for(client.get(engine['source']), timeout=2)
         response.raise_for_status()
@@ -85,4 +86,5 @@ async def capture(client, job):
                               nodes=sorted({node['class_type'] for node in job['workflow'].values()}),
                               node_versions=None, note='原生節點未提供各別版本；流程 ID 是平台模板規格版本。'),
                 platform=dict(source='platform Python process', python=platform.python_version(), packages=packages),
-                engine=engine, resource_observation=resource_observation)
+                engine=engine, resource_observation=resource_observation,
+                execution_context=execution_context.capture(job, stats, workflow_identity(job)))
