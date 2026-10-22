@@ -145,6 +145,60 @@ try {
     app.unmount()
     console.log((workflow || 'checkpoint') + ': actual GenerationPanel restores original UUID/body/endpoint after lost response.')
   }
+  for (const [workflow, form, key, endpoint] of [
+    [undefined, newCreation(), 'atelier-pending-submission', '/api/generate'],
+    ['flux', newFlux(engine), 'atelier-pending-flux-submission', '/api/flux/generate'],
+    ['inpaint', inpaint.newInpaint(), 'atelier-pending-inpaint-submission', '/api/inpaint-feather/generate'],
+    ['control', control.newControl(), 'atelier-pending-control-submission', '/api/control-edge/generate'],
+  ]) {
+    storage.clear()
+    let ui, release
+    const requests = [], block = ref('')
+    const editable = reactive({ ...form, seed: '18446744073709551615', prompt: 'frozen before dispatch' })
+    globalThis.fetch = async (url, options) => {
+      if (String(url).startsWith('/api/library/jobs?')) return response({ items: [], next_cursor: null })
+      requests.push({ url, body: JSON.parse(options.body) })
+      assert(storage.has(key), 'the frozen request must be durable before POST')
+      if (requests.length === 1) return new Promise(resolve => { release = resolve })
+      return new Response(JSON.stringify({ detail: 'confirmed conflict' }), { status: 409 })
+    }
+    const app = renderer.createApp({ render: () => h(component, {
+      form: editable, workflow, blockedReason: block.value, ref: value => { if (value) ui = value.$.setupState },
+    }) })
+    app.mount({}); await settle()
+    const save = localStorage.setItem
+    try {
+      localStorage.setItem = () => { throw new Error('storage unavailable') }
+      await ui.generate()
+    } finally { localStorage.setItem = save }
+    assert.equal(requests.length, 0, 'failed local persistence must not dispatch')
+    assert.equal(ui.pending, null)
+    assert.equal(ui.busy, false)
+    const sending = ui.generate(); await settle()
+    assert.equal(ui.busy, true)
+    const saved = JSON.parse(storage.get(key))
+    await ui.generate()
+    assert.equal(requests.length, 1, 'in-flight submission must not dispatch twice')
+    editable.prompt = 'changed current form'; editable.seed = '123'
+    block.value = 'current form is blocked'; await settle()
+    release(new Response('incomplete-json'))
+    await sending
+    assert.equal(ui.busy, false)
+    assert.equal(ui.pending.request_id, saved.request_id)
+    assert.equal(storage.get(key), JSON.stringify(saved))
+    await ui.generate()
+    assert.equal(requests.length, 2)
+    assert.equal(requests[1].url, endpoint)
+    assert.deepEqual(requests[1], requests[0], 'recovery must ignore edited/blocked current form')
+    assert.equal(requests[1].body.seed, '18446744073709551615')
+    assert.equal(ui.pending, null)
+    assert.equal(storage.has(key), false)
+    assert.equal(ui.busy, false)
+    await ui.generate()
+    assert.equal(requests.length, 2, 'blocked new form must not dispatch after recovery')
+    app.unmount()
+    console.log((workflow || 'checkpoint') + ': storage failure, in-flight guard, uncertain frozen recovery and conclusive clearance passed.')
+  }
   const gallery = (await import(await moduleUrl('ArtworkLibrary.vue'))).default
   gallery.render = () => null
   let artworkUi, writes = 0

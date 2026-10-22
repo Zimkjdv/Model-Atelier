@@ -215,7 +215,7 @@ class CancellationTests(unittest.TestCase):
             remote.post.assert_not_awaited()
 
     def test_submission_guard_expires_so_crashed_submission_can_be_reconciled(self):
-        for state in ('validating', 'submitting'):
+        for state in ('validating', 'uploading_input', 'submitting'):
             job = self.job(state)
             with patch('backend.cancellation.httpx.AsyncClient', side_effect=AssertionError('live submit should retain ownership')):
                 self.assertEqual(self.post(job, 'refresh').json()['status'], state)

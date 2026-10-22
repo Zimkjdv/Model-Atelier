@@ -37,6 +37,31 @@ from backend.reference_workflows import IMG2IMG_ID
 from backend import diagnostics
 
 
+def _matches_recorded_submission(existing, value, reference, experiment, generation_settings):
+    same_graph = all(
+        existing[name] == getattr(value, name) for name in ('engine_url', 'checkpoint', 'workflow')
+    )
+    if not same_graph:
+        return False
+    same_reference = not reference or existing.get('reference_settings') == reference['settings']
+    if not same_reference:
+        return False
+    return experiment_context.matches(
+        existing.get('experiment_context'), experiment, generation_settings
+    )
+
+
+def _submission_guard_active(job):
+    """Keep a live dispatch untouched; reconcile expired guards without replay."""
+    if job['status'] not in ('validating', 'uploading_input', 'submitting'):
+        return False
+    try:
+        started = datetime.fromisoformat(job.get('updated_at', job['created_at']))
+        return datetime.now(timezone.utc) - started < timedelta(seconds=60)
+    except (TypeError, ValueError):
+        return False
+
+
 class Submission(BaseModel):
     # Associations require the complete supported form, never arbitrary graph input.
     experiment: None = None
@@ -117,15 +142,8 @@ def install(app, host):
         except KeyError:
             pass
         else:
-            if (
-                any(
-                    existing[name] != getattr(value, name)
-                    for name in ('engine_url', 'checkpoint', 'workflow')
-                )
-                or (reference and existing.get('reference_settings') != reference['settings'])
-                or not experiment_context.matches(
-                    existing.get('experiment_context'), experiment, generation_settings
-                )
+            if not _matches_recorded_submission(
+                existing, value, reference, experiment, generation_settings
             ):
                 raise HTTPException(409, '此請求 ID 已用於其他工作流程')
             diagnostics.record_job('submission_recovered', existing)
@@ -740,16 +758,8 @@ def install(app, host):
         job = lookup(job_id)
         if job['status'] in cancellation.TERMINAL:
             return job
-        if job['status'] in ('validating', 'uploading_input', 'submitting'):
-            # Do not promote a live submission from a second worker. After a
-            # process crash, the bounded guard expires so its original UUID can
-            # still be reconciled from the upstream queue/history without replay.
-            try:
-                started = datetime.fromisoformat(job.get('updated_at', job['created_at']))
-                if datetime.now(timezone.utc) - started < timedelta(seconds=60):
-                    return job
-            except (TypeError, ValueError):
-                pass
+        if _submission_guard_active(job):
+            return job
         if job['status'] in cancellation.CANCEL_STATES:
             return await cancellation.refresh(host, job)
         if job['status'] in stopping.STATES:

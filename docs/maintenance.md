@@ -41,3 +41,5 @@
 條件複雜時用具名函式或具名判斷說明上述操作；不要把不同 workflow 的 schema、來源 hash、遮罩／邊緣驗證或專用版本合併成較寬鬆的通用提交器。公開 JSON、精確 seed 字串、localStorage key、來源快照及原始 bytes 下載均屬相容契約。
 
 格式整理先核對 Python AST、TypeScript／Vue 編譯結果及 CSS 值，再跑既有行為回歸；狀態重構另核對原 UUID、原端點、保存失敗、未知結果、revision 與終態。只有產品行為改動才增加新功能驗收，不能把「格式檢查通過」當成 GPU／UI／品質驗收。
+
+本輪分開提交的格式語意比對、冪等檢查、錯誤探針與四流程操作邊界見 [Q10 驗收紀錄](validation/maintenance-20261023.md)。

@@ -36,22 +36,12 @@ const props = defineProps<{
   disabled?: boolean
 }>()
 const checkpointForm = computed(() => ('checkpoint' in props.form ? props.form : null))
-const pendingKey =
-  props.workflow === 'control'
-    ? 'atelier-pending-control-submission'
-    : props.workflow === 'flux'
-      ? 'atelier-pending-flux-submission'
-      : props.workflow === 'inpaint'
-        ? 'atelier-pending-inpaint-submission'
-        : 'atelier-pending-submission'
-const generatePath =
-  props.workflow === 'control'
-    ? '/api/control-edge/generate'
-    : props.workflow === 'flux'
-      ? '/api/flux/generate'
-      : props.workflow === 'inpaint'
-        ? '/api/inpaint-feather/generate'
-        : '/api/generate'
+const pendingKey = {
+  checkpoint: 'atelier-pending-submission',
+  flux: 'atelier-pending-flux-submission',
+  inpaint: 'atelier-pending-inpaint-submission',
+  control: 'atelier-pending-control-submission',
+}[props.workflow || 'checkpoint']
 const imageMode = computed(
   () => props.workflow === 'control' || checkpointForm.value?.workflow_mode === 'image2image',
 )
@@ -84,6 +74,13 @@ try {
 }
 watch(busy, (value) => emit('busy', value), { immediate: true, flush: 'sync' })
 watch(pending, (value) => emit('pending', !!value), { immediate: true, flush: 'sync' })
+const submissionAvailability = computed(() => {
+  if (pending.value) return '原提交待確認：恢復會沿用原 UUID 與參數。'
+  if (busy.value || props.disabled) return '暫不可提交：正在載入、保存或處理中。'
+  if (missingModel.value || props.blockedReason)
+    return '尚缺必要條件：請依下方提示補齊模型、素材或元件。'
+  return '表單預檢可提交：按下生成後仍會檢查引擎與元件。'
+})
 const labels: Record<string, string> = {
   uploading_input: '上傳輸入圖片中',
   validating: '確認模型中',
@@ -155,39 +152,41 @@ const connectionLabels = {
   reconnecting: '即時進度重新連線中',
   offline: '即時進度暫不可用',
 }
+function freezeCurrentSubmission(): Record<string, unknown> {
+  const experiment =
+    props.workflow === 'inpaint' || props.workflow === 'control'
+      ? null
+      : experimentForSubmission(props.experiment, props.form)
+  const candidate = {
+    ...JSON.parse(JSON.stringify(props.form)),
+    request_id: crypto.randomUUID(),
+    ...(props.workflow === 'control' ? { [controlPendingMarker]: controlEdgeWorkflowId } : {}),
+    ...(props.workflow === 'inpaint' ? { [inpaintPendingMarker]: inpaintFeatherWorkflowId } : {}),
+    ...(experiment ? { experiment } : {}),
+  }
+  // A failed local save must never make an unpersisted request dispatchable.
+  localStorage.setItem(pendingKey, JSON.stringify(candidate))
+  pending.value = candidate
+  return candidate
+}
+function frozenSubmissionDescriptor(frozen: Record<string, unknown>) {
+  // Versioned adapters choose the original endpoint from the frozen marker.
+  if (props.workflow === 'control') return controlSubmission(frozen)
+  if (props.workflow === 'inpaint') return inpaintSubmission(frozen)
+  return { path: props.workflow === 'flux' ? '/api/flux/generate' : '/api/generate', body: frozen }
+}
+function clearConfirmedSubmission() {
+  localStorage.removeItem(pendingKey)
+  pending.value = null
+}
 async function generate() {
-  if (busy.value || props.disabled || (!pending.value && props.blockedReason)) return
+  if (busy.value || props.disabled) return
+  if (!pending.value && props.blockedReason) return
   busy.value = true
   error.value = ''
   try {
-    if (!pending.value) {
-      const experiment =
-        props.workflow === 'inpaint' || props.workflow === 'control'
-          ? null
-          : experimentForSubmission(props.experiment, props.form)
-      const candidate = {
-        ...JSON.parse(JSON.stringify(props.form)),
-        request_id: crypto.randomUUID(),
-        ...(props.workflow === 'control' ? { [controlPendingMarker]: controlEdgeWorkflowId } : {}),
-        ...(props.workflow === 'inpaint'
-          ? { [inpaintPendingMarker]: inpaintFeatherWorkflowId }
-          : {}),
-        ...(experiment ? { experiment } : {}),
-      }
-      // Do not make an unpersisted request eligible for the recovery path.
-      localStorage.setItem(pendingKey, JSON.stringify(candidate))
-      pending.value = candidate
-    }
-    const submission =
-      props.workflow === 'control'
-        ? controlSubmission(pending.value!)
-        : props.workflow === 'inpaint'
-          ? inpaintSubmission(pending.value!)
-          : { path: generatePath, body: pending.value }
-    await submitOnce(submission, () => {
-      localStorage.removeItem(pendingKey)
-      pending.value = null
-    })
+    const frozen = pending.value || freezeCurrentSubmission()
+    await submitOnce(frozenSubmissionDescriptor(frozen), clearConfirmedSubmission)
     await load()
   } catch (e) {
     error.value = e instanceof Error ? e.message : '提交失敗'
@@ -265,13 +264,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
   <article class="panel">
     <h2>生成任務</h2>
     <p class="submission-state" role="status" aria-label="提交能力狀態">{{
-      pending
-        ? '原提交待確認：恢復會沿用原 UUID 與參數。'
-        : busy || disabled
-          ? '暫不可提交：正在載入、保存或處理中。'
-          : missingModel || blockedReason
-            ? '尚缺必要條件：請依下方提示補齊模型、素材或元件。'
-            : '表單預檢可提交：按下生成後仍會檢查引擎與元件。'
+      submissionAvailability
     }}</p>
     <details class="footnote"
       ><summary>能力與實機驗證範圍</summary
