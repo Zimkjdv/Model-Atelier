@@ -224,6 +224,8 @@ async def submit(host, value):
             raise HTTPException(409, '任務狀態已更新；未改写環境快照或提交，請查詢原任務')
         if value.engine_url != host.engine_url():
             fail(409, '驗證期間引擎設定已變更，尚未提交。', 'engine_changed')
+        if observation['execution_device']['status'] == 'unavailable':
+            fail(409, '原 ComfyUI 引擎明確回報目前設定的執行裝置不可用；FLUX 尚未提交', 'execution_device_unavailable')
         try:
             architecture_guard(flux_catalog.capture(host.DB, value.engine_url, selections))
         except ValueError as exc:

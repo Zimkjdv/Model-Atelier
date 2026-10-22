@@ -17,5 +17,8 @@ $atelierStopArgs = @()
 if ($atelierStopCapability.supported -eq $true -and $atelierStopCapability.feature_flag -eq 'model_atelier_atomic_job_cancel_v1=15eb748b3ec5f8a0a2d470b7fb280e2d7579f916') {
     $atelierStopArgs = @('--feature-flag', [string]$atelierStopCapability.feature_flag)
 } else { Write-Host 'Targeted running-job stop is unavailable for this ComfyUI source; normal generation remains available.' }
+$atelierDeviceInstaller = Join-Path $PSScriptRoot 'scripts\install_execution_device.py'
+& $atelierComfyPython $atelierDeviceInstaller
+if ($LASTEXITCODE -ne 0) { throw 'Bundled execution device report installation failed. ComfyUI was not started.' }
 Set-Location -LiteralPath $atelierComfy
 & $atelierComfyPython main.py --listen 127.0.0.1 --port 8188 --disable-auto-launch --disable-api-nodes --extra-model-paths-config $atelierExtraConfig @atelierStopArgs

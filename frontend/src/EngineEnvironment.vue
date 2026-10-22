@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import EnvironmentDevices from './EnvironmentDevices.vue'
-import { cudaStatus, environmentSize, environmentText, environmentTime } from './environmentTypes'
+import { cudaStatus, environmentSize, environmentText, environmentTime, executionDeviceLabel } from './environmentTypes'
 import type { EngineReport } from './environmentTypes'
 const props = defineProps<{ engine: EngineReport | null; selectedUrl: string }>()
 const emit = defineEmits<{ settings: [] }>()
 const current = computed(() => props.engine && (!props.selectedUrl || props.engine.url === props.selectedUrl) ? props.engine : null)
 const diagnostics = computed(() => current.value?.diagnostics ?? null)
+const executionDevice = computed(() => {
+  const value = current.value?.execution_device
+  return value?.engine_url === props.selectedUrl && diagnostics.value?.matches_selected_engine !== false ? value : null
+})
 const available = computed(() => current.value?.connected && diagnostics.value?.status === 'available' && diagnostics.value.matches_selected_engine !== false)
 const system = computed(() => available.value ? diagnostics.value?.system : null)
 const statusLabel = computed(() => available.value ? '引擎回報可用' : diagnostics.value?.status === 'invalid' ? '回報資料無效' : current.value?.connected ? '尚無診斷回報' : '未連線')
@@ -16,6 +20,13 @@ const statusLabel = computed(() => available.value ? '引擎回報可用' : diag
   <article class="panel engine-environment">
     <div class="panel-heading"><div><h2>選定引擎的執行環境</h2><p class="muted">來源：ComfyUI /system_stats · 範圍：目前選定的引擎。</p></div><span class="status" :class="{ connected: available }">{{ statusLabel }}</span></div>
     <div class="environment-endpoint">{{ current?.url || selectedUrl || '尚未取得引擎位址' }}<span>查詢時間：{{ environmentTime(diagnostics?.checked_at) }}</span></div>
+    <div class="notice" :class="{ warning: executionDevice?.status === 'unavailable' }" role="status">
+      <strong>{{ executionDeviceLabel(executionDevice) }}</strong>
+      <p v-if="executionDevice?.status === 'unavailable'">原引擎明確回報目前設定的裝置無法使用，新的生成會在提交前停止；草稿、素材及已匯入作品仍可使用。修復後請重新整理，再明確建立新任務。</p>
+      <p v-else-if="executionDevice?.status === 'available'">引擎設定裝置：{{ executionDevice.device?.type }} {{ executionDevice.device?.index ?? '' }}。CPU 也是有效裝置；取得裝置不保證模型可載入或顯存足夠。</p>
+      <p v-else>未取得有效的即時裝置回報；不因空裝置清單、離線或本機 CUDA 診斷推定無 GPU。新的生成仍會檢查模型、元件與節點。</p>
+      <p v-if="executionDevice" class="footnote">來源：{{ executionDevice.source }} · {{ environmentTime(executionDevice.checked_at) }}。提交時會重新查詢原引擎，不以此顯示快照阻擋任務。</p>
+    </div>
     <p v-if="!available" class="environment-warning" role="status">{{ current?.error || (diagnostics?.status === 'invalid' ? '引擎回報資料不完整，環境欄位目前未知。' : current?.connected ? '已連接服務，尚未取得可用的環境診斷資料。' : '請確認服務已啟動且位址正確。') }} <button type="button" class="secondary" @click="emit('settings')">設定連線 →</button></p>
     <dl class="environment-versions">
       <div><dt>ComfyUI</dt><dd>{{ environmentText(system?.comfyui) }}</dd></div>

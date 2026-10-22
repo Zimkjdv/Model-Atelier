@@ -14,8 +14,18 @@ export type EngineDiagnostics = {
   system: EnvironmentSystem; ram: EnvironmentMemory; devices: EnvironmentDevice[]; warnings: string[]
 }
 export type EngineReport = {
+  execution_device?: ExecutionDevice
   connected: boolean; url: string; error?: string; diagnostics?: EngineDiagnostics
   stats?: { system: { comfyui_version?: string; ram_total?: number; ram_free?: number }; devices: { name: string; vram_total?: number; vram_free?: number }[] }
+}
+export type ExecutionDevice = {
+  schema_version: 1; engine_url: string; source: string; checked_at: string; probe_id: string | null
+  status: 'available' | 'unavailable' | 'unknown'; reason: string
+  device: { type: string; index: number | null } | null; backend_available: boolean | null
+}
+export function executionDeviceLabel(value?: ExecutionDevice | null): string {
+  return value?.status === 'unavailable' ? '目前執行裝置不可用'
+    : value?.status === 'available' ? '已取得設定的執行裝置' : '執行裝置狀態未知'
 }
 export type LocalEnvironment = {
   scope: 'managed_local_comfyui'; source: string; python_path: string; checked_at: string | null

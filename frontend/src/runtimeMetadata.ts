@@ -1,4 +1,6 @@
+import type { ExecutionDevice } from './environmentTypes'
 export type RuntimeMetadata = {
+  execution_device?: ExecutionDevice
   execution_context?: ExecutionContext
   schema_version: number; captured_at: string
   workflow: { id: string; sha256: string; nodes: string[]; node_versions: null; note: string }

@@ -10,6 +10,9 @@ CUDA_OOM = re.compile(r'\bcuda(?:\s+error\s*:)?\s+out\s+of\s+memory\b', re.IGNOR
 IDENTIFIER = re.compile(r'[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*')
 
 TEXT = {
+    'execution_device_unavailable': ('引擎執行裝置不可用', '原引擎的即時裝置回報明確指出目前設定的執行裝置不可用，生成尚未提交。',
+                                     ['檢查原引擎的裝置設定與執行環境；此狀態不代表主機沒有 GPU。',
+                                      '修復原引擎後載入設定並明確建立新任務；原請求只返回已保存的結果。']),
     'reference_input_failed': ('參考圖片準備或上傳失敗', '圖生圖輸入無法保存或上傳，生成尚未提交。',
                              ['檢查本機素材、磁碟與原引擎連線。', '此請求不自動重試；修正後確認設定並建立新任務。']),
     'missing_nodes': ('缺少必要節點', '原 ComfyUI 引擎未登記此流程需要的節點，任務尚未提交。',

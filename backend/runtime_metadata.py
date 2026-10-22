@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from importlib import metadata
 
 import httpx
-from backend import workflows, job_measurements, execution_context
+from backend import workflows, job_measurements, execution_context, execution_device
 
 PACKAGES = ('fastapi', 'starlette', 'pydantic', 'httpx', 'Pillow', 'uvicorn', 'websockets')
 ENGINE_PACKAGES = frozenset({'comfyui-frontend-package', 'comfyui-workflow-templates',
@@ -87,4 +87,5 @@ async def capture(client, job):
                               node_versions=None, note='原生節點未提供各別版本；流程 ID 是平台模板規格版本。'),
                 platform=dict(source='platform Python process', python=platform.python_version(), packages=packages),
                 engine=engine, resource_observation=resource_observation,
-                execution_context=execution_context.capture(job, stats, workflow_identity(job)))
+                execution_context=execution_context.capture(job, stats, workflow_identity(job)),
+                execution_device=await execution_device.fetch(client, job['engine_url']))

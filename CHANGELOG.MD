@@ -1,5 +1,13 @@
 # Model Atelier — Changelog
 
+## 2026-10-22 · 歸檔後新增：E01 執行裝置回報與提交保護
+
+在 ComfyUI 程序內加入專案維護的唯讀裝置回報，以目前設定的裝置選取與明確的後端可用性結果為依據；nonce、版本、來源與格式不符時保持未知。標準／直接 workflow、圖生圖、局部編輯 v1／v2、Canny v1／v2 與 FLUX 在新任務取得明確不可用證據時，於上傳／提交前保存失敗，原 UUID 不重探測或重送。CPU 模式、草稿保存、離線作品與 CPU 預覽保留可用；系統資訊及任務／作品快照顯示回報來源。
+
+545 項後端測試（544 通過、1 項既有 symlink 權限跳過）、前端型別／建置與三組邏輯檢查通過。隔離真實 ComfyUI CPU 模式、實際 aiohttp 路由故障注入、API 整合及瀏覽器三態顯示驗證完成；沒有停用或破壞真實 GPU／驅動。E01 主項及兩個驗收子項已關閉；剩餘 46 主項／84 子項。詳見 [操作說明](docs/execution-device.md)與 [驗收紀錄](docs/validation/execution-device-20261022.md)。以下歷史歸檔維持原始時點的敘述與數量。
+
+---
+
 本檔歸檔開發清單的全部可取得 Git 歷史，包含功能項、未勾選提醒、驗收、測試數、限制、決策及更名紀錄；目前未完成工作與驗收集中在 [ROADMAP.MD](ROADMAP.MD)。
 
 歸檔建立日期：2026-10-22。來源範圍為 `origin/main` 從首次提交至 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)；已與遠端同步核對。

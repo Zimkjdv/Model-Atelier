@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { RuntimeMetadata } from './runtimeMetadata'
 import { metadataTime } from './modelMetadata'
+import { executionDeviceLabel } from './environmentTypes'
 defineProps<{ item?: RuntimeMetadata | null }>()
 </script>
 <template>
@@ -14,6 +15,7 @@ defineProps<{ item?: RuntimeMetadata | null }>()
       <dt>引擎 Python</dt><dd>{{ item.engine.python || '未知' }}</dd><dt>引擎 PyTorch</dt><dd>{{ item.engine.pytorch || '未知' }}</dd>
       <dt>引擎 CUDA／驅動／Git revision</dt><dd>{{ item.engine.cuda || '未知' }}／{{ item.engine.driver || '未知' }}／{{ item.engine.git_revision || '未知' }}</dd></dl>
       <p class="footnote">{{ item.engine.note }} {{ item.workflow.note }}</p>
+      <p class="footnote">提交時裝置：{{ executionDeviceLabel(item.execution_device) }}<template v-if="item.execution_device"> · {{ item.execution_device.device?.type || '裝置未知' }} · {{ metadataTime(item.execution_device.checked_at) }} · {{ item.execution_device.source }}</template>。歷史快照不代表目前裝置狀態。</p>
       <ul><li v-for="entry in item.engine.packages" :key="entry.name">{{ entry.name }}：已安裝 {{ entry.installed || '未知' }} · 要求 {{ entry.required || '未知' }}</li></ul>
       <template v-if="item.execution_context?.schema_version===1"><h3>效能測試條件 · 推論</h3>
         <p>流程 {{item.execution_context.workflow_id}} · {{item.execution_context.geometry.width ?? '未知'}} × {{item.execution_context.geometry.height ?? '未知'}} · batch {{item.execution_context.geometry.batch_size ?? '未知'}}（{{item.execution_context.geometry.source}}）</p>

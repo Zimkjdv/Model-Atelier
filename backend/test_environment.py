@@ -110,7 +110,8 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(diagnostic['devices'][0]['torch_vram']['used'], 2000)
         self.assertNotIn('argv', report['stats']['system'])
         self.assertNotIn('PRIVATE_TRACE', json.dumps(report))
-        remote.get.assert_awaited_once_with('http://127.0.0.1:8188/system_stats')
+        self.assertEqual(sum(call.args[0].endswith('/system_stats') for call in remote.get.await_args_list), 1)
+        self.assertEqual(report['execution_device']['status'], 'unknown')
 
     def test_engine_nonfinite_boolean_negative_huge_values_and_strings_are_unknown_json(self):
         stats = self.stats()

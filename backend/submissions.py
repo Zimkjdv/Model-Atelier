@@ -189,6 +189,8 @@ def install(app, host):
                 raise HTTPException(409, '任務狀態已更新；未改写環境快照或提交，請查詢原任務')
             if value.engine_url != host.engine_url():
                 fail(409, '驗證期間引擎設定已變更，尚未提交任務；請重新載入模型庫與能力清單', 'engine_changed')
+            if observation['execution_device']['status'] == 'unavailable':
+                fail(409, '原 ComfyUI 引擎明確回報目前設定的執行裝置不可用；尚未上傳圖片或提交生成', 'execution_device_unavailable')
             # Metadata may change while fresh capabilities are being fetched.
             # Recheck registered architecture without replacing the immutable
             # submission snapshot or silently applying a suggested preset.

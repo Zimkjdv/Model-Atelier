@@ -27,6 +27,7 @@ from backend import catalog, drafts, assets, submissions, gallery_api, model_pro
 from backend.lora_settings import LoraSetting
 from backend import flux_plan, flux_catalog
 from backend import reference_workflows, settings_transfer, stack_validation, experiment_plans
+from backend import execution_device
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data'
@@ -128,23 +129,28 @@ def system():
 @app.get('/api/engine')
 async def engine():
     url = engine_url()
+    device = execution_device.unknown(url)
     try:
         async with httpx.AsyncClient(timeout=5, trust_env=False) as client:
+            device = await execution_device.fetch(client, url)
             response = await client.get(url + '/system_stats')
             response.raise_for_status()
             stats = response.json()
         if not isinstance(stats, dict) or not isinstance(stats.get('system'), dict) or not isinstance(stats.get('devices'), list):
             raise ValueError('回應不是 ComfyUI 系統資訊')
         diagnostics = environment.scoped_engine_diagnostics(stats, url, engine_url())
-        result = {'connected': True, 'url': url, 'stats': environment.compatible_stats(stats), 'diagnostics': diagnostics}
+        result = {'connected': True, 'url': url, 'stats': environment.compatible_stats(stats), 'diagnostics': diagnostics,
+                  'execution_device': execution_device.scoped(device, engine_url())}
         if not diagnostics['matches_selected_engine']:
             result['error'] = '查詢期間引擎設定已變更，請重新整理'
         return result
     except httpx.HTTPError:
         return {'connected': False, 'url': url, 'error': '無法連接 ComfyUI，請確認服務已啟動且位址正確。',
+                'execution_device': execution_device.scoped(device, engine_url()),
                 'diagnostics': environment.scoped_engine_diagnostics(None, url, engine_url(), status='offline')}
     except ValueError:
         return {'connected': False, 'url': url, 'error': 'ComfyUI 系統資訊格式無效，尚未確認引擎裝置。',
+                'execution_device': execution_device.scoped(device, engine_url()),
                 'diagnostics': environment.scoped_engine_diagnostics(None, url, engine_url(), status='invalid')}
 
 
