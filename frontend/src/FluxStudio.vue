@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { apiJson as api } from './apiClient'
+import { createRequestScope } from './requestScope'
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
@@ -21,14 +23,9 @@ const pending = ref<Draft | Restoration | 'new' | null>(null)
 const dirty = computed(() => saved.value !== JSON.stringify(form))
 const problem = computed(() => fluxProblem(form))
 const block = computed(() => problem.value || (currentEngine.value !== form.engine_url ? '原引擎與目前設定不同；請確認設定或建立目前引擎的新草稿。' : ''))
-let ticket = 0, abort: AbortController | null = null, mounted = false, restoredToken = 0
+const loads = createRequestScope(), restores = createRequestScope()
+let mounted = false, restoredToken = 0, restoring = false
 
-async function api(path: string, options?: RequestInit) {
-  const response = await fetch('/api/' + path, options)
-  const value = await response.json()
-  if (!response.ok) throw new Error(typeof value.detail === 'string' ? value.detail : value.detail?.message || '請檢查輸入或服務狀態。')
-  return value
-}
 function model(role: typeof fluxRoles[number]) {
   return catalog.value?.engine_url === form.engine_url ? catalog.value.groups[role.category]?.find(item => item.name === form[role.key]) : undefined
 }
@@ -36,17 +33,16 @@ function choices(category: string) {
   return catalog.value?.engine_url === form.engine_url ? catalog.value.groups[category]?.filter(item => item.listed) || [] : []
 }
 async function load(sync = false) {
-  const token = ++ticket
-  abort?.abort(); const controller = new AbortController(); abort = controller
+  const request = loads.begin()
   loading.value = true; error.value = ''
   try {
-    const settings = await api('settings', { signal: controller.signal })
+    const settings = await api('settings', { signal: request.signal })
     const [inventory, drafts, description] = await Promise.all([
-      api('flux/components' + (sync ? '/sync' : ''), sync ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ engine_url: settings.comfy_url }), signal: controller.signal } : { signal: controller.signal }),
-      api('flux/drafts', { signal: controller.signal }), api('flux/workflow', { signal: controller.signal }),
+      api('flux/components' + (sync ? '/sync' : ''), sync ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ engine_url: settings.comfy_url }), signal: request.signal } : { signal: request.signal }),
+      api('flux/drafts', { signal: request.signal }), api('flux/workflow', { signal: request.signal }),
     ])
-    const latest = await api('settings', { signal: controller.signal })
-    if (token !== ticket) return
+    const latest = await api('settings', { signal: request.signal })
+    if (!request.isCurrent()) return
     currentEngine.value = latest.comfy_url
     if (description.id !== fluxWorkflowId || description.cfg !== 1 || description.gpu_verified !== false) throw new Error('FLUX 流程描述不相容；請更新平台。')
     records.value = drafts
@@ -60,8 +56,8 @@ async function load(sync = false) {
     }
     if (inventory.sync_error) error.value = inventory.sync_error
   } catch (e) {
-    if (token === ticket && !(e instanceof DOMException && e.name === 'AbortError')) error.value = e instanceof Error ? e.message : '讀取失敗'
-  } finally { if (token === ticket) loading.value = false }
+    if (request.isCurrent() && !(e instanceof DOMException && e.name === 'AbortError')) error.value = e instanceof Error ? e.message : '讀取失敗'
+  } finally { if (request.isCurrent()) loading.value = false }
 }
 function apply(value: Draft | Restoration | 'new') {
   if (value === 'new') {
@@ -99,9 +95,13 @@ async function save(asNew = false) {
 async function restore(path: string) {
   if (busy.value) return
   busy.value = true; error.value = ''
-  try { choose(await api(path) as Restoration) }
-  catch (e) { error.value = e instanceof Error ? e.message : '載入失敗' }
-  finally { busy.value = false }
+  const request = restores.begin(); restoring = true
+  try {
+    const value = await api<Restoration>(path, { signal: request.signal })
+    if (request.isCurrent()) choose(value)
+  }
+  catch (e) { if (request.isCurrent()) error.value = e instanceof Error ? e.message : '載入失敗' }
+  finally { if (request.isCurrent()) { busy.value = false; restoring = false } }
 }
 async function downloadPreview() {
   if (busy.value || problem.value) return
@@ -123,8 +123,8 @@ watch(() => props.restoreRequest, value => {
 }, { immediate: true })
 onMounted(async () => { await load(); mounted = true })
 onActivated(() => { if (mounted) void load() })
-function cancelLoad() { ++ticket; abort?.abort(); loading.value = false }
-onDeactivated(cancelLoad); onBeforeUnmount(cancelLoad)
+function cancelLoad() { loads.cancel(); restores.cancel(); loading.value = false; if (restoring) { busy.value = false; restoring = false } }
+onDeactivated(cancelLoad); onBeforeUnmount(() => { cancelLoad(); loads.dispose(); restores.dispose() })
 </script>
 
 <template>

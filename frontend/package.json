@@ -8,7 +8,8 @@
     "build": "vue-tsc --noEmit && vite build",
     "check:experiments": "node check-experiment-runs.mjs",
     "check:inpaint": "node check-inpaint.mjs",
-    "check:control": "node check-control.mjs"
+    "check:control": "node check-control.mjs",
+    "check:api": "node check-api.mjs && node check-studio-reads.mjs"
   },
   "dependencies": {
     "vue": "^3.5.0"

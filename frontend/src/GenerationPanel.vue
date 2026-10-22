@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { api as request } from './apiClient'
+import { submitOnce } from './generationRequest'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import ExperimentSnapshot from './ExperimentSnapshot.vue'
 import { experimentForSubmission, type ExperimentLoad } from './experimentSettings'
@@ -29,12 +31,6 @@ try { pending.value = JSON.parse(localStorage.getItem(pendingKey) || 'null') } c
 watch(busy,value => emit('busy',value),{immediate:true,flush:'sync'})
 watch(pending,value => emit('pending',!!value),{immediate:true,flush:'sync'})
 const labels: Record<string, string> = { uploading_input: '上傳輸入圖片中', validating: '確認模型中', submitting: '提交中', queued: '等待生成', running: '生成中', completed: '已完成', failed: '失敗', unknown: '結果待確認', cancelling: '確認取消中', cancel_unknown: '取消結果待確認', cancelled: '已取消排隊', stopping: '確認停止中', stop_unknown: '停止結果待確認', stopped: '已停止生成' }
-async function request(path: string, method = 'GET', body?: unknown) {
-  const response = await fetch('/api/' + path, { method, headers: { 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) })
-  const data = await response.json()
-  if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : data.detail?.message || '請檢查輸入參數或引擎連線')
-  return data
-}
 async function load() {
   const incoming: Job[] = await request('jobs')
   jobs.value = incoming.filter(job => props.workflow === 'control' ? isControlWorkflow(job.workflow_id) : props.workflow === 'flux' ? job.workflow_id === fluxWorkflowId : props.workflow === 'inpaint' ? isInpaintWorkflow(job.workflow_id) : !job.workflow_id || job.workflow_id === imageWorkflowId).map(job => mergeJob(jobs.value.find(previous => previous.id === job.id), job))
@@ -55,13 +51,9 @@ async function generate() {
       pending.value = candidate
     }
     const submission = props.workflow === 'control' ? controlSubmission(pending.value!) : props.workflow === 'inpaint' ? inpaintSubmission(pending.value!) : { path: generatePath, body: pending.value }
-    const response = await fetch(submission.path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(submission.body) })
-    const data = await response.json()
-    // A received API response is conclusive; transport failures retain the exact request ID.
-    if (response.ok || (response.status >= 400 && response.status < 500) || data.detail?.job_id) {
+    await submitOnce(submission, () => {
       localStorage.removeItem(pendingKey); pending.value = null
-    }
-    if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : data.detail?.message || '生成參數無效')
+    })
     await load()
   } catch (e) {
     error.value = e instanceof Error ? e.message : '提交失敗'

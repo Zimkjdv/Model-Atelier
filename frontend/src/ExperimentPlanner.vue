@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { apiText } from './apiClient'
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue'
 import type { CreationForm } from './creationSettings'
 import type { ImportPreview } from './settingsTransfer'
@@ -38,10 +39,7 @@ onActivated(() => { if (!suite.value) void loadSuite() })
 onDeactivated(() => { stop(); suiteAbort?.abort() })
 onBeforeUnmount(() => { stop(); suiteAbort?.abort(); if(exportedUrl.value) URL.revokeObjectURL(exportedUrl.value) })
 async function request(path: string, body: string, signal: AbortSignal) {
-  const response = await fetch('/api/experiments/' + path, { method:'POST', signal, headers:{ 'Content-Type':'application/json' }, body })
-  const text = await response.text()
-  if (!response.ok) { const value = JSON.parse(text); throw new Error(typeof value.detail === 'string' ? value.detail : '比較方案格式無效，未建立任務。') }
-  return text
+  return apiText('experiments/'+path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal })
 }
 async function preview() {
   if (blocked.value) return

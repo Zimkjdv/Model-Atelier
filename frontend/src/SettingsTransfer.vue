@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { apiText } from './apiClient'
 import { computed, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
 import type { CreationForm } from './creationSettings'
 import type { FluxForm } from './fluxSettings'
@@ -37,13 +38,7 @@ async function readFile(event: Event) {
   finally { control.value = '' }
 }
 async function request(path: string, body: string, signal: AbortSignal) {
-  const response = await fetch('/api/creation-settings/' + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal })
-  const text = await response.text()
-  if (!response.ok) {
-    const data = JSON.parse(text)
-    throw new Error(typeof data.detail === 'string' ? data.detail : '設定格式無效，原表單保持不變。')
-  }
-  return text
+  return apiText('creation-settings/'+path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal })
 }
 async function validate() {
   if (blocked.value) return

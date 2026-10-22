@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { api } from './apiClient'
+import { createRequestScope } from './requestScope'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { architectureLabel, fileHash, fileSize, metadataTime, safeMetadataUrl } from './modelMetadata'
 import type { ModelMetadataSnapshot, LoraMetadataSnapshot } from './modelMetadata'
@@ -46,16 +48,11 @@ const completed = computed(() => jobs.value.filter(job => job.status === 'comple
 const visible = computed(() => items.value.filter(item => (scope.value === 'all' || item.archived === (scope.value === 'archived')) &&
   (!favoritesOnly.value || item.favorite) && (!modelFilter.value || item.checkpoint === modelFilter.value) &&
   [item.title, item.checkpoint, item.model_version, item.notes, item.parameters.prompt || '', ...(item.lora_metadata ?? []).map(lora => lora.name + ' ' + lora.version)].join(' ').toLowerCase().includes(search.value.trim().toLowerCase())))
-async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
-  const response = await fetch('/api/' + path, { method, ...(body === undefined ? {} : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) })
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(typeof data.detail === 'string' ? data.detail : '無法讀取作品資料，請稍後再試。')
-  }
-  return response.json()
-}
+const reads = createRequestScope(), details = createRequestScope()
 async function read() {
-  const [artworks, tasks] = await Promise.all([api<Artwork[]>('artworks?scope=all'), api<Job[]>('jobs')])
+  const request = reads.begin()
+  const [artworks, tasks] = await Promise.all([api<Artwork[]>('artworks?scope=all', 'GET', undefined, request.signal), api<Job[]>('jobs', 'GET', undefined, request.signal)])
+  if (!request.isCurrent()) return
   items.value = artworks; jobs.value = tasks
   if (!completed.value.some(job => job.id === selectedJob.value)) selectedJob.value = completed.value[0]?.id || ''
 }
@@ -125,10 +122,12 @@ async function reloadNotes() {
   if (!item || saving.value) return
   if ((notesDirty.value || ratingsDirty.value) && !window.confirm('重新讀取會放棄尚未保存的筆記與評分，確定繼續？')) return
   saving.value = true; organizationError.value = ''; organizationMessage.value = ''
+  const request = details.begin()
   try {
-    const updated = await api<Artwork>(`artworks/${item.id}`)
+    const updated = await api<Artwork>(`artworks/${item.id}`, 'GET', undefined, request.signal)
+    if (!request.isCurrent() || selected.value?.id !== item.id) return
     replaceItem(updated); notesDraft.value = updated.notes; ratingsDraft.value = { ...updated.ratings }; organizationMessage.value = '已讀取最新筆記、評分與作品狀態。'
-  } catch (e) { organizationError.value = e instanceof Error ? e.message : '讀取失敗' }
+  } catch (e) { if (request.isCurrent()) organizationError.value = e instanceof Error ? e.message : '讀取失敗' }
   finally { saving.value = false }
 }
 function beforeUnload(event: BeforeUnloadEvent) {
@@ -138,7 +137,7 @@ watch([notesDirty, ratingsDirty, saving], ([notes, ratings, pending]) => emit('d
 const imageUrl = (item: Artwork, thumbnail = false) => `/api/artworks/${item.id}/image${thumbnail ? '?thumbnail=true' : ''}`
 const importedCount = (job: Job) => items.value.filter(item => item.job_id === job.id).length
 onMounted(() => { window.addEventListener('beforeunload', beforeUnload); void refresh() })
-onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload); emit('dirty', false) })
+onBeforeUnmount(() => { reads.dispose(); details.dispose(); window.removeEventListener('beforeunload', beforeUnload); emit('dirty', false) })
 </script>
 
 <template>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { apiJson as api } from './apiClient'
+import { createRequestScope } from './requestScope'
 import { onMounted, onUnmounted, ref } from 'vue'
 import ModelLibrary from './ModelLibrary.vue'
 import CreationStudio from './CreationStudio.vue'
@@ -43,23 +45,16 @@ function restoreArtwork(artworkId: string, workflowId?: string | null) {
 const url = ref(''), error = ref(''), message = ref(''), busy = ref(false), saving = ref(false)
 const pages = ['創作工作台', '模型庫', '作品庫', '系統資訊', '設定', '參考素材']
 let timer: ReturnType<typeof setInterval> | undefined
-let alive = true, refreshToken = 0, settingsEpoch = 0, refreshAbort: AbortController | null = null
-async function api<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch('/api/' + path, options)
-  if (!response.ok) throw new Error(response.status === 422 ? '位址格式不正確，請使用 HTTP 或 HTTPS 位址。' : `請求失敗 (${response.status})`)
-  return response.json()
-}
+const refreshRequests = createRequestScope()
+let alive = true, settingsEpoch = 0
 async function refresh(force = false) {
   if (!alive || (!force && (busy.value || saving.value))) return
-  const token = ++refreshToken
-  refreshAbort?.abort()
-  const controller = new AbortController()
-  refreshAbort = controller
+  const request = refreshRequests.begin()
   const expectedUrl = savedUrl.value
   busy.value = true
   error.value = ''
-  const results = await Promise.allSettled([api<System>('system', { signal: controller.signal }), api<EngineReport>('engine', { signal: controller.signal })])
-  if (!alive || token !== refreshToken) return
+  const results = await Promise.allSettled([api<System>('system', { signal: request.signal }), api<EngineReport>('engine', { signal: request.signal })])
+  if (!alive || !request.isCurrent()) return
   if (results[0].status === 'fulfilled') system.value = results[0].value
   systemStale.value = results[0].status !== 'fulfilled'
   if (systemStale.value) error.value = '平台硬體資訊更新失敗，下方保留的舊資料可能已過期。'
@@ -77,11 +72,11 @@ async function refresh(force = false) {
     }
   }
   else { engine.value = null; error.value += ' 引擎狀態無法更新。' }
-  busy.value = false; refreshAbort = null
+  busy.value = false
 }
 async function save() {
   if (saving.value || !alive) return
-  ++settingsEpoch; ++refreshToken; refreshAbort?.abort(); refreshAbort = null
+  ++settingsEpoch; refreshRequests.cancel()
   engine.value = null; busy.value = false
   saving.value = true; message.value = ''
   try {
@@ -106,7 +101,7 @@ onMounted(async () => {
   if (!alive) return
   timer = setInterval(() => { if (document.visibilityState === 'visible') void refresh() }, 15000)
 })
-onUnmounted(() => { alive = false; ++refreshToken; ++settingsEpoch; refreshAbort?.abort(); clearInterval(timer) })
+onUnmounted(() => { alive = false; ++settingsEpoch; refreshRequests.dispose(); clearInterval(timer) })
 </script>
 
 <template>

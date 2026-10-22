@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { apiJson as api } from './apiClient'
+import { createRequestScope } from './requestScope'
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import MaskEditor from './MaskEditor.vue'
@@ -22,27 +24,23 @@ const baseline=ref(JSON.stringify(form)),dirty=computed(()=>JSON.stringify(form)
 const source=computed(()=>assets.value.find(a=>a.id===form.image_asset_id)),mask=computed(()=>assets.value.find(a=>a.id===form.mask_asset_id))
 const masks=computed(()=>assets.value.filter(a=>!a.archived && a.id!==form.image_asset_id && a.width===source.value?.width && a.height===source.value?.height))
 const locked=computed(()=>busy.value || maskBusy.value || generationBusy.value || generationPending.value || !!pendingRestore.value)
-let ticket=0,restoreTicket=0,controller:AbortController|null=null,restoreController:AbortController|null=null,mounted=false,alive=true
-async function api<T>(path:string,method='GET',signal?:AbortSignal):Promise<T> {
-  const response=await fetch('/api/'+path,{method,signal}),value=await response.json()
-  if(!response.ok) throw new Error(typeof value.detail==='string'?value.detail:'無法讀取資料，請確認引擎與設定。')
-  return value
-}
+const loads=createRequestScope(), restores=createRequestScope()
+let mounted=false,alive=true
 async function load(sync=false) {
-  const current=++ticket,url=form.engine_url,name=form.checkpoint
-  controller?.abort();const abort=new AbortController();controller=abort;busy.value=true;error.value='';catalog.value=null;capabilities.value=null;profile.value=null
+  const request=loads.begin(),url=form.engine_url,name=form.checkpoint
+  busy.value=true;error.value='';catalog.value=null;capabilities.value=null;profile.value=null
   try {
-    const results=await Promise.all([api<Catalog>('models','GET',abort.signal),api<ReferenceAsset[]>('assets','GET',abort.signal),api<Capabilities>('engine/capabilities'+(sync?'/sync':''),sync?'POST':'GET',abort.signal)])
-    if(current!==ticket || !alive) return
+    const results=await Promise.all([api<Catalog>('models',{signal:request.signal}),api<ReferenceAsset[]>('assets',{signal:request.signal}),api<Capabilities>('engine/capabilities'+(sync?'/sync':''),{method:sync?'POST':'GET',signal:request.signal})])
+    if(!request.isCurrent() || !alive) return
     catalog.value=results[0];assets.value=results[1];capabilities.value=results[2]
     if(!form.engine_url) {form.engine_url=results[0].engine_url;baseline.value=JSON.stringify(form)}
     if(form.engine_url!==url && url) return
     if(name && form.checkpoint===name) {
-      const value=validateProfile(await api<ModelProfile>('models/profile?'+new URLSearchParams({engine_url:form.engine_url,name}),'GET',abort.signal))
-      if(current===ticket && form.checkpoint===name && form.engine_url===value.engine_url && value.name===name) profile.value=value
+      const value=validateProfile(await api<ModelProfile>('models/profile?'+new URLSearchParams({engine_url:form.engine_url,name}),{signal:request.signal}))
+      if(request.isCurrent() && form.checkpoint===name && form.engine_url===value.engine_url && value.name===name) profile.value=value
     }
-  } catch(e) {if(current===ticket && !abort.signal.aborted) error.value=e instanceof Error?e.message:'讀取失敗'}
-  finally {if(current===ticket) {busy.value=false;controller=null}}
+  } catch(e) {if(request.isCurrent() && !request.signal.aborted) error.value=e instanceof Error?e.message:'讀取失敗'}
+  finally {if(request.isCurrent()) {busy.value=false}}
 }
 watch(()=>[form.engine_url,form.checkpoint],()=>{profile.value=null;if(mounted) void load()},{flush:'sync'})
 const block=computed(()=>{
@@ -73,25 +71,25 @@ function savedMask(value:ReferenceAsset) {assets.value=[value,...assets.value.fi
 function apply(value:Restoration) {
   if(generationBusy.value || generationPending.value || maskBusy.value) return
   const copied=copyFeatherInpaint(value.settings)
-  ++restoreTicket;restoreController?.abort();Object.assign(form,copied);origin.value=value;pendingRestore.value=null;maskDirty.value=false
+  restores.cancel();Object.assign(form,copied);origin.value=value;pendingRestore.value=null;maskDirty.value=false
   baseline.value='';message.value='完整原圖、遮罩與設定已載入。請手動確認，再生成新任務。';void load()
 }
 async function restore(kind:'jobs'|'artworks',id:string,token?:number) {
   if(generationBusy.value || generationPending.value || maskBusy.value || !alive) {error.value='請先完成或恢復目前提交，再載入設定。';return}
-  const current=++restoreTicket;restoreController?.abort();const abort=new AbortController();restoreController=abort;error.value=''
+  const request=restores.begin();error.value=''
   try {
-    const value=await api<Restoration>(kind+'/'+id+'/creation-settings','GET',abort.signal)
-    if(current!==restoreTicket || (token!==undefined && props.restoreRequest?.token!==token) || !alive) return
+    const value=await api<Restoration>(kind+'/'+id+'/creation-settings',{signal:request.signal})
+    if(!request.isCurrent() || (token!==undefined && props.restoreRequest?.token!==token) || !alive) return
     if((kind==='jobs'?value.job_id:value.artwork_id)!==id) throw new Error('回傳的來源 ID 不同，未載入。')
     copyFeatherInpaint(value.settings)
     if(dirty.value) pendingRestore.value=value;else apply(value)
-  } catch(e) {if(current===restoreTicket && !abort.signal.aborted) error.value=e instanceof Error?e.message:'還原失敗'}
+  } catch(e) {if(request.isCurrent() && !request.signal.aborted) error.value=e instanceof Error?e.message:'還原失敗'}
 }
 watch(()=>props.restoreRequest,value=>{if(value) void restore('artworks',value.artworkId,value.token)},{immediate:true})
 onMounted(async()=>{await load();mounted=true})
 onActivated(()=>{if(mounted) void load()})
-onDeactivated(()=>{++ticket;controller?.abort();busy.value=false;++restoreTicket;restoreController?.abort()})
-onBeforeUnmount(()=>{alive=false;++ticket;++restoreTicket;controller?.abort();restoreController?.abort()})
+onDeactivated(()=>{loads.cancel();restores.cancel();busy.value=false})
+onBeforeUnmount(()=>{alive=false;loads.dispose();restores.dispose()})
 </script>
 <template>
   <section aria-label="局部編輯工作台">

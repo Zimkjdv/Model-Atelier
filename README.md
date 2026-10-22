@@ -54,7 +54,7 @@ Set-Location ..
 
 ## 開發與文件
 
-後端：`.venv/Scripts/python.exe -m unittest discover -s backend -p 'test_*.py'`。前端在 frontend 執行 `npm.cmd run build`、`check:experiments`、`check:inpaint`、`check:control`；不等同實機 GPU 或完整 UI 驗收。
+後端：`.venv/Scripts/python.exe -m unittest discover -s backend -p 'test_*.py'`。前端在 frontend 執行 `npm.cmd run build`、`check:api`、`check:experiments`、`check:inpaint`、`check:control`；不等同實機 GPU 或完整 UI 驗收。
 
 - [文件索引](docs/index.md)：按工作流程找說明、API 與驗收。
 - [架構與資料流](docs/architecture.md)：模組、任務狀態、原引擎與資料位置。

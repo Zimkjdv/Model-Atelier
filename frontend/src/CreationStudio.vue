@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, onActivated, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { api } from './apiClient'
+import { createRequestScope } from './requestScope'
+import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import LoraControls from './LoraControls.vue'
 import LoraSnapshot from './LoraSnapshot.vue'
@@ -42,7 +44,8 @@ type Restoration = { kind: 'artwork'; value: ArtworkSettings } | { kind: 'job'; 
 type SettingsOrigin = (ArtworkSettings & { kind: 'artwork' }) | (FailedJobSettings & { kind: 'job' })
 const busy = ref(false), restoring = ref(false), error = ref(''), message = ref(''), saved = ref(JSON.stringify(form)), pending = ref<Draft | 'new' | Restoration | null>(null)
 const origin = ref<SettingsOrigin | null>(null)
-let restorationRequest = 0
+const restoration = createRequestScope(), profiles = createRequestScope(), capabilityReads = createRequestScope(), lists = createRequestScope()
+let active = true, reading = false
 const dirty = computed(() => JSON.stringify(form) !== saved.value)
 const selected = computed(() => models.value?.engine_url === form.engine_url ? models.value.models.find(m => m.name === form.checkpoint) : undefined)
 const draftVersion = ref('')
@@ -57,7 +60,7 @@ const available = computed(() => models.value?.engine_url === form.engine_url ? 
 const capabilities = ref<Capabilities | null>(null), capabilityBusy = ref(false), capabilityError = ref('')
 const profile = ref<ModelProfile | null>(null), profileBusy = ref(false), profileError = ref('')
 const presetChoice = ref<string | null>(null)
-let profileRequest = 0, profileAbort: AbortController | null = null
+
 const matchingProfile = computed(() => profile.value?.engine_url === form.engine_url && profile.value.name === form.checkpoint ? profile.value : null)
 const editableWorkflow = computed(() => !form.checkpoint || !!matchingProfile.value?.workflow)
 const retainedParameters = computed(() => ({ ...form }))
@@ -78,7 +81,7 @@ const presetRows = computed(() => matchingProfile.value?.preset ? presetFields.m
   ...field, current: form[field.key], next: matchingProfile.value!.preset!.settings[field.key],
   changed: form[field.key] !== matchingProfile.value!.preset!.settings[field.key],
 })) : [])
-let capabilityRequest = 0
+
 const matchingCapabilities = computed(() => capabilities.value?.engine_url === form.engine_url ? capabilities.value : null)
 const samplers = computed(() => matchingCapabilities.value?.sampler_names ?? [])
 const schedulers = computed(() => matchingCapabilities.value?.schedulers ?? [])
@@ -111,17 +114,9 @@ const submissionBlock = computed(() => {
   return ''
 })
 const aspect = computed(() => Number(form.width) > 0 && Number(form.height) > 0 ? `${form.width} / ${form.height}` : '1 / 1')
-async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
-  const response = await fetch('/api/' + path, { method, ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}) })
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(typeof data.detail === 'string' ? data.detail : '請檢查名稱、尺寸、seed 與取樣設定：steps 1–150、CFG 0–30、denoise 0–1；LoRA 強度需為 −20 至 20 的數值。')
-  }
-  return response.json()
-}
 function apply(record: Draft | 'new' | Restoration) {
   experimentLoad.value = null
-  ++restorationRequest; restoring.value = false
+  restoration.cancel(); restoring.value = false
   presetChoice.value = null
   if (typeof record === 'object' && 'kind' in record) {
     Object.assign(form, newCreation(), record.value.settings, { reference_ids: [...record.value.settings.reference_ids], loras: (record.value.settings.loras ?? []).map(item => ({ ...item })) })
@@ -144,7 +139,7 @@ function apply(record: Draft | 'new' | Restoration) {
   saved.value = JSON.stringify(form); pending.value = null; error.value = ''; message.value = ''
 }
 function choose(record: Draft | 'new') {
-  ++restorationRequest; restoring.value = false
+  restoration.cancel(); restoring.value = false
   if (dirty.value) pending.value = record
   else apply(record)
 }
@@ -161,7 +156,7 @@ function experimentState(value:SavedExperiment) {
 }
 function importSettings(value: ImportPreview, experiment:ExperimentLoad|null = null) {
   if (busy.value || restoring.value || pending.value || generationBusy.value || generationPending.value || !('checkpoint' in value.bundle.settings)) return
-  ++restorationRequest
+  restoration.cancel()
   Object.assign(form, copySettings(value.bundle.settings))
   experimentLoad.value = experiment ? JSON.parse(JSON.stringify(experiment)) : null
   id.value = null; revision.value = null; draftVersion.value = ''; origin.value = null
@@ -169,54 +164,46 @@ function importSettings(value: ImportPreview, experiment:ExperimentLoad|null = n
   message.value = '設定已載入為未保存的新草稿；請確認模型與素材，再保存或明確生成。'
 }
 async function restoreArtwork(request: { artworkId: string; token: number }) {
-  const current = ++restorationRequest
+  const read = restoration.begin()
   restoring.value = true; error.value = ''; message.value = ''
   try {
-    const value = await api<ArtworkSettings>(`artworks/${request.artworkId}/creation-settings`)
-    if (current !== restorationRequest || props.restoreRequest?.token !== request.token) return
+    const value = await api<ArtworkSettings>(`artworks/${request.artworkId}/creation-settings`, 'GET', undefined, read.signal)
+    if (!read.isCurrent() || props.restoreRequest?.token !== request.token) return
     const record: Restoration = { kind: 'artwork', value }
     if (dirty.value) pending.value = record
     else apply(record)
-  } catch (e) { if (current === restorationRequest && props.restoreRequest?.token === request.token) error.value = e instanceof Error ? e.message : '無法載入作品設定' }
-  finally { if (current === restorationRequest) restoring.value = false }
+  } catch (e) { if (read.isCurrent() && props.restoreRequest?.token === request.token) error.value = e instanceof Error ? e.message : '無法載入作品設定' }
+  finally { if (read.isCurrent()) restoring.value = false }
 }
 async function restoreJob(jobId: string) {
   if (busy.value || restoring.value || pending.value) return
-  const current = ++restorationRequest
+  const read = restoration.begin()
   restoring.value = true; error.value = ''; message.value = ''
   try {
-    const value = await api<FailedJobSettings>(`jobs/${jobId}/creation-settings`)
-    if (current !== restorationRequest) return
+    const value = await api<FailedJobSettings>(`jobs/${jobId}/creation-settings`, 'GET', undefined, read.signal)
+    if (!read.isCurrent()) return
     if (value.job_id !== jobId) throw new Error('讀取的設定與指定任務不同，已保留目前草稿。')
     const record: Restoration = { kind: 'job', value }
     if (dirty.value) pending.value = record
     else apply(record)
-  } catch (e) { if (current === restorationRequest) error.value = e instanceof Error ? e.message : '無法載入任務設定' }
-  finally { if (current === restorationRequest) restoring.value = false }
+  } catch (e) { if (read.isCurrent()) error.value = e instanceof Error ? e.message : '無法載入任務設定' }
+  finally { if (read.isCurrent()) restoring.value = false }
 }
 watch(() => props.restoreRequest, request => { if (request) void restoreArtwork(request) }, { immediate: true })
 async function refreshProfile() {
-  const request = ++profileRequest
-  profileAbort?.abort()
-  profileAbort = null; profile.value = null; presetChoice.value = null; profileError.value = ''
+  const read = profiles.begin()
+  profile.value = null; presetChoice.value = null; profileError.value = ''
   const engineUrl = form.engine_url, name = form.checkpoint
-  if (!engineUrl || !name) { profileBusy.value = false; return }
-  const controller = new AbortController()
-  profileAbort = controller; profileBusy.value = true
+  if (!active || !engineUrl || !name) { profileBusy.value = false; return }
+  profileBusy.value = true
   try {
     const query = new URLSearchParams({ engine_url: engineUrl, name })
-    const response = await fetch('/api/models/profile?' + query, { signal: controller.signal })
-    const data = await response.json()
-    if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : '無法確認模型工作流程資料。')
-    const value = validateProfile(data as ModelProfile)
+    const value = validateProfile(await api<ModelProfile>('models/profile?' + query, 'GET', undefined, read.signal))
     if (value.engine_url !== engineUrl || value.name !== name) throw new Error('模型工作流程資料與目前選擇不同，請重新更新。')
-    if (request === profileRequest && form.engine_url === engineUrl && form.checkpoint === name) profile.value = value
+    if (read.isCurrent() && form.engine_url === engineUrl && form.checkpoint === name) profile.value = value
   } catch (e) {
-    if (request === profileRequest && !controller.signal.aborted)
-      profileError.value = e instanceof Error ? e.message : '無法確認模型工作流程資料。'
-  } finally {
-    if (request === profileRequest) { profileBusy.value = false; profileAbort = null }
-  }
+    if (read.isCurrent()) profileError.value = e instanceof Error ? e.message : '無法確認模型工作流程資料。'
+  } finally { if (read.isCurrent()) profileBusy.value = false }
 }
 watch(() => [form.engine_url, form.checkpoint], () => { void refreshProfile() }, { immediate: true, flush: 'sync' })
 function choosePreset() {
@@ -243,25 +230,30 @@ function confirmPreset() {
   message.value = `已套用「${value.preset.name}」。請確認並保存草稿。`
 }
 async function refreshCapabilities(explicit = false) {
-  const request = ++capabilityRequest
+  const read = capabilityReads.begin(), engineUrl = form.engine_url
   capabilityBusy.value = true; capabilityError.value = ''
   try {
-    const value = await api<Capabilities>(explicit ? 'engine/capabilities/sync' : 'engine/capabilities', explicit ? 'POST' : 'GET')
-    if (request === capabilityRequest) capabilities.value = value
+    const value = await api<Capabilities>(explicit ? 'engine/capabilities/sync' : 'engine/capabilities', explicit ? 'POST' : 'GET', undefined, read.signal)
+    if (read.isCurrent() && form.engine_url === engineUrl) capabilities.value = value
   } catch (e) {
-    if (request === capabilityRequest) { capabilities.value = null; capabilityError.value = e instanceof Error ? e.message : '無法更新引擎選項' }
-  } finally { if (request === capabilityRequest) capabilityBusy.value = false }
+    if (read.isCurrent()) { capabilities.value = null; capabilityError.value = e instanceof Error ? e.message : '無法更新引擎選項' }
+  } finally { if (read.isCurrent()) capabilityBusy.value = false }
 }
 async function refresh() {
-  if (busy.value) return
-  busy.value = true; error.value = ''
+  if (busy.value || !active) return
+  const read = lists.begin(), engineUrl = form.engine_url
+  reading = true; busy.value = true; error.value = ''
   try {
-    const [list, catalog, assets, workflows] = await Promise.all([api<Draft[]>('drafts'), api<Catalog>('models'), api<Asset[]>('assets'), api<ReferenceWorkflow[]>('reference-workflows'), refreshCapabilities()])
+    const [list, catalog, assets, workflows] = await Promise.all([
+      api<Draft[]>('drafts', 'GET', undefined, read.signal), api<Catalog>('models', 'GET', undefined, read.signal),
+      api<Asset[]>('assets', 'GET', undefined, read.signal), api<ReferenceWorkflow[]>('reference-workflows', 'GET', undefined, read.signal), refreshCapabilities(),
+    ])
+    if (!read.isCurrent() || form.engine_url !== engineUrl) return
     records.value = list; models.value = catalog; references.value = assets; referenceWorkflows.value = workflows
     if (!form.engine_url && !dirty.value) apply('new')
     await refreshProfile()
-  } catch (e) { error.value = e instanceof Error ? e.message : '無法讀取草稿' }
-  finally { busy.value = false }
+  } catch (e) { if (read.isCurrent()) error.value = e instanceof Error ? e.message : '無法讀取草稿' }
+  finally { if (read.isCurrent()) { busy.value = false; reading = false } }
 }
 async function save(copy = false) {
   if (busy.value) return
@@ -280,8 +272,17 @@ function randomSeed() {
 }
 function beforeUnload(event: BeforeUnloadEvent) { if (dirty.value) { event.preventDefault(); event.returnValue = '' } }
 onMounted(() => { void refresh(); window.addEventListener('beforeunload', beforeUnload) })
-onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload); ++profileRequest; ++restorationRequest; profileAbort?.abort() })
-onActivated(() => { if (form.engine_url) void refresh() })
+function cancelReads() {
+  lists.cancel(); profiles.cancel(); capabilityReads.cancel(); restoration.cancel()
+  profileBusy.value = false; capabilityBusy.value = false; restoring.value = false
+  if (reading) { busy.value = false; reading = false }
+}
+onDeactivated(() => { active = false; cancelReads() })
+onBeforeUnmount(() => {
+  active = false; window.removeEventListener('beforeunload', beforeUnload); cancelReads()
+  lists.dispose(); profiles.dispose(); capabilityReads.dispose(); restoration.dispose()
+})
+onActivated(() => { active = true; void refresh() })
 </script>
 
 <template>

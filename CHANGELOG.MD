@@ -1,5 +1,11 @@
 # Model Atelier — Changelog
 
+## 2026-10-22 · Q03 前端 HTTP 契約與可取消載入
+
+App、四工作台、作品庫與 GenerationPanel 採用共用 HTTP／ApiError，解析字串、結構化與欄位陣列錯誤；HTML／異常 JSON、連線與取消分開處理。共用 request scope 統一取代／離頁／卸載失效；設定與方案交換使用原文字路徑，原始 workflow／圖片／報告 bytes 驗證保留。
+
+submitOnce 僅執行一次凍結請求；只有可確認回覆才清除 pending，傳輸失敗／異常回覆保留原 UUID／body／端點。check:api 直接執行實際 Vue SFC setup／KeepAlive、四流程 GenerationPanel、作品 409 筆記保留，以及六種新舊端點／seed／LoRA／不重試檢查。型別／建置、check:api 與既有三組檢查通過；隔離真實瀏覽器的 422、四流程切換與未知生成狀態通過，模擬引擎提交一次，服務已停止。未重新進行 GPU 出圖或全站無障礙驗收。Q03 及兩子項完成，剩餘 43 主項／78 子項；詳見 [契約與驗證](docs/frontend-api.md)。
+
 ## 2026-10-22 · Q02 明確配置與應用程式工廠
 
 新增 create_app 與每 app 的 AppContext，將目錄／SQLite 初始化移至 lifespan；主入口保留 backend.main:app。純請求型別移至 schemas，核心端點移至 core_api，其餘功能逐個以 context 組裝，不再傳入整個 main 模組。引擎 HTTP 可注入，現有 timeout／來源綁定與重送保護保留。
