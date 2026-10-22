@@ -1,5 +1,9 @@
 # Model Atelier — Changelog
 
+## 2026-10-23 · Q07 Windows CLI 編碼相容
+
+遠端 Windows CI 的非 Unicode 終端無法輸出中文錯誤，改以標準 JSON Unicode escape 輸出；JSON 解碼後內容不變。子程序回歸強制 ASCII stdout，驗證忙碌拒絕及完整 check→backup→verify→restore 都能輸出有效 JSON。修正不改備份格式或資料內容。
+
 ## 2026-10-23 · Q07 完整停機備份與離線還原
 
 加入唯讀 check、backup、verify、restore 與明確指定 DATA 啟動入口。全 DATA、外置 DB 與選定證據使用逐檔 SHA256 manifest；程序鎖、SQLite 排他交易與複製前後盤點拒絕不一致快照。只寫入新目錄，失敗保留 incomplete，既有資料不覆寫、不修復、不重新生成；權重與引擎資料另備份。

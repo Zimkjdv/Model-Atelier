@@ -2,6 +2,7 @@ from contextlib import closing
 import errno
 import hashlib
 import json
+import os
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -78,9 +79,10 @@ class BackupTests(unittest.TestCase):
                 self.create()
             result = subprocess.run([sys.executable, 'scripts/data_backup.py', 'backup', '--data', str(self.data),
                                      '--database', str(self.case.db), '--destination', str(self.folder / 'child'), '--platform-stopped'],
-                                    cwd=Path(__file__).resolve().parents[1], capture_output=True, timeout=20)
+                                    cwd=Path(__file__).resolve().parents[1], capture_output=True, timeout=20,
+                                    env=dict(os.environ, PYTHONIOENCODING='ascii'))
             self.assertEqual(result.returncode, 1)
-            self.assertIn('ok', result.stdout.decode('utf-8', errors='replace'))
+            self.assertFalse(json.loads(result.stdout)['ok'], result.stderr)
         self.assertFalse((self.folder / 'archive').exists())
         self.assertFalse((self.folder / 'child').exists())
         with DataLease([self.data, self.case.db], maintenance=True):
@@ -183,7 +185,7 @@ class BackupTests(unittest.TestCase):
         ]
         for args in commands:
             result = subprocess.run([sys.executable, 'scripts/data_backup.py', *args], capture_output=True, timeout=20,
-                                    cwd=Path(__file__).resolve().parents[1])
+                                    cwd=Path(__file__).resolve().parents[1], env=dict(os.environ, PYTHONIOENCODING='ascii'))
             self.assertEqual(result.returncode, 0, result.stdout)
             self.assertTrue(json.loads(result.stdout)['ok'])
         with closing(sqlite3.connect(self.case.db)) as db:

@@ -31,10 +31,11 @@ def main(argv=None):
         result = getattr(backup, {'check': 'inspect'}.get(command, command))(**args)
         if command == 'verify':
             result = dict(ok=True, files=len(result['files']), inspection=result['inspection'])
-        print(json.dumps(result, ensure_ascii=False))
+        # Escaped JSON stays valid on Windows runner consoles using cp1252.
+        print(json.dumps(result, ensure_ascii=True))
         return 0 if result.get('ok') else 1
     except (backup.BackupError, DataBusyError, OSError, ValueError) as exc:
-        print(json.dumps(dict(ok=False, error=str(exc)), ensure_ascii=False))
+        print(json.dumps(dict(ok=False, error=str(exc)), ensure_ascii=True))
         return 1
 
 
