@@ -14,6 +14,7 @@ from backend import validation_records, generation_advice, storage, loras, lora_
 from backend import flux_plan, flux_catalog, settings_transfer, stack_validation, experiment_plans
 from backend.schemas import Settings, ModelTarget, ModelMetadata, DraftInput, AssetUpdate
 from backend.app_context import AppContext
+from backend.data_lease import DataLease
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -63,8 +64,9 @@ def create_app(*, data_root: str | Path | None = None, database: str | Path | No
 
     @asynccontextmanager
     async def lifespan(app):
-        context.initialize()
-        yield
+        with DataLease([data, db]):
+            context.initialize()
+            yield
 
     app = FastAPI(title='Model Atelier', version='0.1.0', lifespan=lifespan)
     app.state.context = context
