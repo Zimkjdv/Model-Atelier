@@ -36,7 +36,9 @@ Set-Location ..
 
 V01 新增 6 項遮罩瀏覽器回歸，當時總計 25 項：1440px／390px 的實際畫布操作與保存 PNG 像素核對、取消選取／素材重讀／KeepAlive、無效 PNG／保存失敗、捕獲／縮放／停用，以及 CDP 主觸點／第二指／取消。兩種寬度另保存全頁與遮罩截圖、像素量測附件至報告。以 `npm.cmd run test:browser -- mask-editor.spec.ts` 單獨執行；實機觸控仍未通過，詳見 [V01 驗收](validation/mask-editor-20261023.md)。
 
-V02 再新增 9 項，現有瀏覽器回歸共 34 項。以 `npm.cmd run test:browser -- inpaint-recovery.spec.ts` 重跑 v1／v2 × 1440px／390px × 遺失回應／異常 JSON 的 8 案例，以及未知版本保護。測試保存原 pending、平台請求／回覆、固定輸入與引擎呼叫雜湊及截圖；fixture 的 `/qa/engine-audit` 最多保留 1,000 筆方法／路徑與輸入雜湊，只存在臨時測試服務。Node 契約對六種生成端點驗證錯誤／缺失成功 id 與錯誤 detail.job_id 不會誤清除 pending。見 [V02 證據](validation/inpaint-recovery-20261023.md)。
+V02 再新增 9 項，當時瀏覽器回歸共 34 項。以 `npm.cmd run test:browser -- inpaint-recovery.spec.ts` 重跑 v1／v2 × 1440px／390px × 遺失回應／異常 JSON 的 8 案例，以及未知版本保護。測試保存原 pending、平台請求／回覆、固定輸入與引擎呼叫雜湊及截圖；fixture 的 `/qa/engine-audit` 最多保留 1,000 筆方法／路徑與輸入雜湊，只存在臨時測試服務。Node 契約對六種生成端點驗證錯誤／缺失成功 id 與錯誤 detail.job_id 不會誤清除 pending。見 [V02 證據](validation/inpaint-recovery-20261023.md)。
+
+V03 新增 5 項，現有瀏覽器回歸共 **39 項**。`npm.cmd run test:browser -- artwork-library.spec.ts` 實際操作 390px 作品整理、兩分頁筆記／評分修訂衝突、未保存及保存中保護、503 不重送、原圖與精確參數比較、橫向鍵盤捲動及四件選取上限。fixture 的 `/qa/artwork-set` 只建立臨時合成作品，不呼叫生成；每案檢查生成數不變，並附原圖／workflow bytes、管理修訂 JSON 與畫面。見 [V03 驗收](validation/artwork-library-20261023.md)。
 
 ## 依賴與驗收範圍（2026-10-22）
 

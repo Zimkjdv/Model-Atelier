@@ -25,7 +25,7 @@ import httpx
 from PIL import Image
 import uvicorn
 from fastapi import FastAPI
-from backend import assets, catalog, gallery, jobs
+from backend import assets, catalog, gallery, jobs, workflows
 from backend.main import create_app
 
 ENGINE = 'http://mock-engine.invalid:8188'
@@ -253,6 +253,94 @@ def fixture(data, count=None, legacy_ui=False):
         value = gallery.get(context.DB, artwork['id'])
         gallery.organize(context.DB, artwork['id'], value['revision'], {'notes': 'another window'})
         return {'ok': True}
+
+    @wrapper.post('/qa/artwork-set')
+    def artwork_set():
+        group = 'v03-' + uuid4().hex[:8]
+        records = []
+        for index, size in enumerate(((128, 64), (64, 128), (96, 96), (128, 96), (64, 64))):
+            choices = [
+                dict(
+                    name='fixture-alpha.safetensors',
+                    enabled=True,
+                    strength_model=0.5,
+                    strength_clip=1,
+                ),
+                dict(
+                    name='fixture-beta.safetensors',
+                    enabled=True,
+                    strength_model=0.8,
+                    strength_clip=0.25,
+                ),
+            ]
+            if index % 2:
+                choices.reverse()
+            checkpoint = 'fixture-model-' + ('a' if index % 2 == 0 else 'b') + '.safetensors'
+            settings = dict(
+                title=group + '-' + str(index + 1),
+                prompt=group + ' scene ' + str(index + 1),
+                negative_prompt='fixture negative ' + str(index),
+                checkpoint=checkpoint,
+                width=size[0],
+                height=size[1],
+                seed=str(2**64 - 1 - index),
+                steps=12 + 4 * index,
+                cfg=5 + index,
+                sampler_name='euler',
+                scheduler='normal',
+                denoise=0.5 + index / 10,
+                loras=choices,
+            )
+            identifier = str(uuid4())
+            metadata = [
+                dict(
+                    name=choice['name'],
+                    version='fixture-v1',
+                    strength_model=choice['strength_model'],
+                    strength_clip=choice['strength_clip'],
+                )
+                for choice in choices
+            ]
+            jobs.reserve(
+                context.DB,
+                identifier,
+                ENGINE,
+                workflows.build(settings),
+                checkpoint,
+                'fixture-v03',
+                lora_metadata=metadata,
+                workflow_id='checkpoint-text2image-v1',
+            )
+            job = jobs.update(
+                context.DB,
+                identifier,
+                status='completed',
+                history={
+                    'status': {'completed': True, 'status_str': 'success'},
+                    'outputs': {
+                        '7': {
+                            'images': [
+                                {
+                                    'filename': settings['title'] + '.png',
+                                    'subfolder': '',
+                                    'type': 'output',
+                                }
+                            ]
+                        }
+                    },
+                },
+            )
+            image = Image.new(
+                'RGB', size, ('#718d76', '#a18d71', '#718da1', '#9871a1', '#a17171')[index]
+            )
+            image.paste('white', (0, 0, size[0] // 4, size[1] // 4))
+            encoded = io.BytesIO()
+            image.save(encoded, 'PNG')
+            record, _ = gallery.save(
+                context.DB, data / 'artworks', job, gallery.outputs(job)[0], encoded.getvalue()
+            )
+            records.append(record)
+        return dict(group=group, items=records)
 
     @wrapper.post('/qa/engine/{mode}')
     def engine_mode(mode: Literal['offline', 'success', 'uncertain']):

@@ -58,12 +58,18 @@ const fields = computed(() => {
       ><h2>作品比較 · {{ items.length }} / 4</h2
       ><button class="secondary" @click="emit('clear')">清空比較選擇</button></div
     >
-    <p class="footnote"
+    <p id="artwork-comparison-help" class="footnote"
       >原圖等高完整顯示；不同輸出尺寸不代表相同 latent
-      尺寸。可跨模型比較，結果是人工觀察。篩選作品不會清除選擇，窄視窗可橫向捲動。</p
+      尺寸。可跨模型比較，結果是人工觀察。篩選作品不會清除選擇，窄視窗可橫向捲動。按 Tab
+      選取比較區後，可以左右方向鍵捲動。</p
     >
     <p v-if="items.length < 2" role="status">再選一張作品即可查看差異。</p>
-    <div class="comparison-scroll"
+    <div
+      class="comparison-scroll"
+      tabindex="0"
+      role="region"
+      aria-label="原圖與參數橫向比較"
+      aria-describedby="artwork-comparison-help"
       ><div
         class="comparison-images"
         :style="{ gridTemplateColumns: `repeat(${items.length}, minmax(240px, 1fr))` }"
@@ -125,6 +131,10 @@ const fields = computed(() => {
 }
 .comparison-scroll {
   overflow-x: auto;
+}
+.comparison-scroll:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
 }
 .comparison-images {
   display: grid;

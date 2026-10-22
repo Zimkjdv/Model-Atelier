@@ -100,6 +100,15 @@ const search = ref(''),
 const scope = ref<'active' | 'archived' | 'all'>('active'),
   favoritesOnly = ref(false),
   modelFilter = ref('')
+const hasFilters = computed(
+  () =>
+    !!(
+      search.value.trim() ||
+      modelFilter.value.trim() ||
+      favoritesOnly.value ||
+      scope.value !== 'active'
+    ),
+)
 const saving = ref(false),
   notesDraft = ref(''),
   organizationError = ref(''),
@@ -127,6 +136,10 @@ const comparisonIds = ref<string[]>([]),
 const comparisonItems = computed(() =>
   comparisonIds.value.map((id) => comparisonRecords.value.get(id)).filter((v): v is Artwork => !!v),
 )
+function clearComparison() {
+  comparisonIds.value = []
+  comparisonRecords.value.clear()
+}
 async function toggleComparison(id: string) {
   if (comparisonIds.value.includes(id)) {
     comparisonIds.value = comparisonIds.value.filter((v) => v !== id)
@@ -503,14 +516,17 @@ onBeforeUnmount(() => {
   <article v-if="!visible.length" class="panel placeholder"
     ><h2>{{ busy ? '讀取作品中…' : '沒有符合的作品' }}</h2
     ><p>{{
-      items.length
+      hasFilters
         ? '調整搜尋、模型或收藏篩選；封存作品可在「已封存」中還原。'
         : '完成生成後，選擇上方任務匯入圖片。作品會保存在這台平台主機。'
     }}</p></article
   >
-  <!-- Keep the statement separator in this inline Vue event handler. -->
-  <!-- prettier-ignore -->
-  <ArtworkComparison :items="comparisonItems" @remove="toggleComparison" @clear="comparisonIds = []; comparisonRecords.clear()" @inspect="inspectComparison" />
+  <ArtworkComparison
+    :items="comparisonItems"
+    @remove="toggleComparison"
+    @clear="clearComparison"
+    @inspect="inspectComparison"
+  />
   <div class="artwork-grid"
     ><article v-for="item in visible" :key="item.id" class="panel artwork-card">
       <button class="artwork-cover" :aria-label="'查看作品 ' + item.title" @click="open(item)"
@@ -612,11 +628,12 @@ onBeforeUnmount(() => {
         <div class="artwork-info"
           ><section class="organization-panel" aria-label="作品管理"
             ><h3>作品管理</h3
+            ><p v-if="busy" class="footnote" role="status">作品清單讀取中，完成後即可保存。</p
             ><div class="organization-actions"
               ><button
                 class="secondary"
                 :aria-pressed="selected.favorite"
-                :disabled="saving"
+                :disabled="busy || saving"
                 @click="
                   organize(
                     selected,
@@ -627,7 +644,7 @@ onBeforeUnmount(() => {
                 >{{ selected.favorite ? '★ 已收藏' : '☆ 收藏' }}</button
               ><button
                 class="secondary"
-                :disabled="saving || notesDirty || ratingsDirty"
+                :disabled="busy || saving || notesDirty || ratingsDirty"
                 @click="archive(selected)"
                 >{{ selected.archived ? '還原作品' : '封存作品' }}</button
               ></div
@@ -648,7 +665,7 @@ onBeforeUnmount(() => {
                   notesDirty ? '有尚未保存的變更' : '筆記已同步'
                 }}。封存後仍可預覽、下載與還原。</p
               ><div class="organization-actions"
-                ><button class="primary" :disabled="saving || !notesDirty">{{
+                ><button class="primary" :disabled="busy || saving || !notesDirty">{{
                   saving ? '保存中…' : '保存筆記'
                 }}</button
                 ><button type="button" class="secondary" :disabled="saving" @click="reloadNotes"
@@ -686,7 +703,9 @@ onBeforeUnmount(() => {
                   ></select
                 ></label
               ><p v-if="ratingsDirty" class="footnote">評分有尚未保存變更。</p
-              ><button class="primary" :disabled="saving || !ratingsDirty">保存評分</button></form
+              ><button class="primary" :disabled="busy || saving || !ratingsDirty"
+                >保存評分</button
+              ></form
             ></section
           ><h3>生成設定</h3
           ><dl
