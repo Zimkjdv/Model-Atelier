@@ -11,6 +11,8 @@ DESCRIPTIONS = [
          control='以 denoise 控制改動幅度；不是獨立畫風或角色鎖定。', lora=True),
     dict(id='checkpoint-inpaint-v1', name='局部編輯', implemented=True, architectures=['sd1','sdxl'], image_count=2,
          input_requirement='相同原始尺寸的原圖及遮罩；白色編輯、黑色保留，需原生節點。', control='二值遮罩與 grow_mask_by；結果合成回原輸入。', lora=True),
+    dict(id='checkpoint-inpaint-feather-v2',name='內側羽化局部編輯',implemented=True,architectures=['sd1','sdxl'],image_count=2,
+         input_requirement='同尺寸原圖與二值遮罩，另存合成用灰階遮罩；黑色區域不擴散。',control='二值去噪與內側羽化分離；不承諾無縫修補。',lora=True),
     dict(id='checkpoint-canny-controlnet-v1', name='Canny 結構參考', implemented=True, architectures=['sd1','sdxl'], image_count=1,
          input_requirement='一張素材、同架構且登記 canny 的 ControlNet；需原生 Canny 與 ControlNet 節點。', control='邊緣結構與強度／起訖；非姿勢或畫風鎖定。', lora=True),
     dict(id='checkpoint-canny-controlnet-edge-v2', name='Canny 結構與邊緣輸出', implemented=True, architectures=['sd1','sdxl'], image_count=1,

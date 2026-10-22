@@ -30,30 +30,34 @@ def install(app,host,submissions):
             implemented=True,lora=True,mask=dict(channel='red',threshold=128,white='edit',black='preserve'),
             max_pixels=16_000_000,batch_size=1,comparison=False)
 
-    @app.post('/api/inpaint/generate')
-    async def generate(value:Generate):
+    async def submit(value,adapter):
         settings=value.model_dump(mode='json',exclude={'request_id','revision'})
         async with submissions.job_lock(value.request_id):
             try: existing=jobs.get(host.DB,str(value.request_id))
             except KeyError: existing=None
             if existing is not None:
-                if existing.get('workflow_id')!=inpaint_workflows.ID or existing.get('reference_settings')!=settings or existing.get('experiment_context') is not None:
+                if existing.get('workflow_id')!=adapter.ID or existing.get('reference_settings')!=settings or existing.get('experiment_context') is not None:
                     raise HTTPException(409,'此請求 ID 已用於不同局部編輯設定')
                 return existing
             if not value.checkpoint: raise HTTPException(422,'請先選擇 checkpoint')
             if value.engine_url!=host.engine_url(): raise HTTPException(409,'引擎設定已變更，請確認原引擎')
-            try: snapshots,encoded=await run_in_threadpool(inpaint_workflows.prepare,host.DB,host.DATA,settings)
+            try: snapshots,encoded=await run_in_threadpool(adapter.prepare,host.DB,host.DATA,settings)
             except ValueError as exc: raise HTTPException(422,str(exc)) from exc
             submission=SimpleNamespace(request_id=value.request_id,engine_url=value.engine_url,checkpoint=value.checkpoint,
-                workflow=inpaint_workflows.build(settings,value.request_id))
+                workflow=adapter.build(settings,value.request_id))
             return await submissions.submit_locked(submission,reference=dict(settings=settings,snapshots=snapshots,encoded=encoded,
-                workflow_id=inpaint_workflows.ID,adapter=inpaint_workflows))
+                workflow_id=adapter.ID,adapter=adapter))
+
+    @app.post('/api/inpaint/generate')
+    async def generate(value:Generate): return await submit(value,inpaint_workflows)
 
     @app.get('/api/jobs/{job_id}/reference-mask')
     def mask(job_id:UUID):
         try: job=jobs.get(host.DB,str(job_id))
         except KeyError: raise HTTPException(404,'找不到任務')
-        if job.get('workflow_id')!=inpaint_workflows.ID: raise HTTPException(404,'此任務沒有局部編輯遮罩')
+        if job.get('workflow_id') not in (inpaint_workflows.ID,'checkpoint-inpaint-feather-v2'): raise HTTPException(404,'此任務沒有局部編輯遮罩')
         path=host.DATA/'job_inputs'/(str(job_id)+'.mask.png')
         if not path.is_file(): raise HTTPException(404,'原遮罩尚未保存或檔案遺失')
         return FileResponse(path,media_type='image/png',headers={'X-Content-Type-Options':'nosniff'})
+
+    return SimpleNamespace(submit=submit)

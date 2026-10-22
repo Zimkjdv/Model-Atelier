@@ -45,6 +45,9 @@ def extract(artwork, validate, *, allow_lora=True):
     if artwork.get('workflow_id') == 'checkpoint-canny-controlnet-v1':
         from backend import control_workflows
         return control_workflows.extract(artwork,validate)
+    if artwork.get('workflow_id') == 'checkpoint-inpaint-feather-v2':
+        from backend import inpaint_feather_workflows
+        return inpaint_feather_workflows.extract(artwork,validate)
     if artwork.get('workflow_id') == 'checkpoint-inpaint-v1':
         from backend import inpaint_workflows
         return inpaint_workflows.extract(artwork, validate)
