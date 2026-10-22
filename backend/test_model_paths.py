@@ -21,7 +21,7 @@ REPOSITORY = Path(__file__).resolve().parents[1]
 class ModelPathTests(unittest.TestCase):
     def setUp(self):
         test_api.ApiTests.setUp(self)
-        self.root = Path(self.temp.name) / 'managed workspace with spaces'
+        self.root = Path(self.temp.name).resolve() / 'managed workspace with spaces'
         self.root.mkdir()
         self.root_patcher = patch.object(self.host, 'ROOT', self.root)
         self.root_patcher.start()

@@ -209,7 +209,7 @@ class GenerationAcceptanceTests(unittest.TestCase):
 
     def test_report_path_is_confined_to_runtime_and_urls_are_loopback(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(acceptance, 'ROOT', Path(directory)):
-            self.assertEqual(acceptance.report_path('runtime/check.json'), Path(directory) / 'runtime' / 'check.json')
+            self.assertEqual(acceptance.report_path('runtime/check.json'), Path(directory).resolve() / 'runtime' / 'check.json')
             for path in ('README.json', '../outside.json', 'runtime/check.txt'):
                 with self.assertRaises(ValueError):
                     acceptance.report_path(path)
@@ -356,7 +356,7 @@ class GenerationAcceptanceTests(unittest.TestCase):
     @unittest.skipUnless(os.name == 'nt', 'Windows extended paths')
     def test_resolve_race_extended_prefix_still_confines_same_physical_runtime(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(acceptance, 'ROOT', Path(directory)):
-            path = Path(directory) / 'runtime/check.json'
+            path = Path(directory).resolve() / 'runtime/check.json'
             original = Path.resolve
             def resolve(candidate, *args, **kwargs):
                 result = original(candidate, *args, **kwargs)

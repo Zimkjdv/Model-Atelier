@@ -1,5 +1,9 @@
 # Model Atelier — Changelog
 
+## 2026-10-22 · Q06 Windows CI 長／短路徑相容
+
+遠端 runner 的 8.3 TEMP 別名使三個路徑斷言與一個故障注入比較未命中。以子程序短路徑重現四項失敗，正規化測試預期／注入目標後，42 項相關測試通過；新增別名回歸，不放寬產品目錄邊界。此修正獨立於 Q04，見 [診斷與證據](docs/validation/quality-windows-paths-20261022.md)。
+
 ## 2026-10-22 · Q06 可重跑品質入口與瀏覽器 CI
 
 加入 fail-fast 品質入口，串接後端、前端建置／四組契約及 8 項 Playwright 瀏覽器回歸。fixture 使用全新臨時資料與 MockTransport，涵蓋原請求恢復、409、真實 workflow 下載、鍵盤焦點與 390px 操作；CI 以 lock 安裝並保存失敗畫面／錄影／trace。全新隔離 venv 與 npm ci 的完整驗證通過（後端 550 項，1 項既有權限跳過）；失敗注入確認非零退出及證據。相容修補 Vite／source-map-js 後 npm audit 為 0；TestClient 棄用與故障注入警告明示保留，不宣稱 GPU／全站 UI 驗收完成。詳見 [品質指南](docs/quality-checks.md)。剩餘 41 主項／74 子項。

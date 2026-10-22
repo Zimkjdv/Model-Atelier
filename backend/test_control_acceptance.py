@@ -88,7 +88,7 @@ class ControlAcceptanceTests(unittest.TestCase):
 class ControlInstallTests(unittest.TestCase):
     def test_control_target_is_scoped_and_check_is_readonly(self):
         with tempfile.TemporaryDirectory() as d:
-            workspace=Path(d);value=install_model.manifest(check.CONTROL['id']);report=install_model.plan(value,workspace=workspace)
+            workspace=Path(d).resolve();value=install_model.manifest(check.CONTROL['id']);report=install_model.plan(value,workspace=workspace)
             self.assertEqual(Path(report['target']).parent,workspace/'runtime/ComfyUI/models/controlnet');self.assertEqual(list(workspace.iterdir()),[])
             for identifier in ('pony-v6-xl','animagine-xl-4.0-opt','lcm-lora-sdxl'):
                 target=check.downloader._paths(workspace,install_model.manifest(identifier)['filename'],create=False)[0]
