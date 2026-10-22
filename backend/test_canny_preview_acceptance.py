@@ -53,7 +53,7 @@ class PreviewAcceptanceTests(unittest.TestCase):
         self.assertTrue(all(method=='GET' for method,_ in p.seen));self.assertEqual(p.edge_imports,0)
 
     def test_changed_worker_source_or_saved_cpu_evidence_rejected(self):
-        for changes in (dict(input_sha256='a'*64),dict(native_sha256='b'*64),dict(asset_sha256='c'*64),dict(preprocessing={})): 
+        for changes in (dict(input_sha256='a'*64),dict(native_sha256='b'*64),dict(asset_sha256='c'*64),dict(preprocessing={})):
             p=Platform();p.bad_info=changes
             with self.assertRaises((ValueError,preview.PreviewError)):self.run_check(p)
         p=Platform();report,cpu=self.run_check(p);p.seen.clear()
