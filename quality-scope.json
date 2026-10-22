@@ -10,6 +10,8 @@
     "scripts/check_style.py"
   ],
   "web": [
+    "frontend/src/ArtworkLibrary.vue",
+    "frontend/src/ArtworkComparison.vue",
     "frontend/tests/inpaint-recovery.spec.ts",
     "frontend/tests/mask-editor.spec.ts",
     "frontend/src/MaskEditor.vue",
