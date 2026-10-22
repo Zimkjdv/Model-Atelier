@@ -71,11 +71,11 @@ def run_worker(root, raw, settings):
     def read():
         try:
             while True:
-                chunk = process.stdout.read(min(8192, MAX_BYTES + 4097 - len(output)))
+                chunk = process.stdout.read(min(8192, MAX_BYTES + 4098 - len(output)))
                 if not chunk:
                     break
                 output.extend(chunk)
-                if len(output) >= MAX_BYTES + 4097:
+                if len(output) >= MAX_BYTES + 4098:
                     overflow.set()
                     process.kill()
                     break

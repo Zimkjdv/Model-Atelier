@@ -21,3 +21,5 @@ worker 呼叫同一環境的 `kornia.filters.canny`，float32 CPU、相同 BCHW 
 實際 IAB 離線驗收：ComfyUI 未啟動、未選 checkpoint／控制模型，320×192 漸層幾何素材輸出 768×512 fit 與 stretch 預覽；0.4→0.2 閾值與縮放變動清除舊圖，計算途中變更不顯示過期結果。0.9／0.8 非法閾值阻止預覽；切換工作台保留表單並清除預覽。390×844 視窗無橫向溢出（innerWidth 390、scrollWidth 375）。截圖在忽略的 `runtime/canny-preview-mobile-20261022.jpg`。
 
 驗收使用 `runtime/canny-preview-live-data-20261022`：複製四份既有 Canny 任務／作品後增加一張測試素材，共 2 素材／4 任務／4 作品；預覽沒有增加任務或作品。正式資料 settings 指紋保持 `31af66ed1db203c808bee110c1007a8307ae23867df29b259636f0837502a6eb`。
+
+完整 [RTX 3060 原生比對、離線重啟與歷史下載驗收](validation/canny-preview-rtx3060.md)：兩個低閾值案例觀察到 51／15 個像素差異，因此維持近似預覽定位。四份既有任務比較與 GET-only 重啟驗證通過。

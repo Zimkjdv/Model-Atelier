@@ -147,6 +147,10 @@ class ProcessTests(unittest.TestCase):
         with self.assertRaises(preview.PreviewError):
             self.run_process('import sys;sys.stdin.buffer.read();sys.stdout.buffer.write(b"x"*20000);sys.stdout.flush()', MAX_BYTES=1024)
 
+    def test_exact_maximum_frame_is_allowed_before_overflow_sentinel(self):
+        result = self.run_process('import sys;sys.stdin.buffer.read();sys.stdout.buffer.write(b"x"*5121)', MAX_BYTES=1024)
+        self.assertEqual(len(result), 5121)
+
     def test_bounded_pipe_completes_and_suppresses_stderr(self):
         result = self.run_process('import sys;sys.stdin.buffer.read();sys.stderr.write("private paths");sys.stdout.buffer.write(b"ok")')
         self.assertEqual(result, b'ok')
