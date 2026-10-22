@@ -342,6 +342,38 @@ def fixture(data, count=None, legacy_ui=False):
             records.append(record)
         return dict(group=group, items=records)
 
+    comparison_context = None
+    comparison_registration = None
+
+    @wrapper.post('/qa/comparison-context')
+    def comparison_data():
+        nonlocal comparison_context, comparison_registration
+        if comparison_context is None:
+            from scripts.comparison_fixture import prepare
+
+            with closing(sqlite3.connect(context.DB)) as db:
+                comparison_registration = {
+                    key: db.execute('SELECT value FROM settings WHERE key=?', (key,)).fetchone()
+                    for key in ('catalog:' + ENGINE, 'loras:' + ENGINE)
+                }
+            comparison_context = prepare(context, ROOT, ENGINE)
+        return comparison_context
+
+    @wrapper.post('/qa/comparison-context/reset')
+    def reset_comparison_data():
+        nonlocal comparison_context, comparison_registration
+        with closing(sqlite3.connect(context.DB)) as db, db:
+            for key, row in (comparison_registration or {}).items():
+                if row:
+                    db.execute('INSERT OR REPLACE INTO settings VALUES (?, ?)', (key, row[0]))
+                else:
+                    db.execute('DELETE FROM settings WHERE key=?', (key,))
+            for entry in (comparison_context or {}).get('outputs', []):
+                for key in ('job:' + entry['job']['id'], 'artwork:' + entry['artwork']['id']):
+                    db.execute('DELETE FROM settings WHERE key=?', (key,))
+        comparison_context = comparison_registration = None
+        return {'ok': True}
+
     @wrapper.post('/qa/engine/{mode}')
     def engine_mode(mode: Literal['offline', 'success', 'uncertain']):
         state['mode'] = mode

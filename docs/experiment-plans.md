@@ -27,3 +27,5 @@ POST 輸入包含 `title`、完整的 `settings`、`axis`、`values`、`case_ids
 
 
 2026-10-08 比較功能優先項目 2：單張 checkpoint 圖生圖可比較 denoise、Steps／CFG／精確 Seed／LoRA 強度。來源 ID、唯一素材關聯、縮放方式及未變動設定完整保留。預覽不建任務；明確生成後的工作流程與還原設定已用隔離模擬引擎驗證。401 項後端測試（400 通過、1 項既有 Windows 權限跳過）及 Vue 型別／建置通過；本輪未新增 GPU 品質實測，UI 工具環境故障，實機操作仍待驗收。
+
+2026-10-23 · V04：1440px／390px 補驗指定 LoRA 的 model／CLIP 強度軸，載入及保存零／負強度時，其餘強度、停用項目、順序與最大 64 位字串 seed 保留；缺少／停用目標、重複值、超界及數字字串拒絕且表單不變。Pony／Animagine 各自逐組載入固定四案例，測試集版本／hash 與未變動參數核對；歷史八件 GPU 結果另外唯讀並排及還原設定。未新增生成或品質預設，見 [V04 驗收](validation/comparison-measurements-20261023.md)。
