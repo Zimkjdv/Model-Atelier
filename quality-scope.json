@@ -1,5 +1,6 @@
 {
   "python": [
+    "scripts/browser_fixture.py",
     "backend/submissions.py",
     "backend/jobs.py",
     "backend/cancellation.py",
