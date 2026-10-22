@@ -4,7 +4,7 @@ export type ReferenceFields = {
   image_asset_id: string | null
   reference_resize: 'fit' | 'stretch'
 }
-export type ReferenceAsset = { id: string; title: string; archived: boolean; purpose: string; width: number; height: number }
+export type ReferenceAsset = { id: string; title: string; archived: boolean; purpose: string; width: number; height: number; sha256?: string }
 export type ReferenceSnapshot = ReferenceAsset & {
   sha256: string
   input_role?: 'source' | 'mask' | 'structure'

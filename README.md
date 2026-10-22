@@ -8,6 +8,8 @@
 
 ## 目前功能
 
+- Canny 送出前 CPU 邊緣預覽：離線可用、依當前素材／閾值／縮放計算，顯示實際套件版本，與原任務保存邊緣分開。詳見 [預覽契約](docs/canny-preview.md)。
+
 - 系統資訊：NVIDIA GPU、VRAM、RAM、平台資料磁碟、更新時間與失敗狀態。
 - ComfyUI 位址保存至 SQLite，獨立呈現引擎的裝置、記憶體與版本資訊；提供手動本機 Python／PyTorch／CUDA 安裝檢查。
 - 平台不因無 GPU 而阻止使用。

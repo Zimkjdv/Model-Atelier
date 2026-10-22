@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import ts from 'typescript'
 const modules={}
-for(const name of ['referenceSettings','creationSettings','controlSettings','controlEdges']) {
+for(const name of ['referenceSettings','creationSettings','controlSettings','controlEdges','cannyPreview']) {
   const source=await readFile(new URL('./src/'+name+'.ts',import.meta.url),'utf8')
   let compiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText
   for(const [dependency,url] of Object.entries(modules)) compiled=compiled.replaceAll("'./"+dependency+"'",JSON.stringify(url))
@@ -44,3 +44,28 @@ assert.equal(edgeMetadata({...saved,state:'unavailable',image_available:false},i
 for(const change of [{job_id:'other'},{workflow_id:controlWorkflowId},{state:'unknown'},{image_available:false},{import_allowed:true},{sha256:'bad'},{size_bytes:32*1024*1024+1},{width:8193},{edge_pixels:-1},{edge_pixels:768*768+1},{edge_pixels:true},{total_pixels:64},{anchor:{workflow_sha256:'wrong'}},{source:{...saved.source,node_id:'7'}},{source:{...saved.source,subfolder:'other'}},{source:{...saved.source,filename:'../canny.png'}},{source:null}]) assert.throws(()=>edgeMetadata({...saved,...change},id))
 assert.throws(()=>edgeMetadata({...unsaved,image_available:true},id))
 console.log('Canny bounds, v1/v2 pending recovery, exact seed, complete restoration and immutable edge source checks passed.')
+
+const {cannyPreviewInput,cannyPreviewIdentity,cannyPreviewProblem,checkedCannyPreview,cannyPreviewMethod}=await import(modules.cannyPreview)
+const previewSource={...source,id:'00000000-0000-4000-8000-000000000001',sha256:'a'.repeat(64)}
+const previewForm={...copied,image_asset_id:previewSource.id,width:64,height:64,canny_low:.4,canny_high:.8,reference_resize:'fit'}
+assert.equal(cannyPreviewProblem(previewForm,previewSource),'')
+assert.equal(cannyPreviewProblem({...previewForm,checkpoint:'',engine_url:'',control_net_name:'',prompt:'',seed:'invalid'},previewSource),'')
+for(const change of [{width:2048,height:2048},{width:65},{canny_low:true},{canny_low:NaN},{canny_high:.4},{reference_resize:'crop'}]) assert.notEqual(cannyPreviewProblem({...previewForm,...change},previewSource),'')
+for(const change of [{archived:true},{sha256:undefined},{id:'other'}]) assert.notEqual(cannyPreviewProblem(previewForm,{...previewSource,...change}),'')
+assert.deepEqual(Object.keys(cannyPreviewInput(previewForm)).sort(),['canny_high','canny_low','height','image_asset_id','reference_resize','width'])
+const identity=cannyPreviewIdentity(previewForm,previewSource)
+assert.equal(cannyPreviewIdentity({...previewForm,prompt:'other',seed:'2',control_strength:1},previewSource),identity)
+for(const change of [{width:128},{height:128},{canny_low:.3},{canny_high:.9},{reference_resize:'stretch'},{image_asset_id:'other'}]) assert.notEqual(cannyPreviewIdentity({...previewForm,...change},previewSource),identity)
+assert.notEqual(cannyPreviewIdentity(previewForm,{...previewSource,sha256:'b'.repeat(64)}),identity)
+const raw=Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAfElEQVR4nNXOQREAIADDsFLlk44IHlyjIGcbZRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncRIncf4OvLqiLAIAzKKwUwAAAABJRU5ErkJggg==','base64'))
+const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',raw))].map(v=>v.toString(16).padStart(2,'0')).join('')
+const info={...cannyPreviewInput(previewForm),method:cannyPreviewMethod,device:'cpu',dtype:'float32',native_sha256:'5efd352d92d7749b7b9734a1676fee18f4431d44a8e9477822a7a8f38ad26051',torch:'test',kornia:'test',pillow:'test',asset_sha256:previewSource.sha256,sha256:hash,input_sha256:'b'.repeat(64),preprocessing:{id:'checkpoint-image-input',version:1,sha256:'b'.repeat(64),width:64,height:64,resize:'fit',resampling:'LANCZOS',background:'#ffffff',output_mode:'RGB',output_format:'PNG',library_version:'test'}}
+const headers=value=>({'Content-Type':'image/png','X-Atelier-SHA256':hash,'X-Atelier-Width':'64','X-Atelier-Height':'64','X-Atelier-Canny-Provenance':Buffer.from(JSON.stringify(value)).toString('base64')})
+assert.equal((await checkedCannyPreview(new Response(raw,{headers:headers(info)}),previewForm,previewSource)).blob.size,raw.length)
+for(const change of [{method:'unknown'},{device:'cuda'},{canny_low:.5},{image_asset_id:'other'},{asset_sha256:'c'.repeat(64)},{native_sha256:'c'.repeat(64)},{preprocessing:{...info.preprocessing,sha256:'c'.repeat(64)}},{preprocessing:{...info.preprocessing,version:true}},{torch:'invalid\n'}]) await assert.rejects(()=>checkedCannyPreview(new Response(raw,{headers:headers({...info,...change})}),previewForm,previewSource))
+for(const change of [{'Content-Type':'text/html'},{'X-Atelier-Width':'65'},{'X-Atelier-SHA256':'c'.repeat(64)},{'X-Atelier-Canny-Provenance':'!!!!'}]) await assert.rejects(()=>checkedCannyPreview(new Response(raw,{headers:{...headers(info),...change}}),previewForm,previewSource))
+const changed=new Uint8Array(raw);changed[40]^=1
+await assert.rejects(()=>checkedCannyPreview(new Response(changed,{headers:headers(info)}),previewForm,previewSource),/SHA256/)
+await assert.rejects(()=>checkedCannyPreview(Response.json({detail:'preview busy'},{status:409}),previewForm,previewSource),/preview busy/)
+await assert.rejects(()=>checkedCannyPreview(new Response(new ReadableStream({pull(c){c.enqueue(new Uint8Array(1024*1024))}}),{headers:headers(info)}),previewForm,previewSource),/大小上限/)
+console.log('CPU Canny preview input isolation, source/version/PNG/hash checks, bounded streams and stale identity passed.')

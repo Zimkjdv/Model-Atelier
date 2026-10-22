@@ -2,6 +2,7 @@
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import ControlSnapshot from './ControlSnapshot.vue'
+import CannyPreview from './CannyPreview.vue'
 import { registeredControlProblem, type ControlCatalog, type ControlMetadata } from './controlSettings'
 import LoraControls from './LoraControls.vue'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
@@ -108,6 +109,7 @@ onBeforeUnmount(()=>{alive=false;++ticket;++restoreTicket;controller?.abort();re
         <label for="control-negative">負面提示詞</label><textarea id="control-negative" v-model="form.negative_prompt" maxlength="20000" rows="3"/>
         <div class="fields"><label for="control-width">寬度<input id="control-width" v-model.number="form.width" type="number" min="64" max="8192" step="8"></label><label for="control-height">高度<input id="control-height" v-model.number="form.height" type="number" min="64" max="8192" step="8"></label></div>
         <label for="control-resize">結構素材縮放</label><select id="control-resize" v-model="form.reference_resize"><option value="fit">等比縮放並補白</option><option value="stretch">拉伸至輸出尺寸</option></select>
+        <CannyPreview :form="form" :source="source" :disabled="locked"/>
         <label for="control-seed">Seed（精確整數）</label><input id="control-seed" v-model="form.seed" inputmode="numeric" maxlength="20" pattern="[0-9]{1,20}">
         <div class="fields"><label for="control-steps">Steps<input id="control-steps" v-model.number="form.steps" type="number" min="1" max="150" step="1"></label><label for="control-cfg">CFG<input id="control-cfg" v-model.number="form.cfg" type="number" min="0" max="30" step="any"></label></div>
         <label for="control-sampler">取樣器</label><select id="control-sampler" v-model="form.sampler_name"><option v-if="!capabilities?.sampler_names.includes(form.sampler_name)" :value="form.sampler_name">{{form.sampler_name}}（未確認）</option><option v-for="name in capabilities?.sampler_names" :key="name" :value="name">{{name}}</option></select>

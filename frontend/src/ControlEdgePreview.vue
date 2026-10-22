@@ -30,7 +30,7 @@ onBeforeUnmount(()=>{active=false;invalidate()})
 <template>
   <details class="control-edge" @toggle="toggle">
     <summary>查看原任務的 Canny 邊緣圖</summary>
-    <p class="footnote">原任務同次執行的條件圖，不隨目前表單變動；尚未提交的設定沒有即時邊緣預覽。</p>
+    <p class="footnote">原任務同次執行的條件圖，不隨目前表單變動。送出前 CPU 預覽位於結構參考工作台，兩者來源獨立。</p>
     <p v-if="busy" role="status">{{item ? '從原引擎保存中…' : '讀取本機紀錄中…'}}</p>
     <p v-if="error" class="notice warning" role="alert">{{error}}</p>
     <template v-if="item">
