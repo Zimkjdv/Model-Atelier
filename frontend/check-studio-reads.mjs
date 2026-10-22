@@ -29,7 +29,12 @@ const renderer = createRenderer({
   createElement: () => ({}), createText: () => ({}), createComment: () => ({}),
   insert() {}, remove() {}, setText() {}, setElementText() {}, parentNode: () => null, nextSibling: () => null, patchProp() {},
 })
-globalThis.window = { addEventListener() {}, removeEventListener() {}, setTimeout, clearTimeout, setInterval, clearInterval }
+const unloadListeners = new Set()
+globalThis.window = {
+  addEventListener(type, handler) { if (type === 'beforeunload') unloadListeners.add(handler) },
+  removeEventListener(type, handler) { if (type === 'beforeunload') unloadListeners.delete(handler) },
+  setTimeout, clearTimeout, setInterval, clearInterval,
+}
 globalThis.document = { visibilityState: 'visible', addEventListener() {}, removeEventListener() {} }
 const storage = new Map()
 globalThis.localStorage = { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) }
@@ -62,13 +67,28 @@ try {
       ? h(component, { ref: value => { if (value) ui = value.$.setupState } }) : h({ render: () => null }) }) })
     app.mount({}); await settle()
     assert(ui, name)
+    assert.equal(unloadListeners.size, 0, name + ': pristine form has no unload handler')
+    if ('savingDraft' in ui) {
+      ui.savingDraft = true; assert.equal(unloadListeners.size, 1)
+      ui.savingDraft = false; assert.equal(unloadListeners.size, 0)
+    }
+    if ('maskDirty' in ui) {
+      ui.maskDirty = true; assert.equal(unloadListeners.size, 1)
+      ui.maskDirty = false; assert.equal(unloadListeners.size, 0)
+    }
     ui.form.prompt = 'unsaved prompt'; ui.form.seed = '18446744073709551615'
     if ('loras' in ui.form) ui.form.loras = [{ name: 'ordered', enabled: true, strength_model: .5, strength_clip: 1 }]
     const retained = JSON.stringify(ui.form)
+    assert.equal(unloadListeners.size, 1, name + ': edits protect unload')
+    let prevented = false
+    const event = { preventDefault() { prevented = true }, returnValue: undefined }
+    for (const handler of unloadListeners) handler(event)
+    assert.equal(prevented, true); assert.equal(event.returnValue, '')
     delayed = true
     const older = name === 'CreationStudio.vue' ? ui.refresh() : ui.load()
     await settle(); assert.equal(waiting.length, 1, name)
     visible.value = false; await settle()
+    assert.equal(unloadListeners.size, 1, name + ': cached form protects whole page')
     assert.equal(waiting[0].signal.aborted, true, name)
     delayed = false; visible.value = true; await settle()
     waiting[0].resolve(response({ ...payload(target), engine_url: 'http://obsolete-engine' }))
@@ -82,6 +102,7 @@ try {
     await settle()
     const beforeUnmount = name === 'CreationStudio.vue' ? ui.models : ui.catalog
     app.unmount()
+    assert.equal(unloadListeners.size, 0, name + ': no leaked unload handlers')
     assert.equal(waiting[0].signal.aborted, true, name)
     waiting[0].resolve(response({ ...payload(target), engine_url: 'http://obsolete-engine' }))
     await leaving; await settle()

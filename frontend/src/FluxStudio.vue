@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
+import { useUnsavedChanges } from './unsavedChanges'
+import UnsavedChangesNotice from './UnsavedChangesNotice.vue'
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
@@ -21,6 +23,8 @@ const saved = ref(JSON.stringify(form)), origin = ref<Restoration | null>(null)
 const previewJson = ref('')
 const pending = ref<Draft | Restoration | 'new' | null>(null)
 const dirty = computed(() => saved.value !== JSON.stringify(form))
+const savingDraft = ref(false)
+useUnsavedChanges(dirty, savingDraft)
 const problem = computed(() => fluxProblem(form))
 const block = computed(() => problem.value || (currentEngine.value !== form.engine_url ? '原引擎與目前設定不同；請確認設定或建立目前引擎的新草稿。' : ''))
 const loads = createRequestScope(), restores = createRequestScope()
@@ -68,7 +72,8 @@ function apply(value: Draft | Restoration | 'new') {
     const settings = Object.fromEntries(Object.keys(newFlux()).map(key => [key, value[key as keyof FluxForm]]))
     Object.assign(form, settings); id.value = value.id; revision.value = value.revision; origin.value = null
   }
-  saved.value = JSON.stringify(form); pending.value = null; message.value = '已載入設定；尚未提交生成。'
+  saved.value = typeof value === 'object' && 'settings' in value ? '' : JSON.stringify(form)
+  pending.value = null; message.value = '已載入設定；尚未提交生成。'
 }
 function choose(value: Draft | Restoration | 'new') { if (dirty.value) pending.value = value; else apply(value) }
 function importSettings(value: ImportPreview) {
@@ -79,6 +84,7 @@ function importSettings(value: ImportPreview) {
 }
 async function save(asNew = false) {
   if (busy.value || problem.value) return
+  savingDraft.value = true
   busy.value = true; error.value = ''; message.value = ''
   try {
     const existing = !asNew && id.value
@@ -90,7 +96,7 @@ async function save(asNew = false) {
     records.value = [value, ...records.value.filter(item => item.id !== value.id)]
     message.value = 'FLUX 草稿已保存；未啟動 GPU 任務。'
   } catch (e) { error.value = e instanceof Error ? e.message : '保存失敗' }
-  finally { busy.value = false }
+  finally { busy.value = false; savingDraft.value = false }
 }
 async function restore(path: string) {
   if (busy.value) return
@@ -129,7 +135,8 @@ onDeactivated(cancelLoad); onBeforeUnmount(() => { cancelLoad(); loads.dispose()
 
 <template>
   <section aria-label="FLUX 創作工作台">
-    <div class="flux-toolbar"><strong>FLUX.1 [schnell]</strong><span class="muted">{{ dirty ? '有未保存變更' : '設定已保留' }}</span><button class="secondary" :disabled="busy || loading" @click="choose('new')">新增 FLUX 草稿</button><button class="secondary" :disabled="busy || loading" @click="load(true)">{{ loading ? '讀取中…' : '同步 FLUX 元件' }}</button><button class="secondary" @click="emit('models')">元件版本與來源 →</button></div>
+    <div class="flux-toolbar"><strong>FLUX.1 [schnell]</strong><span class="muted">{{ dirty ? '有未保存變更' : id ? '草稿已保存' : '設定僅保留於本頁' }}</span><button class="secondary" :disabled="busy || loading" @click="choose('new')">新增 FLUX 草稿</button><button class="secondary" :disabled="busy || loading" @click="load(true)">{{ loading ? '讀取中…' : '同步 FLUX 元件' }}</button><button class="secondary" @click="emit('models')">元件版本與來源 →</button></div>
+    <UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" />
     <p class="notice warning">此專用流程尚未 GPU 驗證。請確認主模型是 FLUX.1 [schnell]、CLIP-L／T5／VAE 角色正確；目前不支援 FLUX LoRA、參考圖與負面提示詞。</p>
     <p class="footnote">原引擎：{{ form.engine_url || '讀取中' }} · 元件同步：{{ catalog?.synced_at ? new Date(catalog.synced_at).toLocaleString() : '尚未同步' }}。清單與版本來自原引擎／使用者登記，未驗證實際檔案。</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p><p v-if="message" class="notice" role="status">{{ message }}</p>

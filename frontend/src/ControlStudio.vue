@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
+import { useUnsavedChanges } from './unsavedChanges'
+import UnsavedChangesNotice from './UnsavedChangesNotice.vue'
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import ControlSnapshot from './ControlSnapshot.vue'
@@ -23,6 +25,7 @@ const busy=ref(false),error=ref(''),message=ref(''),loraBlock=ref(''),generation
 const origin=ref<Restoration|null>(null),pendingRestore=ref<Restoration|null>(null)
 const baseline=ref(JSON.stringify(form)),dirty=computed(()=>JSON.stringify(form)!==baseline.value)
 const controls=ref<ControlCatalog|null>(null)
+useUnsavedChanges(dirty)
 const source=computed(()=>assets.value.find(a=>a.id===form.image_asset_id))
 const controlModel=computed(()=>controls.value?.controlnets.find(m=>m.name===form.control_net_name))
 const locked=computed(()=>busy.value || generationBusy.value || generationPending.value || !!pendingRestore.value)
@@ -86,6 +89,7 @@ onBeforeUnmount(()=>{alive=false;loads.dispose();restores.dispose()})
 <template>
   <section aria-label="結構參考工作台">
     <div class="toolbar"><strong>Checkpoint 結構參考</strong><button class="secondary" :disabled="locked" @click="load(true)">更新清單與引擎選項</button><button class="secondary" @click="emit('assets')">管理結構素材 →</button><button class="secondary" @click="emit('models')">模型版本與來源 →</button></div>
+    <UnsavedChangesNotice :dirty="dirty" page-only />
     <p class="footnote">表單在工作台切換時保留；重新整理會清除未提交的表單。生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新提交使用 Canny v2，完成後可在任務與作品明確保存／查看實際邊緣圖；舊設定重新生成會建立新的 v2 任務。</p>
     <p class="footnote">原引擎 {{form.engine_url || '讀取中'}} · 模型版本 {{catalog?.engine_url===form.engine_url ? catalog.models.find(m=>m.name===form.checkpoint)?.version || '未知':'未知'}}。Canny 引導輪廓／構圖，不保證畫風、角色或逐像素相同。</p>
     <p v-if="error" class="notice warning" role="alert">{{error}}</p><p v-if="message" class="notice" role="status">{{message}}</p>

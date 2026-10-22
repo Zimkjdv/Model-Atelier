@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
+import { useUnsavedChanges } from './unsavedChanges'
+import UnsavedChangesNotice from './UnsavedChangesNotice.vue'
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import MaskEditor from './MaskEditor.vue'
@@ -21,6 +23,7 @@ const form=reactive(newFeatherInpaint()),catalog=ref<Catalog|null>(null),assets=
 const busy=ref(false),error=ref(''),message=ref(''),loraBlock=ref(''),maskDirty=ref(false),maskBusy=ref(false),generationBusy=ref(false),generationPending=ref(false)
 const origin=ref<Restoration|null>(null),pendingRestore=ref<Restoration|null>(null)
 const baseline=ref(JSON.stringify(form)),dirty=computed(()=>JSON.stringify(form)!==baseline.value || maskDirty.value)
+useUnsavedChanges(dirty, maskBusy)
 const source=computed(()=>assets.value.find(a=>a.id===form.image_asset_id)),mask=computed(()=>assets.value.find(a=>a.id===form.mask_asset_id))
 const masks=computed(()=>assets.value.filter(a=>!a.archived && a.id!==form.image_asset_id && a.width===source.value?.width && a.height===source.value?.height))
 const locked=computed(()=>busy.value || maskBusy.value || generationBusy.value || generationPending.value || !!pendingRestore.value)
@@ -94,6 +97,7 @@ onBeforeUnmount(()=>{alive=false;loads.dispose();restores.dispose()})
 <template>
   <section aria-label="局部編輯工作台">
     <div class="toolbar"><strong>Checkpoint 局部編輯</strong><button class="secondary" :disabled="locked" @click="load(true)">更新清單與引擎選項</button><button class="secondary" @click="emit('assets')">管理原圖／遮罩素材 →</button><button class="secondary" @click="emit('models')">模型版本與來源 →</button></div>
+    <UnsavedChangesNotice :dirty="dirty" :saving="maskBusy" page-only />
     <p class="footnote">表單在工作台切換時保留；重新整理會清除未提交的表單。保存遮罩會寫入素材庫，生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新生成使用 v2；載入 v1 原設定時，羽化設為 0，不回填原任務。</p>
     <p class="footnote">原引擎 {{form.engine_url || '讀取中'}} · 模型版本 {{catalog?.engine_url===form.engine_url ? catalog.models.find(m=>m.name===form.checkpoint)?.version || '未知':'未知'}}。一般 checkpoint 的修補品質依模型與遮罩而異。</p>
     <p v-if="error" class="notice warning" role="alert">{{error}}</p><p v-if="message" class="notice" role="status">{{message}}</p>

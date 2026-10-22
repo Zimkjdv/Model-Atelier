@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { api } from './apiClient'
 import { createRequestScope } from './requestScope'
+import { useUnsavedChanges } from './unsavedChanges'
+import UnsavedChangesNotice from './UnsavedChangesNotice.vue'
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import LoraControls from './LoraControls.vue'
@@ -47,6 +49,8 @@ const origin = ref<SettingsOrigin | null>(null)
 const restoration = createRequestScope(), profiles = createRequestScope(), capabilityReads = createRequestScope(), lists = createRequestScope()
 let active = true, reading = false
 const dirty = computed(() => JSON.stringify(form) !== saved.value)
+const savingDraft = ref(false)
+useUnsavedChanges(dirty, savingDraft)
 const selected = computed(() => models.value?.engine_url === form.engine_url ? models.value.models.find(m => m.name === form.checkpoint) : undefined)
 const draftVersion = ref('')
 const references = ref<Asset[]>([])
@@ -257,6 +261,7 @@ async function refresh() {
 }
 async function save(copy = false) {
   if (busy.value) return
+  savingDraft.value = true
   busy.value = true; error.value = ''; message.value = ''
   try {
     const record = await api<Draft>(id.value && !copy ? 'drafts/' + id.value : 'drafts', id.value && !copy ? 'PUT' : 'POST', { ...form, revision: revision.value })
@@ -264,14 +269,13 @@ async function save(copy = false) {
     records.value = [record, ...records.value.filter(r => r.id !== record.id)]
     message.value = '草稿已保存到本機。尚未提交生成任務。'
   } catch (e) { error.value = e instanceof Error ? e.message : '保存失敗' }
-  finally { busy.value = false }
+  finally { busy.value = false; savingDraft.value = false }
 }
 function randomSeed() {
   const bytes = crypto.getRandomValues(new Uint32Array(2))
   form.seed = ((BigInt(bytes[0]!) << 32n) | BigInt(bytes[1]!)).toString()
 }
-function beforeUnload(event: BeforeUnloadEvent) { if (dirty.value) { event.preventDefault(); event.returnValue = '' } }
-onMounted(() => { void refresh(); window.addEventListener('beforeunload', beforeUnload) })
+onMounted(() => { void refresh() })
 function cancelReads() {
   lists.cancel(); profiles.cancel(); capabilityReads.cancel(); restoration.cancel()
   profileBusy.value = false; capabilityBusy.value = false; restoring.value = false
@@ -279,7 +283,7 @@ function cancelReads() {
 }
 onDeactivated(() => { active = false; cancelReads() })
 onBeforeUnmount(() => {
-  active = false; window.removeEventListener('beforeunload', beforeUnload); cancelReads()
+  active = false; cancelReads()
   lists.dispose(); profiles.dispose(); capabilityReads.dispose(); restoration.dispose()
 })
 onActivated(() => { active = true; void refresh() })
@@ -288,6 +292,7 @@ onActivated(() => { active = true; void refresh() })
 <template>
   <div class="studio">
     <div class="studio-toolbar"><span class="chip">創作草稿</span><span class="muted">{{ dirty ? '尚有未保存變更' : id ? '已保存 · 修訂 ' + revision : '新草稿' }}</span><button class="secondary" :disabled="busy || restoring" @click="choose('new')">＋ 新草稿</button><button class="secondary" :disabled="busy || restoring" @click="refresh">重新整理清單</button></div>
+    <UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" />
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p><p v-if="message" class="notice" role="status">{{ message }}</p>
     <p v-if="restoring" class="notice" role="status">正在讀取原始創作設定…</p>
     <div v-if="pending" class="notice warning" role="alert"><p>載入其他草稿、作品或任務設定會取代目前未保存的內容。</p><button class="secondary" :disabled="busy || restoring" @click="pending = null">繼續編輯</button> <button class="secondary" :disabled="busy || restoring" @click="apply(pending)">捨棄變更並載入</button></div>

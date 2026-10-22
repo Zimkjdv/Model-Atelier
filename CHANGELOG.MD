@@ -1,5 +1,9 @@
 # Model Atelier — Changelog
 
+## 2026-10-22 · Q05 四工作台未保存內容保護
+
+共用離頁監聽與保存狀態提示，涵蓋 KeepAlive 隱藏表單、草稿保存中與筆刷／遮罩保存；FLUX 載入原設定保持未保存狀態。未提供新的專用草稿格式，生成不會清除 dirty，離開也不提交任務。前端建置、四組檢查及隔離 Chrome 四流程驗證通過，模擬引擎生成呼叫為 0；行動瀏覽器限制與操作證據見 [說明](docs/unsaved-changes.md)。剩餘 42 主項／76 子項。
+
 ## 2026-10-22 · Q03 前端 HTTP 契約與可取消載入
 
 App、四工作台、作品庫與 GenerationPanel 採用共用 HTTP／ApiError，解析字串、結構化與欄位陣列錯誤；HTML／異常 JSON、連線與取消分開處理。共用 request scope 統一取代／離頁／卸載失效；設定與方案交換使用原文字路徑，原始 workflow／圖片／報告 bytes 驗證保留。
