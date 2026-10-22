@@ -24,10 +24,11 @@ import { fluxWorkflowId, type ComponentSnapshot as ComponentMetadata } from './f
 const props = defineProps<{ jobId?: string }>()
 const emit = defineEmits<{ studio: []; restore: [artworkId: string, workflowId?: string | null]; dirty: [value: boolean] }>()
 type Parameters = { prompt: string | null; negative_prompt: string | null; seed: string | null; steps: number | null; cfg: number | null; sampler: string | null; scheduler: string | null; denoise: number | null }
-type Artwork = { experiment_context?:ExperimentContext|null; measurements?: Measurements | null; ratings: Ratings; runtime_metadata?: RuntimeMetadata | null; id: string; job_id: string; title: string; checkpoint: string; model_version: string; model_metadata?: ModelMetadataSnapshot | null; lora_metadata?: LoraMetadataSnapshot[] | null; workflow_id?: string | null; component_metadata?: ComponentMetadata[] | null; reference_metadata?: ReferenceMetadata[] | null; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string; favorite: boolean; notes: string; archived: boolean; revision: number; organization_updated_at: string | null }
+type Artwork = { notes_truncated?: boolean; experiment_context?:ExperimentContext|null; measurements?: Measurements | null; ratings: Ratings; runtime_metadata?: RuntimeMetadata | null; id: string; job_id: string; title: string; checkpoint: string; model_version: string; model_metadata?: ModelMetadataSnapshot | null; lora_metadata?: LoraMetadataSnapshot[] | null; workflow_id?: string | null; component_metadata?: ComponentMetadata[] | null; reference_metadata?: ReferenceMetadata[] | null; engine_url: string; parameters: Parameters; width: number; height: number; size: number; created_at: string; imported_at: string; image_available: boolean; thumbnail_available: boolean; sha256: string; favorite: boolean; notes: string; archived: boolean; revision: number; organization_updated_at: string | null }
 type Job = { id: string; status: string; checkpoint: string; created_at: string }
 type ImportResult = { imported: Artwork[]; existing: Artwork[]; errors: { source: { filename: string }; message: string }[] }
 const items = ref<Artwork[]>([]), jobs = ref<Job[]>([]), selectedJob = ref(props.jobId || '')
+const importing = ref(false)
 const busy = ref(false), error = ref(''), message = ref(''), failures = ref<ImportResult['errors']>([])
 const search = ref(''), selected = ref<Artwork | null>(null), preview = ref<HTMLDialogElement | null>(null)
 const scope = ref<'active' | 'archived' | 'all'>('active'), favoritesOnly = ref(false), modelFilter = ref('')
@@ -35,27 +36,69 @@ const saving = ref(false), notesDraft = ref(''), organizationError = ref(''), or
 const notesDirty = computed(() => selected.value !== null && notesDraft.value !== selected.value.notes)
 const ratingsDraft = ref<Ratings>(emptyRatings())
 const ratingsDirty = computed(() => selected.value !== null && JSON.stringify(ratingsDraft.value) !== JSON.stringify(selected.value.ratings))
-const comparisonIds = ref<string[]>([])
-const comparisonItems = computed(() => comparisonIds.value.map(id => items.value.find(item => item.id === id)).filter((v): v is Artwork => !!v))
-function toggleComparison(id: string) {
-  if (comparisonIds.value.includes(id)) comparisonIds.value = comparisonIds.value.filter(v => v !== id)
-  else if (comparisonIds.value.length < 4) comparisonIds.value.push(id)
+type PageResult<T> = { items: T[]; total: number; offset: number; next_cursor: string | null; previous_cursor: string | null; models: string[]; missing_ids: string[] }
+const comparisonIds = ref<string[]>([]), comparisonRecords = ref(new Map<string, Artwork>())
+const comparisonItems = computed(() => comparisonIds.value.map(id => comparisonRecords.value.get(id)).filter((v): v is Artwork => !!v))
+async function toggleComparison(id: string) {
+  if (comparisonIds.value.includes(id)) { comparisonIds.value = comparisonIds.value.filter(v => v !== id); comparisonRecords.value.delete(id); return }
+  if (comparisonIds.value.length >= 4) return
+  comparisonIds.value.push(id)
+  try {
+    const item = await api<Artwork>('artworks/' + id)
+    if (comparisonIds.value.includes(id)) comparisonRecords.value.set(id, item)
+  } catch (e) { comparisonIds.value = comparisonIds.value.filter(v => v !== id); error.value = e instanceof Error ? e.message : '比較資料讀取失敗' }
 }
-function inspectComparison(item: ComparisonArtwork) { const value = items.value.find(v => v.id === item.id); if (value) void open(value) }
-const modelChoices = computed(() => [...new Set(items.value.map(item => item.checkpoint))].sort())
-const archiveCount = computed(() => items.value.filter(item => item.archived).length)
-const completed = computed(() => jobs.value.filter(job => job.status === 'completed'))
-const visible = computed(() => items.value.filter(item => (scope.value === 'all' || item.archived === (scope.value === 'archived')) &&
-  (!favoritesOnly.value || item.favorite) && (!modelFilter.value || item.checkpoint === modelFilter.value) &&
-  [item.title, item.checkpoint, item.model_version, item.notes, item.parameters.prompt || '', ...(item.lora_metadata ?? []).map(lora => lora.name + ' ' + lora.version)].join(' ').toLowerCase().includes(search.value.trim().toLowerCase())))
-const reads = createRequestScope(), details = createRequestScope()
-async function read() {
+function inspectComparison(item: ComparisonArtwork) { const value = comparisonRecords.value.get(item.id); if (value) void open(value) }
+const modelChoices = ref<string[]>([]), total = ref(0), offset = ref(0)
+const nextCursor = ref<string | null>(null), previousCursor = ref<string | null>(null), taskCursor = ref<string | null>(null)
+const taskBusy = ref(false)
+const completed = computed(() => jobs.value)
+const visible = computed(() => items.value)
+const reads = createRequestScope(), details = createRequestScope(), taskReads = createRequestScope()
+async function read(cursor: string | null = null, loadTasks = true) {
   const request = reads.begin()
-  const [artworks, tasks] = await Promise.all([api<Artwork[]>('artworks?scope=all', 'GET', undefined, request.signal), api<Job[]>('jobs', 'GET', undefined, request.signal)])
-  if (!request.isCurrent()) return
-  items.value = artworks; jobs.value = tasks
-  if (!completed.value.some(job => job.id === selectedJob.value)) selectedJob.value = completed.value[0]?.id || ''
+  busy.value = true
+  const query = new URLSearchParams({ limit: '40', scope: scope.value, q: search.value, favorites_only: String(favoritesOnly.value), model: modelFilter.value })
+  if (cursor) query.set('cursor', cursor)
+  try {
+    const [artworks, tasks] = await Promise.all([
+      api<PageResult<Artwork>>('library/artworks?' + query, 'GET', undefined, request.signal),
+      loadTasks ? api<PageResult<Job>>('library/jobs?status=completed&limit=40', 'GET', undefined, request.signal) : Promise.resolve(null),
+    ])
+    if (!request.isCurrent()) return
+    items.value = artworks.items; total.value = artworks.total; offset.value = artworks.offset
+    modelChoices.value = artworks.models; nextCursor.value = artworks.next_cursor; previousCursor.value = artworks.previous_cursor
+    if (artworks.missing_ids.length) message.value = '部分項目已移除，請重新整理取得最新清單。'
+    if (tasks) {
+      taskReads.cancel(); taskBusy.value = false
+      jobs.value = tasks.items; taskCursor.value = tasks.next_cursor
+      if (selectedJob.value && !jobs.value.some(job => job.id === selectedJob.value)) {
+        const selected = await api<Job>('jobs/' + selectedJob.value, 'GET', undefined, request.signal)
+        if (!request.isCurrent()) return
+        if (selected.status === 'completed') jobs.value.push(selected)
+      }
+      if (!completed.value.some(job => job.id === selectedJob.value)) selectedJob.value = completed.value[0]?.id || ''
+    }
+  } catch (e) { if (request.isCurrent()) error.value = e instanceof Error ? e.message : '讀取失敗' }
+  finally { if (request.isCurrent()) busy.value = false }
 }
+async function olderTasks() {
+  if (!taskCursor.value || taskBusy.value) return
+  const request = taskReads.begin(); taskBusy.value = true
+  try {
+    const result = await api<PageResult<Job>>('library/jobs?' + new URLSearchParams({ limit: '40', status: 'completed', cursor: taskCursor.value }), 'GET', undefined, request.signal)
+    if (!request.isCurrent()) return
+    const ids = new Set(jobs.value.map(job => job.id))
+    jobs.value = [...jobs.value, ...result.items.filter(job => !ids.has(job.id))]; taskCursor.value = result.next_cursor
+  } catch (e) { if (request.isCurrent()) error.value = e instanceof Error ? e.message : '讀取失敗' }
+  finally { if (request.isCurrent()) taskBusy.value = false }
+}
+async function changePage(cursor: string | null) { error.value = ''; await read(cursor, false) }
+let filterTimer: ReturnType<typeof setTimeout>
+watch([search, scope, favoritesOnly, modelFilter], () => {
+  clearTimeout(filterTimer); reads.cancel(); busy.value = true
+  filterTimer = setTimeout(() => { void changePage(null) }, 250)
+})
 async function refresh() {
   if (busy.value || saving.value) return
   busy.value = true; error.value = ''
@@ -65,6 +108,7 @@ async function refresh() {
 }
 async function importImages() {
   if (busy.value || saving.value || !selectedJob.value) return
+  importing.value = true
   busy.value = true; error.value = ''; message.value = ''; failures.value = []
   try {
     const result = await api<ImportResult>(`jobs/${selectedJob.value}/artworks`, 'POST')
@@ -73,9 +117,14 @@ async function importImages() {
     if (result.errors.length) message.value += ' 已成功保存的作品會保留，可再次匯入補齊。'
     await read()
   } catch (e) { error.value = e instanceof Error ? e.message : '匯入失敗' }
-  finally { busy.value = false }
+  finally { busy.value = false; importing.value = false }
 }
 async function open(item: Artwork) {
+  const request = details.begin()
+  try {
+    if (!Object.hasOwn(item, 'parameters')) item = await api<Artwork>('artworks/' + item.id, 'GET', undefined, request.signal)
+    if (!request.isCurrent()) return
+  } catch (e) { if (request.isCurrent()) error.value = e instanceof Error ? e.message : '作品詳情讀取失敗'; return }
   selected.value = item
   notesDraft.value = item.notes; ratingsDraft.value = { ...item.ratings }; organizationError.value = ''; organizationMessage.value = ''
   await nextTick()
@@ -93,6 +142,7 @@ function closePreview() {
 }
 function replaceItem(item: Artwork) {
   items.value = items.value.map(value => value.id === item.id ? item : value)
+  if (comparisonRecords.value.has(item.id)) comparisonRecords.value.set(item.id, item)
   if (selected.value?.id === item.id) selected.value = item
 }
 async function organize(item: Artwork, changes: Partial<Pick<Artwork, 'favorite' | 'notes' | 'archived' | 'ratings'>>, feedback: string) {
@@ -135,9 +185,8 @@ function beforeUnload(event: BeforeUnloadEvent) {
 }
 watch([notesDirty, ratingsDirty, saving], ([notes, ratings, pending]) => emit('dirty', notes || ratings || pending), { flush: 'sync' })
 const imageUrl = (item: Artwork, thumbnail = false) => `/api/artworks/${item.id}/image${thumbnail ? '?thumbnail=true' : ''}`
-const importedCount = (job: Job) => items.value.filter(item => item.job_id === job.id).length
 onMounted(() => { window.addEventListener('beforeunload', beforeUnload); void refresh() })
-onBeforeUnmount(() => { reads.dispose(); details.dispose(); window.removeEventListener('beforeunload', beforeUnload); emit('dirty', false) })
+onBeforeUnmount(() => { clearTimeout(filterTimer); reads.dispose(); details.dispose(); taskReads.dispose(); window.removeEventListener('beforeunload', beforeUnload); emit('dirty', false) })
 </script>
 
 <template>
@@ -145,7 +194,8 @@ onBeforeUnmount(() => { reads.dispose(); details.dispose(); window.removeEventLi
   <article class="panel import-panel">
     <span class="chip">YOUR COLLECTION</span><h2>留下每一次創作</h2>
     <p>把已完成任務的圖片保存到作品庫。匯入後可離線瀏覽，並保留原圖與生成設定。</p>
-    <div class="import-controls"><label for="artwork-job">已完成的任務<select id="artwork-job" v-model="selectedJob" :disabled="busy || !completed.length"><option value="">{{ completed.length ? '選擇任務' : '尚無已完成任務' }}</option><option v-for="job in completed" :key="job.id" :value="job.id">{{ new Date(job.created_at).toLocaleString() }} · {{ job.checkpoint }} · 已匯入 {{ importedCount(job) }} 張 · {{ job.id.slice(0, 8) }}</option></select></label><button class="primary" :disabled="busy || !selectedJob" @click="importImages">{{ busy ? '處理中…' : '匯入／補齊圖片' }}</button></div>
+    <div class="import-controls"><label for="artwork-job">已完成的任務<select id="artwork-job" v-model="selectedJob" :disabled="busy || !completed.length"><option value="">{{ completed.length ? '選擇任務' : '尚無已完成任務' }}</option><option v-for="job in completed" :key="job.id" :value="job.id">{{ new Date(job.created_at).toLocaleString() }} · {{ job.checkpoint }} · {{ job.id.slice(0, 8) }}</option></select></label><button class="primary" :disabled="busy || !selectedJob" @click="importImages">{{ busy ? '處理中…' : '匯入／補齊圖片' }}</button></div>
+    <button v-if="taskCursor" class="secondary" :disabled="taskBusy || busy" @click="olderTasks">載入較早已完成任務</button>
     <p class="footnote">PNG、JPEG、WebP · 每張最多 32 MiB、3200 萬像素。匯入時需連接原 ComfyUI 引擎；重複匯入會略過已保存的作品。</p>
     <p v-if="!completed.length" class="footnote">先在創作工作台生成圖片並更新任務狀態，再回到這裡匯入。</p>
     <button class="secondary" @click="emit('studio')">前往創作工作台 →</button>
@@ -153,13 +203,14 @@ onBeforeUnmount(() => { reads.dispose(); details.dispose(); window.removeEventLi
   <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
   <p v-if="message" class="notice" role="status">{{ message }}</p>
   <ul v-if="failures.length" class="notice warning" role="alert"><li v-for="(failure, index) in failures" :key="index">{{ failure.source.filename }}：{{ failure.message }}</li></ul>
-  <div class="artwork-toolbar"><label for="artwork-search">搜尋作品<input id="artwork-search" v-model="search" type="search" placeholder="檔名、模型、筆記或畫面描述"></label><label for="artwork-scope">作品狀態<select id="artwork-scope" v-model="scope"><option value="active">使用中</option><option value="archived">已封存</option><option value="all">全部作品</option></select></label><label for="artwork-model">模型篩選<select id="artwork-model" v-model="modelFilter"><option value="">所有模型</option><option v-for="name in modelChoices" :key="name" :value="name">{{ name }}</option></select></label><label class="favorite-filter"><input v-model="favoritesOnly" type="checkbox">只看收藏</label><button class="secondary" :disabled="busy || saving" @click="refresh">重新整理</button><span class="muted" role="status">{{ visible.length }} / {{ items.length }} 張作品 · 已封存 {{ archiveCount }} 張</span></div>
-  <article v-if="!visible.length" class="panel placeholder"><h2>{{ busy ? '讀取作品中…' : items.length ? '沒有符合的作品' : '第一張作品，從一次生成開始' }}</h2><p>{{ items.length ? '調整搜尋、模型或收藏篩選；封存作品可在「已封存」中還原。' : '完成生成後，選擇上方任務匯入圖片。作品會保存在這台平台主機。' }}</p></article>
-  <ArtworkComparison :items="comparisonItems" @remove="toggleComparison" @clear="comparisonIds = []" @inspect="inspectComparison" />
+  <div class="artwork-toolbar"><label for="artwork-search">搜尋作品<input id="artwork-search" v-model="search" :disabled="saving || importing" maxlength="200" type="search" placeholder="檔名、模型、筆記或畫面描述"></label><label for="artwork-scope">作品狀態<select id="artwork-scope" v-model="scope" :disabled="saving || importing"><option value="active">使用中</option><option value="archived">已封存</option><option value="all">全部作品</option></select></label><label for="artwork-model">模型篩選<input id="artwork-model" v-model="modelFilter" :disabled="saving || importing" list="artwork-model-options" maxlength="2048" placeholder="所有模型；可輸入完整名稱"><datalist id="artwork-model-options"><option v-for="name in modelChoices" :key="name" :value="name" /></datalist></label><label class="favorite-filter"><input v-model="favoritesOnly" :disabled="saving || importing" type="checkbox">只看收藏</label><button class="secondary" :disabled="busy || saving" @click="refresh">重新整理</button><span class="muted" role="status">{{ total }} 張符合 · 第 {{ Math.floor(offset / 40) + 1 }} 頁 · 本頁 {{ items.length }} 張</span></div>
+  <div class="artwork-toolbar" aria-label="作品分頁"><button class="secondary" :disabled="busy || saving || !previousCursor" @click="changePage(previousCursor)">上一頁</button><button class="secondary" :disabled="busy || saving || !nextCursor" @click="changePage(nextCursor)">下一頁</button><span class="footnote">本次清單成員固定；重新整理或變更篩選可取得新增項目。比較選擇跨頁保留。</span></div>
+  <article v-if="!visible.length" class="panel placeholder"><h2>{{ busy ? '讀取作品中…' : '沒有符合的作品' }}</h2><p>{{ items.length ? '調整搜尋、模型或收藏篩選；封存作品可在「已封存」中還原。' : '完成生成後，選擇上方任務匯入圖片。作品會保存在這台平台主機。' }}</p></article>
+  <ArtworkComparison :items="comparisonItems" @remove="toggleComparison" @clear="comparisonIds = []; comparisonRecords.clear()" @inspect="inspectComparison" />
   <div class="artwork-grid"><article v-for="item in visible" :key="item.id" class="panel artwork-card">
     <button class="artwork-cover" :aria-label="'查看作品 ' + item.title" @click="open(item)"><img v-if="item.thumbnail_available" :src="imageUrl(item, true)" :alt="item.title" loading="lazy" @error="item.thumbnail_available = false"><span v-else>縮圖無法讀取 · 點此查看資料</span></button>
     <div class="card-title"><h2>{{ item.title }}</h2><span v-if="item.archived" class="archive-badge">已封存</span><span v-if="item.favorite" class="favorite-badge">★ 收藏</span></div><p>{{ item.width }} × {{ item.height }} · {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p><p>{{ item.checkpoint }} · 版本 {{ item.model_version }}</p>
-    <p v-if="item.notes" class="note-excerpt">{{ item.notes.slice(0, 160) }}{{ item.notes.length > 160 ? '…' : '' }}</p>
+    <p v-if="item.notes" class="note-excerpt">{{ item.notes.slice(0, 160) }}{{ item.notes_truncated || item.notes.length > 160 ? '…' : '' }}</p>
     <p v-if="isControlWorkflow(item.workflow_id)">Canny 結構參考 · 輪廓條件</p>
     <p v-if="isInpaintWorkflow(item.workflow_id)">局部編輯 · 原圖與遮罩</p>
     <p v-if="item.workflow_id === imageWorkflowId">圖生圖 · 參考素材 {{ item.reference_metadata?.length ?? 0 }} 張</p>

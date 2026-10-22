@@ -1,0 +1,272 @@
+{
+  "api_before": {
+    "mode": "legacy",
+    "python": "3.12.10",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "cpu": "Intel64 Family 6 Model 165 Stepping 5, GenuineIntel",
+    "ram_bytes": 68654481408,
+    "repeats": 3,
+    "datasets": [
+      {
+        "count_per_kind": 100,
+        "artworks": {
+          "median_ms": 80.47,
+          "response_bytes": 208252,
+          "python_peak_bytes": 1804291,
+          "rss_delta_bytes": 2936832
+        },
+        "jobs": {
+          "median_ms": 29.24,
+          "response_bytes": 148601,
+          "python_peak_bytes": 1953542,
+          "rss_delta_bytes": 1204224
+        },
+        "assets": {
+          "median_ms": 21.67,
+          "response_bytes": 133186,
+          "python_peak_bytes": 657085,
+          "rss_delta_bytes": 786432
+        }
+      },
+      {
+        "count_per_kind": 1000,
+        "artworks": {
+          "median_ms": 773.84,
+          "response_bytes": 2082524,
+          "python_peak_bytes": 17088543,
+          "rss_delta_bytes": 23629824
+        },
+        "jobs": {
+          "median_ms": 272.76,
+          "response_bytes": 1486001,
+          "python_peak_bytes": 18659319,
+          "rss_delta_bytes": 16977920
+        },
+        "assets": {
+          "median_ms": 188.28,
+          "response_bytes": 1331858,
+          "python_peak_bytes": 6053187,
+          "rss_delta_bytes": 7872512
+        }
+      },
+      {
+        "count_per_kind": 10000,
+        "artworks": {
+          "median_ms": 7689.16,
+          "response_bytes": 20825238,
+          "python_peak_bytes": 170453551,
+          "rss_delta_bytes": 257806336
+        },
+        "jobs": {
+          "median_ms": 2889.71,
+          "response_bytes": 14860001,
+          "python_peak_bytes": 186265532,
+          "rss_delta_bytes": 249995264
+        },
+        "assets": {
+          "median_ms": 1918.12,
+          "response_bytes": 13318572,
+          "python_peak_bytes": 59833891,
+          "rss_delta_bytes": 76300288
+        }
+      }
+    ]
+  },
+  "api_after": {
+    "mode": "paged",
+    "python": "3.12.10",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "cpu": "Intel64 Family 6 Model 165 Stepping 5, GenuineIntel",
+    "ram_bytes": 68654481408,
+    "repeats": 3,
+    "datasets": [
+      {
+        "count_per_kind": 100,
+        "artworks": {
+          "median_ms": 24.08,
+          "response_bytes": 19327,
+          "python_peak_bytes": 215152,
+          "rss_delta_bytes": 1372160,
+          "next_page": {
+            "median_ms": 20.18,
+            "response_bytes": 19364,
+            "python_peak_bytes": 173137,
+            "rss_delta_bytes": 45056
+          }
+        },
+        "jobs": {
+          "median_ms": 11.93,
+          "response_bytes": 14258,
+          "python_peak_bytes": 162032,
+          "rss_delta_bytes": 24576,
+          "next_page": {
+            "median_ms": 10.23,
+            "response_bytes": 14295,
+            "python_peak_bytes": 147353,
+            "rss_delta_bytes": 24576
+          }
+        },
+        "assets": {
+          "median_ms": 11.79,
+          "response_bytes": 13338,
+          "python_peak_bytes": 170454,
+          "rss_delta_bytes": 36864,
+          "next_page": {
+            "median_ms": 11.2,
+            "response_bytes": 13375,
+            "python_peak_bytes": 156463,
+            "rss_delta_bytes": 20480
+          }
+        }
+      },
+      {
+        "count_per_kind": 1000,
+        "artworks": {
+          "median_ms": 67.88,
+          "response_bytes": 19328,
+          "python_peak_bytes": 322396,
+          "rss_delta_bytes": 5439488,
+          "next_page": {
+            "median_ms": 19.44,
+            "response_bytes": 19365,
+            "python_peak_bytes": 170805,
+            "rss_delta_bytes": 135168
+          }
+        },
+        "jobs": {
+          "median_ms": 28.58,
+          "response_bytes": 14259,
+          "python_peak_bytes": 283858,
+          "rss_delta_bytes": 1818624,
+          "next_page": {
+            "median_ms": 10.04,
+            "response_bytes": 14296,
+            "python_peak_bytes": 146663,
+            "rss_delta_bytes": 40960
+          }
+        },
+        "assets": {
+          "median_ms": 23.82,
+          "response_bytes": 13339,
+          "python_peak_bytes": 295082,
+          "rss_delta_bytes": 2428928,
+          "next_page": {
+            "median_ms": 11.47,
+            "response_bytes": 13376,
+            "python_peak_bytes": 156077,
+            "rss_delta_bytes": 253952
+          }
+        }
+      },
+      {
+        "count_per_kind": 10000,
+        "artworks": {
+          "median_ms": 564.61,
+          "response_bytes": 19329,
+          "python_peak_bytes": 1564183,
+          "rss_delta_bytes": 9019392,
+          "next_page": {
+            "median_ms": 20.81,
+            "response_bytes": 19366,
+            "python_peak_bytes": 170950,
+            "rss_delta_bytes": 155648
+          }
+        },
+        "jobs": {
+          "median_ms": 196.48,
+          "response_bytes": 14260,
+          "python_peak_bytes": 1512680,
+          "rss_delta_bytes": 6324224,
+          "next_page": {
+            "median_ms": 10.36,
+            "response_bytes": 14297,
+            "python_peak_bytes": 146258,
+            "rss_delta_bytes": 442368
+          }
+        },
+        "assets": {
+          "median_ms": 136.73,
+          "response_bytes": 13340,
+          "python_peak_bytes": 1532847,
+          "rss_delta_bytes": 5292032,
+          "next_page": {
+            "median_ms": 11.21,
+            "response_bytes": 13377,
+            "python_peak_bytes": 156135,
+            "rss_delta_bytes": 249856
+          }
+        }
+      }
+    ]
+  },
+  "ui_before": {
+    "mode": "legacy",
+    "browser": "156.0.8078.4",
+    "repeats": 1,
+    "results": [
+      {
+        "count": 100,
+        "interactive_search_ms": 697,
+        "list_response_bytes": 356853,
+        "rendered_cards": 1,
+        "js_heap_bytes": 10000000
+      },
+      {
+        "count": 1000,
+        "interactive_search_ms": 2110,
+        "list_response_bytes": 3568525,
+        "rendered_cards": 1,
+        "js_heap_bytes": 19300000
+      },
+      {
+        "count": 10000,
+        "error": "TimeoutError: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.artwork-card').first() to be visible\u001b[22m\n",
+        "interactive_search_ms": null
+      }
+    ]
+  },
+  "ui_after": {
+    "mode": "paged",
+    "browser": "156.0.8078.4",
+    "repeats": 1,
+    "results": [
+      {
+        "count": 100,
+        "interactive_search_ms": 649,
+        "list_response_bytes": 34308,
+        "rendered_cards": 1,
+        "js_heap_bytes": 10000000
+      },
+      {
+        "count": 1000,
+        "interactive_search_ms": 708,
+        "list_response_bytes": 34310,
+        "rendered_cards": 1,
+        "js_heap_bytes": 10000000
+      },
+      {
+        "count": 10000,
+        "interactive_search_ms": 1793,
+        "list_response_bytes": 34312,
+        "rendered_cards": 1,
+        "js_heap_bytes": 10000000
+      }
+    ]
+  },
+  "budgets": {
+    "first_api_ms": 1500,
+    "next_api_ms": 150,
+    "response_bytes": 65536,
+    "python_peak_bytes": 8388608,
+    "rss_delta_bytes": 33554432,
+    "ui_interactive_search_ms": 2500,
+    "default_limit": 40
+  },
+  "baseline_commit": "0d975b1",
+  "notes": [
+    "Synthetic data only; same hardware and dataset definitions.",
+    "API median of 3 instrumented requests, Python peak and sampled RSS delta only.",
+    "UI single run; Chromium heap is coarse; legacy 10000 first card wait timed out.",
+    "Legacy UI was built from the fixed baseline commit; no GPU or inference."
+  ]
+}

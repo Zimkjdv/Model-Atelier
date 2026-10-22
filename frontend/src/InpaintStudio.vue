@@ -5,6 +5,7 @@ import { useUnsavedChanges } from './unsavedChanges'
 import UnsavedChangesNotice from './UnsavedChangesNotice.vue'
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
+import AssetChoices from './AssetChoices.vue'
 import MaskEditor from './MaskEditor.vue'
 import InpaintBlendPreview from './InpaintBlendPreview.vue'
 import LoraControls from './LoraControls.vue'
@@ -33,9 +34,9 @@ async function load(sync=false) {
   const request=loads.begin(),url=form.engine_url,name=form.checkpoint
   busy.value=true;error.value='';catalog.value=null;capabilities.value=null;profile.value=null
   try {
-    const results=await Promise.all([api<Catalog>('models',{signal:request.signal}),api<ReferenceAsset[]>('assets',{signal:request.signal}),api<Capabilities>('engine/capabilities'+(sync?'/sync':''),{method:sync?'POST':'GET',signal:request.signal})])
+    const results=await Promise.all([api<Catalog>('models',{signal:request.signal}),api<Capabilities>('engine/capabilities'+(sync?'/sync':''),{method:sync?'POST':'GET',signal:request.signal})])
     if(!request.isCurrent() || !alive) return
-    catalog.value=results[0];assets.value=results[1];capabilities.value=results[2]
+    catalog.value=results[0];capabilities.value=results[1]
     if(!form.engine_url) {form.engine_url=results[0].engine_url;baseline.value=JSON.stringify(form)}
     if(form.engine_url!==url && url) return
     if(name && form.checkpoint===name) {
@@ -103,6 +104,7 @@ onBeforeUnmount(()=>{alive=false;loads.dispose();restores.dispose()})
     <p v-if="error" class="notice warning" role="alert">{{error}}</p><p v-if="message" class="notice" role="status">{{message}}</p>
     <div v-if="pendingRestore" class="notice warning"><p>載入將取代目前表單及尚未保存的遮罩。</p><button class="secondary" @click="pendingRestore=null">繼續編輯</button><button class="secondary" :disabled="generationBusy || generationPending || maskBusy" @click="apply(pendingRestore)">捨棄變更並載入</button></div>
     <template v-if="origin"><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{warning}}</p><ReferenceSnapshot :items="origin.reference_metadata"/><RuntimeSnapshot :item="origin.runtime_metadata"/></template>
+    <AssetChoices :selected-ids="[form.image_asset_id, form.mask_asset_id].filter((v): v is string => !!v)" @items="assets = $event" />
     <div class="inpaint-grid">
       <form class="panel editor" @submit.prevent><fieldset :disabled="locked">
         <h2>原圖與生成設定</h2><label for="inpaint-title">名稱</label><input id="inpaint-title" v-model="form.title" required maxlength="100">

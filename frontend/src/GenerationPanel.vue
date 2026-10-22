@@ -31,9 +31,35 @@ try { pending.value = JSON.parse(localStorage.getItem(pendingKey) || 'null') } c
 watch(busy,value => emit('busy',value),{immediate:true,flush:'sync'})
 watch(pending,value => emit('pending',!!value),{immediate:true,flush:'sync'})
 const labels: Record<string, string> = { uploading_input: '上傳輸入圖片中', validating: '確認模型中', submitting: '提交中', queued: '等待生成', running: '生成中', completed: '已完成', failed: '失敗', unknown: '結果待確認', cancelling: '確認取消中', cancel_unknown: '取消結果待確認', cancelled: '已取消排隊', stopping: '確認停止中', stop_unknown: '停止結果待確認', stopped: '已停止生成' }
-async function load() {
-  const incoming: Job[] = await request('jobs')
-  jobs.value = incoming.filter(job => props.workflow === 'control' ? isControlWorkflow(job.workflow_id) : props.workflow === 'flux' ? job.workflow_id === fluxWorkflowId : props.workflow === 'inpaint' ? isInpaintWorkflow(job.workflow_id) : !job.workflow_id || job.workflow_id === imageWorkflowId).map(job => mergeJob(jobs.value.find(previous => previous.id === job.id), job))
+const nextCursor = ref<string | null>(null), detailBusy = ref<string | null>(null)
+const expanded = ref<string[]>([])
+async function load(more = false) {
+  const query = new URLSearchParams({ limit: '40', workflow: props.workflow || 'checkpoint' })
+  if (more && nextCursor.value) query.set('cursor', nextCursor.value)
+  const result = await request<{ items: Job[]; next_cursor: string | null }>('library/jobs?' + query)
+  const incoming = result.items.map(job => {
+    const previous = jobs.value.find(value => value.id === job.id)
+    return mergeJob(previous, expanded.value.includes(job.id) ? { ...previous, ...job } : job)
+  })
+  const ids = new Set(jobs.value.map(job => job.id))
+  jobs.value = more ? [...jobs.value, ...incoming.filter(job => !ids.has(job.id))] : incoming
+  nextCursor.value = result.next_cursor
+}
+async function older() {
+  if (busy.value || !nextCursor.value) return
+  busy.value = true
+  try { await load(true) } catch (e) { error.value = e instanceof Error ? e.message : '讀取失敗' }
+  finally { busy.value = false }
+}
+async function detail(job: Job) {
+  if (detailBusy.value) return
+  detailBusy.value = job.id
+  try {
+    const value = await request<Job>('jobs/' + job.id)
+    jobs.value = jobs.value.map(item => item.id === job.id ? mergeJob(item, value) : item)
+    if (!expanded.value.includes(job.id)) expanded.value.push(job.id)
+  } catch (e) { error.value = e instanceof Error ? e.message : '詳情讀取失敗' }
+  finally { detailBusy.value = null }
 }
 const { connections, visible, reconnect } = useJobEvents(jobs, async () => {
   try { await load() } catch (e) { error.value = e instanceof Error ? e.message : '查詢失敗'; throw e }
@@ -111,7 +137,9 @@ onBeforeUnmount(() => window.clearInterval(timer))
     <button v-if="jobs.some(j => !terminal(j))" type="button" class="secondary" :disabled="busy" @click="reconnect">重新連線進度</button>
     <p v-if="jobs.some(j => !terminal(j))" class="footnote">即時監聽最近 4 個未完成任務。離線時保留最後進度並低頻查詢；切換頁面或隱藏分頁會停止監聽。</p>
     <p v-if="!jobs.length" class="footnote">尚無任務。生成結果暫存於 ComfyUI output，平台保留歷史 JSON。</p>
+    <button v-if="nextCursor" class="secondary" :disabled="busy" @click="older">載入較早任務</button>
     <div v-for="job in jobs" :key="job.id" class="job">
+      <button v-if="!expanded.includes(job.id)" class="secondary" :disabled="!!detailBusy" @click="detail(job)">載入任務詳情</button>
       <strong>{{ labels[job.status] || job.status }}</strong> · {{ job.checkpoint }}
       <p class="footnote">{{ new Date(job.created_at).toLocaleString() }} · {{ job.id }}</p>
       <p v-if="job.workflow_id === imageWorkflowId" class="footnote">單張圖生圖 · 原素材與前處理已凍結。</p>

@@ -69,6 +69,8 @@ def create_app(*, data_root: str | Path | None = None, database: str | Path | No
     app = FastAPI(title='Model Atelier', version='0.1.0', lifespan=lifespan)
     app.state.context = context
     core_api.install(app, context)
+    from backend import listing_api
+    listing_api.install(app, context)
     checkpoint_submissions = submissions.install(app, context)
     from backend import inpaint_api
     inpaint_submissions=inpaint_api.install(app, context, checkpoint_submissions)

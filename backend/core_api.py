@@ -162,6 +162,13 @@ def install(app, host):
     def list_assets():
         return assets.list_all(host.DB)
 
+    @app.get('/api/assets/{asset_id}')
+    def asset_detail(asset_id: UUID):
+        try:
+            return assets.get(host.DB, str(asset_id))
+        except KeyError:
+            raise HTTPException(404, '找不到素材')
+
     @app.post('/api/assets', status_code=201)
     async def upload_asset(request: Request, filename: str = '未命名素材'):
         chunks = bytearray()

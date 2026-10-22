@@ -53,3 +53,5 @@ flowchart LR
 seed 在表單／設定交換為字串；原始 workflow 大整數不經 JavaScript number 重新序列化下載。提交快照不可變，舊紀錄缺欄位不由目前環境回填。收藏／筆記／評分／封存等可變資訊採修訂號。
 
 備份須包含 SQLite 與對應檔案，見 [操作指南](setup-and-operations.md#備份與還原)。平台與引擎硬體分屬不同來源；資源快照、平台時間與 GPU 峰值不互相替代。
+
+清單使用每 app 的有限 key 快取與 SQLite 摘要投影，固定成員後逐頁讀取最新內容；舊 JSON 不遷移、圖片只檢查本頁。新舊 API、程序限制與量測見 [清單分頁](list-pagination.md)。

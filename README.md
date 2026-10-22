@@ -61,6 +61,7 @@ model-atelier/
 ├── README.md                   # 專案介紹、快速開始與閱讀入口
 ├── ROADMAP.MD                  # 現行待辦、優先順序與驗收條件
 ├── CHANGELOG.MD                # 已完成變更與歷史實測紀錄
+├── .github/workflows/          # lock 安裝、完整品質檢查與失敗證據 CI
 ├── backend/                    # FastAPI、SQLite、生成流程與本機檔案管理
 │   ├── main.py                 # create_app 工廠與 ASGI 應用程式入口
 │   ├── app_context.py          # 每個應用程式的配置、路徑與引擎 HTTP 介面
@@ -69,6 +70,7 @@ model-atelier/
 │   └── test_*.py               # 後端單元與整合測試
 ├── frontend/                   # Vue 3 + TypeScript + Vite
 │   ├── src/                    # 工作台、作品庫、設定與共用 API／請求生命週期
+│   ├── tests/                  # 隔離 Playwright 瀏覽器回歸
 │   ├── check-*.mjs             # 前端 API 契約與流程檢查
 │   └── package.json            # 前端依賴與開發／建置／檢查命令
 ├── comfyui_extensions/         # 專案維護的 ComfyUI 執行裝置回報擴充
@@ -103,6 +105,7 @@ model-atelier/
 | 安裝與維護 | [安裝與操作](docs/setup-and-operations.md)：環境準備、首次生成、啟停與備份還原 |
 | 尋找功能說明 | [文件索引](docs/index.md)：按創作、作品、實驗與模型流程查閱完整文件 |
 | 理解或修改程式 | [架構與資料流](docs/architecture.md)、[應用程式工廠](docs/application-factory.md)、[前端 API](docs/frontend-api.md)：模組責任、配置隔離、通訊與任務生命週期 |
+| 驗證變更與清單效能 | [品質檢查與 CI](docs/quality-checks.md)、[分頁與量測](docs/list-pagination.md)：重跑命令、相容策略與驗收證據 |
 | 調整 UI | [UI 規範](docs/ui-guidelines.md)：介面與互動的一致性原則 |
 | 安排後續工作 | [ROADMAP](ROADMAP.MD)：尚未完成的項目與完成條件；[CHANGELOG](CHANGELOG.MD)：已完成變更 |
 | 查核驗收證據 | [驗收目錄](docs/validation)：依硬體、模型、參數與日期記錄結果，不能視為所有環境的保證 |

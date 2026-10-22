@@ -5,6 +5,7 @@ import { useUnsavedChanges } from './unsavedChanges'
 import UnsavedChangesNotice from './UnsavedChangesNotice.vue'
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
+import AssetChoices from './AssetChoices.vue'
 import LoraControls from './LoraControls.vue'
 import LoraSnapshot from './LoraSnapshot.vue'
 import ModelValidation from './ModelValidation.vue'
@@ -248,12 +249,12 @@ async function refresh() {
   const read = lists.begin(), engineUrl = form.engine_url
   reading = true; busy.value = true; error.value = ''
   try {
-    const [list, catalog, assets, workflows] = await Promise.all([
+    const [list, catalog, workflows] = await Promise.all([
       api<Draft[]>('drafts', 'GET', undefined, read.signal), api<Catalog>('models', 'GET', undefined, read.signal),
-      api<Asset[]>('assets', 'GET', undefined, read.signal), api<ReferenceWorkflow[]>('reference-workflows', 'GET', undefined, read.signal), refreshCapabilities(),
+      api<ReferenceWorkflow[]>('reference-workflows', 'GET', undefined, read.signal), refreshCapabilities(),
     ])
     if (!read.isCurrent() || form.engine_url !== engineUrl) return
-    records.value = list; models.value = catalog; references.value = assets; referenceWorkflows.value = workflows
+    records.value = list; models.value = catalog; referenceWorkflows.value = workflows
     if (!form.engine_url && !dirty.value) apply('new')
     await refreshProfile()
   } catch (e) { if (read.isCurrent()) error.value = e instanceof Error ? e.message : '無法讀取草稿' }
@@ -300,6 +301,7 @@ onActivated(() => { active = true; void refresh() })
     <LoraSnapshot v-if="origin" :items="origin.lora_metadata" />
     <ReferenceSnapshot v-if="origin" :items="origin.reference_metadata" />
     <RuntimeSnapshot v-if="origin" :item="origin.runtime_metadata" />
+    <AssetChoices :selected-ids="[...form.reference_ids, ...(form.image_asset_id ? [form.image_asset_id] : [])]" @items="references = $event" />
     <SettingsTransfer :settings="form" family="checkpoint" :dirty="dirty" :disabled="busy || restoring || !!pending || generationBusy || generationPending" @apply="importSettings" />
     <ExperimentPlanner :settings="form" :dirty="dirty" :disabled="busy || restoring || !!pending || generationBusy || generationPending" @apply="importSettings" @gallery="emit('gallery',$event)" @state="experimentState" />
     <section v-if="experimentLoad" class="notice" aria-label="目前比較組關聯"><strong>{{ experimentLoad.plan_title }} · {{ experimentLoad.selection.variant_id }}</strong><p>{{ experimentChanged ? '設定已改動，生成前需解除關聯或重新載入原組。' : '目前完整設定符合原比較組；另按生成才建立任務及結果關聯。' }}</p><p class="footnote">比較關聯跟隨目前載入的組別；保存草稿不保存關聯，重載草稿、作品或一般設定會解除。</p><button type="button" class="secondary" :disabled="generationBusy || generationPending" @click="experimentLoad = null">解除比較關聯，保留目前設定</button></section>

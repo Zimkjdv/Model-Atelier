@@ -30,14 +30,16 @@ Set-Location ..
 
 服務固定監聽本機 18765；可用 `ATELIER_TEST_PORT` 指定另一隔離埠。`reuseExistingServer: false` 避免誤用既有平台，埠被占用即失敗。不要同時啟動兩套相同輸出目錄的測試；異常強制終止時可能留下系統臨時資料。
 
-八個瀏覽器案例覆蓋四工作台的 dirty、KeepAlive、重新整理／關頁警示與取消；草稿保存中及完成後狀態；遺失 HTTP 回覆後原 UUID／完整 body／端點恢復且引擎僅收到一次提交；作品 409 保留筆記；實際 workflow 檔案下載及最大 64 位 seed 原文字；Enter 開啟／Escape 關閉預覽與焦點還原；390px 導覽、輸入及預覽。Node 邏輯檢查另涵蓋六種新舊提交流程。
+九個瀏覽器案例（Q06 原八項與 Q04 分頁案例）覆蓋四工作台的 dirty、KeepAlive、重新整理／關頁警示與取消；草稿保存中及完成後狀態；遺失 HTTP 回覆後原 UUID／完整 body／端點恢復且引擎僅收到一次提交；作品 409 保留筆記；實際 workflow 檔案下載及最大 64 位 seed 原文字；Enter 開啟／Escape 關閉預覽與焦點還原；390px 導覽、輸入及預覽。另驗證跨頁比較、模型／收藏／封存組合、較早任務及素材選取保留。Node 邏輯檢查另涵蓋六種新舊提交流程。
 
 重試次數為 0；失敗保存 screenshot、video、trace 與 HTML 報告至忽略的 `runtime/quality/`。在 frontend 執行 `npx.cmd playwright show-report ../runtime/quality/browser-report` 或 `npx.cmd playwright show-trace <trace.zip>` 查閱。CI 在 push／PR 執行相同入口，保留證據 14 天。設定依 [Playwright webServer](https://playwright.dev/docs/test-webserver) 與 [CI 官方指南](https://playwright.dev/docs/ci-intro)。
 
 ## 依賴與驗收範圍（2026-10-22）
 
-全新隔離 venv 依 requirements.lock.txt 安裝、`npm ci` 與 Chromium 安裝通過。後端 550 項，549 通過、1 項 Windows symlink 建立權限跳過；測試列出理由。runner 測試逐個注入四階段失敗，均停止後續步驟並保留非零碼；另以臨時瀏覽器失敗探針確認 exit 1、畫面／錄影／trace／錯誤上下文均保存，探針未納入正式測試。
+Q06 建立時，全新隔離 venv 依 requirements.lock.txt 安裝、`npm ci` 與 Chromium 安裝通過。後端 550 項，549 通過、1 項 Windows symlink 建立權限跳過；測試列出理由。runner 測試逐個注入四階段失敗，均停止後續步驟並保留非零碼；另以臨時瀏覽器失敗探針確認 exit 1、畫面／錄影／trace／錯誤上下文均保存，探針未納入正式測試。
 
 Starlette 1.6.0 的 TestClient 優先使用 httpx2，現行 lock 的 httpx 0.28.1 fallback 會發出棄用提示；保留提示，以乾淨安裝及全量回歸確認當前相容。引擎 MockTransport／HTTP 仍直接使用 httpx，未混入更換傳輸依賴。故障注入／關閉 SSE 在 Windows 可能印出 ConnectionResetError，不隱藏其他錯誤；斷言與退出碼仍決定結果。
 
-安裝時發現 Vite 7.3.6 與 source-map-js 1.2.1 的既有 npm 警告，更新相容修補版至 7.3.7／1.2.2，當次 `npm audit` 回報 0 項已知問題；這不代表完整安全稽核。真正 GPU、觸控、行動瀏覽器、對比／讀屏及全站視覺仍依 V01–V06 各自驗收，八個案例不代替上述項目。
+安裝時發現 Vite 7.3.6 與 source-map-js 1.2.1 的既有 npm 警告，更新相容修補版至 7.3.7／1.2.2，當次 `npm audit` 回報 0 項已知問題；這不代表完整安全稽核。真正 GPU、觸控、行動瀏覽器、對比／讀屏及全站視覺仍依 V01–V06 各自驗收，這些案例不代替上述項目；Q04 效能指標及最新回歸見 [分頁說明](list-pagination.md)。
+
+首次遠端 Q06 CI 的 Windows 8.3 TEMP 問題已以實際別名重現並獨立修正，產品路徑防護不變；見 [診斷與回歸](validation/quality-windows-paths-20261022.md)。

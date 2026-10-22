@@ -126,7 +126,7 @@ try {
     const requests = []
     let lost = true, ui
     globalThis.fetch = async (url, options) => {
-      if (url === '/api/jobs') return response([])
+      if (String(url).startsWith('/api/library/jobs?')) return response({items:[],next_cursor:null})
       requests.push({ url, body: JSON.parse(options.body) })
       if (lost) throw new TypeError('lost response')
       return response({ id: frozen.request_id, status: 'queued' })
@@ -150,11 +150,12 @@ try {
   let artworkUi, writes = 0
   globalThis.fetch = async (url, options) => {
     if (options.method === 'PATCH') { writes++; return new Response(JSON.stringify({ detail: '作品修訂衝突，筆記保留' }), { status: 409 }) }
+    if (String(url).startsWith('/api/library/')) return response({items:[],total:0,offset:0,models:[],missing_ids:[],next_cursor:null,previous_cursor:null})
     return response([])
   }
   const galleryApp = renderer.createApp({ render: () => h(gallery, { ref: value => { if (value) artworkUi = value.$.setupState } }) })
   galleryApp.mount({}); await settle()
-  const item = { id: 'artwork', notes: 'saved', revision: 2, ratings: { prompt_adherence: null, character_consistency: null, visual_style: null, composition: null } }
+  const item = { parameters: {}, id: 'artwork', notes: 'saved', revision: 2, ratings: { prompt_adherence: null, character_consistency: null, visual_style: null, composition: null } }
   await artworkUi.open(item)
   artworkUi.notesDraft = 'unsaved note after conflict'
   await artworkUi.organize(item, { notes: artworkUi.notesDraft }, 'saved')

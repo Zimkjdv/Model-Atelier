@@ -5,6 +5,7 @@ import { useUnsavedChanges } from './unsavedChanges'
 import UnsavedChangesNotice from './UnsavedChangesNotice.vue'
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
+import AssetChoices from './AssetChoices.vue'
 import ControlSnapshot from './ControlSnapshot.vue'
 import CannyPreview from './CannyPreview.vue'
 import { registeredControlProblem, type ControlCatalog, type ControlMetadata } from './controlSettings'
@@ -35,9 +36,9 @@ async function load(sync=false) {
   const request=loads.begin(),url=form.engine_url,name=form.checkpoint
   busy.value=true;error.value='';catalog.value=null;capabilities.value=null;profile.value=null;controls.value=null
   try {
-    const results=await Promise.all([api<Catalog>('models',{signal:request.signal}),api<ControlCatalog>('controlnets',{signal:request.signal}),api<ReferenceAsset[]>('assets',{signal:request.signal}),api<Capabilities>('engine/capabilities'+(sync?'/sync':''),{method:sync?'POST':'GET',signal:request.signal})])
+    const results=await Promise.all([api<Catalog>('models',{signal:request.signal}),api<ControlCatalog>('controlnets',{signal:request.signal}),api<Capabilities>('engine/capabilities'+(sync?'/sync':''),{method:sync?'POST':'GET',signal:request.signal})])
     if(!request.isCurrent() || !alive) return
-    catalog.value=results[0];controls.value=results[1];assets.value=results[2];capabilities.value=results[3]
+    catalog.value=results[0];controls.value=results[1];capabilities.value=results[2]
     if(!form.engine_url) {form.engine_url=results[0].engine_url;baseline.value=JSON.stringify(form)}
     if(form.engine_url!==url && url) return
     if(name && form.checkpoint===name) {
@@ -95,6 +96,7 @@ onBeforeUnmount(()=>{alive=false;loads.dispose();restores.dispose()})
     <p v-if="error" class="notice warning" role="alert">{{error}}</p><p v-if="message" class="notice" role="status">{{message}}</p>
     <div v-if="pendingRestore" class="notice warning"><p>載入將取代目前未提交表單。</p><button class="secondary" @click="pendingRestore=null">繼續編輯</button><button class="secondary" :disabled="generationBusy || generationPending" @click="apply(pendingRestore)">捨棄變更並載入</button></div>
     <template v-if="origin"><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{warning}}</p><ControlSnapshot :items="origin.component_metadata"/><ReferenceSnapshot :items="origin.reference_metadata"/><RuntimeSnapshot :item="origin.runtime_metadata"/></template>
+    <AssetChoices :selected-ids="form.image_asset_id ? [form.image_asset_id] : []" @items="assets = $event" />
     <div class="control-grid">
       <form class="panel editor" @submit.prevent><fieldset :disabled="locked">
         <h2>原圖與生成設定</h2><label for="control-title">名稱</label><input id="control-title" v-model="form.title" required maxlength="100">
