@@ -52,10 +52,58 @@ Set-Location ..
 - 備份：停平台後保存完整 data，含 SQLite、素材、作品、job_inputs、control_edges。權重、外部目錄與需要的 runtime 證據另備份，見 [備份還原](docs/setup-and-operations.md#備份與還原)。
 - 埠：8000 平台、8188 引擎、5173 Vite 開發預設；8001 等隔離埠不是日常依賴，見 [操作指南](docs/setup-and-operations.md)。
 
+## 專案與文件結構
+
+以下列出主要目錄與入口，省略個別功能模組；完整責任與資料流見 [架構說明](docs/architecture.md)。
+
+```text
+model-atelier/
+├── README.md                   # 專案介紹、快速開始與閱讀入口
+├── ROADMAP.MD                  # 現行待辦、優先順序與驗收條件
+├── CHANGELOG.MD                # 已完成變更與歷史實測紀錄
+├── backend/                    # FastAPI、SQLite、生成流程與本機檔案管理
+│   ├── main.py                 # create_app 工廠與 ASGI 應用程式入口
+│   ├── app_context.py          # 每個應用程式的配置、路徑與引擎 HTTP 介面
+│   ├── core_api.py             # 核心 API 註冊
+│   ├── schemas.py              # API 請求型別
+│   └── test_*.py               # 後端單元與整合測試
+├── frontend/                   # Vue 3 + TypeScript + Vite
+│   ├── src/                    # 工作台、作品庫、設定與共用 API／請求生命週期
+│   ├── check-*.mjs             # 前端 API 契約與流程檢查
+│   └── package.json            # 前端依賴與開發／建置／檢查命令
+├── comfyui_extensions/         # 專案維護的 ComfyUI 執行裝置回報擴充
+├── models/                     # 固定模型來源、版本與驗證資訊的 JSON manifest
+├── experiments/                # 固定實驗案例與比較用 JSON 定義
+├── scripts/                    # 環境檢查、模型安裝與實機驗證工具
+├── docs/                       # 操作、架構、功能契約與驗收文件
+│   ├── index.md                # 完整文件索引，按操作目的分類
+│   ├── setup-and-operations.md # 安裝、啟停、埠與備份還原
+│   ├── architecture.md         # 模組責任、資料流與保存約束
+│   ├── application-factory.md  # 後端工廠、配置與測試隔離
+│   ├── frontend-api.md         # 前端 HTTP 契約、取消與原請求恢復
+│   ├── ui-guidelines.md        # 介面與互動規範
+│   ├── models/                # 模型來源、LoRA、FLUX 與參考流程說明
+│   ├── validation/            # 限定環境與案例的驗收紀錄
+│   └── history/               # 歷史文件快照，僅供追溯
+├── requirements.txt           # 後端直接依賴
+├── requirements.lock.txt      # 可重現安裝的固定依賴版本
+├── start-local.ps1             # 啟動平台並提供已建置前端
+├── start-comfyui.ps1           # 啟動獨立 ComfyUI 引擎
+└── start-all.bat               # Windows 雙啟動捷徑
+```
+
+安裝或執行後另有 `.venv/`、`frontend/node_modules/`、`frontend/dist/`、`data/` 與 `runtime/`，均不納入 Git。`data/` 保存 SQLite、素材、作品與任務固定輸入；`runtime/ComfyUI/` 保存獨立引擎及其權重、輸入與輸出。根目錄 `models/` 保存版本資訊，模型權重通常位於 `runtime/ComfyUI/models/`；兩者用途不同。備份範圍見 [資料位置](docs/architecture.md#資料位置與約束)。
+
 ## 開發與文件
 
 後端：`.venv/Scripts/python.exe -m unittest discover -s backend -p 'test_*.py'`。前端在 frontend 執行 `npm.cmd run build`、`check:api`、`check:experiments`、`check:inpaint`、`check:control`；不等同實機 GPU 或完整 UI 驗收。
 
-- [文件索引](docs/index.md)：按工作流程找說明、API 與驗收。
-- [架構與資料流](docs/architecture.md)：模組、任務狀態、原引擎與資料位置。
-- [整理前 README 全文](docs/history/readme-before-q01-20261022.md)：舊限制與歷史測試數僅供追溯。
+| 閱讀目的 | 文件與用途 |
+| --- | --- |
+| 安裝與維護 | [安裝與操作](docs/setup-and-operations.md)：環境準備、首次生成、啟停與備份還原 |
+| 尋找功能說明 | [文件索引](docs/index.md)：按創作、作品、實驗與模型流程查閱完整文件 |
+| 理解或修改程式 | [架構與資料流](docs/architecture.md)、[應用程式工廠](docs/application-factory.md)、[前端 API](docs/frontend-api.md)：模組責任、配置隔離、通訊與任務生命週期 |
+| 調整 UI | [UI 規範](docs/ui-guidelines.md)：介面與互動的一致性原則 |
+| 安排後續工作 | [ROADMAP](ROADMAP.MD)：尚未完成的項目與完成條件；[CHANGELOG](CHANGELOG.MD)：已完成變更 |
+| 查核驗收證據 | [驗收目錄](docs/validation)：依硬體、模型、參數與日期記錄結果，不能視為所有環境的保證 |
+| 追溯舊文件 | [整理前 README 全文](docs/history/readme-before-q01-20261022.md)：舊限制、命令與歷史測試數，現行操作請以目前文件為準 |
