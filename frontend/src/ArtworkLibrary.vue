@@ -18,7 +18,7 @@ import { emptyRatings, ratingLabels, type Ratings, type ComparisonArtwork } from
 import type { RuntimeMetadata } from './runtimeMetadata'
 import { isInpaintWorkflow } from './inpaintSettings'
 import { imageWorkflowId, type ReferenceSnapshot as ReferenceMetadata } from './referenceSettings'
-import type { ComponentSnapshot as ComponentMetadata } from './fluxSettings'
+import { fluxWorkflowId, type ComponentSnapshot as ComponentMetadata } from './fluxSettings'
 const props = defineProps<{ jobId?: string }>()
 const emit = defineEmits<{ studio: []; restore: [artworkId: string, workflowId?: string | null]; dirty: [value: boolean] }>()
 type Parameters = { prompt: string | null; negative_prompt: string | null; seed: string | null; steps: number | null; cfg: number | null; sampler: string | null; scheduler: string | null; denoise: number | null }
@@ -191,7 +191,7 @@ onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload)
           <p v-else class="footnote">此作品尚無提交時的模型資料快照，當時架構、檔案識別及授權資訊未知。</p>
         </details>
         <LoraSnapshot v-if="!selected.workflow_id || selected.workflow_id === imageWorkflowId || isInpaintWorkflow(selected.workflow_id) || isControlWorkflow(selected.workflow_id)" :items="selected.lora_metadata" />
-        <a :href="`/api/artworks/${selected.id}/settings-export`">匯出創作設定（含來源快照）</a>
+        <a v-if="!selected.workflow_id || ['checkpoint-text2image-v1',imageWorkflowId,fluxWorkflowId].includes(selected.workflow_id)" :href="`/api/artworks/${selected.id}/settings-export`">匯出創作設定（含來源快照）</a>
         <ControlSnapshot v-if="isControlWorkflow(selected.workflow_id)" :items="selected.component_metadata" /><ComponentSnapshot v-else :items="selected.component_metadata" />
         <ExperimentSnapshot :item="selected.experiment_context" /><RuntimeSnapshot :item="selected.runtime_metadata" /><JobMeasurements :item="selected.measurements" />
         <ControlEdgePreview v-if="selected.workflow_id === controlEdgeWorkflowId" :key="selected.id" :job-id="selected.job_id" :artwork-id="selected.id" />

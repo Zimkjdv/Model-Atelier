@@ -37,6 +37,7 @@ def mask_metrics(source_raw,mask_raw,result_raw):
 
 class InpaintAcceptance(base.Acceptance):
     generate_path='inpaint/generate'
+    workflow_id=inpaint_workflows.ID
     model_id='pony-v6-xl'
     source_id=None
     mask_id=None
@@ -70,7 +71,7 @@ class InpaintAcceptance(base.Acceptance):
     def check_snapshots(self,item):
         self.identity(item.get('model_metadata'))
         refs=item.get('reference_metadata')
-        if (item.get('workflow_id')!=inpaint_workflows.ID or item.get('lora_metadata') or item.get('reference_settings')!=self.expected_settings()
+        if (item.get('workflow_id')!=self.workflow_id or item.get('lora_metadata') or item.get('reference_settings')!=self.expected_settings()
             or not isinstance(refs,list) or len(refs)!=2 or [r.get('input_role') for r in refs]!=['source','mask']): raise ValueError('Inpaint settings or dual snapshots differ')
         for ref,original in zip(refs,self.report['original_assets']):
             if any(ref.get(k)!=v for k,v in original.items()): raise ValueError('Original asset identity changed')

@@ -1,6 +1,6 @@
 # 內側羽化局部編輯
 
-`checkpoint-inpaint-feather-v2` 是獨立十一節點流程（啟用的 LoRA 另計），不改寫 `checkpoint-inpaint-v1`。後端與專用工作台已完成；RTX 3060 驗收接續本批第三項。
+`checkpoint-inpaint-feather-v2` 是獨立十一節點流程（啟用的 LoRA 另計），不改寫 `checkpoint-inpaint-v1`。後端與專用工作台已完成；RTX 3060 四案例與離線重啟驗收已於第三項完成，見 [完整紀錄](validation/inpaint-feather-rtx3060.md)。
 
 ## 遮罩語意
 
@@ -22,7 +22,7 @@
 
 ## 驗證與後續
 
-新增 12 項後端測試：無引擎／無持久化預覽、預覽與提交 PNG 完全相同、原黑色範圍不擴散、半徑零原 bytes、細遮罩消失、三次上傳與引用、LoRA、必要節點、失敗／unknown 不重送、排他寫入與磁碟失敗清理、UUID 相容、完整離線還原與缺檔不可回填。完整後端 489 項（488 通過、1 項既有 Windows skip）。工作台與真實 GPU 品質／保存範圍接續驗收。
+新增 12 項後端測試：無引擎／無持久化預覽、預覽與提交 PNG 完全相同、原黑色範圍不擴散、半徑零原 bytes、細遮罩消失、三次上傳與引用、LoRA、必要節點、失敗／unknown 不重送、排他寫入與磁碟失敗清理、UUID 相容、完整離線還原與缺檔不可回填。完整後端 489 項（488 通過、1 項既有 Windows skip）。工作台及真實 GPU 的保留範圍／邊界觀察已完成；品質偏差保留，見下方驗收連結。
 
 FLUX P5 目前固定 BFL 主模型／VAE 來源於 2026-10-22 只讀 HEAD 回傳 401 GatedRepo，本機未發現已授權 Hugging Face token；未登入、接受條件或下載。磁碟已足夠，但來源存取尚未完成，因此本批先交付現有權重可執行的 P6 修補改善。固定來源見 [BFL 模型卡](https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md)。
 
@@ -38,3 +38,14 @@ FLUX P5 目前固定 BFL 主模型／VAE 來源於 2026-10-22 只讀 HEAD 回傳
 2026-10-22 瀏覽器實際在隔離資料庫完成：引擎關閉、未選 checkpoint 仍成功預覽；1024² PNG 解碼完成、半徑 16→8 清除舊圖、65 阻擋、頁面切換保留 16 並清除暫時圖、390px 無橫向溢出。截圖 runtime/feather-preview-proof-20261022.jpg、feather-preview-narrow-20261022.jpg；隔離 UI 2 素材／0 任務／0 作品，正式 settings 指紋未變。未在本項操作筆刷觸控、生成或歷史下載點擊，GPU／新歷史介面接續驗收。
 
 前端 check:inpaint 新增完整 v1／v2 還原、精確 pending、半徑／LoRA、預覽 bytes／hash／尺寸／有界串流及失效身分檢查；check:control、check:experiments 與 Vue 型別／production build 通過。
+
+
+## 固定羽化實機 CLI
+
+先保存同尺寸原圖與二值遮罩，登記／同步已安裝固定 Pony 或 Animagine。每次明確執行一個模型／半徑；目前 CLI 固定半徑 0／16，平台表單仍可使用 0–64。新報告須不存在，先排他保存 UUID 再只提交一次；完整權重驗檔後以 CPU 預覽核對實際保存的合成 PNG，並量測原黑色保留與固定內側一像素差值。不是品質評分或通用預設。
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.verify_inpaint_feather --model pony-v6-xl --radius 16 --source-id <原圖UUID> --mask-id <遮罩UUID> --report runtime/feather-pony-16.json
+```
+
+可改 --model animagine-xl-4.0-opt 或 --radius 0。既有完整報告加 --verify-report 只 GET 核對，不重新預覽／匯入／生成；不能修復缺少證據的報告。非法來源、半徑／原完整 workflow、羽化政策、灰階／PNG hash、保留範圍／邊界量測均先拒絕且不改原報告。四案例及引擎離線／平台重啟已驗收，見 [RTX 3060 實測與偏差](validation/inpaint-feather-rtx3060.md)。
