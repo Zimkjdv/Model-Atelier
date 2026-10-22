@@ -34,6 +34,8 @@ Set-Location ..
 
 重試次數為 0；失敗保存 screenshot、video、trace 與 HTML 報告至忽略的 `runtime/quality/`。在 frontend 執行 `npx.cmd playwright show-report ../runtime/quality/browser-report` 或 `npx.cmd playwright show-trace <trace.zip>` 查閱。CI 在 push／PR 執行相同入口，保留證據 14 天。設定依 [Playwright webServer](https://playwright.dev/docs/test-webserver) 與 [CI 官方指南](https://playwright.dev/docs/ci-intro)。
 
+V01 新增 6 項遮罩瀏覽器回歸，總計 25 項：1440px／390px 的實際畫布操作與保存 PNG 像素核對、取消選取／素材重讀／KeepAlive、無效 PNG／保存失敗、捕獲／縮放／停用，以及 CDP 主觸點／第二指／取消。兩種寬度另保存全頁與遮罩截圖、像素量測附件至報告。以 `npm.cmd run test:browser -- mask-editor.spec.ts` 單獨執行；實機觸控仍未通過，詳見 [V01 驗收](validation/mask-editor-20261023.md)。
+
 ## 依賴與驗收範圍（2026-10-22）
 
 Q06 建立時，全新隔離 venv 依 requirements.lock.txt 安裝、`npm ci` 與 Chromium 安裝通過。後端 550 項，549 通過、1 項 Windows symlink 建立權限跳過；測試列出理由。runner 測試逐個注入四階段失敗，均停止後續步驟並保留非零碼；另以臨時瀏覽器失敗探針確認 exit 1、畫面／錄影／trace／錯誤上下文均保存，探針未納入正式測試。

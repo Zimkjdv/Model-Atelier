@@ -9,6 +9,7 @@
     "scripts/check_style.py"
   ],
   "web": [
+    "frontend/tests/mask-editor.spec.ts",
     "frontend/src/MaskEditor.vue",
     "frontend/src/InpaintStudio.vue",
     "frontend/src/GenerationPanel.vue",

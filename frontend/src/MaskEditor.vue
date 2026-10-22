@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onActivated, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
+import { computed, nextTick, onActivated, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
 import type { ReferenceAsset } from './referenceSettings'
 import { binaryMask, maskPoint, uploadMaskAsset } from './inpaintSettings'
 const props = defineProps<{ source?: ReferenceAsset; mask?: ReferenceAsset; disabled?: boolean }>()
@@ -18,6 +18,13 @@ const brush = ref(40),
   erase = ref(false),
   white = ref(0),
   file = ref<HTMLInputElement | null>(null)
+const editable = computed(() => ready.value && !props.disabled && !busy.value)
+const status = computed(() => {
+  if (!props.source || props.source.archived) return '請先選擇原圖。'
+  if (!ready.value) return error.value ? '遮罩尚未就緒。' : '正在載入遮罩。'
+  if (dirty.value) return '遮罩尚未保存，生成已暫停。'
+  return props.mask ? '使用已保存遮罩。' : '請繪製或載入遮罩，再保存。'
+})
 let ticket = 0,
   pointer: number | null = null,
   last: { x: number; y: number } | null = null
@@ -42,6 +49,7 @@ function count() {
   context().putImageData(value, 0, 0)
 }
 async function load() {
+  stop()
   const current = ++ticket,
     source = props.source,
     mask = props.mask
@@ -49,8 +57,7 @@ async function load() {
   dirty.value = false
   error.value = ''
   message.value = ''
-  pointer = null
-  last = null
+  white.value = 0
   if (!source || source.archived) return
   await nextTick()
   if (current !== ticket || !canvas.value) return
@@ -102,10 +109,16 @@ function line(from: { x: number; y: number }, to: { x: number; y: number }) {
   ctx.beginPath()
   ctx.arc(to.x, to.y, brush.value / 2, 0, Math.PI * 2)
   ctx.fill()
+  changed()
+}
+function changed() {
   dirty.value = true
+  error.value = ''
+  message.value = ''
 }
 function start(event: PointerEvent) {
-  if (!ready.value || props.disabled || busy.value || pointer !== null || event.button !== 0) return
+  if (!editable.value || pointer !== null || event.button !== 0 || !event.isPrimary) return
+  event.preventDefault()
   pointer = event.pointerId
   last = point(event)
   canvas.value!.setPointerCapture(pointer)
@@ -113,6 +126,10 @@ function start(event: PointerEvent) {
 }
 function move(event: PointerEvent) {
   if (event.pointerId !== pointer || !last) return
+  if (!editable.value) {
+    stop()
+    return
+  }
   const next = point(event)
   line(last, next)
   last = next
@@ -124,23 +141,25 @@ function stop(event?: PointerEvent) {
   last = null
   if (captured !== null && canvas.value?.hasPointerCapture(captured))
     canvas.value.releasePointerCapture(captured)
-  if (ready.value) count()
+  if (captured !== null && ready.value) count()
 }
 function clear() {
-  if (!ready.value || busy.value || props.disabled) return
+  if (!editable.value) return
+  stop()
   const ctx = context()
   ctx.fillStyle = 'black'
   ctx.fillRect(0, 0, canvas.value!.width, canvas.value!.height)
-  dirty.value = true
+  changed()
   white.value = 0
 }
 function invert() {
-  if (!ready.value || busy.value || props.disabled) return
+  if (!editable.value) return
+  stop()
   const ctx = context(),
     pixels = ctx.getImageData(0, 0, canvas.value!.width, canvas.value!.height)
   white.value = binaryMask(pixels.data, true)
   ctx.putImageData(pixels, 0, 0)
-  dirty.value = true
+  changed()
 }
 async function upload(blob: Blob, name: string, current: number, sourceId: string) {
   const value = await uploadMaskAsset(blob, name)
@@ -180,14 +199,20 @@ async function selectFile(event: Event) {
   const input = event.target as HTMLInputElement,
     chosen = input.files?.[0]
   input.value = ''
-  if (!chosen || !props.source || props.disabled || busy.value) return
+  if (!chosen || !props.source || !editable.value) return
+  stop()
   const current = ticket,
     source = props.source
   busy.value = true
   error.value = ''
+  message.value = ''
   let url = ''
   try {
     if (chosen.size > 20 * 1024 * 1024) throw new Error('遮罩檔案不可超過 20 MiB。')
+    const signature = new Uint8Array(await chosen.slice(0, 8).arrayBuffer())
+    if (![137, 80, 78, 71, 13, 10, 26, 10].every((byte, index) => signature[index] === byte))
+      throw new Error('請選擇有效的 PNG 遮罩檔案。')
+    if (current !== ticket) return
     url = URL.createObjectURL(chosen)
     const loaded = await image(url)
     if (current !== ticket) return
@@ -197,7 +222,7 @@ async function selectFile(event: Event) {
     ctx.fillStyle = 'white'
     ctx.fillRect(0, 0, source.width, source.height)
     ctx.drawImage(loaded, 0, 0)
-    dirty.value = true
+    changed()
     count()
     message.value = '遮罩已載入畫布，請保存後再生成。'
   } catch (e) {
@@ -208,17 +233,29 @@ async function selectFile(event: Event) {
   }
 }
 watch(
-  () => [props.source?.id, props.mask?.id],
+  [
+    () => props.source?.id,
+    () => props.source?.archived,
+    () => props.mask?.id,
+    () => props.mask?.archived,
+  ],
   () => void load(),
   { immediate: true, flush: 'post' },
+)
+watch(
+  editable,
+  (value) => {
+    if (!value) stop()
+  },
+  { flush: 'sync' },
 )
 onDeactivated(() => {
   stop()
   ++ticket
 })
 onBeforeUnmount(() => {
+  stop()
   ++ticket
-  pointer = null
 })
 onActivated(() => {
   if (!ready.value && !dirty.value) void load()
@@ -253,7 +290,7 @@ onActivated(() => {
           type="range"
           min="1"
           max="256"
-          :disabled="disabled || busy"
+          :disabled="!editable"
         />
         {{ brush }} px</label
       ></div
@@ -301,8 +338,7 @@ onActivated(() => {
       ></div
     >
     <p class="footnote" role="status"
-      >{{ dirty ? '遮罩尚未保存，生成已暫停。' : '使用已保存遮罩。' }} 已標記
-      {{ white.toLocaleString() }} 個原圖像素。</p
+      >{{ status }} 已標記 {{ white.toLocaleString() }} 個原圖像素。</p
     >
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p
     ><p v-if="message" class="notice" role="status">{{ message }}</p>

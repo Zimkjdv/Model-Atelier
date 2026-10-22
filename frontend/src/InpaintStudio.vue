@@ -177,13 +177,19 @@ const block = computed(() => {
     return '目前取樣器或 scheduler 未在原引擎選項內，請手動調整。'
   return ''
 })
-function selectSource(id: string | null) {
+function selectSource(event: Event) {
+  const input = event.target as HTMLSelectElement
+  const id = input.value || null
+  input.value = form.image_asset_id ?? ''
   if (locked.value || form.image_asset_id === id) return
   if (maskDirty.value && !window.confirm('更換原圖會清除尚未保存的遮罩，確定更換？')) return
   chooseSource(form, id)
   origin.value = null
 }
-function selectMask(id: string | null) {
+function selectMask(event: Event) {
+  const input = event.target as HTMLSelectElement
+  const id = input.value || null
+  input.value = form.mask_asset_id ?? ''
   if (locked.value) return
   if (maskDirty.value && !window.confirm('載入已保存遮罩會取代目前繪製內容，確定載入？')) return
   chooseMask(form, id)
@@ -319,10 +325,7 @@ onBeforeUnmount(() => {
             ></select
           >
           <label for="inpaint-source">原圖</label
-          ><select
-            id="inpaint-source"
-            :value="form.image_asset_id ?? ''"
-            @change="selectSource(($event.target as HTMLSelectElement).value || null)"
+          ><select id="inpaint-source" :value="form.image_asset_id ?? ''" @change="selectSource"
             ><option value="">選擇原圖素材</option
             ><option v-if="form.image_asset_id && !source" :value="form.image_asset_id"
               >原素材不存在（{{ form.image_asset_id }}）</option
@@ -336,10 +339,7 @@ onBeforeUnmount(() => {
             ></select
           >
           <label for="inpaint-mask">已保存遮罩</label
-          ><select
-            id="inpaint-mask"
-            :value="form.mask_asset_id ?? ''"
-            @change="selectMask(($event.target as HTMLSelectElement).value || null)"
+          ><select id="inpaint-mask" :value="form.mask_asset_id ?? ''" @change="selectMask"
             ><option value="">繪製新遮罩或選擇素材</option
             ><option
               v-if="form.mask_asset_id && !masks.some((m) => m.id === form.mask_asset_id)"
