@@ -20,7 +20,7 @@ export function inpaintProblem(form: InpaintForm, source?: ReferenceAsset, mask?
   if (JSON.stringify(form.reference_ids) !== JSON.stringify([source.id, mask.id])) return '原圖與遮罩關聯不同，請重新選擇。'
   if (!form.title.trim() || form.title.length > 100 || form.prompt.length > 20000 || form.negative_prompt.length > 20000) return '請確認名稱與提示詞長度。'
   if ([form.width, form.height].some(v => !Number.isInteger(v) || v < 64 || v > 8192 || v % 8) || form.width * form.height > 16000000) return '尺寸需為 64–8192 的 8 倍數，且不超過 1600 萬像素。'
-  if (!/^(0|[1-9][0-9]{0,19})$/.test(form.seed) || BigInt(form.seed) > 18446744073709551615n) return 'Seed 需為 0 至 18446744073709551615 的整數字串。'
+  if (typeof form.seed !== 'string' || !/^(0|[1-9][0-9]{0,19})$/.test(form.seed) || BigInt(form.seed) > 18446744073709551615n) return 'Seed 需為 0 至 18446744073709551615 的整數字串。'
   if (!Number.isInteger(form.grow_mask_by) || form.grow_mask_by < 0 || form.grow_mask_by > 64) return '遮罩擴張需為 0–64 的整數。'
   if (!Number.isInteger(form.steps) || form.steps < 1 || form.steps > 150 || !Number.isFinite(form.cfg) || form.cfg < 0 || form.cfg > 30 || !Number.isFinite(form.denoise) || form.denoise < 0 || form.denoise > 1) return '請確認 steps 1–150、CFG 0–30 與 denoise 0–1。'
   return ''
@@ -53,4 +53,32 @@ export async function uploadMaskAsset(blob: Blob, name: string, fetcher: typeof 
   if(!response.ok) throw new Error(typeof value.detail==='string'?value.detail:'保存遮罩失敗')
   if(typeof value.id!=='string' || !Number.isInteger(value.width) || !Number.isInteger(value.height)) throw new Error('遮罩保存回應格式不同，未套用。')
   return value as ReferenceAsset
+}
+
+
+export const inpaintFeatherWorkflowId='checkpoint-inpaint-feather-v2'
+export const inpaintPendingMarker='_atelier_inpaint_workflow_id'
+export type FeatherForm=InpaintForm & {feather_radius:number}
+export const isInpaintWorkflow=(id:unknown)=>id===inpaintWorkflowId || id===inpaintFeatherWorkflowId
+export const newFeatherInpaint=():FeatherForm=>({...newInpaint(),feather_radius:0})
+export function featherProblem(form:FeatherForm) { return Number.isInteger(form.feather_radius) && form.feather_radius>=0 && form.feather_radius<=64 ? '' : '羽化半徑需為 0–64 的整數輸出像素。' }
+export function copyFeatherInpaint(value:InpaintForm|FeatherForm):FeatherForm {
+  try {
+    const saved={...value} as Partial<FeatherForm>,radius='feather_radius' in saved ? saved.feather_radius : 0
+    delete saved.feather_radius
+    const keys=Object.keys(newInpaint())
+    if(Object.keys(saved).length!==keys.length || keys.some(k=>!(k in saved))) throw new Error()
+    if(['title','prompt','negative_prompt','engine_url','checkpoint','sampler_name','scheduler','seed'].some(k=>typeof (saved as Record<string,unknown>)[k]!=='string') || !saved.engine_url || !saved.checkpoint) throw new Error()
+    const form={...copyInpaint(saved as InpaintForm),feather_radius:radius} as FeatherForm
+    if(featherProblem(form) || !['fit','stretch'].includes(form.reference_resize) || inpaintProblem(form,{id:form.image_asset_id!,width:0,height:0,archived:false} as ReferenceAsset,{id:form.mask_asset_id!,width:0,height:0,archived:false} as ReferenceAsset)) throw new Error()
+    if(!Array.isArray(form.loras) || form.loras.length>4 || new Set(form.loras.map(v=>v.name)).size!==form.loras.length || form.loras.some(v=>typeof v.name!=='string' || !v.name.trim() || typeof v.enabled!=='boolean' || [v.strength_model,v.strength_clip].some(n=>!Number.isFinite(n)||n< -20||n>20))) throw new Error()
+    return form
+  } catch { throw new Error('不是完整局部編輯設定，未部分載入；請保留原流程。') }
+}
+export function inpaintSubmission(value:Record<string,unknown>) {
+  if(!value || typeof value!=='object' || Array.isArray(value)) throw new Error('待確認請求格式無效，請保留原紀錄。')
+  const version=inpaintPendingMarker in value ? value[inpaintPendingMarker] : inpaintWorkflowId
+  if(!isInpaintWorkflow(version)) throw new Error('待確認請求流程版本未知，未提交；請保留原紀錄。')
+  const body={...value};delete body[inpaintPendingMarker]
+  return {path:version===inpaintFeatherWorkflowId?'/api/inpaint-feather/generate':'/api/inpaint/generate',body}
 }

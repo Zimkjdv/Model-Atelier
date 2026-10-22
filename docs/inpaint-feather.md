@@ -1,6 +1,6 @@
 # 內側羽化局部編輯
 
-`checkpoint-inpaint-feather-v2` 是獨立十一節點流程（啟用的 LoRA 另計），不改寫 `checkpoint-inpaint-v1`。後端已完成；專用工作台與 RTX 3060 驗收依序接續本批第二、三項。
+`checkpoint-inpaint-feather-v2` 是獨立十一節點流程（啟用的 LoRA 另計），不改寫 `checkpoint-inpaint-v1`。後端與專用工作台已完成；RTX 3060 驗收接續本批第三項。
 
 ## 遮罩語意
 
@@ -25,3 +25,16 @@
 新增 12 項後端測試：無引擎／無持久化預覽、預覽與提交 PNG 完全相同、原黑色範圍不擴散、半徑零原 bytes、細遮罩消失、三次上傳與引用、LoRA、必要節點、失敗／unknown 不重送、排他寫入與磁碟失敗清理、UUID 相容、完整離線還原與缺檔不可回填。完整後端 489 項（488 通過、1 項既有 Windows skip）。工作台與真實 GPU 品質／保存範圍接續驗收。
 
 FLUX P5 目前固定 BFL 主模型／VAE 來源於 2026-10-22 只讀 HEAD 回傳 401 GatedRepo，本機未發現已授權 Hugging Face token；未登入、接受條件或下載。磁碟已足夠，但來源存取尚未完成，因此本批先交付現有權重可執行的 P6 修補改善。固定來源見 [BFL 模型卡](https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md)。
+
+
+## 工作台與歷史
+
+在局部編輯選擇同尺寸的已保存原圖／遮罩，設定「內側羽化半徑（輸出像素）」；預設 0。按「預覽合成遮罩」明確執行純 CPU 計算，圖片只以暫時 Blob URL 保留於本頁，不寫入素材或任務。沒有 checkpoint／引擎連線仍可預覽有效已保存素材；未保存筆刷內容需先保存。灰階預覽是實際將上傳的合成 PNG，不是生成效果示意。
+
+檢查回應的 PNG 類型／32 MiB 上限、IHDR 尺寸／RGB 與 SHA256。來源、遮罩、引用、尺寸、縮放、半徑、未保存遮罩或操作鎖定變更會取消／丟棄過期回覆並撤銷舊 Blob URL；離開工作台清除暫時圖，返回保留表單並需手動重做預覽。修改提示詞不影響這份遮罩。
+
+新生成使用 v2；localStorage 沿用原 pending key，無版本標記的舊 body 仍送 v1，精確 seed／UUID／參數原樣保留；v2 本機版本標記在提交前移除，未知標記拒絕並保留原紀錄。v1 歷史載入新表單時才加入半徑 0，不改原任務。任務／作品顯示原羽化方法、版本／Pillow、半徑、hash，可讀取／下載原合成遮罩；一般草稿／比較格式保持未支援。
+
+2026-10-22 瀏覽器實際在隔離資料庫完成：引擎關閉、未選 checkpoint 仍成功預覽；1024² PNG 解碼完成、半徑 16→8 清除舊圖、65 阻擋、頁面切換保留 16 並清除暫時圖、390px 無橫向溢出。截圖 runtime/feather-preview-proof-20261022.jpg、feather-preview-narrow-20261022.jpg；隔離 UI 2 素材／0 任務／0 作品，正式 settings 指紋未變。未在本項操作筆刷觸控、生成或歷史下載點擊，GPU／新歷史介面接續驗收。
+
+前端 check:inpaint 新增完整 v1／v2 還原、精確 pending、半徑／LoRA、預覽 bytes／hash／尺寸／有界串流及失效身分檢查；check:control、check:experiments 與 Vue 型別／production build 通過。

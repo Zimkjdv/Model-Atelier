@@ -16,7 +16,7 @@ import type { JobMeasurements as Measurements } from './jobMeasurements'
 import ArtworkComparison from './ArtworkComparison.vue'
 import { emptyRatings, ratingLabels, type Ratings, type ComparisonArtwork } from './artworkComparison'
 import type { RuntimeMetadata } from './runtimeMetadata'
-import { inpaintWorkflowId } from './inpaintSettings'
+import { isInpaintWorkflow } from './inpaintSettings'
 import { imageWorkflowId, type ReferenceSnapshot as ReferenceMetadata } from './referenceSettings'
 import type { ComponentSnapshot as ComponentMetadata } from './fluxSettings'
 const props = defineProps<{ jobId?: string }>()
@@ -162,7 +162,7 @@ onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload)
     <div class="card-title"><h2>{{ item.title }}</h2><span v-if="item.archived" class="archive-badge">已封存</span><span v-if="item.favorite" class="favorite-badge">★ 收藏</span></div><p>{{ item.width }} × {{ item.height }} · {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p><p>{{ item.checkpoint }} · 版本 {{ item.model_version }}</p>
     <p v-if="item.notes" class="note-excerpt">{{ item.notes.slice(0, 160) }}{{ item.notes.length > 160 ? '…' : '' }}</p>
     <p v-if="isControlWorkflow(item.workflow_id)">Canny 結構參考 · 輪廓條件</p>
-    <p v-if="item.workflow_id === inpaintWorkflowId">局部編輯 · 原圖與遮罩</p>
+    <p v-if="isInpaintWorkflow(item.workflow_id)">局部編輯 · 原圖與遮罩</p>
     <p v-if="item.workflow_id === imageWorkflowId">圖生圖 · 參考素材 {{ item.reference_metadata?.length ?? 0 }} 張</p>
     <p v-for="(lora, index) in item.lora_metadata ?? []" :key="index">LoRA {{ lora.name }} · 版本 {{ lora.version?.trim() || '未知' }}</p>
     <p v-if="!item.image_available" class="missing">原圖已遺失，請從備份還原；生成參數仍保留。</p>
@@ -190,7 +190,7 @@ onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload)
           </dl></template>
           <p v-else class="footnote">此作品尚無提交時的模型資料快照，當時架構、檔案識別及授權資訊未知。</p>
         </details>
-        <LoraSnapshot v-if="!selected.workflow_id || selected.workflow_id === imageWorkflowId || selected.workflow_id === inpaintWorkflowId || isControlWorkflow(selected.workflow_id)" :items="selected.lora_metadata" />
+        <LoraSnapshot v-if="!selected.workflow_id || selected.workflow_id === imageWorkflowId || isInpaintWorkflow(selected.workflow_id) || isControlWorkflow(selected.workflow_id)" :items="selected.lora_metadata" />
         <a :href="`/api/artworks/${selected.id}/settings-export`">匯出創作設定（含來源快照）</a>
         <ControlSnapshot v-if="isControlWorkflow(selected.workflow_id)" :items="selected.component_metadata" /><ComponentSnapshot v-else :items="selected.component_metadata" />
         <ExperimentSnapshot :item="selected.experiment_context" /><RuntimeSnapshot :item="selected.runtime_metadata" /><JobMeasurements :item="selected.measurements" />

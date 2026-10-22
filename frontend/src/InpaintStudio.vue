@@ -2,19 +2,20 @@
 import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref, watch } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import MaskEditor from './MaskEditor.vue'
+import InpaintBlendPreview from './InpaintBlendPreview.vue'
 import LoraControls from './LoraControls.vue'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
 import RuntimeSnapshot from './RuntimeSnapshot.vue'
 import { type ReferenceAsset, type ReferenceSnapshot as ReferenceMetadata } from './referenceSettings'
 import type { RuntimeMetadata } from './runtimeMetadata'
-import { chooseMask, chooseSource, copyInpaint, inpaintProblem, newInpaint, type InpaintForm } from './inpaintSettings'
+import { chooseMask, chooseSource, copyFeatherInpaint, featherProblem, inpaintProblem, newFeatherInpaint, type InpaintForm } from './inpaintSettings'
 import { type ModelProfile, validateProfile } from './modelProfiles'
 const props=defineProps<{restoreRequest?:{artworkId:string;token:number}|null}>()
 const emit=defineEmits<{models:[];assets:[];gallery:[jobId:string]}>()
 type Catalog={engine_url:string;models:{name:string;listed:boolean;version?:string}[]}
 type Capabilities={engine_url:string;engine_matches:boolean;available:boolean;stale:boolean;sampler_names:string[];schedulers:string[];sync_error:string|null}
 type Restoration={settings:InpaintForm;warnings:string[];reference_metadata?:ReferenceMetadata[]|null;runtime_metadata?:RuntimeMetadata|null;job_id?:string;artwork_id?:string}
-const form=reactive(newInpaint()),catalog=ref<Catalog|null>(null),assets=ref<ReferenceAsset[]>([]),capabilities=ref<Capabilities|null>(null),profile=ref<ModelProfile|null>(null)
+const form=reactive(newFeatherInpaint()),catalog=ref<Catalog|null>(null),assets=ref<ReferenceAsset[]>([]),capabilities=ref<Capabilities|null>(null),profile=ref<ModelProfile|null>(null)
 const busy=ref(false),error=ref(''),message=ref(''),loraBlock=ref(''),maskDirty=ref(false),maskBusy=ref(false),generationBusy=ref(false),generationPending=ref(false)
 const origin=ref<Restoration|null>(null),pendingRestore=ref<Restoration|null>(null)
 const baseline=ref(JSON.stringify(form)),dirty=computed(()=>JSON.stringify(form)!==baseline.value || maskDirty.value)
@@ -48,7 +49,7 @@ const block=computed(()=>{
   if(maskDirty.value) return '新遮罩尚未保存；請先保存或重新選擇已保存遮罩。'
   if(maskBusy.value || busy.value) return '正在更新輸入與引擎資料。'
   if(loraBlock.value) return loraBlock.value
-  const input=inpaintProblem(form,source.value,mask.value);if(input) return input
+  const input=inpaintProblem(form,source.value,mask.value) || featherProblem(form);if(input) return input
   if(!form.checkpoint) return '請選擇 checkpoint。'
   if(catalog.value?.engine_url!==form.engine_url) return '原設定的引擎與目前設定不同，請連接原引擎再更新。'
   if(!catalog.value.models.some(m=>m.listed && m.name===form.checkpoint)) return '模型清單未確認此 checkpoint，請到模型庫同步。'
@@ -71,7 +72,7 @@ function selectMask(id:string|null) {
 function savedMask(value:ReferenceAsset) {assets.value=[value,...assets.value.filter(a=>a.id!==value.id)];chooseMask(form,value.id)}
 function apply(value:Restoration) {
   if(generationBusy.value || generationPending.value || maskBusy.value) return
-  const copied=copyInpaint(value.settings)
+  const copied=copyFeatherInpaint(value.settings)
   ++restoreTicket;restoreController?.abort();Object.assign(form,copied);origin.value=value;pendingRestore.value=null;maskDirty.value=false
   baseline.value='';message.value='完整原圖、遮罩與設定已載入。請手動確認，再生成新任務。';void load()
 }
@@ -82,7 +83,7 @@ async function restore(kind:'jobs'|'artworks',id:string,token?:number) {
     const value=await api<Restoration>(kind+'/'+id+'/creation-settings','GET',abort.signal)
     if(current!==restoreTicket || (token!==undefined && props.restoreRequest?.token!==token) || !alive) return
     if((kind==='jobs'?value.job_id:value.artwork_id)!==id) throw new Error('回傳的來源 ID 不同，未載入。')
-    copyInpaint(value.settings)
+    copyFeatherInpaint(value.settings)
     if(dirty.value) pendingRestore.value=value;else apply(value)
   } catch(e) {if(current===restoreTicket && !abort.signal.aborted) error.value=e instanceof Error?e.message:'還原失敗'}
 }
@@ -95,7 +96,7 @@ onBeforeUnmount(()=>{alive=false;++ticket;++restoreTicket;controller?.abort();re
 <template>
   <section aria-label="局部編輯工作台">
     <div class="toolbar"><strong>Checkpoint 局部編輯</strong><button class="secondary" :disabled="locked" @click="load(true)">更新清單與引擎選項</button><button class="secondary" @click="emit('assets')">管理原圖／遮罩素材 →</button><button class="secondary" @click="emit('models')">模型版本與來源 →</button></div>
-    <p class="footnote">表單在工作台切換時保留；重新整理會清除未提交的表單。保存遮罩會寫入素材庫，生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。</p>
+    <p class="footnote">表單在工作台切換時保留；重新整理會清除未提交的表單。保存遮罩會寫入素材庫，生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新生成使用 v2；載入 v1 原設定時，羽化設為 0，不回填原任務。</p>
     <p class="footnote">原引擎 {{form.engine_url || '讀取中'}} · 模型版本 {{catalog?.engine_url===form.engine_url ? catalog.models.find(m=>m.name===form.checkpoint)?.version || '未知':'未知'}}。一般 checkpoint 的修補品質依模型與遮罩而異。</p>
     <p v-if="error" class="notice warning" role="alert">{{error}}</p><p v-if="message" class="notice" role="status">{{message}}</p>
     <div v-if="pendingRestore" class="notice warning"><p>載入將取代目前表單及尚未保存的遮罩。</p><button class="secondary" @click="pendingRestore=null">繼續編輯</button><button class="secondary" :disabled="generationBusy || generationPending || maskBusy" @click="apply(pendingRestore)">捨棄變更並載入</button></div>
@@ -116,7 +117,9 @@ onBeforeUnmount(()=>{alive=false;++ticket;++restoreTicket;controller?.abort();re
         <label for="inpaint-sampler">取樣器</label><select id="inpaint-sampler" v-model="form.sampler_name"><option v-if="!capabilities?.sampler_names.includes(form.sampler_name)" :value="form.sampler_name">{{form.sampler_name}}（未確認）</option><option v-for="name in capabilities?.sampler_names" :key="name" :value="name">{{name}}</option></select>
         <label for="inpaint-scheduler">Scheduler</label><select id="inpaint-scheduler" v-model="form.scheduler"><option v-if="!capabilities?.schedulers.includes(form.scheduler)" :value="form.scheduler">{{form.scheduler}}（未確認）</option><option v-for="name in capabilities?.schedulers" :key="name" :value="name">{{name}}</option></select>
         <div class="fields"><label for="inpaint-denoise">改動幅度<input id="inpaint-denoise" v-model.number="form.denoise" type="number" min="0" max="1" step="any"></label><label for="inpaint-grow">遮罩擴張<input id="inpaint-grow" v-model.number="form.grow_mask_by" type="number" min="0" max="64" step="1"></label></div>
-        <p class="footnote">透明遮罩先合成白底，灰階 128 以上為編輯範圍。擴張供模型去噪使用；最終合成仍使用原二值遮罩。一般 checkpoint 可能需要較高 denoise，沒有通用品質預設。</p>
+        <label for="inpaint-feather">內側羽化半徑（輸出像素）<input id="inpaint-feather" v-model.number="form.feather_radius" type="number" min="0" max="64" step="1"></label>
+        <p class="footnote">透明遮罩先合成白底，灰階 128 以上為編輯範圍。擴張供二值遮罩去噪使用；羽化只改最後灰階合成，原黑色範圍不擴散。0 保留二值行為；過大可能讓細小白色區域消失，不保證接縫改善。</p>
+        <InpaintBlendPreview :form="form" :blocked="maskDirty ? '新遮罩尚未保存。' : inpaintProblem(form,source,mask) || featherProblem(form)" :disabled="locked" />
         <LoraControls v-model="form.loras" :engine-url="form.engine_url" :checkpoint="form.checkpoint" @blocked="loraBlock=$event" />
       </fieldset></form>
       <GenerationPanel :form="form" workflow="inpaint" :blocked-reason="block" :disabled="busy || maskBusy || !!pendingRestore" @busy="generationBusy=$event" @pending="generationPending=$event" @gallery="emit('gallery',$event)" @restore-job="restore('jobs',$event)"/>
