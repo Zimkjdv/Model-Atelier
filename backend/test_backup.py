@@ -176,6 +176,16 @@ class BackupTests(unittest.TestCase):
         self.assertEqual(Path(restored['database']).read_bytes(), external.read_bytes())
         self.assertTrue((Path(restored['data']) / 'empty').is_dir())
 
+    def test_exact_file_limit_roundtrip_and_evidence_total_overflow_before_destination(self):
+        count = len(backup.tree(self.data, 'data')[0])
+        with patch('backend.backup.MAX_FILES', count):
+            self.create('exact-limit')
+            self.assertEqual(len(backup.verify(self.folder / 'exact-limit')['files']), count)
+            self.assertTrue(backup.restore(self.folder / 'exact-limit', self.folder / 'exact-restored')['ok'])
+            with self.assertRaisesRegex(backup.BackupError, '總檔案數'):
+                self.create('overflow', evidence=[self.evidence])
+        self.assertFalse((self.folder / 'overflow').exists())
+
     def test_malformed_records_are_readonly_reported_and_cli_roundtrip_succeeds(self):
         commands = [
             ['check', '--data', str(self.data), '--database', str(self.case.db)],

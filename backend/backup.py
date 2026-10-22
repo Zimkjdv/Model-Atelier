@@ -53,8 +53,9 @@ def checksum(path):
     return dict(size=after.st_size, sha256=digest.hexdigest())
 
 
-def tree(root, prefix):
+def tree(root, prefix, *, max_files=None):
     regular(root, directory=True)
+    limit = MAX_FILES if max_files is None else max_files
     files, directories = {}, [prefix]
     for folder, dirs, names in os.walk(root, followlinks=False):
         folder = Path(folder)
@@ -67,7 +68,7 @@ def tree(root, prefix):
             target = folder / name
             key = prefix + '/' + target.relative_to(root).as_posix()
             relative_name(key); files[key] = checksum(target)
-            if len(files) > MAX_FILES:
+            if len(files) > limit:
                 raise BackupError('檔案數超過 100,000；請另行規劃備份')
     return files, directories
 
@@ -208,6 +209,8 @@ def inventory(data, database, db, evidence=()):
         files.update(entries); directories.extend(folders); sources[prefix] = source.resolve()
     if evidence:
         directories.append('evidence')
+    if len(files) > MAX_FILES:
+        raise BackupError('DATA、外置 DB 與證據的總檔案數超過 100,000；未建立備份')
     report = inspect_records(db, files, database_key)
     return dict(schema_version=VERSION, database=database_key, files=dict(sorted(files.items())),
                 directories=sorted(set(directories)), inspection=report), sources
@@ -315,7 +318,8 @@ def verify(archive):
             if folder.split('/')[0] not in ('data', 'database', 'evidence'):
                 raise BackupError('manifest 目錄超出範圍')
             regular(root / folder, directory=True)
-        actual, _ = tree(root, 'archive')
+        # The manifest is metadata, outside the payload file-count budget.
+        actual, _ = tree(root, 'archive', max_files=MAX_FILES + 1)
         if {name[len('archive/'):] for name in actual} != set(manifest['files']) | {'manifest.json'}:
             raise BackupError('備份內有未登記檔案')
     except (KeyError, TypeError, json.JSONDecodeError) as exc:
