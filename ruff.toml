@@ -1,0 +1,11 @@
+target-version = "py312"
+line-length = 100
+
+[format]
+quote-style = "single"
+line-ending = "lf"
+
+[lint]
+# Syntax, undefined names, duplicate definitions, broken control flow and
+# accidental unused local assignments. Formatting owns layout and quotes.
+select = ["E9", "F63", "F7", "F811", "F821", "F822", "F823", "F841"]

@@ -5,6 +5,7 @@ deletion result. Never interrupt, clear the queue, or infer success from HTTP
 200 alone. Queue-before-history reconciliation detects a prompt that finished
 between observations; absent records cannot prove that it never executed.
 """
+
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
@@ -56,9 +57,14 @@ async def queue_state(client, job):
         if not isinstance(data.get(key), list):
             raise ValueError('invalid queue list')
         for item in data[key]:
-            if (not isinstance(item, list) or len(item) < 4 or
-                    not isinstance(item[1], str) or not item[1] or
-                    not isinstance(item[2], dict) or not isinstance(item[3], dict)):
+            if (
+                not isinstance(item, list)
+                or len(item) < 4
+                or not isinstance(item[1], str)
+                or not item[1]
+                or not isinstance(item[2], dict)
+                or not isinstance(item[3], dict)
+            ):
                 raise ValueError('invalid queue item')
             if item[1] in seen:
                 raise ValueError('duplicate prompt identity')
@@ -87,7 +93,10 @@ async def history_state(client, job):
     if not failures.history_matches(job, entry):
         raise ValueError('history prompt ownership mismatch')
     state = entry['status']
-    if type(state.get('completed')) is not bool or state.get('status_str') not in ('success', 'error'):
+    if type(state.get('completed')) is not bool or state.get('status_str') not in (
+        'success',
+        'error',
+    ):
         raise ValueError('invalid history outcome')
     if state.get('status_str') == 'error':
         status = 'failed'
@@ -106,26 +115,62 @@ async def reconcile(host, client, job, state=UNOBSERVED):
     if historical is not None:
         # Preserve any result produced in the dequeue race; never label it cancelled.
         failure_info = failures.from_history(job, entry) if historical == 'failed' else None
-        return persist(host, job, status=historical if historical in TERMINAL else 'cancel_unknown', history=entry,
-                       failure_info=failure_info,
-                       cancel_attempt=attempt | {'result': 'already_finished' if historical in TERMINAL else 'unconfirmed'},
-                       error='ComfyUI 執行失敗，請查看任務 JSON' if historical == 'failed' else
-                             UNCERTAIN if historical == 'unknown' else None)
+        return persist(
+            host,
+            job,
+            status=historical if historical in TERMINAL else 'cancel_unknown',
+            history=entry,
+            failure_info=failure_info,
+            cancel_attempt=attempt
+            | {'result': 'already_finished' if historical in TERMINAL else 'unconfirmed'},
+            error='ComfyUI 執行失敗，請查看任務 JSON'
+            if historical == 'failed'
+            else UNCERTAIN
+            if historical == 'unknown'
+            else None,
+        )
     if state is not None:
-        return persist(host, job, status=state, cancel_attempt=attempt | {'result': 'not_removed'},
-                       error='任務已開始執行；未中斷任務' if state == 'running' else
-                             '任務仍在原引擎佇列中；取消尚未生效，可以再次取消排隊')
+        return persist(
+            host,
+            job,
+            status=state,
+            cancel_attempt=attempt | {'result': 'not_removed'},
+            error='任務已開始執行；未中斷任務'
+            if state == 'running'
+            else '任務仍在原引擎佇列中；取消尚未生效，可以再次取消排隊',
+        )
     if attempt.get('phase') == 'acknowledged':
-        return persist(host, job, status='cancelled', cancel_attempt=attempt | {
-                       'result': 'absent_after_ack', 'confirmation': 'legacy_ack_then_queue_then_history',
-                       'limitation': 'No deletion receipt; absence cannot prove it never executed or that history was not cleared.'},
-                       error='取消請求已接受，確認任務不在原引擎排隊、執行與歷史中；此結果不保證任務未曾執行或歷史未被清除')
-    return persist(host, job, status='cancel_unknown', cancel_attempt=attempt | {'result': 'unconfirmed'}, error=UNCERTAIN)
+        return persist(
+            host,
+            job,
+            status='cancelled',
+            cancel_attempt=attempt
+            | {
+                'result': 'absent_after_ack',
+                'confirmation': 'legacy_ack_then_queue_then_history',
+                'limitation': 'No deletion receipt; absence cannot prove it never executed or that history was not cleared.',
+            },
+            error='取消請求已接受，確認任務不在原引擎排隊、執行與歷史中；此結果不保證任務未曾執行或歷史未被清除',
+        )
+    return persist(
+        host,
+        job,
+        status='cancel_unknown',
+        cancel_attempt=attempt | {'result': 'unconfirmed'},
+        error=UNCERTAIN,
+    )
 
 
 def uncertain(host, job):
-    return persist(host, job, status='cancel_unknown', error=UNCERTAIN,
-                   cancel_attempt=attempt_update(job, active_until=None, checked_at=now().isoformat(), result='unconfirmed'))
+    return persist(
+        host,
+        job,
+        status='cancel_unknown',
+        error=UNCERTAIN,
+        cancel_attempt=attempt_update(
+            job, active_until=None, checked_at=now().isoformat(), result='unconfirmed'
+        ),
+    )
 
 
 async def refresh(host, job):
@@ -148,9 +193,19 @@ async def cancel(host, job):
     if job['status'] != 'queued':
         raise HTTPException(409, '只可取消已確認排隊的任務；執行中或提交結果待確認的任務不會被中斷')
     timestamp = now()
-    job = persist(host, job, status='cancelling', error=None, cancel_attempt={
-        'id': str(uuid4()), 'phase': 'prepared', 'started_at': timestamp.isoformat(),
-        'active_until': (timestamp + timedelta(seconds=60)).isoformat(), 'result': 'checking'})
+    job = persist(
+        host,
+        job,
+        status='cancelling',
+        error=None,
+        cancel_attempt={
+            'id': str(uuid4()),
+            'phase': 'prepared',
+            'started_at': timestamp.isoformat(),
+            'active_until': (timestamp + timedelta(seconds=60)).isoformat(),
+            'result': 'checking',
+        },
+    )
     try:
         async with host.http_client(timeout=10, trust_env=False) as client:
             state = await queue_state(client, job)
@@ -159,11 +214,25 @@ async def cancel(host, job):
                 job = await reconcile(host, client, job, state)
                 if job['status'] in TERMINAL:
                     return job
-                raise HTTPException(409, '原引擎未確認此任務仍在排隊；未發送取消或中斷指令，請重新查詢')
-            job = persist(host, job, cancel_attempt=attempt_update(job, phase='dispatched', result='awaiting_ack'))
-            response = await client.post(job['engine_url'] + '/queue', json={'delete': [job['prompt_id']]})
+                raise HTTPException(
+                    409, '原引擎未確認此任務仍在排隊；未發送取消或中斷指令，請重新查詢'
+                )
+            job = persist(
+                host,
+                job,
+                cancel_attempt=attempt_update(job, phase='dispatched', result='awaiting_ack'),
+            )
+            response = await client.post(
+                job['engine_url'] + '/queue', json={'delete': [job['prompt_id']]}
+            )
             response.raise_for_status()
-            job = persist(host, job, cancel_attempt=attempt_update(job, phase='acknowledged', acknowledged_at=now().isoformat(), result='verifying'))
+            job = persist(
+                host,
+                job,
+                cancel_attempt=attempt_update(
+                    job, phase='acknowledged', acknowledged_at=now().isoformat(), result='verifying'
+                ),
+            )
             job = await reconcile(host, client, job)
             if job['status'] == 'running':
                 raise HTTPException(409, '任務在取消排隊期間已開始執行；未中斷任務，請繼續查詢')

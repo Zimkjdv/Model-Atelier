@@ -13,6 +13,7 @@
 - [停機完整備份、唯讀盤點與新目錄還原](data-backup.md)
 - [網址導覽、首次使用指引與能力狀態](navigation.md)
 - [請求／任務追蹤、狀態分離與診斷預覽匯出](diagnostics.md)
+- [格式、靜態檢查與高風險流程維護規則](maintenance.md)
 - [裝置回報](execution-device.md)、[環境版本](runtime-versions.md)、[效能條件](execution-context.md)、[量測](job-measurements.md)
 
 ## 創作與作品

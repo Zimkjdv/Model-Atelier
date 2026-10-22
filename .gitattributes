@@ -1,1 +1,8 @@
 experiments/*.json text eol=lf
+*.py text eol=lf
+*.ts text eol=lf
+*.vue text eol=lf
+*.css text eol=lf
+*.mjs text eol=lf
+quality-scope.json text eol=lf
+.prettierrc.json text eol=lf

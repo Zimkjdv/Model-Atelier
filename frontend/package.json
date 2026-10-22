@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vue-tsc --noEmit && vite build",
+    "format": "node check-style.mjs --write",
+    "format:check": "node check-style.mjs --check",
+    "lint": "vue-tsc --noEmit && node check-style-tests.mjs && node check-style.mjs lint",
     "check:experiments": "node check-experiment-runs.mjs",
     "check:inpaint": "node check-inpaint.mjs",
     "check:control": "node check-control.mjs",
@@ -19,6 +22,8 @@
   "devDependencies": {
     "@playwright/test": "1.64.1",
     "@vitejs/plugin-vue": "^6.0.0",
+    "css-tree": "3.2.1",
+    "prettier": "3.9.10",
     "typescript": "~5.9.0",
     "vite": "^7.0.0",
     "vue-tsc": "^3.0.0"

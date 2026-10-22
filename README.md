@@ -89,6 +89,8 @@ model-atelier/
 │   └── history/               # 歷史文件快照，僅供追溯
 ├── requirements.txt           # 後端直接依賴
 ├── requirements.lock.txt      # 可重現安裝的固定依賴版本
+├── requirements-dev.lock.txt  # 品質環境：runtime lock 與 Ruff
+├── quality-scope.json         # 分批格式／靜態檢查的明確檔案範圍
 ├── start-local.ps1             # 啟動平台並提供已建置前端
 ├── start-comfyui.ps1           # 啟動獨立 ComfyUI 引擎
 └── start-all.bat               # Windows 雙啟動捷徑
@@ -98,7 +100,7 @@ model-atelier/
 
 ## 開發與文件
 
-完整品質檢查：`.venv/Scripts/python.exe scripts/check_quality.py`，依序執行後端測試、前端型別／建置、四組契約檢查及隔離瀏覽器回歸，失敗立即停止。首次需安裝測試瀏覽器，見 [乾淨安裝與檢查指南](docs/quality-checks.md)。單獨後端可執行 unittest，前端可執行 `npm.cmd run build`、`npm.cmd test`、`npm.cmd run test:browser`；不等同實機 GPU 或完整 UI 驗收。
+完整品質檢查：`.venv/Scripts/python.exe scripts/check_quality.py`，依序執行格式／靜態檢查、後端測試、前端型別／建置、四組契約檢查及隔離瀏覽器回歸，失敗立即停止。品質環境需安裝 `requirements-dev.lock.txt` 與測試瀏覽器，見 [乾淨安裝與檢查指南](docs/quality-checks.md)。單獨後端可執行 unittest，前端可執行 `npm.cmd run build`、`npm.cmd test`、`npm.cmd run test:browser`；格式命令與提交／恢復規則見 [維護規則](docs/maintenance.md)。不等同實機 GPU 或完整 UI 驗收。
 
 | 閱讀目的 | 文件與用途 |
 | --- | --- |

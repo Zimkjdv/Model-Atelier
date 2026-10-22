@@ -1,0 +1,23 @@
+{
+  "python": [
+    "backend/submissions.py",
+    "backend/jobs.py",
+    "backend/cancellation.py",
+    "backend/stopping.py",
+    "backend/test_quality_runner.py",
+    "scripts/check_quality.py",
+    "scripts/check_style.py"
+  ],
+  "web": [
+    "frontend/src/GenerationPanel.vue",
+    "frontend/src/generationRequest.ts",
+    "frontend/src/jobEvents.ts",
+    "frontend/src/style.css",
+    "frontend/check-style.mjs",
+    "frontend/css-checks.mjs",
+    "frontend/check-style-tests.mjs",
+    "quality-scope.json",
+    ".prettierrc.json"
+  ],
+  "css": ["frontend/src/style.css"]
+}

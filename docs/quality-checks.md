@@ -6,7 +6,7 @@
 .\.venv\Scripts\python.exe scripts/check_quality.py
 ```
 
-依序執行後端 unittest、Vue 型別與正式建置、`npm test` 的四組前端契約檢查、Playwright Chromium。`--skip-browser` 會明列跳過，不表示完整品質通過。
+依序執行範圍內格式／靜態檢查、後端 unittest、Vue 型別與正式建置、`npm test` 的四組前端契約檢查、Playwright Chromium。格式與高風險狀態維護見 [維護規則](maintenance.md)。`--skip-browser` 會明列跳過，不表示完整品質通過。
 
 ## 乾淨安裝
 
@@ -14,7 +14,7 @@ Python 3.12、Node.js 24、Git；在新的 checkout 執行：
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.lock.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.lock.txt
 Set-Location frontend
 npm.cmd ci
 npx.cmd playwright install chromium
@@ -30,7 +30,7 @@ Set-Location ..
 
 服務固定監聽本機 18765；可用 `ATELIER_TEST_PORT` 指定另一隔離埠。`reuseExistingServer: false` 避免誤用既有平台，埠被占用即失敗。不要同時啟動兩套相同輸出目錄的測試；異常強制終止時可能留下系統臨時資料。
 
-九個瀏覽器案例（Q06 原八項與 Q04 分頁案例）覆蓋四工作台的 dirty、KeepAlive、重新整理／關頁警示與取消；草稿保存中及完成後狀態；遺失 HTTP 回覆後原 UUID／完整 body／端點恢復且引擎僅收到一次提交；作品 409 保留筆記；實際 workflow 檔案下載及最大 64 位 seed 原文字；Enter 開啟／Escape 關閉預覽與焦點還原；390px 導覽、輸入及預覽。另驗證跨頁比較、模型／收藏／封存組合、較早任務及素材選取保留。Node 邏輯檢查另涵蓋六種新舊提交流程。
+瀏覽器案例覆蓋四工作台的 dirty、KeepAlive、重新整理／關頁警示與取消；草稿保存中及完成後狀態；遺失 HTTP 回覆後原 UUID／完整 body／端點恢復且引擎僅收到一次提交；作品 409 保留筆記；實際 workflow 檔案下載及最大 64 位 seed 原文字；Enter 開啟／Escape 關閉預覽與焦點還原；390px 導覽、輸入及預覽。另驗證跨頁比較、模型／收藏／封存組合、較早任務、素材選取保留、Q08 網址／首次使用，以及 Q09 診斷篩選與逐字下載。Node 邏輯檢查另涵蓋六種新舊提交流程。
 
 重試次數為 0；失敗保存 screenshot、video、trace 與 HTML 報告至忽略的 `runtime/quality/`。在 frontend 執行 `npx.cmd playwright show-report ../runtime/quality/browser-report` 或 `npx.cmd playwright show-trace <trace.zip>` 查閱。CI 在 push／PR 執行相同入口，保留證據 14 天。設定依 [Playwright webServer](https://playwright.dev/docs/test-webserver) 與 [CI 官方指南](https://playwright.dev/docs/ci-intro)。
 

@@ -1,4 +1,5 @@
 """Fail-fast local/CI checks; use the interpreter from the active locked venv."""
+
 import argparse
 import os
 from pathlib import Path
@@ -15,7 +16,12 @@ def run_checks(*, skip_browser=False, run=subprocess.run):
         print('Node.js/npm is required.', file=sys.stderr)
         return 1
     stages = [
-        ('backend', [sys.executable, '-m', 'unittest', 'discover', '-s', 'backend', '-p', 'test_*.py'], ROOT),
+        ('style and static checks', [sys.executable, 'scripts/check_style.py'], ROOT),
+        (
+            'backend',
+            [sys.executable, '-m', 'unittest', 'discover', '-s', 'backend', '-p', 'test_*.py'],
+            ROOT,
+        ),
         ('frontend build', [npm, 'run', 'build'], ROOT / 'frontend'),
         ('frontend contracts', [npm, 'test'], ROOT / 'frontend'),
     ]
@@ -29,13 +35,17 @@ def run_checks(*, skip_browser=False, run=subprocess.run):
             print(f'FAILED: {name} (exit {result.returncode})', file=sys.stderr)
             return result.returncode if result.returncode > 0 else 1
     if skip_browser:
-        print('SKIPPED: browser explicitly disabled with --skip-browser; this is not a full quality pass.')
+        print(
+            'SKIPPED: browser explicitly disabled with --skip-browser; this is not a full quality pass.'
+        )
     return 0
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--skip-browser', action='store_true', help='Explicitly run only backend/build/contracts')
+    parser.add_argument(
+        '--skip-browser', action='store_true', help='Explicitly run only backend/build/contracts'
+    )
     args = parser.parse_args()
     try:
         raise SystemExit(run_checks(skip_browser=args.skip_browser))
