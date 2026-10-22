@@ -35,6 +35,8 @@ FLUX P5 目前固定 BFL 主模型／VAE 來源於 2026-10-22 只讀 HEAD 回傳
 
 新生成使用 v2；localStorage 沿用原 pending key，無版本標記的舊 body 仍送 v1，精確 seed／UUID／參數原樣保留；v2 本機版本標記在提交前移除，未知標記拒絕並保留原紀錄。v1 歷史載入新表單時才加入半徑 0，不改原任務。任務／作品顯示原羽化方法、版本／Pillow、半徑、hash，可讀取／下載原合成遮罩；一般草稿／比較格式保持未支援。
 
+V02 已於 2026-10-23 在隔離 Chromium 補驗 v1／v2、1440px／390px 的遺失回應與不完整 JSON。重新載入保留原 pending，空白新表單的半徑 0 不會取代原 v2 半徑 8，無標記 v1 仍走原端點且不新增羽化遮罩。成功回覆必須核對原 UUID；缺失／其他任務 ID 或錯誤回覆中的其他 job_id 不清除 pending。明確手動恢復仍 POST 原端點／完整原 body，由後端查原 UUID 帳本返回既有任務；不重新上傳、不重新向引擎送 /prompt。未知結果以原引擎 history／queue 確認，不能把空佇列當作完成。詳見 [V02 證據、限制與重跑](validation/inpaint-recovery-20261023.md)。
+
 2026-10-22 瀏覽器實際在隔離資料庫完成：引擎關閉、未選 checkpoint 仍成功預覽；1024² PNG 解碼完成、半徑 16→8 清除舊圖、65 阻擋、頁面切換保留 16 並清除暫時圖、390px 無橫向溢出。截圖 runtime/feather-preview-proof-20261022.jpg、feather-preview-narrow-20261022.jpg；隔離 UI 2 素材／0 任務／0 作品，正式 settings 指紋未變。未在本項操作筆刷觸控、生成或歷史下載點擊，GPU／新歷史介面接續驗收。
 
 前端 check:inpaint 新增完整 v1／v2 還原、精確 pending、半徑／LoRA、預覽 bytes／hash／尺寸／有界串流及失效身分檢查；check:control、check:experiments 與 Vue 型別／production build 通過。

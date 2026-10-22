@@ -10,6 +10,7 @@
     "scripts/check_style.py"
   ],
   "web": [
+    "frontend/tests/inpaint-recovery.spec.ts",
     "frontend/tests/mask-editor.spec.ts",
     "frontend/src/MaskEditor.vue",
     "frontend/src/InpaintStudio.vue",

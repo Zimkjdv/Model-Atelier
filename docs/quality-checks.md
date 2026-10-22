@@ -34,7 +34,9 @@ Set-Location ..
 
 重試次數為 0；失敗保存 screenshot、video、trace 與 HTML 報告至忽略的 `runtime/quality/`。在 frontend 執行 `npx.cmd playwright show-report ../runtime/quality/browser-report` 或 `npx.cmd playwright show-trace <trace.zip>` 查閱。CI 在 push／PR 執行相同入口，保留證據 14 天。設定依 [Playwright webServer](https://playwright.dev/docs/test-webserver) 與 [CI 官方指南](https://playwright.dev/docs/ci-intro)。
 
-V01 新增 6 項遮罩瀏覽器回歸，總計 25 項：1440px／390px 的實際畫布操作與保存 PNG 像素核對、取消選取／素材重讀／KeepAlive、無效 PNG／保存失敗、捕獲／縮放／停用，以及 CDP 主觸點／第二指／取消。兩種寬度另保存全頁與遮罩截圖、像素量測附件至報告。以 `npm.cmd run test:browser -- mask-editor.spec.ts` 單獨執行；實機觸控仍未通過，詳見 [V01 驗收](validation/mask-editor-20261023.md)。
+V01 新增 6 項遮罩瀏覽器回歸，當時總計 25 項：1440px／390px 的實際畫布操作與保存 PNG 像素核對、取消選取／素材重讀／KeepAlive、無效 PNG／保存失敗、捕獲／縮放／停用，以及 CDP 主觸點／第二指／取消。兩種寬度另保存全頁與遮罩截圖、像素量測附件至報告。以 `npm.cmd run test:browser -- mask-editor.spec.ts` 單獨執行；實機觸控仍未通過，詳見 [V01 驗收](validation/mask-editor-20261023.md)。
+
+V02 再新增 9 項，現有瀏覽器回歸共 34 項。以 `npm.cmd run test:browser -- inpaint-recovery.spec.ts` 重跑 v1／v2 × 1440px／390px × 遺失回應／異常 JSON 的 8 案例，以及未知版本保護。測試保存原 pending、平台請求／回覆、固定輸入與引擎呼叫雜湊及截圖；fixture 的 `/qa/engine-audit` 最多保留 1,000 筆方法／路徑與輸入雜湊，只存在臨時測試服務。Node 契約對六種生成端點驗證錯誤／缺失成功 id 與錯誤 detail.job_id 不會誤清除 pending。見 [V02 證據](validation/inpaint-recovery-20261023.md)。
 
 ## 依賴與驗收範圍（2026-10-22）
 

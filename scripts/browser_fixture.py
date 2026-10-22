@@ -6,6 +6,9 @@ No option accepts a production DATA path or engine URL. Never run as a service.
 import argparse
 import asyncio
 from contextlib import closing
+from email import policy
+from email.parser import BytesParser
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -28,20 +31,81 @@ from backend.main import create_app
 ENGINE = 'http://mock-engine.invalid:8188'
 
 
+INPAINT_NODES = {
+    'LoadImage': dict(input=dict(required=dict(image=[[]])), output=['IMAGE', 'MASK']),
+    'LoadImageMask': dict(
+        input=dict(required=dict(image=[[]], channel=[['alpha', 'red', 'green', 'blue']])),
+        output=['MASK'],
+    ),
+    'VAEEncodeForInpaint': dict(
+        input=dict(
+            required=dict(
+                pixels=['IMAGE'],
+                vae=['VAE'],
+                mask=['MASK'],
+                grow_mask_by=['INT', dict(min=0, max=64)],
+            )
+        ),
+        output=['LATENT'],
+    ),
+    'ImageCompositeMasked': dict(
+        input=dict(
+            required=dict(
+                destination=['IMAGE'],
+                source=['IMAGE'],
+                x=['INT', dict(min=0, max=8192)],
+                y=['INT', dict(min=0, max=8192)],
+                resize_source=['BOOLEAN'],
+            ),
+            optional=dict(mask=['MASK']),
+        ),
+        output=['IMAGE'],
+    ),
+}
+
+
+def uploaded_image(request):
+    envelope = (
+        b'Content-Type: '
+        + request.headers['content-type'].encode('ascii')
+        + b'\r\nMIME-Version: 1.0\r\n\r\n'
+        + request.content
+    )
+    message = BytesParser(policy=policy.default).parsebytes(envelope)
+    fields, image = {}, None
+    for part in message.iter_parts():
+        name = part.get_param('name', header='content-disposition')
+        raw = part.get_payload(decode=True)
+        if name == 'image':
+            image = dict(name=part.get_filename(), sha256=hashlib.sha256(raw).hexdigest())
+        else:
+            fields[name] = raw.decode('utf-8')
+    assert image and fields['overwrite'] == 'false' and fields['type'] == 'input'
+    return image | fields
+
+
 def fixture(data, count=None, legacy_ui=False):
-    state = {'prompts': 0, 'mode': 'uncertain'}
+    state = {'prompts': 0, 'uploads': 0, 'engine_requests': 0, 'mode': 'uncertain'}
     generated = {}
+    audit = []
 
     def engine(request):
         assert request.url.host == 'mock-engine.invalid', 'fixture cannot contact another engine'
+        state['engine_requests'] += 1
+        record = dict(
+            sequence=state['engine_requests'], method=request.method, path=request.url.path
+        )
+        audit.append(record)
+        del audit[:-1000]
         if state['mode'] == 'offline':
             raise httpx.ConnectError('fixture offline')
         name = request.url.path.rsplit('/', 1)[-1]
         if request.url.path == '/prompt':
             state['prompts'] += 1
+            payload = json.loads(request.content)
+            record['job_id'] = payload['prompt_id']
             if state['mode'] == 'uncertain':
                 raise httpx.ReadTimeout('fixture: lost upstream response')
-            payload = json.loads(request.content)
             identifier = payload['prompt_id']
             generated[identifier] = {
                 'status': {'completed': True, 'status_str': 'success'},
@@ -54,6 +118,13 @@ def fixture(data, count=None, legacy_ui=False):
                 },
             }
             return httpx.Response(200, json={'prompt_id': identifier})
+        if request.url.path == '/upload/image':
+            state['uploads'] += 1
+            uploaded = uploaded_image(request)
+            record.update(uploaded)
+            return httpx.Response(
+                200, json={key: uploaded[key] for key in ('name', 'subfolder', 'type')}
+            )
         if request.url.path.startswith('/history/'):
             return httpx.Response(200, json={name: generated[name]} if name in generated else {})
         if request.url.path == '/view':
@@ -76,6 +147,8 @@ def fixture(data, count=None, legacy_ui=False):
                     }
                 }
             }
+        elif request.url.path.startswith('/object_info/') and name in INPAINT_NODES:
+            value = {name: INPAINT_NODES[name]}
         elif request.url.path.startswith('/object_info/'):
             value = {name: {'input': {'required': {}}}}
         elif name == 'system_stats':
@@ -106,6 +179,11 @@ def fixture(data, count=None, legacy_ui=False):
     raw = io.BytesIO()
     Image.new('RGB', (64, 64), '#718d76').save(raw, 'PNG')
     asset = assets.create(context.DB, data / 'assets', raw.getvalue(), 'qa-source.png')
+    mask_image = Image.new('RGB', (64, 64), 'black')
+    mask_image.paste('white', (32, 0, 64, 64))
+    mask_bytes = io.BytesIO()
+    mask_image.save(mask_bytes, 'PNG')
+    mask_asset = assets.create(context.DB, data / 'assets', mask_bytes.getvalue(), 'qa-mask.png')
     graph = {
         '1': {'class_type': 'CheckpointLoaderSimple', 'inputs': {'ckpt_name': 'demo.safetensors'}},
         '2': {'class_type': 'CLIPTextEncode', 'inputs': {'text': 'fixture forest'}},
@@ -162,7 +240,13 @@ def fixture(data, count=None, legacy_ui=False):
 
     @wrapper.get('/qa/state')
     def status():
-        return dict(state, artwork_id=artwork['id'], asset_id=asset['id'])
+        return dict(
+            state, artwork_id=artwork['id'], asset_id=asset['id'], mask_asset_id=mask_asset['id']
+        )
+
+    @wrapper.get('/qa/engine-audit')
+    def engine_audit(after: int = 0):
+        return [entry for entry in audit if entry['sequence'] > after]
 
     @wrapper.post('/qa/conflict')
     def conflict():

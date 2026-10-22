@@ -60,6 +60,9 @@ try {
   ]
   for (const descriptor of descriptors) {
     for (const reply of [() => { throw new TypeError('response lost') }, new Response('not-json'),
+      new Response('null'), new Response('{}'), new Response('[]'), new Response('{"id":"another-id"}'),
+      new Response('{"detail":{"message":"wrong job","job_id":"another-id"}}', { status: 503 }),
+      new Response('{"detail":{"message":"wrong job","job_id":"another-id"}}', { status: 409 }),
       new Response('<html>proxy</html>', { status: 409 }), new Response('{}', { status: 503 })]) {
       remote(reply); let confirmed = false
       await assert.rejects(() => submitOnce(descriptor, () => { confirmed = true }))

@@ -25,9 +25,11 @@ Q05 的重新整理／關頁提示是另一項；本次只處理非同步讀取�
 
 ## 提交與未知結果
 
-generationRequest.ts 的 submitOnce 接收既有凍結 path／body 與清除 pending 的 callback。成功 JSON 回覆，或已收到可確認的 API 拒絕／帶 job_id 的失敗，沿用原契約清除 pending。傳輸失敗、無法解析的回覆、無 job_id 的伺服器錯誤仍保留原請求，讓使用者明確恢復。
+generationRequest.ts 的 submitOnce 接收既有凍結 path／body 與清除 pending 的 callback。成功 JSON 必須是物件，且 id 等於凍結的 request_id；null、陣列、缺少 id 或其他任務 ID 都保留 pending。可確認的 API 拒絕仍沿用原契約清除 pending；若錯誤 detail 帶 job_id，必須屬於原請求，其他任務 ID 不能確認本次提交。傳輸失敗、無法解析的回覆、無 job_id 的伺服器錯誤仍保留原請求，讓使用者明確恢復。確認平台已有原任務不等同引擎已生成成功，終態仍由原任務歷史核對。
 
 localStorage 保存失敗時不送請求；恢復使用原 UUID、設定、LoRA 順序與修補／Canny v1、v2 marker 選出的原端點。submitOnce 不讀現在表單、不自動重送；取消、停止及刷新也不由 client 重試。後端仍以原 UUID 帳本處理查詢／恢復，不新增重複 GPU 工作。
+
+V02 的原始 pending、v1／v2 端點、相同 body、遮罩／半徑、錯誤任務 ID 與未知版本已補上真實瀏覽器回歸；六種生成端點的 Node 契約另覆蓋異常成功 JSON 與錯誤回覆中的其他 job_id。見 [V02 驗收](validation/inpaint-recovery-20261023.md)。
 
 ## 驗證（2026-10-22）
 
