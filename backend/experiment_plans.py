@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any, Literal
 from uuid import UUID
-from fastapi import HTTPException, Request, Response
+from fastapi import HTTPException, Request, Response, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 from backend import assets, experiment_store, settings_transfer, experiment_results
@@ -265,6 +265,21 @@ def install(app, host):
         except KeyError:
             raise HTTPException(404, '找不到比較方案')
         return experiment_results.read(host.DB, record, host.DATA / 'artworks')
+
+    @app.get('/api/experiments/plans/{identifier}/report')
+    def report(identifier: UUID, expected_plan_sha256: str = Query(pattern=r'^[a-f0-9]{64}$')):
+        from backend import experiment_report
+        try:
+            raw=experiment_report.create(host.DB,host.DATA/'artworks',str(identifier),expected_plan_sha256,validate_document)
+        except experiment_report.ReportMissing:
+            raise HTTPException(404,'找不到比較方案')
+        except experiment_report.ReportTooLarge as exc:
+            raise HTTPException(413,str(exc)) from exc
+        except (KeyError,ValueError,TypeError,OSError) as exc:
+            raise HTTPException(409,'比較報告無法完整匯出：'+str(exc)) from exc
+        return Response(raw,media_type='application/json',headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff',
+            'X-Atelier-SHA256':hashlib.sha256(raw).hexdigest(),
+            'Content-Disposition':'attachment; filename="comparison-results-'+str(identifier)+'.json"'})
 
     @app.post('/api/experiments/plans')
     async def save_plan(request: Request):

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onActivated, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
 import type { SavedExperiment, ExperimentResults } from './experimentSettings'
+import ExperimentReport from './ExperimentReport.vue'
 const props = defineProps<{record:SavedExperiment}>()
 const emit = defineEmits<{gallery:[jobId:string]; archived:[value:boolean]}>()
 const results = ref<ExperimentResults|null>(null), error = ref(''), busy = ref(false), readAt = ref('')
@@ -27,6 +28,7 @@ const labels:Record<string,string> = {validating:'確認模型中',uploading_inp
     <p class="footnote">讀取平台已保存的最後狀態，不查詢引擎或生成。請先在任務區更新狀態、到作品庫匯入，再重讀結果。每次手動生成的紀錄都保留。</p>
     <button type="button" class="secondary" :disabled="busy" @click="refresh">{{ busy ? '讀取中…' : '重讀已保存結果' }}</button><p v-if="readAt" class="footnote">讀取時間：{{ readAt }}{{ results?.archived ? ' · 方案已封存，仍可查看原結果' : '' }}</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }} 上次資料可能已過期。</p>
+    <ExperimentReport :record="record"/>
     <div v-if="results" class="result-grid"><article v-for="group in results.variants" :key="group.variant_id" class="result-group"><h4>{{ group.variant_id }} · {{ group.case_id }}</h4><p>{{ record.plan.axis }} = {{ group.value }} · Seed {{ record.plan.variants.find(v => v.id === group.variant_id)?.settings.seed }}</p><p v-if="!group.runs.length" class="footnote">尚無關聯任務；載入過設定不代表已生成。</p>
       <div v-for="run in group.runs" :key="run.id" class="run"><strong>{{ labels[run.status] || run.status }}</strong><p class="footnote">{{ new Date(run.created_at).toLocaleString() }} · 模型版本 {{ run.model_version || '未知' }}</p><p v-if="run.error" class="notice warning">{{ run.error }}</p><p v-if="run.status === 'unknown'" class="footnote">請在原任務確認狀態；不要為了確認結果重新生成。</p>
         <a :href="'/api/jobs/'+run.id" target="_blank" rel="noopener">原任務紀錄</a> · <a :href="'/api/jobs/'+run.id+'/workflow'">完整工作流程</a><button v-if="run.status === 'completed'" type="button" class="secondary" @click="emit('gallery',run.id)">{{ run.artworks.length ? '到作品庫查看' : '到作品庫匯入' }}</button><p v-if="run.status === 'completed' && !run.artworks.length" class="footnote">任務已完成，尚無可讀的關聯作品。</p>
