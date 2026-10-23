@@ -31,7 +31,10 @@
     "backend/stopping.py",
     "backend/test_quality_runner.py",
     "scripts/check_quality.py",
-    "scripts/check_style.py"
+    "scripts/check_style.py",
+    "backend/workflows.py",
+    "backend/gallery_api.py",
+    "backend/reference_workflows.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -66,7 +69,9 @@
     "frontend/css-checks.mjs",
     "frontend/check-style-tests.mjs",
     "quality-scope.json",
-    ".prettierrc.json"
+    ".prettierrc.json",
+    "frontend/src/App.vue",
+    "frontend/src/navigation.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

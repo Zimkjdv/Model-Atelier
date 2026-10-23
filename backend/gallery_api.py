@@ -1,4 +1,5 @@
 """Only import filenames recorded by a successful, platform-owned job."""
+
 import asyncio
 import json
 from uuid import UUID
@@ -54,16 +55,25 @@ def install(app, host):
         return value
 
     @app.get('/api/artworks')
-    def list_artworks(scope: Literal['active', 'archived', 'all'] = 'active', favorites_only: bool = False):
-        return [summary(item) for item in gallery.list_all(host.DB)
-                if (scope == 'all' or item['archived'] == (scope == 'archived'))
-                and (not favorites_only or item['favorite'])]
+    def list_artworks(
+        scope: Literal['active', 'archived', 'all'] = 'active', favorites_only: bool = False
+    ):
+        return [
+            summary(item)
+            for item in gallery.list_all(host.DB)
+            if (scope == 'all' or item['archived'] == (scope == 'archived'))
+            and (not favorites_only or item['favorite'])
+        ]
 
     @app.patch('/api/artworks/{artwork_id}/organization')
     def organize(artwork_id: UUID, value: OrganizationInput):
         try:
-            item = gallery.organize(host.DB, str(artwork_id), value.revision,
-                                    value.model_dump(exclude_unset=True, exclude={'revision'}))
+            item = gallery.organize(
+                host.DB,
+                str(artwork_id),
+                value.revision,
+                value.model_dump(exclude_unset=True, exclude={'revision'}),
+            )
             return summary(item)
         except KeyError:
             raise HTTPException(404, '找不到作品')
@@ -76,24 +86,45 @@ def install(app, host):
 
     @app.get('/api/artworks/{artwork_id}/workflow')
     def workflow(artwork_id: UUID):
-        return Response(json.dumps(lookup(artwork_id)['workflow'], ensure_ascii=False, indent=2), media_type='application/json',
-                        headers={'Content-Disposition': f'attachment; filename="{artwork_id}.json"'})
+        return Response(
+            json.dumps(lookup(artwork_id)['workflow'], ensure_ascii=False, indent=2),
+            media_type='application/json',
+            headers={'Content-Disposition': f'attachment; filename="{artwork_id}.json"'},
+        )
 
     @app.get('/api/artworks/{artwork_id}/creation-settings')
     def creation_settings(artwork_id: UUID):
         item = lookup(artwork_id)
+
         def validate(value):
-            schema = host.ControlInput if item.get('workflow_id') in ('checkpoint-canny-controlnet-v1','checkpoint-canny-controlnet-edge-v2') else host.InpaintFeatherInput if item.get('workflow_id') == 'checkpoint-inpaint-feather-v2' else host.InpaintInput if item.get('workflow_id') == 'checkpoint-inpaint-v1' else host.DraftInput
+            schema = (
+                host.ControlInput
+                if item.get('workflow_id')
+                in ('checkpoint-canny-controlnet-v1', 'checkpoint-canny-controlnet-edge-v2')
+                else host.InpaintFeatherInput
+                if item.get('workflow_id') == 'checkpoint-inpaint-feather-v2'
+                else host.InpaintInput
+                if item.get('workflow_id') == 'checkpoint-inpaint-v1'
+                else host.DraftInput
+            )
             return schema.model_validate(value).model_dump(mode='json', exclude={'revision'})
+
         try:
             settings = workflows.extract(item, validate)
         except ValueError as exc:
             raise HTTPException(422, str(exc))
         original = catalog.read(host.DB, settings['engine_url'])
-        model = next((value for value in original['models'] if value['name'] == settings['checkpoint']), None)
+        model = next(
+            (value for value in original['models'] if value['name'] == settings['checkpoint']), None
+        )
         matches = settings['engine_url'] == host.engine_url()
-        checkpoint_status = ('unknown' if original.get('synced_at') is None or original.get('sync_error')
-                             else 'available' if model and model.get('listed') else 'missing')
+        checkpoint_status = (
+            'unknown'
+            if original.get('synced_at') is None or original.get('sync_error')
+            else 'available'
+            if model and model.get('listed')
+            else 'missing'
+        )
         warnings = []
         if not matches:
             warnings.append('作品原引擎與目前設定不同；已保留原位址，生成前請先確認引擎設定')
@@ -108,19 +139,44 @@ def install(app, host):
             warnings.append('原作品模型版本未知，無法確認目前 checkpoint 與原版本一致')
         elif model and model.get('version') and model['version'] != version:
             warnings.append('目前登記的模型版本與原作品不同；已保留原作品版本供比較')
-        lora_info = lora_records.restoration(host.DB, settings['engine_url'], settings, item.get('lora_metadata'))
+        lora_info = lora_records.restoration(
+            host.DB, settings['engine_url'], settings, item.get('lora_metadata')
+        )
         warnings.extend(lora_info['warnings'])
-        warnings.extend(image_workflows.restoration_warnings(host.DB, host.DATA, item.get('reference_metadata')))
+        warnings.extend(
+            image_workflows.restoration_warnings(host.DB, host.DATA, item.get('reference_metadata'))
+        )
         from backend import control_catalog
-        warnings.extend(control_catalog.restoration_warnings(host.DB,settings['engine_url'],item.get('component_metadata')))
-        return dict(artwork_id=str(artwork_id), settings=settings, model_version=version,
-                    model_metadata=item.get('model_metadata'), lora_metadata=item.get('lora_metadata'),
-                    runtime_metadata=item.get('runtime_metadata'),
-                    reference_metadata=item.get('reference_metadata'), warnings=warnings,
-                    **(dict(component_metadata=item.get('component_metadata')) if item.get('workflow_id')in ('checkpoint-canny-controlnet-v1','checkpoint-canny-controlnet-edge-v2') else {}),
-                    availability=dict(current_engine_url=host.engine_url(), engine_matches=matches,
-                                      checkpoint_status=checkpoint_status, catalog_synced_at=original.get('synced_at'),
-                                      loras=lora_info['loras'], lora_synced_at=lora_info['lora_synced_at']))
+
+        warnings.extend(
+            control_catalog.restoration_warnings(
+                host.DB, settings['engine_url'], item.get('component_metadata')
+            )
+        )
+        return dict(
+            artwork_id=str(artwork_id),
+            settings=settings,
+            model_version=version,
+            model_metadata=item.get('model_metadata'),
+            lora_metadata=item.get('lora_metadata'),
+            runtime_metadata=item.get('runtime_metadata'),
+            reference_metadata=item.get('reference_metadata'),
+            warnings=warnings,
+            **(
+                dict(component_metadata=item.get('component_metadata'))
+                if item.get('workflow_id')
+                in ('checkpoint-canny-controlnet-v1', 'checkpoint-canny-controlnet-edge-v2')
+                else {}
+            ),
+            availability=dict(
+                current_engine_url=host.engine_url(),
+                engine_matches=matches,
+                checkpoint_status=checkpoint_status,
+                catalog_synced_at=original.get('synced_at'),
+                loras=lora_info['loras'],
+                lora_synced_at=lora_info['lora_synced_at'],
+            ),
+        )
 
     @app.get('/api/artworks/{artwork_id}/image')
     def image(artwork_id: UUID, download: bool = False, thumbnail: bool = False):
@@ -129,9 +185,12 @@ def install(app, host):
         target = host.DATA / 'artworks' / (str(artwork_id) + '.' + extension)
         if not target.is_file():
             raise HTTPException(404, '作品檔案已遺失，請從備份還原；生成參數仍保留')
-        return FileResponse(target, media_type='image/png' if thumbnail else item['media_type'],
-                            filename=target.name if download else None,
-                            headers={'X-Content-Type-Options': 'nosniff'})
+        return FileResponse(
+            target,
+            media_type='image/png' if thumbnail else item['media_type'],
+            filename=target.name if download else None,
+            headers={'X-Content-Type-Options': 'nosniff'},
+        )
 
     @app.post('/api/jobs/{job_id}/artworks')
     async def import_outputs(job_id: UUID):
@@ -145,7 +204,9 @@ def install(app, host):
             except ValueError as exc:
                 raise HTTPException(409, str(exc))
             imported, existing, errors = [], [], []
-            async with host.http_client(timeout=30, trust_env=False, follow_redirects=False) as client:
+            async with host.http_client(
+                timeout=30, trust_env=False, follow_redirects=False
+            ) as client:
                 for source in sources:
                     artwork_id = gallery.output_id(job, source)
                     try:
@@ -157,7 +218,9 @@ def install(app, host):
                         continue
                     try:
                         params = {k: source[k] for k in ('filename', 'subfolder', 'type')}
-                        async with client.stream('GET', job['engine_url'] + '/view', params=params) as response:
+                        async with client.stream(
+                            'GET', job['engine_url'] + '/view', params=params
+                        ) as response:
                             if response.status_code == 404:
                                 raise ValueError('ComfyUI 輸出檔案已遺失')
                             response.raise_for_status()
@@ -166,14 +229,28 @@ def install(app, host):
                                 if len(raw) + len(chunk) > gallery.MAX_BYTES:
                                     raise ValueError('單張作品不可超過 32 MiB')
                                 raw.extend(chunk)
-                        item, created = await run_in_threadpool(gallery.save, host.DB, host.DATA / 'artworks', job, source, bytes(raw))
+                        item, created = await run_in_threadpool(
+                            gallery.save, host.DB, host.DATA / 'artworks', job, source, bytes(raw)
+                        )
                         (imported if created else existing).append(summary(item))
                     except httpx.HTTPStatusError:
-                        errors.append(dict(source=source, message='ComfyUI 無法提供圖片，請確認原引擎與輸出檔案'))
+                        errors.append(
+                            dict(
+                                source=source,
+                                message='ComfyUI 無法提供圖片，請確認原引擎與輸出檔案',
+                            )
+                        )
                     except httpx.RequestError:
-                        errors.append(dict(source=source, message='原 ComfyUI 引擎離線或下載逾時，請稍後重試匯入'))
+                        errors.append(
+                            dict(
+                                source=source,
+                                message='原 ComfyUI 引擎離線或下載逾時，請稍後重試匯入',
+                            )
+                        )
                     except ValueError as exc:
                         errors.append(dict(source=source, message=str(exc)))
                     except OSError:
-                        errors.append(dict(source=source, message='本機保存失敗，請檢查磁碟空間與寫入權限'))
+                        errors.append(
+                            dict(source=source, message='本機保存失敗，請檢查磁碟空間與寫入權限')
+                        )
             return dict(imported=imported, existing=existing, errors=errors)
