@@ -43,7 +43,7 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 | Canny | ControlNet 庫、結構引導、CPU 預覽、v2 原邊緣保存與離線查看 | [Pony v2 五組 LoRA 實測](docs/validation/pony-canny-v2-20261023.md) 有品質限制；depth／pose／角色 adapter 未接入；[流程](docs/controlnet.md)、[預覽](docs/canny-preview.md) |
 | FLUX.1 [schnell] | 元件庫、固定來源預檢、獨立表單／草稿／交換、提交與還原 | 固定來源存取／安裝及 GPU 生成驗收未完成；[FLUX](docs/models/flux-workflow.md) |
 | 作品與素材 | 原圖／縮圖、搜尋、收藏、筆記、人工評分、封存／還原、素材用途與引用保護 | 封存不釋放檔案，無一般作品永久刪除；[整理](docs/artwork-library.md)、[比較](docs/artwork-comparison.md) |
-| 實驗 | 固定案例、模型／取樣參數有限比較、保存／匯入、任務關聯與原始 JSON 報告 | 各組手動生成，無自動重試或品質評分；[方案](docs/experiment-plans.md)、[結果](docs/experiment-runs.md) |
+| 實驗 | 通用／動漫案例、模型／提示詞／取樣參數有限比較、保存／匯入、任務關聯與原始 JSON 報告 | 各組手動生成，無自動重試或品質評分；[方案](docs/experiment-plans.md)、[結果](docs/experiment-runs.md) |
 | 執行 | 進度、取消／條件化停止、失敗保存、環境快照、原引擎連續資源取樣、E01 裝置回報 | 觀察最高值不等於任務專用峰值；[量測範圍](docs/job-measurements.md)、[裝置回報](docs/execution-device.md) |
 
 尚未提供訓練、多租戶／付費、自訂節點編輯器或官方付費 API。設定還原不保證跨環境逐像素一致；實測的來源條件與品質偏差均保留。
@@ -51,6 +51,8 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 ## 動漫畫風的下一步
 
 以動漫畫風為目標時，建議依 **R05 品質基準 → L01 畫風 LoRA → R02 參考圖 adapter → T01 訓練需求 → T02 資料契約** 推進。先沿用現有生成與比較功能，再依結果決定是否訓練；整體 Vue／FastAPI／SQLite／ComfyUI 架構保留。
+
+R05 已完成兩模型、三題材、兩 seed、提示標籤及新素材 denoise 的 18 件有限比較，保存逐圖失敗觀察與離線核對。可在比較方案選動漫測試集或正／反向提示詞軸；指定作者／使用者角色品質仍待目標圖，見 [R05 基準與限制](docs/validation/anime-baseline-20261023.md)。
 
 第一輪可從三位作者／畫風各十張開始，每組七張候選參考、三張保留評估；只測一種畫風也可先準備一組。確定試訓時，每組可先用 20–50 張訓練圖，另留 5–10 張評估圖。這些是起始配額，不是硬性門檻或品質保證。參考圖 adapter 及訓練仍待實作，素材用途標籤不會啟用畫風條件。
 

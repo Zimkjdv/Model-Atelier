@@ -1,5 +1,14 @@
 # 固定插畫測試集的單案例實機驗收
 
+R05 另提供動漫集 `experiments/anime-illustration-v1.json`，不改寫通用集及其歷史 hash。可在 UI 選擇，或執行下方單組指令；模型選擇同通用集，案例為 `anime-portrait`、`anime-full-body`、`anime-station`，seed 僅接受兩個明確字串值。`common` 使用原案例文字；`quality-tags` 只在正向提示詞加入模型對應品質標籤，反向提示詞與其他參數完全保留，並非完整作者最佳設定，也沒有指定畫師標籤。
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.verify_anime_suite --model animagine-xl-4.0-opt --case anime-portrait --seed 18446744073709551615 --prompt-format quality-tags --platform http://127.0.0.1:8001 --expected-engine http://127.0.0.1:8188 --report runtime/anime-portrait-new.json
+.\.venv\Scripts\python.exe -m scripts.verify_anime_suite --model animagine-xl-4.0-opt --case anime-portrait --seed 18446744073709551615 --prompt-format quality-tags --platform http://127.0.0.1:8001 --expected-engine http://127.0.0.1:8188 --report runtime/anime-portrait-new.json --verify-report
+```
+
+一指令一個 UUID、獨占新報告、完整權重驗檔、原圖與原設定核對、失去回應只查原 UUID 及 `--verify-report` 僅 GET 的規則與通用工具相同。這個入口不自行建立批次；本輪有限矩陣及人工原圖觀察另記驗收文件。指定作者畫風與角色身份結論需要使用者目標圖；依[圖片提醒](anime-style-development.md#image-input-reminders)補資料後另驗，不由標籤或成功出圖推論。
+
 一般插畫測試集 v1 可從創作頁的比較方案選取，也可用 `scripts.verify_illustration_suite` 對已安裝、固定來源的 Pony V6 XL／Animagine XL 4.0 Opt 執行一次單案例 GPU 驗收。
 
 ```powershell

@@ -22,6 +22,7 @@ const title = ref('插畫參數比較'),
   axis = ref('steps'),
   values = ref('[4, 8]'),
   caseIds = ref<string[]>([]),
+  suiteId = ref('general-illustration'),
   targetLora = ref('')
 const suite = ref<Suite | null>(null),
   plan = ref<Plan | null>(null),
@@ -80,8 +81,11 @@ async function loadSuite() {
   suiteAbort?.abort()
   const abort = new AbortController()
   suiteAbort = abort
+  suite.value = null
   try {
-    const response = await fetch('/api/experiments/suite', { signal: abort.signal })
+    const response = await fetch('/api/experiments/suite?suite_id=' + suiteId.value, {
+      signal: abort.signal,
+    })
     if (!response.ok)
       throw new Error('固定測試集暫時無法讀取，請重新開啟頁面；仍可比較目前提示詞。')
     const value: Suite = await response.json()
@@ -90,6 +94,12 @@ async function loadSuite() {
     if (!abort.signal.aborted) error.value = e instanceof Error ? e.message : '讀取失敗。'
   }
 }
+watch(suiteId, () => {
+  caseIds.value = []
+  reset()
+  error.value = ''
+  void loadSuite()
+})
 onMounted(() => {
   void loadSuite()
 })
@@ -131,6 +141,7 @@ async function preview() {
       axis: axis.value,
       values: parsed,
       case_ids: caseIds.value,
+      suite_id: suiteId.value,
       ...(isLoraAxis.value ? { target_lora: targetLora.value } : {}),
     })
     const value: Plan = JSON.parse(await request('preview', body, abort.signal))
@@ -262,8 +273,14 @@ async function exportPlan() {
       ><option value="lora_strength_clip">LoRA CLIP 強度</option>
       <option value="checkpoint">Checkpoint 模型（同架構）</option>
       <option value="sampler_name">取樣器（Sampler）</option>
-      <option value="scheduler">排程器（Scheduler）</option></select
+      <option value="scheduler">排程器（Scheduler）</option>
+      <option value="prompt">正向提示詞／格式</option>
+      <option value="negative_prompt">反向提示詞／格式</option></select
     >
+    <p v-if="['prompt', 'negative_prompt'].includes(axis)" class="footnote">
+      每個值是完整提示詞，逐項比較一般文字、標籤或模型建議格式；不自動加入作者標籤或改寫反向提示詞。
+      正向比較請取消固定案例。此比較保存模型登記快照，仍需人工檢視原圖。
+    </p>
     <p class="footnote" v-if="['checkpoint', 'sampler_name', 'scheduler'].includes(axis)">
       名稱使用字串陣列，例如 ["model-a.safetensors", "model-b.safetensors"]、["euler", "dpmpp_2m"]
       或 ["normal", "karras"]。模型比較需原引擎已登記的相同 SD 1.x／SDXL 架構；保存版本與 hash
@@ -295,6 +312,10 @@ async function exportPlan() {
     >
     <fieldset :disabled="blocked"
       ><legend>固定案例（不選擇時沿用目前提示詞）</legend
+      ><label for="experiment-suite">測試集</label
+      ><select id="experiment-suite" v-model="suiteId"
+        ><option value="general-illustration">通用插畫 v1</option
+        ><option value="anime-illustration">動漫人物與場景 v1</option></select
       ><template v-if="suite"
         ><p class="footnote"
           >{{ suite.name }} · v{{ suite.version }} · 相同角色案例需人工比較，未接入角色鎖定。</p

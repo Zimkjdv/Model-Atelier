@@ -48,6 +48,7 @@
 - [圖生圖](validation/checkpoint-image2image-rtx3060.md)、[修補](validation/checkpoint-inpaint-rtx3060.md)、[羽化](validation/inpaint-feather-rtx3060.md)
 - [Canny](validation/checkpoint-canny-rtx3060.md)、[邊緣](validation/canny-edges-rtx3060.md)、[預覽](validation/canny-preview-rtx3060.md)
 - [風格強度](validation/animagine-style-strength-rtx3060.md)、[多 LoRA 品質](validation/animagine-multi-lora-quality-rtx3060.md)、[四案例](validation/general-illustration-suite-rtx3060.md)
+- [R05 動漫基準](validation/anime-baseline-20261023.md)：18 件模型／seed／提示標籤／新素材 denoise 比較與逐圖失敗觀察；使用者目標畫風仍待圖片
 - [停止](validation/running-stop-rtx3060.md)、[E01](validation/execution-device-20261022.md)、[FLUX 範圍](validation/flux-integration.md)
 - [全部驗收目錄](validation)、[CHANGELOG](../CHANGELOG.MD)、[2026-10-03 檢查](review-2026-10-03.md)
 - [整理前 README 全文](history/readme-before-q01-20261022.md)：舊限制與命令僅供追溯。

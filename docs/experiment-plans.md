@@ -1,5 +1,7 @@
 # 固定測試集與參數比較方案
 
+2026-10-23 R05：新增 `anime-illustration-v1.json` 的半身、全身／服裝、車站人物與場景三案例，可在「測試集」選單與通用插畫 v1 間切換；切換清除舊案例選擇及預覽，保留創作設定。新 `prompt`／`negative_prompt` 軸以完整字串陣列比較文字／標籤格式，只改選定提示詞欄位。正向比較不可同時選固定案例，避免提示詞互相覆蓋；反向可用空字串。兩軸沿用 schema 2 的模型登記快照、保存／匯入與生成核對，不自動套用作者格式或改變其他參數。
+
 2026-10-23 R06：新增 Checkpoint 模型、Sampler 取樣器與 Scheduler 排程器軸，涵蓋 checkpoint 文生圖／單張圖生圖，精確名稱用字串陣列。模型比較需原引擎已同步且登記為相同 SD 1.x／SDXL 架構，不自動改動 LoRA。新軸使用 schema 2 保存模型登記快照，生成交易核對版本／架構／大小／hash；未知保持未知。舊六軸維持 schema 1，總數仍最多 8 組且逐組手動生成。欄位、相容規則與驗收見 [R06 紀錄](validation/extended-comparisons-20261023.md)。
 
 局部編輯／羽化／Canny 專用設定不支援一般比較方案，預覽、文件匯入／匯出及保存均明確拒絕；不以捨棄雙輸入或控制參數的方式降成一般流程。專用格式方案與版本別能力見 [R07 評估](specialized-workflow-formats.md)。
@@ -16,11 +18,11 @@
 
 | API | 行為 |
 | --- | --- |
-| `GET /api/experiments/suite` | 讀取已審查的固定案例、版本與檔案 SHA256；無效測試集回傳 503 |
+| `GET /api/experiments/suite` | 預設通用插畫；可用 `suite_id=anime-illustration` 選動漫集；讀取版本及檔案 bytes SHA256；未知 ID 為 422、無效檔案為 503 |
 | `POST /api/experiments/preview` | 完整驗證設定，回傳最多八份單張方案；不寫入 SQLite、不連線引擎 |
 | `POST /api/experiments/export` | 同一輸入加 `expected_plan_sha256` 核對，可下載 `model-atelier-comparison-plan.json` |
 
-POST 輸入包含 `title`、完整的 `settings`、`axis`、`values`、`case_ids`；LoRA 軸另需 `target_lora`，必須是基準中已啟用的精確名稱，其他軸不可指定。不接受 revision、任務 UUID、自訂 workflow 或未知欄位。請求最多 256 KiB，匯出文件最多 1 MiB。完整 `settings` 沿用 checkpoint 草稿欄位但排除 revision；可由創作設定匯出文件取得。不存在的案例、空模型、空目前提示詞及重複案例拒絕。圖生圖原素材遺失或封存時保留設定並提示，預覽不驗圖片 bytes、不重建圖片；生成仍由既有流程重新檢查來源 hash。測試集損壞時仍可比較目前提示詞，不能借用未驗證案例。
+POST 輸入包含 `title`、完整的 `settings`、`axis`、`values`、`case_ids`；可另指定 `suite_id`（預設 `general-illustration`），LoRA 軸另需 `target_lora`，必須是基準中已啟用的精確名稱，其他軸不可指定。不接受 revision、任務 UUID、自訂 workflow 或未知欄位。請求最多 256 KiB，匯出文件最多 1 MiB。完整 `settings` 沿用 checkpoint 草稿欄位但排除 revision；可由創作設定匯出文件取得。不存在的案例、空模型、空目前提示詞及重複案例拒絕。圖生圖原素材遺失或封存時保留設定並提示，預覽不驗圖片 bytes、不重建圖片；生成仍由既有流程重新檢查來源 hash。測試集損壞時仍可比較目前提示詞，不能借用未驗證案例。
 
 已提供方案持久化、重載及 JSON 匯入預覽，見[保存與匯入說明](experiment-storage.md)。此階段沒有自動批次提交、重試或結果自動關聯，也沒有耗時／VRAM 估算及自動品質評分。匯出的是比較方案，實際提交的完整 workflow 與模型／環境快照仍由原任務系統保存。2026-10-08 已完成 Pony／Animagine 固定四案例的 GPU 比較與原圖觀察，見 [實測結果](validation/general-illustration-suite-rtx3060.md)；已提供指定 LoRA 的強度比較方案；更多模型／seed／參數軸的 GPU 品質及 RTX 4080 仍待後續驗收。
 

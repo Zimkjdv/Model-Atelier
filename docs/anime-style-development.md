@@ -113,7 +113,7 @@ study ID 與資料分割先作研究紀錄；目前沒有這些專用 API 欄位
 
 L01 接續先測一個適用於選定 checkpoint 的畫風 LoRA，固定其餘條件比較少量強度；需要時再比較排列。LCM 類加速方案的 steps／CFG／sampler 與畫風方案分開記錄，不能把少步數成功當成畫風改善。每次擴充先列出預計次數，保持有限且明確操作。
 
-目前固定案例入口僅支援 `general-illustration-v1.json`。正式新增動漫案例集時，另定版本、內容 hash 及選取／執行入口；不覆寫舊四案例或把新資料冒充舊版。只新增一個檔案不會讓目前 UI／CLI 自動載入它。現有能力與限制見 [比較方案](experiment-plans.md)、[結果關聯](experiment-runs.md)、[固定測試集](illustration-suite.md)。
+R05 已新增獨立的 `anime-illustration-v1.json`：版本／bytes hash、UI 測試集選單、API `suite_id` 與單組 `scripts.verify_anime_suite` 入口均獨立保留；不覆寫通用 v1 的舊四案例或歷史 hash。新正向／反向提示詞軸可逐項比較完整文字，未自動導入作者圖片或建立生成批次。現有能力與限制見 [比較方案](experiment-plans.md)、[結果關聯](experiment-runs.md)、[固定測試集](illustration-suite.md)。
 
 ## 不重寫整體架構，新增參考圖流程
 

@@ -1,5 +1,8 @@
 {
   "python": [
+    "scripts/verify_anime_suite.py",
+    "backend/test_anime_acceptance.py",
+    "backend/test_anime_experiments.py",
     "scripts/verify_pony_canny_loras.py",
     "backend/test_pony_canny_acceptance.py",
     "backend/experiment_models.py",
@@ -26,6 +29,7 @@
     "scripts/check_style.py"
   ],
   "web": [
+    "frontend/tests/anime-experiments.spec.ts",
     "frontend/tests/extended-experiments.spec.ts",
     "frontend/src/ExperimentPlanner.vue",
     "frontend/src/experimentSettings.ts",

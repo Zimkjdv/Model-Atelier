@@ -1,0 +1,28 @@
+{
+  "id": "anime-illustration",
+  "version": 1,
+  "name": "動漫人物與場景 v1",
+  "cases": [
+    {
+      "id": "anime-portrait",
+      "name": "成年旅人半身像",
+      "prompt": "anime illustration, one adult traveler, short black hair, round glasses, blue coat, red scarf, waist-up portrait, holding a closed red book, soft daylight, plain pale background",
+      "character_key": "anime-adult-traveler-v1",
+      "checks": ["正向要求：單一成年角色、短黑髮、圓眼鏡、藍外套與紅圍巾", "角色：與全身及場景案例逐項比較；文字相同不代表身份鎖定", "畫風：觀察線條、平塗／漸層與陰影，不依成功出圖判定", "構圖：半身、紅書、背景；另記手部與眼鏡偏差"]
+    },
+    {
+      "id": "anime-full-body",
+      "name": "成年旅人全身與服裝",
+      "prompt": "anime illustration, one adult traveler, short black hair, round glasses, blue coat, red scarf, black trousers, brown boots, full body, holding a closed red book, standing on a pale background, feet visible",
+      "character_key": "anime-adult-traveler-v1",
+      "checks": ["正向要求：服裝顏色、完整鞋子及紅書", "角色：與半身及場景對照髮型、眼鏡、外套；分開記錄未保持的特徵", "畫風：線條與上色是否一致；不以像素差替代觀察", "構圖：全身不裁腳、姿勢及肢體；保存失敗原圖"]
+    },
+    {
+      "id": "anime-station",
+      "name": "成年旅人與車站場景",
+      "prompt": "anime illustration, one adult traveler, short black hair, round glasses, blue coat, red scarf, holding a closed red book, full body on the left of a rural train station platform, green mountains in the background, wide composition, daylight",
+      "character_key": "anime-adult-traveler-v1",
+      "checks": ["正向要求：角色、紅書、車站及山景", "角色：跨場景的髮型、眼鏡、外套；未接入角色 adapter", "畫風：人物與場景線條、陰影及細節協調；作者畫風仍需目標圖", "構圖：左側全身人物、車站與遠山；記錄裁切及空間關係"]
+    }
+  ]
+}

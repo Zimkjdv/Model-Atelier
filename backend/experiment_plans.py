@@ -13,6 +13,8 @@ from backend import workflow_support, experiment_models
 from backend.experiment_context import plan_digest as digest
 
 SUITE = Path(__file__).resolve().parents[1] / 'experiments/general-illustration-v1.json'
+ANIME_SUITE = SUITE.with_name('anime-illustration-v1.json')
+SuiteId = Literal['general-illustration', 'anime-illustration']
 MAX_VARIANTS = 8
 MAX_DOCUMENT_BYTES = 1024 * 1024
 Axis = Literal[
@@ -25,6 +27,8 @@ Axis = Literal[
     'checkpoint',
     'sampler_name',
     'scheduler',
+    'prompt',
+    'negative_prompt',
 ]
 
 
@@ -39,7 +43,7 @@ class Case(BaseModel):
 
 class Suite(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
-    id: Literal['general-illustration']
+    id: SuiteId
     version: Literal[1]
     name: str = Field(min_length=1, max_length=100)
     cases: list[Case] = Field(min_length=1, max_length=4)
@@ -66,6 +70,7 @@ class Input(BaseModel):
     target_lora: str | None = Field(default=None, min_length=1, max_length=2048)
     values: list[Any] = Field(min_length=1, max_length=4)
     case_ids: list[str] = Field(default_factory=list, max_length=4)
+    suite_id: SuiteId = 'general-illustration'
     expected_plan_sha256: str | None = Field(default=None, pattern=r'^[a-f0-9]{64}$')
 
     @model_validator(mode='after')
@@ -120,12 +125,16 @@ class ArchiveInput(BaseModel):
     archived: bool = Field(strict=True)
 
 
-def suite():
+def suite(identifier='general-illustration'):
+    if identifier not in ('general-illustration', 'anime-illustration'):
+        raise HTTPException(422, '未知的固定測試集')
     try:
-        raw = SUITE.read_bytes()
+        raw = (SUITE if identifier == 'general-illustration' else ANIME_SUITE).read_bytes()
         if len(raw) > 64 * 1024:
             raise ValueError('Oversized suite')
         value = Suite.model_validate_json(raw).model_dump(mode='json')
+        if value['id'] != identifier:
+            raise ValueError('Suite identity differs from requested selection')
         return value | dict(sha256=hashlib.sha256(raw).hexdigest())
     except (OSError, ValueError, ValidationError) as exc:
         raise HTTPException(503, '固定測試集無法讀取，不產生未驗證的比較方案。') from exc
@@ -159,6 +168,8 @@ def install(app, host):
 
     def build(value, original, model_snapshots=None):
         base = normalize(value.settings)
+        if value.axis == 'prompt' and value.case_ids:
+            raise HTTPException(422, '正向提示詞比較需使用目前提示詞，不可同時讓固定案例替換文字。')
         if value.axis == 'denoise' and base['workflow_mode'] != 'image2image':
             raise HTTPException(422, 'Denoise 比較僅支援單張 checkpoint 圖生圖；未變更流程模式。')
         cases = (
@@ -190,13 +201,18 @@ def install(app, host):
                 422, 'LoRA 強度比較需選擇基準中已啟用的 LoRA；其他參數軸不可指定 LoRA。'
             )
         field = value.axis.removeprefix('lora_') if is_lora else value.axis
-        if value.axis in experiment_models.NEW_AXES and any(
+        if value.axis in ('checkpoint', 'sampler_name', 'scheduler') and any(
             not isinstance(item, str) or not item.strip() or item != item.strip()
             for item in value.values
         ):
             raise HTTPException(
                 422, '模型、取樣器及排程器比較需精確名稱的字串陣列，不接受空白或數字'
             )
+        if value.axis in ('prompt', 'negative_prompt') and any(
+            not isinstance(item, str) or (value.axis == 'prompt' and not item.strip())
+            for item in value.values
+        ):
+            raise HTTPException(422, '提示詞比較需完整字串；正向提示詞不可空白。')
 
         def vary(item):
             changes = (
@@ -227,7 +243,7 @@ def install(app, host):
             for settings in normalized:
                 index = len(variants) + 1
                 row = settings | dict(
-                    prompt=case['prompt'],
+                    prompt=settings['prompt'] if value.axis == 'prompt' else case['prompt'],
                     title=f'{value.title.strip()} / {case["name"]} / {value.axis}={axis_value(settings)}'[
                         :100
                     ],
@@ -306,7 +322,7 @@ def install(app, host):
         return document
 
     def preview(value):
-        return build(value, suite() if value.case_ids else None)
+        return build(value, suite(value.suite_id) if value.case_ids else None)
 
     def validate_document(raw):
         try:
@@ -327,6 +343,7 @@ def install(app, host):
                 values=value.values,
                 target_lora=value.target_lora,
                 case_ids=selected,
+                suite_id=original['id'] if original else 'general-illustration',
             )
             rebuilt = build(
                 parameters,
@@ -351,7 +368,7 @@ def install(app, host):
         )
         if original:
             try:
-                current = suite()
+                current = suite(original['id'])
                 matching = all(
                     original[k] == current[k] for k in ('id', 'version', 'name', 'sha256')
                 ) and all(case in current['cases'] for case in original['cases'])
@@ -486,8 +503,8 @@ def install(app, host):
             raise HTTPException(409, str(exc)) from exc
 
     @app.get('/api/experiments/suite')
-    def get_suite():
-        return suite()
+    def get_suite(suite_id: SuiteId = 'general-illustration'):
+        return suite(suite_id)
 
     @app.post('/api/experiments/preview')
     async def get_preview(request: Request):

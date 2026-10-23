@@ -5,7 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 from backend import catalog
 
-NEW_AXES = frozenset({'checkpoint', 'sampler_name', 'scheduler'})
+NEW_AXES = frozenset({'checkpoint', 'sampler_name', 'scheduler', 'prompt', 'negative_prompt'})
 IDENTITY = ('name', 'version', 'architecture', 'size_bytes', 'sha256')
 
 
