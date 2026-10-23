@@ -1,5 +1,11 @@
 # Model Atelier — Changelog
 
+## 2026-10-23 · M01 固定權重的授權來源查核
+
+補齊 Pony manifest 的固定模型卡、39 bytes／SHA256、發布檔案清單、標準完整條文與參考 hash、現有 workflow 依賴及未提供的上游元件版本。查出相同權重 SHA256 的 Civitai 發布頁列出修改版 Fair AI Public License 1.0-SD 與變現推論限制，與固定 Hugging Face 的 OpenRAIL-M 標記不同；`terms_verified=false`，不替發布者解決適用條款，也不改舊 provenance／作品快照。
+
+69 項既有安裝、模型登記／預設與生成驗收回歸通過（1 項既有權限跳過）；未下載／重寫權重或生成。查核結果、完整官方參考與限制見 [M01 文件](docs/models/pony-v6-xl-license.md)。來源差異及依賴授權鏈未核實，M01 與 M01-01 保持未完成，未完成數維持 30 主項／49 子項。
+
 ## 2026-10-23 · E05 連續資源取樣與峰值歸屬評估
 
 新任務開始提交後，由平台背景查詢凍結的原引擎 `/system_stats`，每輪至少 2 秒、最多 16 項／每項 1 小時或 1800 次，保留最近 120 個時間點及全期觀察最高值。journal 不改 job revision，終態交易凍結、延遲回應丟棄，作品與離線閱讀沿用；舊資料不回填。裝置 total−free 含引擎可回收快取語意，與 nvidia-smi 整卡用量不同，任務專用峰值固定未知。

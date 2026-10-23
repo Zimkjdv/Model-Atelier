@@ -8,7 +8,7 @@
     "repository": "AstraliteHeart/pony-diffusion-v6",
     "revision": "5ec9c05863255568f1b59753e3838107befaa712",
     "filename": "v6.safetensors",
-    "page_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6",
+    "page_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
     "download_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/resolve/5ec9c05863255568f1b59753e3838107befaa712/v6.safetensors"
   },
   "filename": "pony-v6-xl.safetensors",
@@ -16,8 +16,62 @@
   "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
   "license": {
     "identifier": "creativeml-openrail-m",
-    "source": "upstream repository card metadata",
+    "name": "CreativeML Open RAIL-M (upstream card label; full author terms unverified)",
+    "url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+    "source": "pinned Hugging Face card metadata; same-hash Civitai publication declares different terms",
     "terms_verified": false,
-    "note": "上游登記的授權標記；尚未核對完整授權條款，不代表使用權或法律保證。"
+    "note": "2026-10-23 查核：固定 Hugging Face 修訂只附標記；相同 SHA256 的 Civitai V6 XL 發布頁列出修改版 Fair AI Public License 1.0-SD 及網站／app 變現推論限制。兩來源條款及依賴授權的適用關係未核實，不以標準全文已閱讀或 GPU 成功代替授權確認。",
+    "review": {
+      "checked_at": "2026-10-23",
+      "status": "conflicting_upstream_sources",
+      "card_size_bytes": 39,
+      "card_sha256": "5e19452d23c8d763b95aee6643804d5787b0852a993bcc6886afdcaec1227241",
+      "files_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/tree/5ec9c05863255568f1b59753e3838107befaa712",
+      "pinned_repository_full_terms_provided": false,
+      "dependency_revisions_provided": false,
+      "same_hash_publication": {
+        "provider": "Civitai",
+        "model_id": 257749,
+        "model_version_id": 290640,
+        "file_id": 228616,
+        "url": "https://civitai.com/models/257749?modelVersionId=290640",
+        "metadata_url": "https://civitai.com/api/v1/model-versions/290640",
+        "terms_url": "https://civitai.com/api/v1/models/257749",
+        "declared_terms": "Fair AI Public License 1.0-SD with additional monetized inference restrictions",
+        "terms_fragment_sha256": "0f7a84a57c91437e080b25daea4840767c26c2bc5e834d338154bc3802396e10",
+        "terms_are_mutable": true
+      },
+      "reference_texts_reviewed": [
+        {
+          "name": "CreativeML Open RAIL-M",
+          "full_text_read": true,
+          "url": "https://huggingface.co/spaces/CompVis/stable-diffusion-license/blob/14d42d09bffd871b1666a084fc954a50cff72ac0/license.txt",
+          "sha256": "be351ebe7ac01bcdbb018639aadcfd38f136b7dc3f2a3d4d3a24db51d1b210ef"
+        },
+        {
+          "name": "Fair AI Public License 1.0-SD",
+          "full_text_read": true,
+          "url": "https://freedevproject.org/faipl-1.0-sd/",
+          "sha256": "430e926fd41937bb6ec02716534ceadc0386f54efec48e77b2ee4e1aaa0f53c0",
+          "mutable_source": true
+        },
+        {
+          "name": "SDXL CreativeML Open RAIL++-M",
+          "full_text_read": true,
+          "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+          "sha256": "19b6998b569b53ac1fc2158a8a3202c8699a9a4605b47075715d9c96be7fb6d0"
+        }
+      ],
+      "report": "docs/models/pony-v6-xl-license.md"
+    }
+  },
+  "dependencies": {
+    "workflow": "checkpoint-text2image-v1",
+    "loader": "CheckpointLoaderSimple",
+    "required_outputs": ["MODEL", "CLIP", "VAE"],
+    "extra_custom_nodes": [],
+    "runtime": "ComfyUI in its separate venv with that engine revision's requirements and installed PyTorch; platform dependencies are in requirements.lock.txt. See the saved execution environment and GPU validation.",
+    "embedded_component_source_revisions": null,
+    "verification": "Existing pinned RTX 3060 text-to-image acceptance loads embedded MODEL/CLIP/VAE. The pinned upstream card does not declare base-model or encoder source revisions; runtime success does not verify their license chain."
   }
 }

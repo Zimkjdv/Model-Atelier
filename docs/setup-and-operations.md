@@ -34,7 +34,7 @@ ComfyUI 依賴未完整 lock，重建可能解析到不同套件，需重新核�
 .\.venv\Scripts\python.exe -m scripts.install_model animagine-xl-4.0-opt
 ```
 
-`--check` 不連網、不寫入，不等於已安裝或 GPU 驗收；正式安裝驗證大小／SHA256。Pony 完整條款仍待 M01，FLUX 預檢不表示取得權重。來源與操作見 [模型文件](index.md#模型與執行環境)。
+`--check` 不連網、不寫入，不等於已安裝或 GPU 驗收；正式安裝驗證大小／SHA256。Pony 固定 Hugging Face 修訂僅附授權標記，相同 SHA256 的 Civitai 發布頁卻列出不同條款及變現推論限制，`terms_verified` 維持 false，見 [M01 查核與限制](models/pony-v6-xl-license.md)。FLUX 預檢不表示取得權重。來源與操作見 [模型文件](index.md#模型與執行環境)。
 
 ## 第一次使用與恢復
 

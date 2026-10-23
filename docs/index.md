@@ -34,6 +34,7 @@
 - [LoRA 庫](models/lora-library.md)、[多 LoRA](models/multi-lora-workflow.md)、[有序證據](models/ordered-lora-evidence.md)
 - [FLUX 來源／限制](models/flux1-schnell.md)、[元件庫](models/flux-components.md)、[專用流程](models/flux-workflow.md)
 - [Pony manifest](../models/pony-v6-xl.json)、[Animagine manifest](../models/animagine-xl-4.0-opt.json)
+- [Pony 固定修訂授權／依賴查核](models/pony-v6-xl-license.md)：標準條文、作者附文及未核實的授權鏈分開記錄
 
 ## 實機與歷史證據
 

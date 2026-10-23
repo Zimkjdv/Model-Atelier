@@ -32,6 +32,8 @@ Set-Location ..
 
 首次硬體與模型配置需自行驗證。RTX 3060 的 Pony／Animagine 固定案例見 [驗收索引](docs/index.md#實機與歷史證據)；RTX 4080、FLUX GPU 生成與訓練仍有待辦。
 
+Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完整授權適用關係仍未核實；來源、完整參考條文及依賴缺口見 [M01 查核](docs/models/pony-v6-xl-license.md)。
+
 ## 功能與限制
 
 | 範圍 | 已提供 | 限制與說明 |

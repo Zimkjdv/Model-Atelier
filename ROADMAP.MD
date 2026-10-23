@@ -252,6 +252,7 @@
 
 - [ ] **M01 · Pony V6 XL 完整授權條款核對**
   - [ ] 驗收 M01-01：核對固定來源修訂的完整條款與依賴，補上可追溯連結；只有模型卡標記時仍註明尚未核對全文。
+  - 2026-10-23：已閱讀 Open RAIL-M、Fair AI Public License 1.0-SD、SDXL Open RAIL++-M 全文並查核依賴來源；固定 HF 修訂僅 39 bytes 標記，相同 SHA256 的 Civitai 發布頁另列修改版 Fair AI 與變現推論限制。manifest 保存來源／條文雜湊及差異，`terms_verified` 維持 false；條款適用關係、作者附文與內嵌元件版本仍待可追溯釐清，主項／子項不勾選。見 [M01 查核](docs/models/pony-v6-xl-license.md)。
 
 <a id="l01"></a>
 
