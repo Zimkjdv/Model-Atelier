@@ -1,4 +1,5 @@
 """Exercise path confinement tests under the aliases used by Windows CI."""
+
 import ctypes
 import os
 from pathlib import Path
@@ -22,9 +23,14 @@ class WindowsTempAliasTests(unittest.TestCase):
                 'backend.test_generation_acceptance.GenerationAcceptanceTests.test_report_path_is_confined_to_runtime_and_urls_are_loopback',
                 'backend.test_generation_acceptance.GenerationAcceptanceTests.test_resolve_race_extended_prefix_still_confines_same_physical_runtime',
                 'backend.test_model_paths.ModelPathTests.test_export_rejects_symlink_targets_and_resolved_runtime_escape',
+                'backend.test_reference_acceptance.ReferenceInstallTests.test_fixed_weight_categories_readonly_plan_and_source_pin',
+                'backend.test_training_bundle.BundleTests.test_export_only_train_and_verify_caption_toml',
             ]
-            result = subprocess.run([sys.executable, '-m', 'unittest', *names],
-                                    cwd=Path(__file__).resolve().parents[1],
-                                    env=dict(os.environ, TEMP=buffer.value, TMP=buffer.value),
-                                    capture_output=True, timeout=60)
+            result = subprocess.run(
+                [sys.executable, '-m', 'unittest', *names],
+                cwd=Path(__file__).resolve().parents[1],
+                env=dict(os.environ, TEMP=buffer.value, TMP=buffer.value),
+                capture_output=True,
+                timeout=60,
+            )
             self.assertEqual(result.returncode, 0, result.stderr.decode(errors='replace'))

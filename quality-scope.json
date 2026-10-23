@@ -60,7 +60,8 @@
     "backend/fooocus_workflows.py",
     "backend/test_fooocus_workflows.py",
     "scripts/fooocus_fixture.py",
-    "scripts/verify_fooocus_generation.py"
+    "scripts/verify_fooocus_generation.py",
+    "backend/test_windows_temp_alias.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",

@@ -232,7 +232,8 @@ class ReferenceInstallTests(unittest.TestCase):
                 value = install_model.manifest(identifier)
                 plan = install_model.plan(value, workspace=workspace)
                 self.assertEqual(
-                    Path(plan['target']).parent, workspace / 'runtime/ComfyUI/models' / category
+                    Path(plan['target']).parent,
+                    (workspace / 'runtime/ComfyUI/models' / category).resolve(),
                 )
                 self.assertEqual(list(workspace.iterdir()), [])
                 with self.assertRaises(check.downloader.InstallationError):

@@ -31,7 +31,8 @@ class BundleTests(DatasetFixture):
         config = tomllib.loads((target / 'dataset.toml').read_text(encoding='utf-8'))
         self.assertEqual(config['datasets'][0]['validation_split'], 0.0)
         self.assertEqual(
-            config['datasets'][0]['subsets'][0]['image_dir'], (target / 'train').as_posix()
+            config['datasets'][0]['subsets'][0]['image_dir'],
+            (target / 'train').resolve().as_posix(),
         )
         self.assertEqual(
             data.read_json(target / 'bundle.json')[0]['trainer_revision'], bundle.TRAINER

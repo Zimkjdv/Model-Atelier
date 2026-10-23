@@ -1,5 +1,9 @@
 # Model Atelier — Changelog
 
+## 2026-10-23 · GitHub Actions 暫存路徑別名回歸
+
+修正 R02／T02 新增測試以未解析的 Windows TEMP 路徑比較既有長路徑輸出的問題；近期 CI 兩個失敗已在本機真實 8.3 別名環境重現。兩個預期值使用完整實體路徑，並加入既有短路徑子程序回歸；產品目錄與越界防護不變。15 項相關測試與格式／靜態檢查通過，詳見 [失敗來源與重跑方式](docs/validation/ci-path-alias-20261023.md)。
+
 ## 2026-10-23 · R03 Fooocus 專用修補與有限品質比較
 
 R01 已先以 `855714d` commit／push，再接入獨立 Fooocus SDXL v3 模板與修補模型選項。固定 head／v2.6 patch、Acly 節點及 Animagine 4.0 Opt，限制 denoise 1、無 LoRA；保存專用模型來源與三份輸入、精確 seed、原 UUID 恢復及完整設定還原。一般 v1／v2 保留，專用參數不進一般草稿／交換／比較格式。
