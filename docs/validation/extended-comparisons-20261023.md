@@ -25,3 +25,5 @@
 重跑：`python -m unittest backend.test_extended_experiments`、`npm --prefix frontend run build`，再於 frontend 執行 `npx playwright test tests/extended-experiments.spec.ts`；完整入口 `python scripts/check_quality.py`。本輪格式／靜態、594 項後端（1 項既有 Windows 權限跳過）、Vue 建置／四組契約通過。初次瀏覽器驗收發現 fixture 缺少 VAEEncode 介面，補齊後以獨立埠／輸出目錄重跑全套，89 項通過（5 分鐘）；並行驗收共用輸出曾導致兩項檔案消失錯誤，不是產品失敗，最終重跑未共用輸出。忽略的本機證據為 `runtime/r06-quality.log`、`runtime/r06-browser.log`、`runtime/r06-browser-all.log`，最終下載 JSON、載入與結果 PNG 在 `runtime/r06-browser-results/extended-experiments-*`。
 
 本次合成圖僅驗證資料與操作邊界，不提供 GPU 品質結論；沒有新增權重或變更正式 DATA。
+
+遠端 CI 補驗：`c152c1a` 的 594 項後端通過，89 項瀏覽器中一項逾時。下載 run 39916161751 的 trace（ZIP SHA256 `24a33a16f0567f07c2aeb5d13e4222fa78bb6debc0043278173554ea3f4ffab3`）後，確認停在匯入驗證按鈕仍停用：測試未等重載完成便以 setInputFiles 設定停用的檔案輸入，change handler 正確拒絕處理。補上可用狀態與讀檔完成的等待，另以受控回覆閘門重現重載期間停用；兩種寬度通過（8.1 秒）。沒有放寬單案 45 秒、全套八分鐘或加入重試。本機診斷與回歸為 `runtime/r06-ci-trace.zip`、`runtime/r06-ci-fix.log`。

@@ -68,9 +68,25 @@ for (const width of [1440, 390]) {
         await download.saveAs(path)
         const exported = JSON.parse(await readFile(path, 'utf8'))
         expect(exported.model_snapshots).toEqual(record.plan.model_snapshots)
+        let releaseReload!: () => void
+        const reloadGate = new Promise<void>((resolve) => {
+          releaseReload = resolve
+        })
+        const savedUrl = '**/api/experiments/plans/' + record.id
+        await page.route(savedUrl, async (route) => {
+          await reloadGate
+          await route.continue()
+        })
         await area.getByRole('button', { name: '重載比較方案 ' + title, exact: true }).click()
+        await expect(page.locator('#experiment-import-file')).toBeDisabled()
+        releaseReload()
         await expect(page.locator('#draft-title')).toHaveValue(title)
+        await expect(page.locator('#experiment-import-file')).toBeEnabled()
+        await page.unroute(savedUrl)
         await page.locator('#experiment-import-file').setInputFiles(path)
+        await expect(page.getByLabel('或貼上比較方案 JSON', { exact: true })).toHaveValue(
+          await readFile(path, 'utf8'),
+        )
         await area.getByRole('button', { name: '驗證並預覽比較文件', exact: true }).click()
         await area.getByRole('button', { name: '使用此方案預覽', exact: true }).click()
         await expect(page.locator('#draft-title')).toHaveValue(title)
