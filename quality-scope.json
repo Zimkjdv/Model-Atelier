@@ -11,6 +11,8 @@
     "scripts/check_style.py"
   ],
   "web": [
+    "frontend/src/CreationStudio.vue",
+    "frontend/src/theme.css",
     "frontend/tests/settings-transfer.spec.ts",
     "frontend/src/SettingsTransfer.vue",
     "frontend/tests/comparison-validation.spec.ts",
@@ -31,5 +33,5 @@
     "quality-scope.json",
     ".prettierrc.json"
   ],
-  "css": ["frontend/src/style.css"]
+  "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }
