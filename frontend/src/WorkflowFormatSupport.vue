@@ -3,7 +3,7 @@ import { onActivated, onBeforeUnmount, onDeactivated, onMounted, ref } from 'vue
 import { apiJson } from './apiClient'
 import { createRequestScope } from './requestScope'
 
-const props = defineProps<{ family: 'inpaint' | 'control' }>()
+const props = defineProps<{ family: 'inpaint' | 'control' | 'reference' }>()
 type Support = {
   note: string
   workflows: {

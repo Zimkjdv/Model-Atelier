@@ -8,6 +8,8 @@ import CreationStudio from './CreationStudio.vue'
 import FluxStudio from './FluxStudio.vue'
 import InpaintStudio from './InpaintStudio.vue'
 import ControlStudio from './ControlStudio.vue'
+import ReferenceStudio from './ReferenceStudio.vue'
+import { referenceWorkflowId } from './adapterSettings'
 import { isControlWorkflow } from './controlSettings'
 import { isInpaintWorkflow } from './inpaintSettings'
 import { fluxWorkflowId } from './fluxSettings'
@@ -52,19 +54,23 @@ const restoreRequest = ref<{ artworkId: string; token: number } | null>(null)
 const fluxRestoreRequest = ref<{ artworkId: string; token: number } | null>(null)
 const inpaintRestoreRequest = ref<{ artworkId: string; token: number } | null>(null)
 const controlRestoreRequest = ref<{ artworkId: string; token: number } | null>(null)
+const referenceRestoreRequest = ref<{ artworkId: string; token: number } | null>(null)
 let restoreToken = 0
 function restoreArtwork(artworkId: string, workflowId?: string | null) {
   const mode =
-    workflowId === fluxWorkflowId
-      ? 'flux'
-      : isControlWorkflow(workflowId)
-        ? 'control'
-        : isInpaintWorkflow(workflowId)
-          ? 'inpaint'
-          : 'checkpoint'
+    workflowId === referenceWorkflowId
+      ? 'reference'
+      : workflowId === fluxWorkflowId
+        ? 'flux'
+        : isControlWorkflow(workflowId)
+          ? 'control'
+          : isInpaintWorkflow(workflowId)
+            ? 'inpaint'
+            : 'checkpoint'
   if (!navigate('創作工作台', mode)) return
   const value = { artworkId, token: ++restoreToken }
   if (mode === 'flux') fluxRestoreRequest.value = value
+  else if (mode === 'reference') referenceRestoreRequest.value = value
   else if (mode === 'control') controlRestoreRequest.value = value
   else if (mode === 'inpaint') inpaintRestoreRequest.value = value
   else restoreRequest.value = value
@@ -257,13 +263,13 @@ onUnmounted(() => {
             >
           </ol>
           <p class="footnote"
-            >四流程已有程式接入；FLUX 實機 GPU
+            >五種流程已有程式接入；FLUX 實機 GPU
             尚未驗證，其他流程的證據限文件所列硬體／模型。執行裝置、版本或檔案 hash
             無法取得時為未知；表單可提交不保證生成成功。</p
           >
         </details>
         <!-- prettier-ignore -->
-        <div v-if="page === '創作工作台'" class="workflow-switch" role="group" aria-label="創作工作流程"><button class="secondary" :aria-pressed="studioMode === 'checkpoint'" @click="navigate('創作工作台', 'checkpoint')">Checkpoint／SDXL</button> <button class="secondary" :aria-pressed="studioMode === 'flux'" @click="navigate('創作工作台', 'flux')">FLUX.1 [schnell]</button> <button class="secondary" :aria-pressed="studioMode === 'inpaint'" @click="navigate('創作工作台', 'inpaint')">局部編輯</button> <button class="secondary" :aria-pressed="studioMode === 'control'" @click="navigate('創作工作台', 'control')">Canny 結構參考</button><p class="footnote">切換保留各自表單與待確認請求；Checkpoint／FLUX 可保存草稿，局部編輯請先保存遮罩，結構參考需已保存素材；提交後可載入完整原設定。</p></div>
+        <div v-if="page === '創作工作台'" class="workflow-switch" role="group" aria-label="創作工作流程"><button class="secondary" :aria-pressed="studioMode === 'checkpoint'" @click="navigate('創作工作台', 'checkpoint')">Checkpoint／SDXL</button> <button class="secondary" :aria-pressed="studioMode === 'flux'" @click="navigate('創作工作台', 'flux')">FLUX.1 [schnell]</button> <button class="secondary" :aria-pressed="studioMode === 'inpaint'" @click="navigate('創作工作台', 'inpaint')">局部編輯</button> <button class="secondary" :aria-pressed="studioMode === 'control'" @click="navigate('創作工作台', 'control')">Canny 結構參考</button> <button class="secondary" :aria-pressed="studioMode === 'reference'" @click="navigate('創作工作台', 'reference')">畫風／角色參考</button><p class="footnote">切換保留各自表單與待確認請求；Checkpoint／FLUX 可保存草稿，局部編輯請先保存遮罩，結構與畫風／角色參考需已保存素材；提交後可載入完整原設定。</p></div>
         <KeepAlive
           ><CreationStudio
             v-if="page === '創作工作台' && studioMode === 'checkpoint'"
@@ -282,6 +288,11 @@ onUnmounted(() => {
             @gallery="navigate('作品庫', studioMode, $event)" /><ControlStudio
             v-else-if="page === '創作工作台' && studioMode === 'control'"
             :restore-request="controlRestoreRequest"
+            @models="navigate('模型庫')"
+            @assets="navigate('參考素材')"
+            @gallery="navigate('作品庫', studioMode, $event)" /><ReferenceStudio
+            v-else-if="page === '創作工作台' && studioMode === 'reference'"
+            :restore-request="referenceRestoreRequest"
             @models="navigate('模型庫')"
             @assets="navigate('參考素材')"
             @gallery="navigate('作品庫', studioMode, $event)"

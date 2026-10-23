@@ -40,7 +40,8 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 | --- | --- | --- |
 | Checkpoint | 文生圖、單張圖生圖、精確字串 seed、草稿、設定交換、最多四個有序 LoRA | batch 固定 1；[參考流程](docs/models/reference-workflows.md)、[LoRA](docs/models/multi-lora-workflow.md) |
 | 局部編輯 | 遮罩筆刷／擦除／反相／PNG、v1 修補與 v2 內側羽化、原設定還原 | 一般草稿／交換／比較尚未支援；[格式評估](docs/specialized-workflow-formats.md)、[修補](docs/inpainting.md)、[羽化](docs/inpaint-feather.md) |
-| Canny | ControlNet 庫、結構引導、CPU 預覽、v2 原邊緣保存與離線查看 | [Pony v2 五組 LoRA 實測](docs/validation/pony-canny-v2-20261023.md) 有品質限制；depth／pose／角色 adapter 未接入；[流程](docs/controlnet.md)、[預覽](docs/canny-preview.md) |
+| Canny | ControlNet 庫、結構引導、CPU 預覽、v2 原邊緣保存與離線查看 | [Pony v2 五組 LoRA 實測](docs/validation/pony-canny-v2-20261023.md) 有品質限制；depth／pose 未接入；[流程](docs/controlnet.md)、[預覽](docs/canny-preview.md) |
+| 畫風／角色參考 | SDXL Plus ViT-H 單張推論、兩種模式、元件登記、原設定與來源快照 | 沒有訓練；可能帶入服裝／髮色／背景，無身份鎖定；[操作](docs/models/ipadapter-reference.md)、[12 組實測](docs/validation/reference-adapter-20261023.md) |
 | FLUX.1 [schnell] | 元件庫、固定來源預檢、獨立表單／草稿／交換、提交與還原 | 固定來源存取／安裝及 GPU 生成驗收未完成；[FLUX](docs/models/flux-workflow.md) |
 | 作品與素材 | 原圖／縮圖、搜尋、收藏、筆記、人工評分、封存／還原、素材用途與引用保護 | 封存不釋放檔案，無一般作品永久刪除；[整理](docs/artwork-library.md)、[比較](docs/artwork-comparison.md) |
 | 實驗 | 通用／動漫案例、模型／提示詞／取樣參數有限比較、保存／匯入、任務關聯與原始 JSON 報告 | 各組手動生成，無自動重試或品質評分；[方案](docs/experiment-plans.md)、[結果](docs/experiment-runs.md) |
@@ -50,13 +51,15 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 
 ## 動漫畫風的下一步
 
-以動漫畫風為目標時，建議依 **R05 品質基準 → L01 畫風 LoRA → R02 參考圖 adapter → T01 訓練需求 → T02 資料契約** 推進。先沿用現有生成與比較功能，再依結果決定是否訓練；整體 Vue／FastAPI／SQLite／ComfyUI 架構保留。
+以動漫畫風為目標時，建議依 **R05 品質基準 → L01 畫風 LoRA → R02 參考圖 adapter；使用者指定後續為 T01 → T02 → R01 → R03** 推進。先沿用現有生成與比較功能，再依結果決定是否訓練；整體 Vue／FastAPI／SQLite／ComfyUI 架構保留。
 
-R05 已完成兩模型、三題材、兩 seed、提示標籤及新素材 denoise 的 18 件有限比較，保存逐圖失敗觀察與離線核對。可在比較方案選動漫測試集或正／反向提示詞軸；指定作者／使用者角色品質仍待目標圖，見 [R05 基準與限制](docs/validation/anime-baseline-20261023.md)。
+R05 已完成兩模型、三題材、兩 seed、提示標籤及新素材 denoise 的 18 件有限比較，保存逐圖失敗觀察與離線核對。可在比較方案選動漫測試集或正／反向提示詞軸；R05 當時未使用作者圖，指定目標的後續比較另見 R02；見 [R05 基準與限制](docs/validation/anime-baseline-20261023.md)。
 
 L01 另完成像素畫 LoRA 的固定來源／獨立相容副本及 14 組順序、強度、seed、題材比較，保留原格式未套用與 LCM 模糊等失敗；新增六筆歷史條件不代表當前品質通過。見[安裝與使用](docs/models/pixel-art-lora-sdxl.md)、[L01 驗收](docs/validation/style-matrix-20261023.md)。
 
-第一輪可從三位作者／畫風各十張開始，每組七張候選參考、三張保留評估；只測一種畫風也可先準備一組。確定試訓時，每組可先用 20–50 張訓練圖，另留 5–10 張評估圖。這些是起始配額，不是硬性門檻或品質保證。參考圖 adapter 及訓練仍待實作，素材用途標籤不會啟用畫風條件。
+第一輪可從三位作者／畫風各十張開始，每組七張候選參考、三張保留評估；只測一種畫風也可先準備一組。確定試訓時，每組可先用 20–50 張訓練圖，另留 5–10 張評估圖。這些是起始配額，不是硬性門檻或品質保證。R02 已接入單張參考圖 adapter；訓練仍未實作，素材用途標籤不會啟用畫風條件。
+
+2026-10-23 已收到 `artist_ref/ハシスタジオ_pixiv` 的 22 個檔案，去重後為 20 個不同檔案內容，並已確認棕髮綠眼、綠色髮飾的角色目標。**本輪 R02 沒有訓練模型：每次只用一張參考圖，實際選用 1 張畫風圖及 1 張角色圖分別測試，另留 6 張評估，不把 20 張全送入生成或訓練。** 檔名、差分分組、用途與之後 T01／T02 的補圖時點見 [R02 圖片用途紀錄](docs/validation/reference-inputs-20261023.md)。
 
 完整的圖片選擇、資料分割／版本、有限任務數、模組擴充及驗收方式見 [動漫畫風驗證與開發計畫](docs/anime-style-development.md)。
 
@@ -124,11 +127,12 @@ model-atelier/
 | 保護與還原資料 | [完整備份工具](docs/data-backup.md)：停機盤點、hash 驗證、新目錄還原與明確切換 |
 | 排查故障 | [診斷與匯出](docs/diagnostics.md)：請求／任務 ID、平台／資料／引擎狀態與安全預覽 |
 | 尋找功能說明 | [文件索引](docs/index.md)：按創作、作品、實驗與模型流程查閱完整文件 |
+| 畫風／角色參考 | [R02 操作與契約](docs/models/ipadapter-reference.md)：單張推論、元件登記、精確還原；[圖片用途](docs/validation/reference-inputs-20261023.md)明確區分參考與訓練 |
 | 專用流程保存與交換 | [R07 格式評估](docs/specialized-workflow-formats.md)：局部編輯／Canny 的版本別能力、明確拒絕及完整原流程下載 |
 | 理解或修改程式 | [架構與資料流](docs/architecture.md)、[應用程式工廠](docs/application-factory.md)、[前端 API](docs/frontend-api.md)：模組責任、配置隔離、通訊與任務生命週期 |
 | 驗證變更與清單效能 | [品質檢查與 CI](docs/quality-checks.md)、[分頁與量測](docs/list-pagination.md)：重跑命令、相容策略與驗收證據 |
 | 調整 UI | [UI 規範](docs/ui-guidelines.md)、[導覽與能力狀態](docs/navigation.md)、[逐頁視覺與無障礙驗收](docs/validation/ui-accessibility-20261023.md)：介面原則、可還原網址與桌面／窄視窗證據 |
 | 安排後續工作 | [ROADMAP](ROADMAP.MD)：尚未完成的項目與完成條件；[CHANGELOG](CHANGELOG.MD)：已完成變更 |
-| 開始動漫畫風驗證 | [開發計畫與圖片準備](docs/anime-style-development.md)：前五項順序、參考／評估／訓練資料、adapter 流程及人工驗收 |
+| 開始動漫畫風驗證 | [開發計畫與圖片準備](docs/anime-style-development.md)：本輪成果與後續順序、參考／評估／訓練資料、adapter 流程及人工驗收 |
 | 查核驗收證據 | [驗收目錄](docs/validation)：依硬體、模型、參數與日期記錄結果，不能視為所有環境的保證 |
 | 追溯舊文件 | [整理前 README 全文](docs/history/readme-before-q01-20261022.md)：舊限制、命令與歷史測試數，現行操作請以目前文件為準 |

@@ -12,6 +12,7 @@ const routes = [
   ['studio/flux', '創作工作台'],
   ['studio/inpaint', '創作工作台'],
   ['studio/control', '創作工作台'],
+  ['studio/reference', '創作工作台'],
 ] as const
 
 async function keyboardFocus(control: Locator) {

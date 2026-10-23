@@ -22,6 +22,18 @@ import httpx
 WORKSPACE = Path(__file__).resolve().parents[1]
 MANIFEST = WORKSPACE / 'models' / 'pony-v6-xl.json'
 SOURCES = {
+    'ip-adapter-plus-sdxl-vit-h': (
+        'h94/IP-Adapter',
+        'sdxl_models/ip-adapter-plus_sdxl_vit-h.safetensors',
+        'ip-adapter-plus_sdxl_vit-h.safetensors',
+        '018e402774aeeddd60609b4ecdb7e298259dc729',
+    ),
+    'clip-vision-vit-h': (
+        'h94/IP-Adapter',
+        'models/image_encoder/model.safetensors',
+        'CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors',
+        '018e402774aeeddd60609b4ecdb7e298259dc729',
+    ),
     'controlnet-canny-sdxl-1.0-fp16': (
         'diffusers/controlnet-canny-sdxl-1.0',
         'diffusion_pytorch_model.fp16.safetensors',
@@ -116,7 +128,11 @@ def validate_manifest(value: dict) -> dict:
 def _paths(workspace: Path, filename: str, *, create=True) -> tuple[Path, Path, Path, Path]:
     root = workspace.resolve()
     category = (
-        'controlnet'
+        'ipadapter'
+        if filename == SOURCES['ip-adapter-plus-sdxl-vit-h'][2]
+        else 'clip_vision'
+        if filename == SOURCES['clip-vision-vit-h'][2]
+        else 'controlnet'
         if filename in {SOURCES[key][2] for key in CONTROL_IDS}
         else 'loras'
         if filename in {SOURCES[key][2] for key in LORA_IDS} | LOCAL_LORA_FILENAMES

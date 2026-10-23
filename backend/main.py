@@ -125,6 +125,10 @@ def create_app(
 
     control_catalog.install(app, context)
     control_api.install(app, context, checkpoint_submissions)
+    from backend import adapter_api, adapter_catalog
+
+    adapter_catalog.install(app, context)
+    adapter_api.install(app, context, checkpoint_submissions)
     from backend import canny_preview
 
     canny_preview.install(app, context)

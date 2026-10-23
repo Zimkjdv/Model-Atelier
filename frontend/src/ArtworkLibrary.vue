@@ -30,6 +30,8 @@ import {
 } from './artworkComparison'
 import type { RuntimeMetadata } from './runtimeMetadata'
 import { isInpaintWorkflow } from './inpaintSettings'
+import { referenceWorkflowId } from './adapterSettings'
+import ReferenceComponentsSnapshot from './ReferenceComponentsSnapshot.vue'
 import { imageWorkflowId, type ReferenceSnapshot as ReferenceMetadata } from './referenceSettings'
 import { fluxWorkflowId, type ComponentSnapshot as ComponentMetadata } from './fluxSettings'
 const props = defineProps<{ jobId?: string }>()
@@ -549,6 +551,7 @@ onBeforeUnmount(() => {
         }}{{ item.notes_truncated || item.notes.length > 160 ? '…' : '' }}</p
       >
       <p v-if="isControlWorkflow(item.workflow_id)">Canny 結構參考 · 輪廓條件</p>
+      <p v-if="item.workflow_id === referenceWorkflowId">畫風／角色外觀參考 · 非身份鎖定</p>
       <p v-if="isInpaintWorkflow(item.workflow_id)">局部編輯 · 原圖與遮罩</p>
       <p v-if="item.workflow_id === imageWorkflowId"
         >圖生圖 · 參考素材 {{ item.reference_metadata?.length ?? 0 }} 張</p
@@ -794,6 +797,9 @@ onBeforeUnmount(() => {
           >
           <ControlSnapshot
             v-if="isControlWorkflow(selected.workflow_id)"
+            :items="selected.component_metadata"
+          /><ReferenceComponentsSnapshot
+            v-else-if="selected.workflow_id === referenceWorkflowId"
             :items="selected.component_metadata"
           /><ComponentSnapshot v-else :items="selected.component_metadata" />
           <ExperimentSnapshot :item="selected.experiment_context" /><RuntimeSnapshot

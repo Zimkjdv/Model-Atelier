@@ -2,6 +2,8 @@
 
 2026-10-23 決策：**必須使用專用版本格式，目前維持一般草稿／設定交換／比較方案不支援**。R07 的格式評估、能力說明及拒絕邊界完成，不表示這三項功能已上線。原任務／作品仍可完整載入保存的設定及下載完整 workflow；來源不完整時不部分還原。
 
+R02 補充：`checkpoint-ipadapter-reference-v1` 沿用相同保護，新增 `family=reference` 的唯讀能力；一般草稿、交換與比較均拒絕。模式、參考權重／起訖、adapter／ViT-H 編碼器、原素材與 224 方圖前處理須完整保存，不能套用一般 schema。完整原設定還原及原 workflow 下載已驗收；不支援多圖融合或 LoRA 組合。詳見 [參考流程契約](models/ipadapter-reference.md)、[R02 驗收](validation/reference-adapter-20261023.md)。下列四個版本與測試數為 R07 原驗收範圍。
+
 一般 checkpoint schema 只有單張圖生圖或文生圖欄位，FLUX 另有元件格式。實際重現發現一般草稿端點曾回傳 201，卻忽略 `mask_asset_id`、`grow_mask_by`、`feather_radius`。修正後，建立及更新均回傳 422，原草稿與 revision 不變，其他未知欄位也拒絕。歷史一般草稿的讀取與預設保持相容，不回寫歷史資料。
 
 相容既有客戶端回傳完整草稿或複製生成 body：`id`、`created_at`、`updated_at`、`model_version`、`request_id` 是已知的舊封套欄位，仍排除於草稿設定之外；不能選擇草稿 ID、修改伺服器時間／模型版本或恢復生成 UUID。revision 仍供樂觀鎖核對。此有限清單不含任何遮罩／控制／pending 欄位，其他未知欄位均拒絕。

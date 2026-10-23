@@ -11,6 +11,13 @@ import WorkflowFormatSupport from './WorkflowFormatSupport.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
 import ControlSnapshot from './ControlSnapshot.vue'
 import ControlEdgePreview from './ControlEdgePreview.vue'
+import ReferenceComponentsSnapshot from './ReferenceComponentsSnapshot.vue'
+import {
+  referencePendingMarker,
+  referenceSubmission,
+  referenceWorkflowId,
+  type ReferenceForm,
+} from './adapterSettings'
 import {
   controlEdgeWorkflowId,
   controlPendingMarker,
@@ -30,9 +37,9 @@ import { imageWorkflowId } from './referenceSettings'
 import { fluxWorkflowId, type FluxForm } from './fluxSettings'
 import { mergeJob, terminal, useJobEvents, type Job } from './jobEvents'
 const props = defineProps<{
-  form: CreationForm | FluxForm | InpaintForm | ControlForm
+  form: CreationForm | FluxForm | InpaintForm | ControlForm | ReferenceForm
   experiment?: ExperimentLoad | null
-  workflow?: 'flux' | 'inpaint' | 'control'
+  workflow?: 'flux' | 'inpaint' | 'control' | 'reference'
   blockedReason?: string
   disabled?: boolean
 }>()
@@ -42,9 +49,13 @@ const pendingKey = {
   flux: 'atelier-pending-flux-submission',
   inpaint: 'atelier-pending-inpaint-submission',
   control: 'atelier-pending-control-submission',
+  reference: 'atelier-pending-reference-submission',
 }[props.workflow || 'checkpoint']
 const imageMode = computed(
-  () => props.workflow === 'control' || checkpointForm.value?.workflow_mode === 'image2image',
+  () =>
+    props.workflow === 'control' ||
+    props.workflow === 'reference' ||
+    checkpointForm.value?.workflow_mode === 'image2image',
 )
 const missingModel = computed(() =>
   checkpointForm.value
@@ -155,13 +166,14 @@ const connectionLabels = {
 }
 function freezeCurrentSubmission(): Record<string, unknown> {
   const experiment =
-    props.workflow === 'inpaint' || props.workflow === 'control'
+    props.workflow === 'inpaint' || props.workflow === 'control' || props.workflow === 'reference'
       ? null
       : experimentForSubmission(props.experiment, props.form)
   const candidate = {
     ...JSON.parse(JSON.stringify(props.form)),
     request_id: crypto.randomUUID(),
     ...(props.workflow === 'control' ? { [controlPendingMarker]: controlEdgeWorkflowId } : {}),
+    ...(props.workflow === 'reference' ? { [referencePendingMarker]: referenceWorkflowId } : {}),
     ...(props.workflow === 'inpaint' ? { [inpaintPendingMarker]: inpaintFeatherWorkflowId } : {}),
     ...(experiment ? { experiment } : {}),
   }
@@ -173,6 +185,7 @@ function freezeCurrentSubmission(): Record<string, unknown> {
 function frozenSubmissionDescriptor(frozen: Record<string, unknown>) {
   // Versioned adapters choose the original endpoint from the frozen marker.
   if (props.workflow === 'control') return controlSubmission(frozen)
+  if (props.workflow === 'reference') return referenceSubmission(frozen)
   if (props.workflow === 'inpaint') return inpaintSubmission(frozen)
   return { path: props.workflow === 'flux' ? '/api/flux/generate' : '/api/generate', body: frozen }
 }
@@ -265,7 +278,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
   <article class="panel">
     <h2>生成任務</h2>
     <WorkflowFormatSupport
-      v-if="workflow === 'inpaint' || workflow === 'control'"
+      v-if="workflow === 'inpaint' || workflow === 'control' || workflow === 'reference'"
       :family="workflow"
     />
     <p class="submission-state" role="status" aria-label="提交能力狀態">{{
@@ -285,13 +298,15 @@ onBeforeUnmount(() => window.clearInterval(timer))
     <p v-if="checkpointForm" class="footnote"
       >Checkpoint
       {{
-        workflow === 'control'
-          ? 'Canny 結構參考'
-          : workflow === 'inpaint'
-            ? '局部編輯'
-            : imageMode
-              ? '圖生圖'
-              : '文生圖'
+        workflow === 'reference'
+          ? '畫風／角色外觀參考'
+          : workflow === 'control'
+            ? 'Canny 結構參考'
+            : workflow === 'inpaint'
+              ? '局部編輯'
+              : imageMode
+                ? '圖生圖'
+                : '文生圖'
       }}
       · {{ form.steps }} steps · {{ checkpointForm.sampler_name }} /
       {{ checkpointForm.scheduler }} · CFG {{ checkpointForm.cfg }} · denoise
@@ -362,6 +377,9 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <p v-if="isControlWorkflow(job.workflow_id)" class="footnote"
         >Canny 結構參考 · 空 latent；控制模型與前處理已凍結。</p
       >
+      <p v-if="job.workflow_id === referenceWorkflowId" class="footnote"
+        >畫風／角色外觀參考 · 單張來源、224 方圖前處理與元件已凍結；不代表身份重現。</p
+      >
       <ControlEdgePreview
         v-if="job.workflow_id === controlEdgeWorkflowId && job.status === 'completed'"
         :job-id="job.id"
@@ -375,6 +393,9 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <LoraSnapshot v-if="checkpointForm" :items="job.lora_metadata" />
       <ControlSnapshot
         v-if="isControlWorkflow(job.workflow_id)"
+        :items="job.component_metadata"
+      /><ReferenceComponentsSnapshot
+        v-else-if="job.workflow_id === referenceWorkflowId"
         :items="job.component_metadata"
       /><ComponentSnapshot v-else :items="job.component_metadata" /><JobMeasurements
         :item="job.measurements"
@@ -514,7 +535,8 @@ onBeforeUnmount(() => window.clearInterval(timer))
           ((workflow === 'flux' ||
             job.workflow_id === imageWorkflowId ||
             isInpaintWorkflow(job.workflow_id) ||
-            isControlWorkflow(job.workflow_id)) &&
+            isControlWorkflow(job.workflow_id) ||
+            job.workflow_id === referenceWorkflowId) &&
             terminal(job))
         "
         ><button

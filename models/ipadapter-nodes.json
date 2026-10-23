@@ -1,0 +1,40 @@
+{
+  "id": "comfyui-ipadapter-plus",
+  "repository": "cubiq/ComfyUI_IPAdapter_plus",
+  "revision": "a0f451a5113cf9becb0847b92884cb10cbdec0ef",
+  "license": "GPL-3.0",
+  "files": [
+    {
+      "path": "CrossAttentionPatch.py",
+      "git_blob_sha1": "adb2079cca07fbcb6812209d5d0c3ac5d0aeb0a1"
+    },
+    {
+      "path": "IPAdapterPlus.py",
+      "git_blob_sha1": "905d1879ffeb9699904d90eb84f47483bb926d76"
+    },
+    {
+      "path": "LICENSE",
+      "git_blob_sha1": "f288702d2fa16d3cdf0035b15a9fcbc552cd88e7"
+    },
+    {
+      "path": "README.md",
+      "git_blob_sha1": "5e837afe4f216105c8bb51327d35bb2658114b1d"
+    },
+    {
+      "path": "__init__.py",
+      "git_blob_sha1": "1580e99ad7350fbc5287fea2553d2d5763899c7c"
+    },
+    {
+      "path": "image_proj_models.py",
+      "git_blob_sha1": "da61b53bb20e94cdc203c121a66129f745e3f4f0"
+    },
+    {
+      "path": "pyproject.toml",
+      "git_blob_sha1": "bf900be48db46329989e6d3837814ab8aa59c2f9"
+    },
+    {
+      "path": "utils.py",
+      "git_blob_sha1": "6e8bf368df9253acf509d5bbf0ba4c604f1bbaee"
+    }
+  ]
+}

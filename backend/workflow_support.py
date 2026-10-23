@@ -8,6 +8,21 @@ from backend import control_workflows, control_edge_workflows
 
 FLOWS = (
     dict(
+        id='checkpoint-ipadapter-reference-v1',
+        family='reference',
+        version=1,
+        name='SDXL 畫風／角色外觀參考 v1',
+        input_roles=['image_asset_id'],
+        parameters=[
+            'reference_mode',
+            'ipadapter_name',
+            'clip_vision_name',
+            'reference_weight',
+            'reference_start',
+            'reference_end',
+        ],
+    ),
+    dict(
         id=inpaint_workflows.ID,
         family='inpaint',
         version=1,
@@ -59,6 +74,7 @@ SPECIAL_FIELDS = frozenset(field for flow in FLOWS for field in flow['parameters
     'mask_asset_id',
     '_atelier_inpaint_workflow_id',
     '_atelier_control_workflow_id',
+    '_atelier_reference_workflow_id',
 }
 
 
@@ -74,7 +90,7 @@ def problem(settings, operation, workflow_id=None):
         or fields & SPECIAL_FIELDS
     ):
         return (
-            f'局部編輯／Canny 專用流程尚不支援{operation}；'
+            f'局部編輯／Canny／畫風角色參考專用流程尚不支援{operation}；'
             '未部分保存或轉成一般流程。請保留原圖、遮罩及控制設定，從原任務／作品載入，或下載完整工作流程 JSON。'
         )
     return None
@@ -112,5 +128,5 @@ def describe(family):
 
 def install(app):
     @app.get('/api/reference-workflows/support')
-    def support(family: Literal['inpaint', 'control']):
+    def support(family: Literal['inpaint', 'control', 'reference']):
         return describe(family)

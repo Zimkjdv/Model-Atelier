@@ -45,6 +45,15 @@ class WorkflowSupportTests(unittest.TestCase):
             )
             if schema is self.host.InpaintFeatherInput:
                 fields['feather_radius'] = 4
+        elif 'ipadapter' in identifier:
+            schema = self.host.ReferenceInput
+            fields = dict(
+                image_asset_id=source,
+                reference_ids=[source],
+                reference_mode='style',
+                ipadapter_name='plus.safetensors',
+                clip_vision_name='vision.safetensors',
+            )
         else:
             schema = self.host.ControlInput
             fields = dict(
@@ -63,14 +72,17 @@ class WorkflowSupportTests(unittest.TestCase):
         before = self.db.read_bytes()
         with patch('backend.main.httpx.AsyncClient', side_effect=AssertionError('no engine')):
             all_ids = []
-            for family in ('inpaint', 'control'):
+            for family in ('inpaint', 'control', 'reference'):
                 response = self.client.get(
                     '/api/reference-workflows/support', params={'family': family}
                 )
                 self.assertEqual(response.status_code, 200)
                 value = response.json()
                 self.assertEqual(value['scope'], 'platform_formats')
-                self.assertEqual([row['version'] for row in value['workflows']], [1, 2])
+                self.assertEqual(
+                    [row['version'] for row in value['workflows']],
+                    [1] if family == 'reference' else [1, 2],
+                )
                 for row in value['workflows']:
                     all_ids.append(row['id'])
                     self.assertFalse(row['capabilities']['draft'])

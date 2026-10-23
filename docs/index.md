@@ -7,7 +7,7 @@
 - [安裝、首次生成、埠與備份](setup-and-operations.md)、[架構與資料流](architecture.md)、[UI 規範](ui-guidelines.md)
 - [應用程式工廠、配置與測試隔離](application-factory.md)
 - [前端 HTTP 契約、取消與原請求恢復](frontend-api.md)
-- [四工作台未保存內容與離頁保護](unsaved-changes.md)
+- [工作台未保存內容與離頁保護](unsaved-changes.md)
 - [品質檢查、隔離瀏覽器回歸與 CI](quality-checks.md)
 - [全站桌面／窄視窗視覺與無障礙補驗](validation/ui-accessibility-20261023.md)
 - [清單分頁、相容策略與資料成長基準](list-pagination.md)
@@ -19,12 +19,13 @@
 
 ## 創作與作品
 
-下一階段以動漫畫風為目標時，先讀 [動漫畫風驗證與開發計畫](anime-style-development.md)：R05 → L01 → R02 → T01 → T02、圖片數量／分組、保留評估集、流程擴充及驗收；這是計畫，不表示 adapter 或訓練已實作。
+下一階段以動漫畫風為目標時，先讀 [動漫畫風驗證與開發計畫](anime-style-development.md)：R05 → L01 → R02 → T01 → T02、圖片數量／分組、保留評估集、流程擴充及驗收；R02 已接入單張參考、訓練仍未實作；後續依使用者指定 **T01 → T02 → R01 → R03**。
 
 | 工作 | 說明 |
 | --- | --- |
 | 一般設定交換 | [精確 JSON](creation-settings-transfer.md) |
 | 專用流程格式 | [局部編輯／Canny 草稿、交換與比較的支援及方案](specialized-workflow-formats.md) |
+| 畫風／角色參考 | [R02 操作、固定來源與契約](models/ipadapter-reference.md)、[實際圖片用途／未訓練備註](validation/reference-inputs-20261023.md)、[12 組 GPU 與品質觀察](validation/reference-adapter-20261023.md) |
 | 圖生圖／素材 | [參考流程與版本](models/reference-workflows.md) |
 | 局部編輯 | [遮罩修補](inpainting.md)、[羽化](inpaint-feather.md) |
 | Canny | [ControlNet 與原邊緣](controlnet.md)、[CPU 預覽](canny-preview.md) |

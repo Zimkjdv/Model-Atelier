@@ -64,6 +64,34 @@ INPAINT_NODES = {
     ),
 }
 
+REFERENCE_NODES = {
+    'IPAdapterModelLoader': dict(
+        input=dict(required=dict(ipadapter_file=[['plus.safetensors']])), output=['IPADAPTER']
+    ),
+    'CLIPVisionLoader': dict(
+        input=dict(required=dict(clip_name=[['vision.safetensors']])), output=['CLIP_VISION']
+    ),
+    'IPAdapterAdvanced': dict(
+        input=dict(
+            required=dict(
+                model=['MODEL'],
+                ipadapter=['IPADAPTER'],
+                image=['IMAGE'],
+                weight=['FLOAT', dict(min=-1, max=5)],
+                weight_type=[['linear', 'style transfer']],
+                combine_embeds=[['concat']],
+                start_at=['FLOAT', dict(min=0, max=1)],
+                end_at=['FLOAT', dict(min=0, max=1)],
+                embeds_scaling=[['V only']],
+            ),
+            optional=dict(
+                image_negative=['IMAGE'], attn_mask=['MASK'], clip_vision=['CLIP_VISION']
+            ),
+        ),
+        output=['MODEL'],
+    ),
+}
+
 
 def uploaded_image(request):
     envelope = (
@@ -150,6 +178,8 @@ def fixture(data, count=None, legacy_ui=False):
             }
         elif request.url.path.startswith('/object_info/') and name in INPAINT_NODES:
             value = {name: INPAINT_NODES[name]}
+        elif request.url.path.startswith('/object_info/') and name in REFERENCE_NODES:
+            value = {name: REFERENCE_NODES[name]}
         elif request.url.path.startswith('/object_info/'):
             value = {name: {'input': {'required': {}}}}
         elif name == 'system_stats':

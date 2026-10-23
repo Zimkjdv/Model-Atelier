@@ -1,0 +1,25 @@
+{
+  "id": "clip-vision-vit-h",
+  "name": "CLIP Vision ViT-H/14 (IP-Adapter)",
+  "version": "h94 revision 018e402774ae",
+  "architecture": "other",
+  "filename": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors",
+  "size_bytes": 2528373448,
+  "sha256": "6ca9667da1ca9e0b0f75e46bb030f7e011f44f86cbfb8d5a36590fcd7507b030",
+  "source": {
+    "provider": "Hugging Face",
+    "repository": "h94/IP-Adapter",
+    "revision": "018e402774aeeddd60609b4ecdb7e298259dc729",
+    "filename": "models/image_encoder/model.safetensors",
+    "page_url": "https://huggingface.co/h94/IP-Adapter/blob/018e402774aeeddd60609b4ecdb7e298259dc729/README.md",
+    "download_url": "https://huggingface.co/h94/IP-Adapter/resolve/018e402774aeeddd60609b4ecdb7e298259dc729/models/image_encoder/model.safetensors"
+  },
+  "license": {
+    "identifier": "apache-2.0",
+    "name": "Apache-2.0 (author metadata; dependency chain unverified)",
+    "url": "https://huggingface.co/h94/IP-Adapter/blob/018e402774aeeddd60609b4ecdb7e298259dc729/README.md",
+    "terms_verified": false,
+    "note": "作者模型卡的授權標籤；不代表基礎模型、編碼器與使用者參考圖權利均已驗證。"
+  },
+  "purpose": "ViT-H image encoder paired with IP-Adapter Plus SDXL ViT-H. Not SDXL bigG or text CLIP."
+}

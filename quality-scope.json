@@ -36,7 +36,14 @@
     "backend/gallery_api.py",
     "backend/reference_workflows.py",
     "backend/listing.py",
-    "backend/listing_api.py"
+    "backend/listing_api.py",
+    "backend/adapter_api.py",
+    "backend/adapter_catalog.py",
+    "backend/adapter_workflows.py",
+    "backend/test_adapter_workflows.py",
+    "scripts/verify_reference_generation.py",
+    "scripts/install_ipadapter_nodes.py",
+    "backend/test_reference_acceptance.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -73,7 +80,12 @@
     "quality-scope.json",
     ".prettierrc.json",
     "frontend/src/App.vue",
-    "frontend/src/navigation.ts"
+    "frontend/src/navigation.ts",
+    "frontend/src/adapterSettings.ts",
+    "frontend/src/ReferenceStudio.vue",
+    "frontend/src/ReferenceComponents.vue",
+    "frontend/src/ReferenceComponentsSnapshot.vue",
+    "frontend/tests/reference-recovery.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

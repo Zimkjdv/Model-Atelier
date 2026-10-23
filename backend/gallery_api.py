@@ -98,7 +98,9 @@ def install(app, host):
 
         def validate(value):
             schema = (
-                host.ControlInput
+                host.ReferenceInput
+                if item.get('workflow_id') == 'checkpoint-ipadapter-reference-v1'
+                else host.ControlInput
                 if item.get('workflow_id')
                 in ('checkpoint-canny-controlnet-v1', 'checkpoint-canny-controlnet-edge-v2')
                 else host.InpaintFeatherInput
@@ -147,9 +149,15 @@ def install(app, host):
             image_workflows.restoration_warnings(host.DB, host.DATA, item.get('reference_metadata'))
         )
         from backend import control_catalog
+        from backend import adapter_catalog
 
         warnings.extend(
             control_catalog.restoration_warnings(
+                host.DB, settings['engine_url'], item.get('component_metadata')
+            )
+        )
+        warnings.extend(
+            adapter_catalog.restoration_warnings(
                 host.DB, settings['engine_url'], item.get('component_metadata')
             )
         )
@@ -165,7 +173,11 @@ def install(app, host):
             **(
                 dict(component_metadata=item.get('component_metadata'))
                 if item.get('workflow_id')
-                in ('checkpoint-canny-controlnet-v1', 'checkpoint-canny-controlnet-edge-v2')
+                in (
+                    'checkpoint-canny-controlnet-v1',
+                    'checkpoint-canny-controlnet-edge-v2',
+                    'checkpoint-ipadapter-reference-v1',
+                )
                 else {}
             ),
             availability=dict(

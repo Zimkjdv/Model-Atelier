@@ -136,6 +136,7 @@ class Pager:
                 flux=['flux1-schnell-text2image-v1'],
                 inpaint=['checkpoint-inpaint-v1', 'checkpoint-inpaint-feather-v2'],
                 control=['checkpoint-canny-controlnet-v1', 'checkpoint-canny-controlnet-edge-v2'],
+                reference=['checkpoint-ipadapter-reference-v1'],
             )
             if workflow == 'checkpoint':
                 clauses.append(

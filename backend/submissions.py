@@ -32,6 +32,8 @@ from backend import (
     control_catalog,
     control_edge_workflows,
     inpaint_feather_workflows,
+    adapter_workflows,
+    adapter_catalog,
 )
 from backend.reference_workflows import IMG2IMG_ID
 from backend import diagnostics
@@ -610,6 +612,7 @@ def install(app, host):
             inpaint_feather_workflows.ID,
             control_workflows.ID,
             control_edge_workflows.ID,
+            adapter_workflows.ID,
         ):
             raise HTTPException(404, '此任務沒有圖生圖輸入')
         path = host.DATA / 'job_inputs' / (str(job_id) + '.png')
@@ -638,6 +641,7 @@ def install(app, host):
                 inpaint_feather_workflows.ID,
                 control_workflows.ID,
                 control_edge_workflows.ID,
+                adapter_workflows.ID,
             )
             and job['status'] in cancellation.TERMINAL
         ):
@@ -662,7 +666,9 @@ def install(app, host):
 
         def validate(value):
             schema = (
-                host.ControlInput
+                host.ReferenceInput
+                if job.get('workflow_id') == adapter_workflows.ID
+                else host.ControlInput
                 if job.get('workflow_id') in (control_workflows.ID, control_edge_workflows.ID)
                 else host.InpaintFeatherInput
                 if job.get('workflow_id') == inpaint_feather_workflows.ID
@@ -723,10 +729,14 @@ def install(app, host):
             lora_metadata=job.get('lora_metadata'),
             runtime_metadata=job.get('runtime_metadata'),
             reference_metadata=job.get('reference_metadata'),
-            warnings=warnings,
+            warnings=warnings
+            + adapter_catalog.restoration_warnings(
+                host.DB, settings['engine_url'], job.get('component_metadata')
+            ),
             **(
                 dict(component_metadata=job.get('component_metadata'))
-                if job.get('workflow_id') in (control_workflows.ID, control_edge_workflows.ID)
+                if job.get('workflow_id')
+                in (control_workflows.ID, control_edge_workflows.ID, adapter_workflows.ID)
                 else {}
             ),
             availability=dict(
