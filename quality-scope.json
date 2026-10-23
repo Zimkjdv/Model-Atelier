@@ -1,5 +1,6 @@
 {
   "python": [
+    "scripts/install_pony.py",
     "scripts/verify_anime_suite.py",
     "backend/test_anime_acceptance.py",
     "backend/test_anime_experiments.py",
