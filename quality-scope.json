@@ -1,5 +1,7 @@
 {
   "python": [
+    "backend/experiment_context.py",
+    "backend/experiment_report.py",
     "backend/workflow_support.py",
     "backend/test_workflow_support.py",
     "backend/core_api.py",
@@ -20,6 +22,9 @@
     "scripts/check_style.py"
   ],
   "web": [
+    "frontend/src/ExperimentPlanner.vue",
+    "frontend/src/experimentSettings.ts",
+    "frontend/src/ExperimentSnapshot.vue",
     "frontend/src/WorkflowFormatSupport.vue",
     "frontend/tests/workflow-format-support.spec.ts",
     "frontend/tests/resource-sampling.spec.ts",
