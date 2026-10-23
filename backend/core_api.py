@@ -1,4 +1,5 @@
 """Core settings, catalog, drafts and assets bound to one AppContext."""
+
 import asyncio
 import platform
 import shutil
@@ -23,8 +24,14 @@ def install(app, host):
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError):
         # Raw invalid JSON numbers such as NaN cannot be echoed by a JSON response.
-        return JSONResponse(status_code=422, content={'detail': [
-            {key: error[key] for key in ('type', 'loc', 'msg')} for error in exc.errors()]})
+        return JSONResponse(
+            status_code=422,
+            content={
+                'detail': [
+                    {key: error[key] for key in ('type', 'loc', 'msg')} for error in exc.errors()
+                ]
+            },
+        )
 
     @app.get('/api/settings')
     def settings():
@@ -33,7 +40,9 @@ def install(app, host):
     @app.put('/api/settings')
     def save_settings(value: Settings):
         with closing(sqlite3.connect(host.DB)) as db, db:
-            db.execute('INSERT OR REPLACE INTO settings VALUES (?, ?)', ('comfy_url', value.comfy_url))
+            db.execute(
+                'INSERT OR REPLACE INTO settings VALUES (?, ?)', ('comfy_url', value.comfy_url)
+            )
         return value
 
     @app.get('/api/system')
@@ -42,11 +51,20 @@ def install(app, host):
         ram = psutil.virtual_memory()
         disk = shutil.disk_usage(host.DATA)
         return {
-            'host': platform.node(), 'role': '平台主機', 'os': platform.platform(),
-            'python': platform.python_version(), 'updated_at': datetime.now(timezone.utc).isoformat(),
-            'gpus': cards, 'gpu_error': error,
+            'host': platform.node(),
+            'role': '平台主機',
+            'os': platform.platform(),
+            'python': platform.python_version(),
+            'updated_at': datetime.now(timezone.utc).isoformat(),
+            'gpus': cards,
+            'gpu_error': error,
             'ram': {'total': ram.total, 'used': ram.total - ram.available, 'free': ram.available},
-            'disk': {'path': str(host.DATA), 'total': disk.total, 'used': disk.used, 'free': disk.free},
+            'disk': {
+                'path': str(host.DATA),
+                'total': disk.total,
+                'used': disk.used,
+                'free': disk.free,
+            },
         }
 
     @app.get('/api/engine')
@@ -59,22 +77,43 @@ def install(app, host):
                 response = await client.get(url + '/system_stats')
                 response.raise_for_status()
                 stats = response.json()
-            if not isinstance(stats, dict) or not isinstance(stats.get('system'), dict) or not isinstance(stats.get('devices'), list):
+            if (
+                not isinstance(stats, dict)
+                or not isinstance(stats.get('system'), dict)
+                or not isinstance(stats.get('devices'), list)
+            ):
                 raise ValueError('回應不是 ComfyUI 系統資訊')
             diagnostics = environment.scoped_engine_diagnostics(stats, url, host.engine_url())
-            result = {'connected': True, 'url': url, 'stats': environment.compatible_stats(stats), 'diagnostics': diagnostics,
-                      'execution_device': execution_device.scoped(device, host.engine_url())}
+            result = {
+                'connected': True,
+                'url': url,
+                'stats': environment.compatible_stats(stats),
+                'diagnostics': diagnostics,
+                'execution_device': execution_device.scoped(device, host.engine_url()),
+            }
             if not diagnostics['matches_selected_engine']:
                 result['error'] = '查詢期間引擎設定已變更，請重新整理'
             return result
         except httpx.HTTPError:
-            return {'connected': False, 'url': url, 'error': '無法連接 ComfyUI，請確認服務已啟動且位址正確。',
-                    'execution_device': execution_device.scoped(device, host.engine_url()),
-                    'diagnostics': environment.scoped_engine_diagnostics(None, url, host.engine_url(), status='offline')}
+            return {
+                'connected': False,
+                'url': url,
+                'error': '無法連接 ComfyUI，請確認服務已啟動且位址正確。',
+                'execution_device': execution_device.scoped(device, host.engine_url()),
+                'diagnostics': environment.scoped_engine_diagnostics(
+                    None, url, host.engine_url(), status='offline'
+                ),
+            }
         except ValueError:
-            return {'connected': False, 'url': url, 'error': 'ComfyUI 系統資訊格式無效，尚未確認引擎裝置。',
-                    'execution_device': execution_device.scoped(device, host.engine_url()),
-                    'diagnostics': environment.scoped_engine_diagnostics(None, url, host.engine_url(), status='invalid')}
+            return {
+                'connected': False,
+                'url': url,
+                'error': 'ComfyUI 系統資訊格式無效，尚未確認引擎裝置。',
+                'execution_device': execution_device.scoped(device, host.engine_url()),
+                'diagnostics': environment.scoped_engine_diagnostics(
+                    None, url, host.engine_url(), status='invalid'
+                ),
+            }
 
     @app.get('/api/health')
     def health():
@@ -103,8 +142,11 @@ def install(app, host):
                     response.raise_for_status()
                     names = catalog.checkpoint_names(response.json())
             except (httpx.HTTPError, ValueError) as exc:
-                message = (str(exc) if isinstance(exc, ValueError)
-                           else '無法同步 ComfyUI，保留上次清單；請檢查連線後重試。')
+                message = (
+                    str(exc)
+                    if isinstance(exc, ValueError)
+                    else '無法同步 ComfyUI，保留上次清單；請檢查連線後重試。'
+                )
                 return catalog.sync_error(host.DB, url, message)
             return catalog.merge(host.DB, url, names)
 
@@ -138,8 +180,20 @@ def install(app, host):
     @app.get('/api/drafts')
     def list_drafts():
         # Supply the original generation defaults for old records without rewriting them.
-        defaults = {name: DraftInput.model_fields[name].default for name in
-                    ('negative_prompt', 'steps', 'cfg', 'sampler_name', 'scheduler', 'denoise', 'workflow_mode', 'image_asset_id', 'reference_resize')}
+        defaults = {
+            name: DraftInput.model_fields[name].default
+            for name in (
+                'negative_prompt',
+                'steps',
+                'cfg',
+                'sampler_name',
+                'scheduler',
+                'denoise',
+                'workflow_mode',
+                'image_asset_id',
+                'reference_resize',
+            )
+        }
         return [dict(loras=[]) | defaults | item for item in drafts.list_all(host.DB)]
 
     @app.post('/api/drafts', status_code=201)
@@ -177,7 +231,9 @@ def install(app, host):
                 raise HTTPException(413, '圖片不可超過 20 MiB')
             chunks.extend(chunk)
         try:
-            return await run_in_threadpool(assets.create, host.DB, host.DATA / 'assets', bytes(chunks), filename)
+            return await run_in_threadpool(
+                assets.create, host.DB, host.DATA / 'assets', bytes(chunks), filename
+            )
         except ValueError as exc:
             raise HTTPException(422, str(exc))
 
@@ -190,12 +246,16 @@ def install(app, host):
         target = host.DATA / 'assets' / (str(asset_id) + '.png')
         if not target.is_file():
             raise HTTPException(404, '素材檔案已遺失')
-        return FileResponse(target, media_type='image/png', headers={'X-Content-Type-Options': 'nosniff'})
+        return FileResponse(
+            target, media_type='image/png', headers={'X-Content-Type-Options': 'nosniff'}
+        )
 
     @app.put('/api/assets/{asset_id}')
     def update_asset(asset_id: UUID, value: AssetUpdate):
         try:
-            return assets.update(host.DB, str(asset_id), value.title, value.archived, value.purpose, value.revision)
+            return assets.update(
+                host.DB, str(asset_id), value.title, value.archived, value.purpose, value.revision
+            )
         except KeyError:
             raise HTTPException(404, '找不到素材')
         except ValueError as exc:

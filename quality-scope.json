@@ -1,5 +1,8 @@
 {
   "python": [
+    "backend/core_api.py",
+    "backend/settings_transfer.py",
+    "backend/experiment_plans.py",
     "backend/resource_sampling.py",
     "backend/test_resource_sampling.py",
     "backend/main.py",
