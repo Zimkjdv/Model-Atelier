@@ -65,6 +65,8 @@ T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色
 
 完整的圖片選擇、資料分割／版本、有限任務數、模組擴充及驗收方式見 [動漫畫風驗證與開發計畫](docs/anime-style-development.md)。
 
+接下來開發先讀 [GitHub 借用與開發策略](docs/github-reuse-assessment-20261023.md)、[全部 47 個主項對照](docs/roadmap-upstream-map-20261023.md)與[動漫相關原碼研究](docs/anime-upstream-candidates-20261023.md)。優先沿用 ComfyUI 現成前處理／修補節點與 sd-scripts 工具，保留本平台架構；已完成功能僅針對具體問題優化。這些是選型研究，尚未安裝或驗證候選，順序仍為 R01 → R03。
+
 實作進入需要真實動漫圖片的品質驗收或訓練時，會先核對已提供資料，缺少時主動提醒使用者；提醒時點與所需內容見 [圖片提供提醒](docs/anime-style-development.md#image-input-reminders)。
 
 ## 日常操作

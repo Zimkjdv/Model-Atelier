@@ -1,12 +1,28 @@
-# GitHub 專案借用初評（2026-10-23）
+# GitHub 專案借用與開發策略（2026-10-23）
 
 本文件是初步選型：本輪僅讀官方 README、原始碼、授權與 GitHub API，尚未新增整合、安裝、執行第三方程式或完成實機驗收。成本為依介面差異的工程判斷，沒有量測可承諾的加速百分比。
+
+本文件作為主要決策入口；[全部 ROADMAP 對照](roadmap-upstream-map-20261023.md)涵蓋已完成及未完成主項，[動漫相關候選](anime-upstream-candidates-20261023.md)補充動漫分割、區域提示、偵測修補與訓練標註的原碼證據。研究完成不等於實作完成，不變更 ROADMAP 驗收狀態。
+
+## 優先採用決策
+
+可以節省底層演算法與工作流程探索時間；最適合的方式是沿用現有 ComfyUI 邊界，選少量已實作節點，再補本平台的資料保存、能力檢查與驗收。以下是依原碼與介面差異作出的工程建議，並非已量測成效。
+
+| 次序／範圍 | 優先來源 | 可沿用的工作 | 本平台仍需完成 |
+| --- | --- | --- | --- |
+| 1：R01 | controlnet_aux、Krita workflow | pose／depth 前處理與條件圖接線 | SDXL 控制權重、表單、版本／來源快照、原設定還原、動漫案例比較 |
+| 2：R03 | comfyui-inpaint-nodes、Krita | 專用修補、預填、遮罩合成 | 模型相容性、接縫／色偏／遮罩外保留與角色特徵比較 |
+| 後續：R03 選區輔助 | Anime Segmentation、Impact Pack；ADetailer 流程 | 動漫前景遮罩、偵測／裁切／修補／貼回 | 預覽與人工修改、座標還原、有限生成次數；不擴張為 R03 必要條件 |
+| 後續：T02 標註效率、T03／T04 | sd-scripts；必要時 WD14 | 已有訓練器與標籤草稿 | 人工審查、獨立訓練環境、GPU 協調、產物回登與品質比較 |
+| 已完成功能的局部改善 | InvokeAI、Krita、SwarmUI；Regional Prompter 設計 | 畫布／歷史／模型管理／區域提示的具體流程 | 先記錄可重現痛點或量測基準，再決定小範圍修改 |
+
+動漫優先不表示只看名稱含 anime 的專案：動漫專用的前景分割／booru 標註與通用的 ComfyUI 修補／ControlNet 可互補。實際畫風主要仍取決於模型、參考條件與案例驗收；整合通用節點不能直接保證作者畫風或角色一致。
 
 建議讓未完成的 **R01 → R03** 優先採用現有前處理／ComfyUI 節點，再完成本平台的表單、快照、保存還原與品質驗收。已完成項目依具體缺陷逐步借鏡，現階段沒有證據支持整套重寫。
 
 ## 候選與版本錨點
 
-以下 HEAD 為查詢當時的 `main`，不是已驗證的相容版本。五者均未封存；狀態來源為各專案官方 repository API，後續可能改變。
+以下五個 HEAD 為查詢當時的 `main`，不是已驗證的相容版本。五者均未封存；狀態來源為各專案官方 repository API，後續可能改變。其他候選分列於本文件補充及兩份對照文件。
 
 | 候選 | 本次固定 HEAD／提交日期 | LICENSE 檔內容 | 建議用途 |
 | --- | --- | --- | --- |
@@ -80,6 +96,21 @@
 
 以上是可對照的設計，不是本輪已證實的平台缺陷。已完成的 UI、歷史、作品庫、取消／停止流程先保留；只有具體問題、可重現案例與改善目標成立，才安排局部修改。
 
+## ComfyUI 原生補充：Impact Pack 與 WD14
+
+以下兩者均未封存，但仍是待驗證候選；官方 API 查詢入口：[Impact Pack](https://api.github.com/repos/ltdrdata/ComfyUI-Impact-Pack)、[WD14 Tagger](https://api.github.com/repos/pythongosssss/ComfyUI-WD14-Tagger)。
+
+| 候選 | 固定版本／提交日期 | 來源與判斷 |
+| --- | --- | --- |
+| ComfyUI-Impact-Pack | `429d0159ad429e64d2b3916e6e7be9c22d025c3c`／2026-04-19，分支 Main | [README](https://github.com/ltdrdata/ComfyUI-Impact-Pack/blob/429d0159ad429e64d2b3916e6e7be9c22d025c3c/README.md)、[GPL v3](https://github.com/ltdrdata/ComfyUI-Impact-Pack/blob/429d0159ad429e64d2b3916e6e7be9c22d025c3c/LICENSE.txt)。已有 detector、SEGS、detailer、裁切／貼回及相容性變更紀錄，可評估為 R03 基本修補完成後的外部節點。 |
+| ComfyUI-WD14-Tagger | `9e0a6e700299182fc05c58b62e7ad9f72182a78b`／2025-07-11 | [README](https://github.com/pythongosssss/ComfyUI-WD14-Tagger/blob/9e0a6e700299182fc05c58b62e7ad9f72182a78b/README.md)、[MIT](https://github.com/pythongosssss/ComfyUI-WD14-Tagger/blob/9e0a6e700299182fc05c58b62e7ad9f72182a78b/LICENSE)。動漫 booru 標籤候選；有批次、一般／角色門檻與排除標籤，維護較舊，不能當作最新模型選型。 |
+
+Impact Pack 比直接移植 A1111 的 ADetailer 更貼近現有引擎，但它是通用工具；動漫偵測效果仍取決於另選權重。`UltralyticsDetectorProvider` 需要獨立 Impact Subpack，不能只安裝主包就宣稱具備全部功能。其 README 的 8.24 要求 ComfyUI 至少 0.3.63；本機 0.34.0 的版本號不代表依賴與完整流程已驗證。先選最少節點，明確保存各區域遮罩、裁切座標、seed、修補次數與輸出，不沿用 auto retry 節點；多次 detailer 採樣也不能隱藏為一次推論。[固定 README 與限制](https://github.com/ltdrdata/ComfyUI-Impact-Pack/blob/429d0159ad429e64d2b3916e6e7be9c22d025c3c/README.md)。
+
+WD14 可減少第一次人工輸入標籤，但只寫待審草稿，不自動確認角色身分、來源用途、caption approved 或變更資料分割。其 [wd14tagger.py](https://github.com/pythongosssss/ComfyUI-WD14-Tagger/blob/9e0a6e700299182fc05c58b62e7ad9f72182a78b/wd14tagger.py) 在模型缺少時會下載，且依賴 Comfy server／ONNX runtime；不能直接匯入 FastAPI。若採用，先固定匹配的 ONNX 與 tags CSV、hash、provider、門檻與排除規則，明確準備離線模型。優先比較 T02 已選 sd-scripts 的標註工具是否足夠，避免同時維護兩套相同能力。
+
+這兩個候選與動漫專用分割、Regional Prompter 是後續優化選項，沒有因此新增必做功能或延後 R01 → R03。
+
 ## 訓練、授權與完成判定
 
 前述畫布／ControlNet／修補整合主要服務推論，不能替代 T03 的訓練環境／GPU 協調或 T04 的產物回登／品質比較。T02 已對 sd-scripts 固定版本研究，不必再搬一套推論平台作為 trainer。[訓練工具介面研究](training/tool-interface-research.md)、[訓練需求](training/requirements.md)。
@@ -91,5 +122,7 @@
 ## 後續開發採用方式
 
 每個新功能先查 2–3 個貼近現有架構的候選，先讀原碼與限制，再選外部依賴、局部複用或介面借鏡。以「選型＋適配＋驗收＋未來維護」評估總成本；功能清單、星數與截圖只能當線索，不能代替成本或品質證據。
+
+每個實作項目留下簡短採用紀錄：需求與基準 → 候選及固定 SHA → 採用節點／原碼位置與授權 → 相容依賴／權重 → 最小有限案例結果 → 平台封裝與回歸 → 是否採納。先在獨立引擎環境驗證，不把上游整套 requirements 合併進 FastAPI；若沒有品質或總維護成本的改善，就保留現有功能並記錄不採用原因。需要使用者補圖片時，沿用[圖片提醒](anime-style-development.md#image-input-reminders)及 T02 的資料用途審查，不因標籤工具可讀取整個資料夾就把圖片全納入訓練。
 
 未完成的 R01／R03 先用這個方式減少底層重造；T03／T04 仍另排並沿用 T02 契約。已完成項目只在具體痛點、缺陷或可量測改善成立時開局部改動，保留原工作流程與歷史資料格式；避免為外觀接近其他平台而全面改寫。每項實作仍依使用者約定，驗收、commit、push 後才進下一項。

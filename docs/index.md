@@ -2,6 +2,12 @@
 
 現行入口是 [README](../README.md)，待辦與驗收條件以 [ROADMAP](../ROADMAP.MD) 為準；歷史測試數不表示目前所有功能已驗收。
 
+## 上游參考與開發策略
+
+- [GitHub 借用與開發策略](github-reuse-assessment-20261023.md)：主要決策入口、R01 → R03、ComfyUI 節點、訓練工具及整合邊界
+- [全部 47 個 ROADMAP 主項對照](roadmap-upstream-map-20261023.md)：已完成與未完成項目的來源、可沿用流程與仍需驗收部分
+- [動漫相關原碼研究](anime-upstream-candidates-20261023.md)：分割、偵測修補、區域提示、LoRA 訓練與標註；尚未安裝或整合
+
 ## 安裝與維護
 
 - [安裝、首次生成、埠與備份](setup-and-operations.md)、[架構與資料流](architecture.md)、[UI 規範](ui-guidelines.md)
