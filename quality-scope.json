@@ -1,5 +1,9 @@
 {
   "python": [
+    "scripts/convert_pixel_lora.py",
+    "backend/test_pixel_conversion.py",
+    "scripts/verify_style_matrix.py",
+    "backend/test_style_matrix.py",
     "scripts/install_pony.py",
     "scripts/verify_anime_suite.py",
     "backend/test_anime_acceptance.py",
@@ -30,6 +34,7 @@
     "scripts/check_style.py"
   ],
   "web": [
+    "frontend/tests/style-matrix.spec.ts",
     "frontend/tests/anime-experiments.spec.ts",
     "frontend/tests/extended-experiments.spec.ts",
     "frontend/src/ExperimentPlanner.vue",

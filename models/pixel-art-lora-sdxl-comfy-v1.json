@@ -1,0 +1,35 @@
+{
+  "id": "pixel-art-lora-sdxl-comfy-v1",
+  "name": "Pixel Art LoRA SDXL Comfy key-map v1",
+  "version": "key-map-v1 / upstream 5440ac9c42ab",
+  "architecture": "SDXL",
+  "filename": "pixel_art_lora_sdxl_comfy_v1.safetensors",
+  "size_bytes": 185969440,
+  "sha256": "eef9b71806b7715760af4f8ab5a038b29daf41272ab30782f38381aee096f1be",
+  "source_manifest": "pixel-art-lora-sdxl",
+  "source_sha256": "30ef3c19f6bf6c621a4a90722722df78af915c8f4e9b35f91a66d2ea7a079444",
+  "source": {
+    "provider": "Hugging Face original; local deterministic key conversion",
+    "repository": "Hadimeeee/pixel-art-lora-sdxl",
+    "revision": "5440ac9c42ab16fea0d65e25bd149fc0f21b1271",
+    "filename": "pytorch_lora_weights.safetensors",
+    "page_url": "https://huggingface.co/Hadimeeee/pixel-art-lora-sdxl/blob/5440ac9c42ab16fea0d65e25bd149fc0f21b1271/README.md"
+  },
+  "derivation": {
+    "converter": "scripts.convert_pixel_lora",
+    "version": 1,
+    "tensors": 1120,
+    "clip_tensors": 0,
+    "tensor_data_sha256": "21c448739400fee2dc5f5c68f4f218004a3bc55499f4ebf9bf7ef2ad6d02c68a",
+    "key_map_sha256": "6f9cd278226d1d0ee9906e4da9207e8fb66b8a87d11f2e6b26de85f7fc4c85d7",
+    "note": "Header keys only: native lora_unet aliases. Tensor offsets, shapes, dtypes and all payload bytes are unchanged. Original remote bytes must not be installed under this derived identity."
+  },
+  "license": {
+    "identifier": "apache-2.0",
+    "name": "Apache-2.0 (author metadata; dependency chain unverified)",
+    "url": "https://huggingface.co/Hadimeeee/pixel-art-lora-sdxl/blob/5440ac9c42ab16fea0d65e25bd149fc0f21b1271/README.md",
+    "terms_verified": false,
+    "note": "保留原來源授權狀態，鍵名轉換不解決依賴適用條款，權重不納入 Git。"
+  },
+  "purpose": "Native ComfyUI key compatibility copy for bounded L01 tests. Original retained separately; not an upstream release or the author's full image-conversion pipeline."
+}

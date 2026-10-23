@@ -164,6 +164,344 @@
           "strength_clip": 0.0
         }
       ]
+    },
+    {
+      "id": "l01-case-05-rtx3060-20261023",
+      "date": "2026-10-23",
+      "model": "Animagine XL 4.0 Opt",
+      "architecture": "sdxl",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "workflow": "ordered-lora-text2image-v1",
+      "workload": "inference",
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "vram_bytes": 12884377600,
+      "ram_gib": 63.94,
+      "os": "Windows 10 19045",
+      "python": "3.12.10",
+      "comfyui": "0.34.0",
+      "pytorch": "2.14.0+cu130",
+      "driver": "616.56",
+      "precision": "model/CLIP FP16; VAE bfloat16",
+      "offload": "ComfyUI NORMAL_VRAM, dynamic VRAM with async CPU offload; PyTorch attention",
+      "settings": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 28,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "batch_size": 1
+      },
+      "reference": "docs/validation/style-matrix-20261023.md",
+      "conditions": "L01 ikea-pixel，動漫半身、pixel art 提示、seed 9007199254740993；完整正反提示、版本、原圖與失敗觀察見驗收 JSON。參數匹配只比順序／強度與取樣設定，不包含 prompt／seed；不是使用者畫風／角色品質通過。",
+      "wall_seconds": 30.391,
+      "engine_seconds": 29.031,
+      "load_condition": "順序執行，含模型／LoRA 準備、快取與歷史查詢差異，非純取樣或順序速度排名。",
+      "sampled_device_peak_bytes": 9289334784,
+      "sample_count": 15,
+      "quality_observation": "IKEA → pixel 保留藍外套、紅圍巾、眼鏡與紅書，與單一 pixel 的構圖不同。 / 人物髮型與臉型改變，沒有身份鎖定。 / 仍是彩色像素感，沒有形成明確黑白說明書風格；此提示並非 IKEA 原始家具流程的完整品質驗收。 / 人物在素色背景偏小、手持書，並非嚴格腰上半身；不視為通用品質通過。",
+      "loras": [
+        {
+          "name": "IKEA Instructions LoRA SDXL",
+          "version": "revision eaa7f67c93be",
+          "architecture": "sdxl",
+          "sha256": "d0e5fcbe1e6e2a364011bf27a66e8a40c05d02195d3e422cc393436388b8da17",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        },
+        {
+          "name": "Pixel Art LoRA SDXL Comfy key-map v1",
+          "version": "key-map-v1 / upstream 5440ac9c42ab",
+          "architecture": "sdxl",
+          "sha256": "eef9b71806b7715760af4f8ab5a038b29daf41272ab30782f38381aee096f1be",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        }
+      ]
+    },
+    {
+      "id": "l01-case-06-rtx3060-20261023",
+      "date": "2026-10-23",
+      "model": "Animagine XL 4.0 Opt",
+      "architecture": "sdxl",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "workflow": "ordered-lora-text2image-v1",
+      "workload": "inference",
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "vram_bytes": 12884377600,
+      "ram_gib": 63.94,
+      "os": "Windows 10 19045",
+      "python": "3.12.10",
+      "comfyui": "0.34.0",
+      "pytorch": "2.14.0+cu130",
+      "driver": "616.56",
+      "precision": "model/CLIP FP16; VAE bfloat16",
+      "offload": "ComfyUI NORMAL_VRAM, dynamic VRAM with async CPU offload; PyTorch attention",
+      "settings": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 28,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "batch_size": 1
+      },
+      "reference": "docs/validation/style-matrix-20261023.md",
+      "conditions": "L01 pixel-ikea，動漫半身、pixel art 提示、seed 9007199254740993；完整正反提示、版本、原圖與失敗觀察見驗收 JSON。參數匹配只比順序／強度與取樣設定，不包含 prompt／seed；不是使用者畫風／角色品質通過。",
+      "wall_seconds": 32.641,
+      "engine_seconds": 30.619,
+      "load_condition": "順序執行，含模型／LoRA 準備、快取與歷史查詢差異，非純取樣或順序速度排名。",
+      "sampled_device_peak_bytes": 11617173504,
+      "sample_count": 16,
+      "quality_observation": "pixel → IKEA 保留外套、圍巾、眼鏡與紅書；成人身份不明確。 / 與正向視覺近似，但不能據此確認身份或所有順序等效。 / 與 case-05 都是彩色像素感，decoded RGB hash 不同；沒有明顯黑白說明風格或指定作者品質結論。 / 與正向構圖接近，素背景人物與書本；不視為通用品質通過。",
+      "loras": [
+        {
+          "name": "Pixel Art LoRA SDXL Comfy key-map v1",
+          "version": "key-map-v1 / upstream 5440ac9c42ab",
+          "architecture": "sdxl",
+          "sha256": "eef9b71806b7715760af4f8ab5a038b29daf41272ab30782f38381aee096f1be",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        },
+        {
+          "name": "IKEA Instructions LoRA SDXL",
+          "version": "revision eaa7f67c93be",
+          "architecture": "sdxl",
+          "sha256": "d0e5fcbe1e6e2a364011bf27a66e8a40c05d02195d3e422cc393436388b8da17",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        }
+      ]
+    },
+    {
+      "id": "l01-case-08-rtx3060-20261023",
+      "date": "2026-10-23",
+      "model": "Animagine XL 4.0 Opt",
+      "architecture": "sdxl",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "workflow": "ordered-lora-text2image-v1",
+      "workload": "inference",
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "vram_bytes": 12884377600,
+      "ram_gib": 63.94,
+      "os": "Windows 10 19045",
+      "python": "3.12.10",
+      "comfyui": "0.34.0",
+      "pytorch": "2.14.0+cu130",
+      "driver": "616.56",
+      "precision": "model/CLIP FP16; VAE bfloat16",
+      "offload": "ComfyUI NORMAL_VRAM, dynamic VRAM with async CPU offload; PyTorch attention",
+      "settings": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "lcm",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0,
+        "batch_size": 1
+      },
+      "reference": "docs/validation/style-matrix-20261023.md",
+      "conditions": "L01 lcm-pixel，動漫半身、pixel art 提示、seed 9007199254740993；完整正反提示、版本、原圖與失敗觀察見驗收 JSON。參數匹配只比順序／強度與取樣設定，不包含 prompt／seed；不是使用者畫風／角色品質通過。",
+      "wall_seconds": 16.469,
+      "engine_seconds": 14.453,
+      "load_condition": "順序執行，含模型／LoRA 準備、快取與歷史查詢差異，非純取樣或順序速度排名。",
+      "sampled_device_peak_bytes": 11336155136,
+      "sample_count": 9,
+      "quality_observation": "LCM → pixel 的眼鏡、圍巾、藍外套與紅書大致可見，整體細節偏模糊。 / 與單 LCM 的臉型不同，無法確認同身份。 / 仍是柔和模糊畫面，未達清晰像素目標，不建立品質推薦。 / 胸像與書本，腰上半身要求未完整符合；不視為通用品質通過。",
+      "loras": [
+        {
+          "name": "LCM LoRA SDXL",
+          "version": "revision a18548dd4956",
+          "architecture": "sdxl",
+          "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+          "strength_model": 1.0,
+          "strength_clip": 0.0
+        },
+        {
+          "name": "Pixel Art LoRA SDXL Comfy key-map v1",
+          "version": "key-map-v1 / upstream 5440ac9c42ab",
+          "architecture": "sdxl",
+          "sha256": "eef9b71806b7715760af4f8ab5a038b29daf41272ab30782f38381aee096f1be",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        }
+      ]
+    },
+    {
+      "id": "l01-case-09-rtx3060-20261023",
+      "date": "2026-10-23",
+      "model": "Animagine XL 4.0 Opt",
+      "architecture": "sdxl",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "workflow": "ordered-lora-text2image-v1",
+      "workload": "inference",
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "vram_bytes": 12884377600,
+      "ram_gib": 63.94,
+      "os": "Windows 10 19045",
+      "python": "3.12.10",
+      "comfyui": "0.34.0",
+      "pytorch": "2.14.0+cu130",
+      "driver": "616.56",
+      "precision": "model/CLIP FP16; VAE bfloat16",
+      "offload": "ComfyUI NORMAL_VRAM, dynamic VRAM with async CPU offload; PyTorch attention",
+      "settings": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "lcm",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0,
+        "batch_size": 1
+      },
+      "reference": "docs/validation/style-matrix-20261023.md",
+      "conditions": "L01 pixel-lcm，動漫半身、pixel art 提示、seed 9007199254740993；完整正反提示、版本、原圖與失敗觀察見驗收 JSON。參數匹配只比順序／強度與取樣設定，不包含 prompt／seed；不是使用者畫風／角色品質通過。",
+      "wall_seconds": 16.515,
+      "engine_seconds": 14.584,
+      "load_condition": "順序執行，含模型／LoRA 準備、快取與歷史查詢差異，非純取樣或順序速度排名。",
+      "sampled_device_peak_bytes": 9026142208,
+      "sample_count": 9,
+      "quality_observation": "pixel → LCM 保留大致相同造型與紅書，但臉／手及線條細節偏模糊。 / 與 case-08 視覺接近但 RGB hash 不同，不能推定身份或順序普遍等效。 / 正反都未得到清晰像素風格，保留品質不足結果。 / 近距離胸像與書本，裁切及手部細節仍受限；不視為通用品質通過。",
+      "loras": [
+        {
+          "name": "Pixel Art LoRA SDXL Comfy key-map v1",
+          "version": "key-map-v1 / upstream 5440ac9c42ab",
+          "architecture": "sdxl",
+          "sha256": "eef9b71806b7715760af4f8ab5a038b29daf41272ab30782f38381aee096f1be",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        },
+        {
+          "name": "LCM LoRA SDXL",
+          "version": "revision a18548dd4956",
+          "architecture": "sdxl",
+          "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+          "strength_model": 1.0,
+          "strength_clip": 0.0
+        }
+      ]
+    },
+    {
+      "id": "l01-case-10-rtx3060-20261023",
+      "date": "2026-10-23",
+      "model": "Animagine XL 4.0 Opt",
+      "architecture": "sdxl",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "workflow": "ordered-lora-text2image-v1",
+      "workload": "inference",
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "vram_bytes": 12884377600,
+      "ram_gib": 63.94,
+      "os": "Windows 10 19045",
+      "python": "3.12.10",
+      "comfyui": "0.34.0",
+      "pytorch": "2.14.0+cu130",
+      "driver": "616.56",
+      "precision": "model/CLIP FP16; VAE bfloat16",
+      "offload": "ComfyUI NORMAL_VRAM, dynamic VRAM with async CPU offload; PyTorch attention",
+      "settings": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "lcm",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0,
+        "batch_size": 1
+      },
+      "reference": "docs/validation/style-matrix-20261023.md",
+      "conditions": "L01 lcm-ikea-pixel，動漫半身、pixel art 提示、seed 9007199254740993；完整正反提示、版本、原圖與失敗觀察見驗收 JSON。參數匹配只比順序／強度與取樣設定，不包含 prompt／seed；不是使用者畫風／角色品質通過。",
+      "wall_seconds": 16.39,
+      "engine_seconds": 14.673,
+      "load_condition": "順序執行，含模型／LoRA 準備、快取與歷史查詢差異，非純取樣或順序速度排名。",
+      "sampled_device_peak_bytes": 9015656448,
+      "sample_count": 9,
+      "quality_observation": "LCM → IKEA → pixel 可見眼鏡、圍巾、外套與紅書；成人特徵不明確。 / 臉型與雙組合改變，沒有身份鎖定或作者相似度通過。 / 比本批雙 LCM／pixel 組看起來較清楚，但仍偏柔和上色而非像素塊；不可由單例推定三項更佳。 / 近距離胸像、手持書，未完整達腰上半身；不視為通用品質通過。",
+      "loras": [
+        {
+          "name": "LCM LoRA SDXL",
+          "version": "revision a18548dd4956",
+          "architecture": "sdxl",
+          "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+          "strength_model": 1.0,
+          "strength_clip": 0.0
+        },
+        {
+          "name": "IKEA Instructions LoRA SDXL",
+          "version": "revision eaa7f67c93be",
+          "architecture": "sdxl",
+          "sha256": "d0e5fcbe1e6e2a364011bf27a66e8a40c05d02195d3e422cc393436388b8da17",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        },
+        {
+          "name": "Pixel Art LoRA SDXL Comfy key-map v1",
+          "version": "key-map-v1 / upstream 5440ac9c42ab",
+          "architecture": "sdxl",
+          "sha256": "eef9b71806b7715760af4f8ab5a038b29daf41272ab30782f38381aee096f1be",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        }
+      ]
+    },
+    {
+      "id": "l01-case-12-rtx3060-20261023",
+      "date": "2026-10-23",
+      "model": "Animagine XL 4.0 Opt",
+      "architecture": "sdxl",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "workflow": "ordered-lora-text2image-v1",
+      "workload": "inference",
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "vram_bytes": 12884377600,
+      "ram_gib": 63.94,
+      "os": "Windows 10 19045",
+      "python": "3.12.10",
+      "comfyui": "0.34.0",
+      "pytorch": "2.14.0+cu130",
+      "driver": "616.56",
+      "precision": "model/CLIP FP16; VAE bfloat16",
+      "offload": "ComfyUI NORMAL_VRAM, dynamic VRAM with async CPU offload; PyTorch attention",
+      "settings": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "lcm",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0,
+        "batch_size": 1
+      },
+      "reference": "docs/validation/style-matrix-20261023.md",
+      "conditions": "L01 lcm-pixel，動漫半身、pixel art 提示、seed 18446744073709551615；完整正反提示、版本、原圖與失敗觀察見驗收 JSON。參數匹配只比順序／強度與取樣設定，不包含 prompt／seed；不是使用者畫風／角色品質通過。",
+      "wall_seconds": 16.437,
+      "engine_seconds": 13.935,
+      "load_condition": "順序執行，含模型／LoRA 準備、快取與歷史查詢差異，非純取樣或順序速度排名。",
+      "sampled_device_peak_bytes": 11705253888,
+      "sample_count": 9,
+      "quality_observation": "第二 seed 的 LCM → pixel 保留造型大輪廓，細節仍模糊，紅書僅部分可見。 / 與第一 seed 的臉型與姿態不同，模糊畫面不足以確認同身份。 / 仍未形成清楚像素塊，保留本條件品質不足結果；不建立品質推薦。 / 近距離胸像、頭髮與書部分裁切；不視為通用品質通過。",
+      "loras": [
+        {
+          "name": "LCM LoRA SDXL",
+          "version": "revision a18548dd4956",
+          "architecture": "sdxl",
+          "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+          "strength_model": 1.0,
+          "strength_clip": 0.0
+        },
+        {
+          "name": "Pixel Art LoRA SDXL Comfy key-map v1",
+          "version": "key-map-v1 / upstream 5440ac9c42ab",
+          "architecture": "sdxl",
+          "sha256": "eef9b71806b7715760af4f8ab5a038b29daf41272ab30782f38381aee096f1be",
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        }
+      ]
     }
   ]
 }

@@ -52,9 +52,16 @@ SOURCES = {
         'ikea_instructions_xl_v1_5.safetensors',
         'eaa7f67c93be0b22f00c0225d1f31232d91a052a',
     ),
+    'pixel-art-lora-sdxl': (
+        'Hadimeeee/pixel-art-lora-sdxl',
+        'pytorch_lora_weights.safetensors',
+        'pixel_art_lora_sdxl.safetensors',
+        '5440ac9c42ab16fea0d65e25bd149fc0f21b1271',
+    ),
 }
 CONTROL_IDS = frozenset({'controlnet-canny-sdxl-1.0-fp16'})
-LORA_IDS = frozenset({'lcm-lora-sdxl', 'ikea-instructions-lora-sdxl'})
+LORA_IDS = frozenset({'lcm-lora-sdxl', 'ikea-instructions-lora-sdxl', 'pixel-art-lora-sdxl'})
+LOCAL_LORA_FILENAMES = frozenset({'pixel_art_lora_sdxl_comfy_v1.safetensors'})
 RESERVE_BYTES = 2 * 1024**3
 CHUNK_BYTES = 1024 * 1024
 
@@ -112,7 +119,7 @@ def _paths(workspace: Path, filename: str, *, create=True) -> tuple[Path, Path, 
         'controlnet'
         if filename in {SOURCES[key][2] for key in CONTROL_IDS}
         else 'loras'
-        if filename in {SOURCES[key][2] for key in LORA_IDS}
+        if filename in {SOURCES[key][2] for key in LORA_IDS} | LOCAL_LORA_FILENAMES
         else 'checkpoints'
     )
     directory = (root / 'runtime' / 'ComfyUI' / 'models' / category).resolve()

@@ -1,0 +1,25 @@
+{
+  "id": "pixel-art-lora-sdxl",
+  "name": "Pixel Art LoRA SDXL (Hadimeeee)",
+  "version": "revision 5440ac9c42ab",
+  "architecture": "SDXL",
+  "filename": "pixel_art_lora_sdxl.safetensors",
+  "size_bytes": 185963768,
+  "sha256": "30ef3c19f6bf6c621a4a90722722df78af915c8f4e9b35f91a66d2ea7a079444",
+  "source": {
+    "provider": "Hugging Face",
+    "repository": "Hadimeeee/pixel-art-lora-sdxl",
+    "revision": "5440ac9c42ab16fea0d65e25bd149fc0f21b1271",
+    "filename": "pytorch_lora_weights.safetensors",
+    "page_url": "https://huggingface.co/Hadimeeee/pixel-art-lora-sdxl/blob/5440ac9c42ab16fea0d65e25bd149fc0f21b1271/README.md",
+    "download_url": "https://huggingface.co/Hadimeeee/pixel-art-lora-sdxl/resolve/5440ac9c42ab16fea0d65e25bd149fc0f21b1271/pytorch_lora_weights.safetensors"
+  },
+  "license": {
+    "identifier": "apache-2.0",
+    "name": "Apache-2.0 (author metadata; dependency chain unverified)",
+    "url": "https://huggingface.co/Hadimeeee/pixel-art-lora-sdxl/blob/5440ac9c42ab16fea0d65e25bd149fc0f21b1271/README.md",
+    "terms_verified": false,
+    "note": "固定作者模型卡標記 Apache-2.0；該修訂檔案清單未附獨立 LICENSE，SDXL 基礎模型與資料適用條件未在本輪完整核實，不以公開下載或 GPU 載入代替授權確認。"
+  },
+  "purpose": "Original upstream source. ComfyUI 0.34.0 reports all 1120 original keys as not loaded; use scripts.convert_pixel_lora and the distinct comfy-v1 manifest. Author's background-removal/ControlNet/quantization pipeline is separate; no upstream Python execution or anime-author quality claim."
+}

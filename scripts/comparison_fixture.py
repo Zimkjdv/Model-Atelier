@@ -20,6 +20,7 @@ def prepare(context, root, engine):
             'pony-v6-xl',
             'lcm-lora-sdxl',
             'ikea-instructions-lora-sdxl',
+            'pixel-art-lora-sdxl-comfy-v1',
         )
     ]
     catalog.merge(context.DB, engine, ['demo.safetensors'] + [v['filename'] for v in manifests[:2]])

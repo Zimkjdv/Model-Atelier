@@ -1,5 +1,7 @@
 # 有序多 LoRA 歷史條件
 
+2026-10-23 L01：新增像素畫相容副本與 IKEA／LCM 的六筆正反及三項歷史條件，保留原三筆及低對比觀察。原來源全鍵未載入的四組不加入載入 registry。新批次仍有 LCM 模糊、造型偏移及裁切等限制，見 [L01 驗收](../validation/style-matrix-20261023.md)。參數匹配只涵蓋順序、強度及取樣設定；prompt／seed 在原設定及條件中分別保存，不是目前圖的品質證明。
+
 2026-10-23 R04 的 [Pony Canny v2 五組實測](../validation/pony-canny-v2-20261023.md) 另保留控制模型、原邊緣與來源，不加入本頁的一般文生圖 registry，避免未比對結構條件就借用相容性／品質結論。正反兩組都完成載入及還原，像素 hash 不同，人工觀察仍為中空平面線框；不能據此推薦任意排列。
 
 `POST /api/loras/stack-validation` 只讀目前選定引擎的本機登記快照與已審查 registry。比對 checkpoint 雜湊／架構，以及所有啟用 LoRA 的有序雜湊／架構；停用項目不進圖，不借用單一 LoRA、反向順序或其他 checkpoint 的結論。另比對兩種強度、尺寸、steps、CFG、sampler、scheduler、denoise 與 batch 1。改參數後可保留同組合的歷史載入紀錄，但不顯示參數匹配。
