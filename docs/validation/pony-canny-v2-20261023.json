@@ -1,0 +1,767 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-23",
+  "workflow_id": "checkpoint-canny-controlnet-edge-v2",
+  "source_fixture": {
+    "path": "experiments/fixtures/canny-chair-v1.png",
+    "sha256": "59b2f8be5ed80f966bbac6a61838cabb2a8a1eca5cc17921696e22b6e7e4d8d7",
+    "asset_sha256": "fb219fb1268aef29671f77ab46dda4a2ea97de11a29ca9aec1b425f246406850",
+    "processed_sha256": "59b2f8be5ed80f966bbac6a61838cabb2a8a1eca5cc17921696e22b6e7e4d8d7",
+    "width": 768,
+    "height": 768,
+    "source": "project-authored chair fixture, unchanged from 2026-10-09"
+  },
+  "environment": {
+    "gpu": "NVIDIA GeForce RTX 3060",
+    "vram_bytes": 12884901888,
+    "driver": "616.56",
+    "ram_bytes": 68654481408,
+    "comfyui": "0.34.0",
+    "comfyui_git_revision": "15eb748b3ec5f8a0a2d470b7fb280e2d7579f916",
+    "python": "3.12.10",
+    "pytorch": "2.14.0+cu130",
+    "precision": "checkpoint/CLIP/ControlNet FP16; VAE bfloat16",
+    "offload": "NORMAL_VRAM, dynamic VRAM with async CPU offload; PyTorch attention",
+    "node_versions": null,
+    "note": "ComfyUI revision observed locally; individual node versions remain unknown"
+  },
+  "pinned_weights": [
+    {
+      "id": "pony-v6-xl",
+      "filename": "pony-v6-xl.safetensors",
+      "version": "V6 XL",
+      "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+      "size_bytes": 6938041050,
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "AstraliteHeart/pony-diffusion-v6",
+        "revision": "5ec9c05863255568f1b59753e3838107befaa712",
+        "filename": "v6.safetensors",
+        "page_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+        "download_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/resolve/5ec9c05863255568f1b59753e3838107befaa712/v6.safetensors"
+      },
+      "terms_verified": false
+    },
+    {
+      "id": "controlnet-canny-sdxl-1.0-fp16",
+      "filename": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+      "version": "1.0 FP16",
+      "sha256": "b2e7d3921058a442cc80430d1ec8847f42599c705e2451c95e77cf4dcf8d6c25",
+      "size_bytes": 2502139136,
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "diffusers/controlnet-canny-sdxl-1.0",
+        "revision": "eb115a19a10d14909256db740ed109532ab1483c",
+        "filename": "diffusion_pytorch_model.fp16.safetensors",
+        "page_url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/blob/eb115a19a10d14909256db740ed109532ab1483c/README.md",
+        "download_url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/resolve/eb115a19a10d14909256db740ed109532ab1483c/diffusion_pytorch_model.fp16.safetensors"
+      },
+      "terms_verified": true
+    },
+    {
+      "id": "lcm-lora-sdxl",
+      "filename": "lcm_lora_sdxl.safetensors",
+      "version": "revision a18548dd4956",
+      "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+      "size_bytes": 393855224,
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "latent-consistency/lcm-lora-sdxl",
+        "revision": "a18548dd4956b174ec5b0d78d340c8dae0a129cd",
+        "filename": "pytorch_lora_weights.safetensors",
+        "page_url": "https://huggingface.co/latent-consistency/lcm-lora-sdxl/blob/a18548dd4956b174ec5b0d78d340c8dae0a129cd/README.md",
+        "download_url": "https://huggingface.co/latent-consistency/lcm-lora-sdxl/resolve/a18548dd4956b174ec5b0d78d340c8dae0a129cd/pytorch_lora_weights.safetensors"
+      },
+      "terms_verified": true
+    },
+    {
+      "id": "ikea-instructions-lora-sdxl",
+      "filename": "ikea_instructions_xl_v1_5.safetensors",
+      "version": "revision eaa7f67c93be",
+      "sha256": "d0e5fcbe1e6e2a364011bf27a66e8a40c05d02195d3e422cc393436388b8da17",
+      "size_bytes": 185697368,
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "ostris/ikea-instructions-lora-sdxl",
+        "revision": "eaa7f67c93be0b22f00c0225d1f31232d91a052a",
+        "filename": "ikea_instructions_xl_v1_5.safetensors",
+        "page_url": "https://huggingface.co/ostris/ikea-instructions-lora-sdxl/blob/eaa7f67c93be0b22f00c0225d1f31232d91a052a/README.md",
+        "download_url": "https://huggingface.co/ostris/ikea-instructions-lora-sdxl/resolve/eaa7f67c93be0b22f00c0225d1f31232d91a052a/ikea_instructions_xl_v1_5.safetensors"
+      },
+      "terms_verified": false
+    }
+  ],
+  "cases": [
+    {
+      "profile": "baseline",
+      "compatibility": "passed_fixed_profile",
+      "quality_recommendation": "not_established",
+      "settings": {
+        "title": "Pony Canny v2 / baseline",
+        "engine_url": "http://127.0.0.1:1598",
+        "checkpoint": "pony-v6-xl.safetensors",
+        "prompt": "score_9,score_8_up,score_7_up,rating_safe,source_anime,single red wooden chair, empty room, three quarter view, clean illustration, daylight, no humans",
+        "negative_prompt": "people, person, text, watermark, blurry",
+        "seed": "9007199254740993",
+        "width": 768,
+        "height": 768,
+        "steps": 20,
+        "cfg": 5.5,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 1.0,
+        "reference_ids": [
+          "2a471468-0861-408b-93b4-24c541e3bca1"
+        ],
+        "loras": [],
+        "workflow_mode": "text2image",
+        "image_asset_id": "2a471468-0861-408b-93b4-24c541e3bca1",
+        "reference_resize": "fit",
+        "control_net_name": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+        "control_strength": 0.5,
+        "control_start": 0.0,
+        "control_end": 1.0,
+        "canny_low": 0.4,
+        "canny_high": 0.8
+      },
+      "job_id": "5025d913-ec7d-4b29-ae48-b626cd0f7adf",
+      "artwork_id": "36f4e609-d771-5630-af3c-7e6aa2a7e4c3",
+      "source_sha256": "fb219fb1268aef29671f77ab46dda4a2ea97de11a29ca9aec1b425f246406850",
+      "workflow_sha256": "456dc6bc524266640cb02d832b9281d3bc3a08d4ce803512f2ab8c450f515040",
+      "workflow_nodes": 12,
+      "job_json_sha256": "c58abd50bd61caefb81d5ba172e3889c757cf133d79092b6dcca30441cf6f036",
+      "artwork": {
+        "sha256": "740e7d024c77610ae111517750f0bc1bf0eeaf05f435a35d926b2d4f1efcf1d1",
+        "size_bytes": 937083,
+        "decoded_rgb_sha256": "e0478921abf4bea1b865d4e61c1abd22f13837c8eab9938e27851f370fbb8300"
+      },
+      "edge": {
+        "sha256": "f52164deaa40787d4e927eda1acfd2cf3475cbc0f4fda6b5172308741142b6af",
+        "decoded_rgb_sha256": "202545d148f9816a6fdde938e946d5d410241c345e1b05ae731e964d444a634c",
+        "size_bytes": 6883,
+        "metrics": {
+          "width": 768,
+          "height": 768,
+          "edge_pixels": 4384,
+          "total_pixels": 589824
+        }
+      },
+      "weight_snapshots": {
+        "checkpoint": {
+          "name": "pony-v6-xl.safetensors",
+          "version": "V6 XL",
+          "source_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+          "architecture": "sdxl",
+          "size_bytes": 6938041050,
+          "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+          "license_name": "CreativeML Open RAIL-M (upstream card label; full author terms unverified)",
+          "license_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+          "metadata_updated_at": "2026-10-23T07:14:41.449554+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-23T07:15:31.786713+00:00"
+        },
+        "controlnet": [
+          {
+            "name": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+            "version": "1.0 FP16",
+            "source_url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/blob/eb115a19a10d14909256db740ed109532ab1483c/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 2502139136,
+            "sha256": "b2e7d3921058a442cc80430d1ec8847f42599c705e2451c95e77cf4dcf8d6c25",
+            "license_name": "CreativeML Open RAIL++-M",
+            "license_url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+            "metadata_updated_at": "2026-10-23T07:14:41.455553+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T07:15:31.785710+00:00",
+            "role": "controlnet",
+            "kind": "canny"
+          }
+        ],
+        "ordered_loras": []
+      },
+      "measurements": {
+        "submission_to_history_wall_seconds": 44.329,
+        "engine_execution_seconds": 42.399,
+        "sampled_device_max_used_bytes": {
+          "0": 12144607232
+        },
+        "device_sample_count": 21,
+        "task_vram_peak_bytes": null
+      },
+      "manual_observation": "輪廓大致沿用椅子線稿，深色細框、半透明椅背與強陰影；未達紅色木材及乾淨插畫要求。"
+    },
+    {
+      "profile": "style",
+      "compatibility": "passed_fixed_profile",
+      "quality_recommendation": "not_established",
+      "settings": {
+        "title": "Pony Canny v2 / style",
+        "engine_url": "http://127.0.0.1:1598",
+        "checkpoint": "pony-v6-xl.safetensors",
+        "prompt": "score_9,score_8_up,score_7_up,rating_safe,source_anime,single red wooden chair, empty room, three quarter view, clean illustration, daylight, no humans",
+        "negative_prompt": "people, person, text, watermark, blurry",
+        "seed": "9007199254740993",
+        "width": 768,
+        "height": 768,
+        "steps": 20,
+        "cfg": 5.5,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 1.0,
+        "reference_ids": [
+          "2a471468-0861-408b-93b4-24c541e3bca1"
+        ],
+        "loras": [
+          {
+            "name": "ikea_instructions_xl_v1_5.safetensors",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 1.0
+          }
+        ],
+        "workflow_mode": "text2image",
+        "image_asset_id": "2a471468-0861-408b-93b4-24c541e3bca1",
+        "reference_resize": "fit",
+        "control_net_name": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+        "control_strength": 0.5,
+        "control_start": 0.0,
+        "control_end": 1.0,
+        "canny_low": 0.4,
+        "canny_high": 0.8
+      },
+      "job_id": "0f6f7be0-866d-4848-9563-a4d94d0f6ed2",
+      "artwork_id": "5176e8e9-6f61-5f13-a872-ab6c77c6035d",
+      "source_sha256": "fb219fb1268aef29671f77ab46dda4a2ea97de11a29ca9aec1b425f246406850",
+      "workflow_sha256": "2a000d12f591a9230287091d68f4524ca9155d6188e8bf225ce214a32794ebe1",
+      "workflow_nodes": 13,
+      "job_json_sha256": "5a2f321669051104ca81ad5c1e958999190f7061d20dc5f722be75efe7a54dad",
+      "artwork": {
+        "sha256": "b709a5b6b1f0d0f96ece31d61b6ecee4a7e1f3c1ef9e926801e86a93f35ea203",
+        "size_bytes": 873847,
+        "decoded_rgb_sha256": "0f056884ff9ee0b1d1ff5ddbcd2cc75c125cec91649e3db652748afe300547b3"
+      },
+      "edge": {
+        "sha256": "9c9b95fa6f92527a00d2fdf373370bfb9d37492d33ca236abdad95052dad86d1",
+        "decoded_rgb_sha256": "202545d148f9816a6fdde938e946d5d410241c345e1b05ae731e964d444a634c",
+        "size_bytes": 7066,
+        "metrics": {
+          "width": 768,
+          "height": 768,
+          "edge_pixels": 4384,
+          "total_pixels": 589824
+        }
+      },
+      "weight_snapshots": {
+        "checkpoint": {
+          "name": "pony-v6-xl.safetensors",
+          "version": "V6 XL",
+          "source_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+          "architecture": "sdxl",
+          "size_bytes": 6938041050,
+          "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+          "license_name": "CreativeML Open RAIL-M (upstream card label; full author terms unverified)",
+          "license_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+          "metadata_updated_at": "2026-10-23T07:14:41.449554+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-23T07:16:48.854603+00:00"
+        },
+        "controlnet": [
+          {
+            "name": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+            "version": "1.0 FP16",
+            "source_url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/blob/eb115a19a10d14909256db740ed109532ab1483c/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 2502139136,
+            "sha256": "b2e7d3921058a442cc80430d1ec8847f42599c705e2451c95e77cf4dcf8d6c25",
+            "license_name": "CreativeML Open RAIL++-M",
+            "license_url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+            "metadata_updated_at": "2026-10-23T07:14:41.455553+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T07:16:48.853603+00:00",
+            "role": "controlnet",
+            "kind": "canny"
+          }
+        ],
+        "ordered_loras": [
+          {
+            "name": "ikea_instructions_xl_v1_5.safetensors",
+            "version": "revision eaa7f67c93be",
+            "source_url": "https://huggingface.co/ostris/ikea-instructions-lora-sdxl/blob/eaa7f67c93be0b22f00c0225d1f31232d91a052a/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 185697368,
+            "sha256": "d0e5fcbe1e6e2a364011bf27a66e8a40c05d02195d3e422cc393436388b8da17",
+            "license_name": "未知（作者標記 other）",
+            "license_url": "https://huggingface.co/ostris/ikea-instructions-lora-sdxl/blob/eaa7f67c93be0b22f00c0225d1f31232d91a052a/README.md",
+            "metadata_updated_at": "2026-10-23T07:14:41.461553+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T07:16:48.854603+00:00",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 1.0
+          }
+        ]
+      },
+      "measurements": {
+        "submission_to_history_wall_seconds": 30.453,
+        "engine_execution_seconds": 29.379,
+        "sampled_device_max_used_bytes": {
+          "0": 12073304064
+        },
+        "device_sample_count": 15,
+        "task_vram_peak_bytes": null
+      },
+      "manual_observation": "紅棕色細框較清晰，增加橫向支架與陰影，座面／椅背仍中空；未得到木質實體或說明書畫風。此提示未要求說明書，不能單憑結果否定此 LoRA 的其他用途。"
+    },
+    {
+      "profile": "lcm",
+      "compatibility": "passed_fixed_profile",
+      "quality_recommendation": "not_established",
+      "settings": {
+        "title": "Pony Canny v2 / lcm",
+        "engine_url": "http://127.0.0.1:1598",
+        "checkpoint": "pony-v6-xl.safetensors",
+        "prompt": "score_9,score_8_up,score_7_up,rating_safe,source_anime,single red wooden chair, empty room, three quarter view, clean illustration, daylight, no humans",
+        "negative_prompt": "people, person, text, watermark, blurry",
+        "seed": "9007199254740993",
+        "width": 768,
+        "height": 768,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "lcm",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0,
+        "reference_ids": [
+          "2a471468-0861-408b-93b4-24c541e3bca1"
+        ],
+        "loras": [
+          {
+            "name": "lcm_lora_sdxl.safetensors",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 0.0
+          }
+        ],
+        "workflow_mode": "text2image",
+        "image_asset_id": "2a471468-0861-408b-93b4-24c541e3bca1",
+        "reference_resize": "fit",
+        "control_net_name": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+        "control_strength": 0.5,
+        "control_start": 0.0,
+        "control_end": 1.0,
+        "canny_low": 0.4,
+        "canny_high": 0.8
+      },
+      "job_id": "0133b163-c192-4bc1-a974-c76e25c54995",
+      "artwork_id": "6a053d0b-6805-5944-8ff3-00249ed5527f",
+      "source_sha256": "fb219fb1268aef29671f77ab46dda4a2ea97de11a29ca9aec1b425f246406850",
+      "workflow_sha256": "3767c52ba90d0681e25fb9098d5ff1a24294d4f088a542d11becbe36a1712442",
+      "workflow_nodes": 13,
+      "job_json_sha256": "c8de141ce0388a2e2f6214e98faf7dc2baf4bada98fc322aea1dbc96ad4ae458",
+      "artwork": {
+        "sha256": "42ee5d9070d4289d3ad2def4aabf5136013a2171308dba4b4832444605bba7d4",
+        "size_bytes": 604441,
+        "decoded_rgb_sha256": "34cfa047dfc6acc2a29a30dd0685e56e407f8018ab5d9d659d7327dc0733747d"
+      },
+      "edge": {
+        "sha256": "b15438bce6126c8de63eac2f9692447596a03c3e9478a6e1d3c0d99e572ebb67",
+        "decoded_rgb_sha256": "202545d148f9816a6fdde938e946d5d410241c345e1b05ae731e964d444a634c",
+        "size_bytes": 7053,
+        "metrics": {
+          "width": 768,
+          "height": 768,
+          "edge_pixels": 4384,
+          "total_pixels": 589824
+        }
+      },
+      "weight_snapshots": {
+        "checkpoint": {
+          "name": "pony-v6-xl.safetensors",
+          "version": "V6 XL",
+          "source_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+          "architecture": "sdxl",
+          "size_bytes": 6938041050,
+          "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+          "license_name": "CreativeML Open RAIL-M (upstream card label; full author terms unverified)",
+          "license_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+          "metadata_updated_at": "2026-10-23T07:14:41.449554+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-23T07:18:10.421511+00:00"
+        },
+        "controlnet": [
+          {
+            "name": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+            "version": "1.0 FP16",
+            "source_url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/blob/eb115a19a10d14909256db740ed109532ab1483c/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 2502139136,
+            "sha256": "b2e7d3921058a442cc80430d1ec8847f42599c705e2451c95e77cf4dcf8d6c25",
+            "license_name": "CreativeML Open RAIL++-M",
+            "license_url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+            "metadata_updated_at": "2026-10-23T07:14:41.455553+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T07:18:10.419512+00:00",
+            "role": "controlnet",
+            "kind": "canny"
+          }
+        ],
+        "ordered_loras": [
+          {
+            "name": "lcm_lora_sdxl.safetensors",
+            "version": "revision a18548dd4956",
+            "source_url": "https://huggingface.co/latent-consistency/lcm-lora-sdxl/blob/a18548dd4956b174ec5b0d78d340c8dae0a129cd/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 393855224,
+            "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+            "license_name": "CreativeML Open RAIL++-M",
+            "license_url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+            "metadata_updated_at": "2026-10-23T07:14:41.459553+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T07:18:10.421511+00:00",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 0.0
+          }
+        ]
+      },
+      "measurements": {
+        "submission_to_history_wall_seconds": 19.328,
+        "engine_execution_seconds": 18.745,
+        "sampled_device_max_used_bytes": {
+          "0": 12078546944
+        },
+        "device_sample_count": 10,
+        "task_vram_peak_bytes": null
+      },
+      "manual_observation": "較平面、紅色線稿貼近來源，背景有模糊垂直色帶；缺少椅背／座面體積與木質材質。取樣設定與非 LCM 組不同，不能作公平品質排名。"
+    },
+    {
+      "profile": "lcm-style",
+      "compatibility": "passed_fixed_profile",
+      "quality_recommendation": "not_established",
+      "settings": {
+        "title": "Pony Canny v2 / lcm-style",
+        "engine_url": "http://127.0.0.1:1598",
+        "checkpoint": "pony-v6-xl.safetensors",
+        "prompt": "score_9,score_8_up,score_7_up,rating_safe,source_anime,single red wooden chair, empty room, three quarter view, clean illustration, daylight, no humans",
+        "negative_prompt": "people, person, text, watermark, blurry",
+        "seed": "9007199254740993",
+        "width": 768,
+        "height": 768,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "lcm",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0,
+        "reference_ids": [
+          "2a471468-0861-408b-93b4-24c541e3bca1"
+        ],
+        "loras": [
+          {
+            "name": "lcm_lora_sdxl.safetensors",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 0.0
+          },
+          {
+            "name": "ikea_instructions_xl_v1_5.safetensors",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 1.0
+          }
+        ],
+        "workflow_mode": "text2image",
+        "image_asset_id": "2a471468-0861-408b-93b4-24c541e3bca1",
+        "reference_resize": "fit",
+        "control_net_name": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+        "control_strength": 0.5,
+        "control_start": 0.0,
+        "control_end": 1.0,
+        "canny_low": 0.4,
+        "canny_high": 0.8
+      },
+      "job_id": "51b43e3e-2567-45a2-a8c5-e15151f2a970",
+      "artwork_id": "6fa5e0a3-a4d9-5d5e-a235-af1161b5f04e",
+      "source_sha256": "fb219fb1268aef29671f77ab46dda4a2ea97de11a29ca9aec1b425f246406850",
+      "workflow_sha256": "8f71d7abb5d77c9cbc19f1134beba9801c244b084fb7219e74b11c3ed8537b65",
+      "workflow_nodes": 14,
+      "job_json_sha256": "df121d00d1bd2ea7cab8ef16152bd1d24cf3f0e4fdfb347414e4d1576ba48ac8",
+      "artwork": {
+        "sha256": "88fd38bb926b15cedac9ed106c3c9f785b795d98054037fd3f9e75d7f767d9ff",
+        "size_bytes": 543476,
+        "decoded_rgb_sha256": "cc0e177eb133f94eb33a76343e4b97bf3ec7cffeb3c0ded2d772e887b470060b"
+      },
+      "edge": {
+        "sha256": "e7ced5362786d8218280232c5a7f0b22539c40733044fa92db6d2cce3c67df1d",
+        "decoded_rgb_sha256": "202545d148f9816a6fdde938e946d5d410241c345e1b05ae731e964d444a634c",
+        "size_bytes": 7236,
+        "metrics": {
+          "width": 768,
+          "height": 768,
+          "edge_pixels": 4384,
+          "total_pixels": 589824
+        }
+      },
+      "weight_snapshots": {
+        "checkpoint": {
+          "name": "pony-v6-xl.safetensors",
+          "version": "V6 XL",
+          "source_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+          "architecture": "sdxl",
+          "size_bytes": 6938041050,
+          "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+          "license_name": "CreativeML Open RAIL-M (upstream card label; full author terms unverified)",
+          "license_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+          "metadata_updated_at": "2026-10-23T07:14:41.449554+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-23T07:19:39.927947+00:00"
+        },
+        "controlnet": [
+          {
+            "name": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+            "version": "1.0 FP16",
+            "source_url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/blob/eb115a19a10d14909256db740ed109532ab1483c/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 2502139136,
+            "sha256": "b2e7d3921058a442cc80430d1ec8847f42599c705e2451c95e77cf4dcf8d6c25",
+            "license_name": "CreativeML Open RAIL++-M",
+            "license_url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+            "metadata_updated_at": "2026-10-23T07:14:41.455553+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T07:19:39.926948+00:00",
+            "role": "controlnet",
+            "kind": "canny"
+          }
+        ],
+        "ordered_loras": [
+          {
+            "name": "lcm_lora_sdxl.safetensors",
+            "version": "revision a18548dd4956",
+            "source_url": "https://huggingface.co/latent-consistency/lcm-lora-sdxl/blob/a18548dd4956b174ec5b0d78d340c8dae0a129cd/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 393855224,
+            "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+            "license_name": "CreativeML Open RAIL++-M",
+            "license_url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+            "metadata_updated_at": "2026-10-23T07:14:41.459553+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T07:19:39.927947+00:00",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 0.0
+          },
+          {
+            "name": "ikea_instructions_xl_v1_5.safetensors",
+            "version": "revision eaa7f67c93be",
+            "source_url": "https://huggingface.co/ostris/ikea-instructions-lora-sdxl/blob/eaa7f67c93be0b22f00c0225d1f31232d91a052a/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 185697368,
+            "sha256": "d0e5fcbe1e6e2a364011bf27a66e8a40c05d02195d3e422cc393436388b8da17",
+            "license_name": "未知（作者標記 other）",
+            "license_url": "https://huggingface.co/ostris/ikea-instructions-lora-sdxl/blob/eaa7f67c93be0b22f00c0225d1f31232d91a052a/README.md",
+            "metadata_updated_at": "2026-10-23T07:14:41.461553+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T07:19:39.927947+00:00",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 1.0
+          }
+        ]
+      },
+      "measurements": {
+        "submission_to_history_wall_seconds": 21.844,
+        "engine_execution_seconds": 20.179,
+        "sampled_device_max_used_bytes": {
+          "0": 12038701056
+        },
+        "device_sample_count": 11,
+        "task_vram_peak_bytes": null
+      },
+      "manual_observation": "紅棕線框、淺灰背景與弱陰影；仍中空且平面，未見提示材質或插畫品質改善。"
+    },
+    {
+      "profile": "style-lcm",
+      "compatibility": "passed_fixed_profile",
+      "quality_recommendation": "not_established",
+      "settings": {
+        "title": "Pony Canny v2 / style-lcm",
+        "engine_url": "http://127.0.0.1:1598",
+        "checkpoint": "pony-v6-xl.safetensors",
+        "prompt": "score_9,score_8_up,score_7_up,rating_safe,source_anime,single red wooden chair, empty room, three quarter view, clean illustration, daylight, no humans",
+        "negative_prompt": "people, person, text, watermark, blurry",
+        "seed": "9007199254740993",
+        "width": 768,
+        "height": 768,
+        "steps": 8,
+        "cfg": 1.0,
+        "sampler_name": "lcm",
+        "scheduler": "sgm_uniform",
+        "denoise": 1.0,
+        "reference_ids": [
+          "2a471468-0861-408b-93b4-24c541e3bca1"
+        ],
+        "loras": [
+          {
+            "name": "ikea_instructions_xl_v1_5.safetensors",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 1.0
+          },
+          {
+            "name": "lcm_lora_sdxl.safetensors",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 0.0
+          }
+        ],
+        "workflow_mode": "text2image",
+        "image_asset_id": "2a471468-0861-408b-93b4-24c541e3bca1",
+        "reference_resize": "fit",
+        "control_net_name": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+        "control_strength": 0.5,
+        "control_start": 0.0,
+        "control_end": 1.0,
+        "canny_low": 0.4,
+        "canny_high": 0.8
+      },
+      "job_id": "5dbd9866-0976-4dc8-9b26-7ac8b9cc04c9",
+      "artwork_id": "ba0cddc4-a756-554b-8ff8-555094e1505c",
+      "source_sha256": "fb219fb1268aef29671f77ab46dda4a2ea97de11a29ca9aec1b425f246406850",
+      "workflow_sha256": "d86b4fb16ef5d1f664bfd2cea09590eabb14c91597b34da7afbd4a112c68fd26",
+      "workflow_nodes": 14,
+      "job_json_sha256": "d7b2dab45d25a99c61ef0e3fbdf8e38ac3ebc60cf893960341261b0445d5ef04",
+      "artwork": {
+        "sha256": "b58c0e14ebe006ca112158534f8ff2ed7e39aca76825fe812a0f649261059297",
+        "size_bytes": 543840,
+        "decoded_rgb_sha256": "5673ee6cf5c3a9929e99872e52fc259020c5c539e2e41deb24a42d3fbc6a5722"
+      },
+      "edge": {
+        "sha256": "9f652e309c4a6d45f67eb7e87cdc121e63ca381e1f6fb96a65bd2fa7444e5045",
+        "decoded_rgb_sha256": "202545d148f9816a6fdde938e946d5d410241c345e1b05ae731e964d444a634c",
+        "size_bytes": 7236,
+        "metrics": {
+          "width": 768,
+          "height": 768,
+          "edge_pixels": 4384,
+          "total_pixels": 589824
+        }
+      },
+      "weight_snapshots": {
+        "checkpoint": {
+          "name": "pony-v6-xl.safetensors",
+          "version": "V6 XL",
+          "source_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+          "architecture": "sdxl",
+          "size_bytes": 6938041050,
+          "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+          "license_name": "CreativeML Open RAIL-M (upstream card label; full author terms unverified)",
+          "license_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+          "metadata_updated_at": "2026-10-23T07:14:41.449554+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-23T07:20:38.730090+00:00"
+        },
+        "controlnet": [
+          {
+            "name": "controlnet-canny-sdxl-1.0-fp16.safetensors",
+            "version": "1.0 FP16",
+            "source_url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/blob/eb115a19a10d14909256db740ed109532ab1483c/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 2502139136,
+            "sha256": "b2e7d3921058a442cc80430d1ec8847f42599c705e2451c95e77cf4dcf8d6c25",
+            "license_name": "CreativeML Open RAIL++-M",
+            "license_url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+            "metadata_updated_at": "2026-10-23T07:14:41.455553+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T07:20:38.729089+00:00",
+            "role": "controlnet",
+            "kind": "canny"
+          }
+        ],
+        "ordered_loras": [
+          {
+            "name": "ikea_instructions_xl_v1_5.safetensors",
+            "version": "revision eaa7f67c93be",
+            "source_url": "https://huggingface.co/ostris/ikea-instructions-lora-sdxl/blob/eaa7f67c93be0b22f00c0225d1f31232d91a052a/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 185697368,
+            "sha256": "d0e5fcbe1e6e2a364011bf27a66e8a40c05d02195d3e422cc393436388b8da17",
+            "license_name": "未知（作者標記 other）",
+            "license_url": "https://huggingface.co/ostris/ikea-instructions-lora-sdxl/blob/eaa7f67c93be0b22f00c0225d1f31232d91a052a/README.md",
+            "metadata_updated_at": "2026-10-23T07:14:41.461553+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T07:20:38.730090+00:00",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 1.0
+          },
+          {
+            "name": "lcm_lora_sdxl.safetensors",
+            "version": "revision a18548dd4956",
+            "source_url": "https://huggingface.co/latent-consistency/lcm-lora-sdxl/blob/a18548dd4956b174ec5b0d78d340c8dae0a129cd/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 393855224,
+            "sha256": "a764e6859b6e04047cd761c08ff0cee96413a8e004c9f07707530cd776b19141",
+            "license_name": "CreativeML Open RAIL++-M",
+            "license_url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+            "metadata_updated_at": "2026-10-23T07:14:41.459553+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T07:20:38.730090+00:00",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 0.0
+          }
+        ]
+      },
+      "measurements": {
+        "submission_to_history_wall_seconds": 19.406,
+        "engine_execution_seconds": 17.698,
+        "sampled_device_max_used_bytes": {
+          "0": 12022972416
+        },
+        "device_sample_count": 10,
+        "task_vram_peak_bytes": null
+      },
+      "manual_observation": "肉眼近似正向組，仍為紅棕平面線框；RGB 像素 hash 與正向不同。單一 seed／強度不能推論任意 LoRA 順序等效。"
+    }
+  ],
+  "browser": {
+    "verified_cases": 10,
+    "widths": [
+      1440,
+      390
+    ],
+    "native_downloads": [
+      "artwork PNG",
+      "original edge PNG",
+      "complete workflow JSON"
+    ],
+    "extra_generations": 0
+  },
+  "recovery": {
+    "engine_stopped": true,
+    "registered_versions_changed": true,
+    "original_uuid_same_job": 5,
+    "changed_same_uuid_conflicts": 5,
+    "get_only_profile_verifications": 10,
+    "read_requests_per_phase": 88,
+    "platform_restarted": true,
+    "original_engine_generation_count": 5,
+    "counts": {
+      "job": 5,
+      "artwork": 5,
+      "asset": 1,
+      "draft": 0,
+      "experiment": 0,
+      "control_edge": 5
+    },
+    "formal_data_files_unchanged": 8,
+    "owned_services_stopped": true
+  },
+  "limits": [
+    "Single chair source, seed 9007199254740993, Canny strength 0.5, thresholds 0.4/0.8, range 0..1, 768x768, batch 1",
+    "LCM profiles use 8 steps / CFG 1 / lcm / sgm_uniform; other profiles 20 / 5.5 / dpmpp_2m / karras",
+    "First generation cold; later profiles share the engine and some caches. Aggregate sampled device use is not task-exclusive peak or minimum VRAM.",
+    "Compatibility and durable restoration passed; material/style quality recommendations remain unestablished. No automatic scoring.",
+    "Pony author terms M01 and IKEA terms remain unverified. No commercial or license applicability conclusion.",
+    "RTX 4080, other sources/seeds/strengths/LoRAs, training, pose/depth and adapters are not covered."
+  ]
+}

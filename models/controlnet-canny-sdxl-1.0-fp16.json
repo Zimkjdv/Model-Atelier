@@ -4,7 +4,7 @@
   "version": "1.0 FP16",
   "architecture": "SDXL",
   "kind": "canny",
-  "verified_at": "2026-10-09",
+  "verified_at": "2026-10-23",
   "filename": "controlnet-canny-sdxl-1.0-fp16.safetensors",
   "size_bytes": 2502139136,
   "sha256": "b2e7d3921058a442cc80430d1ec8847f42599c705e2451c95e77cf4dcf8d6c25",
@@ -29,7 +29,7 @@
     "workflow": "checkpoint-canny-controlnet-v1",
     "precision": "fp16 safetensors",
     "extra_custom_nodes": [],
-    "verification": "Model card body and pinned config identify SDXL (cross_attention_dim 2048, text_time); model-card base_model header conflicts with its body, not used as architecture evidence. Native ComfyUI Canny differs from OpenCV examples. Full native load and one 768x768 generation each with Pony/Animagine verified; other workloads, SD1 and RTX4080 remain untested. See docs/validation/checkpoint-canny-rtx3060.md."
+    "verification": "Model card body and pinned config identify SDXL (cross_attention_dim 2048, text_time); model-card base_model header conflicts with its body, not used as architecture evidence. Native ComfyUI Canny differs from OpenCV examples. Full native load and one 768x768 generation each with Pony/Animagine verified; other workloads, SD1 and RTX4080 remain untested. See docs/validation/checkpoint-canny-rtx3060.md. 2026-10-23: fixed Pony Canny v2 baseline, IKEA, LCM and both ordered LCM/IKEA profiles verified on RTX3060, including actual edge PNG and offline restart restoration. Quality recommendations remain unestablished; see docs/validation/pony-canny-v2-20261023.md and its JSON. Other LoRAs, sources/seeds/strengths and RTX4080 remain unverified."
   },
   "validation": "rtx3060_fixed_pony_and_animagine_canny_verified"
 }
