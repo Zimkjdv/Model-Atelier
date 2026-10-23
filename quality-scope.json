@@ -34,7 +34,9 @@
     "scripts/check_style.py",
     "backend/workflows.py",
     "backend/gallery_api.py",
-    "backend/reference_workflows.py"
+    "backend/reference_workflows.py",
+    "backend/listing.py",
+    "backend/listing_api.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
