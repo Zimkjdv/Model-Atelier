@@ -45,7 +45,7 @@ onBeforeUnmount(cancel)
       <p class="footnote">{{plan.name}} · 來源核對 {{plan.verified_at}} · 本機查詢 {{new Date(plan.checked_at).toLocaleString()}}</p>
       <p><a :href="plan.source_url" target="_blank" rel="noopener">作者模型卡</a> · <a :href="plan.reference_url" target="_blank" rel="noopener">ComfyUI 整合範例</a> · <a :href="plan.license.url" target="_blank" rel="noopener">{{plan.license.name}}</a></p>
       <p class="footnote">{{plan.license.note}}</p>
-      <div class="table-scroll"><table><caption>選定元件與來源版本（本機檔案尚未驗證）</caption><thead><tr><th scope="col">元件</th><th scope="col">固定版本</th><th scope="col">大小</th><th scope="col">本機狀態</th></tr></thead><tbody>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="FLUX 元件與來源版本表格"><table><caption>選定元件與來源版本（本機檔案尚未驗證）</caption><thead><tr><th scope="col">元件</th><th scope="col">固定版本</th><th scope="col">大小</th><th scope="col">本機狀態</th></tr></thead><tbody>
         <tr v-for="item in plan.components" :key="item.role"><th scope="row"><a :href="item.source_url" target="_blank" rel="noopener">{{item.name}}</a><small>{{item.filename}}</small></th><td>{{item.version}}</td><td>{{gib(item.size_bytes)}}</td><td>{{states[item.state] || '未知'}}</td></tr>
       </tbody></table></div>
       <p v-for="volume in plan.volumes" :key="volume.id" class="footnote">{{volume.path}}：可用 {{gib(volume.free_bytes)}}／完整元件與預留預算 {{gib(volume.required_bytes)}}；同一磁碟區只預留一次。</p>

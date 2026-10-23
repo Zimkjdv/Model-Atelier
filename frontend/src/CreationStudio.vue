@@ -675,6 +675,7 @@ onActivated(() => {
         class="panel editor"
         aria-label="創作設定"
         @submit.prevent="save()"
+        ><h2>創作設定</h2
         ><fieldset :disabled="busy || restoring">
           <label for="draft-title">草稿名稱</label
           ><input id="draft-title" v-model="form.title" required maxlength="100" />
@@ -1387,7 +1388,7 @@ onActivated(() => {
 }
 .canvas small {
   font-size: 10px;
-  color: #8c9e93;
+  color: var(--text-muted);
 }
 .canvas-panel > p {
   font-size: 11px;

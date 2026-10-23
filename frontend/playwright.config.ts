@@ -9,7 +9,7 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   timeout: 45000,
-  globalTimeout: 300000,
+  globalTimeout: 480000,
   expect: { timeout: 10000 },
   outputDir: '../runtime/quality/browser-results',
   reporter: [['list'], ['html', { outputFolder: '../runtime/quality/browser-report', open: 'never' }]],

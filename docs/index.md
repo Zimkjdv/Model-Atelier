@@ -9,6 +9,7 @@
 - [前端 HTTP 契約、取消與原請求恢復](frontend-api.md)
 - [四工作台未保存內容與離頁保護](unsaved-changes.md)
 - [品質檢查、隔離瀏覽器回歸與 CI](quality-checks.md)
+- [全站桌面／窄視窗視覺與無障礙補驗](validation/ui-accessibility-20261023.md)
 - [清單分頁、相容策略與資料成長基準](list-pagination.md)
 - [停機完整備份、唯讀盤點與新目錄還原](data-backup.md)
 - [網址導覽、首次使用指引與能力狀態](navigation.md)

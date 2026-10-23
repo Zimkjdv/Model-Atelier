@@ -42,7 +42,9 @@ V03 新增 5 項，當時瀏覽器回歸共 **39 項**。`npm.cmd run test:brows
 
 V04 新增 8 項，當時瀏覽器回歸共 **47 項**。`npm.cmd run test:browser -- comparison-validation.spec.ts` 在 1440px／390px 核對正反 8 步歷史品質條件、指定 LoRA model／CLIP 軸及錯誤、兩模型固定四案例逐組載入，以及任務／作品量測原來源、零與未知值。`scripts/comparison_fixture.py` 僅供臨時 fixture；完成後還原登記及移除本組紀錄，避免影響其他測試。另以本機歷史唯讀副本核對 11 件原 GPU 作品、四案例跨模型並排及設定還原，不以合成圖取代歷史結果。見 [V04 驗收](validation/comparison-measurements-20261023.md)。
 
-V05 新增 12 項，現有瀏覽器回歸共 **59 項**。`npm.cmd run test:browser -- settings-transfer.spec.ts` 在 1440px／390px 實際下載三種一般創作設定及作品來源設定，保存檔案並比對 API bytes／檔名；真正檔案選擇器、剪貼簿貼上、取消及明確另存皆不生成。另核對原 workflow 大整數字串、未核實來源、晚到預覽、保存中停用、無效／跨流程文件，以及過大、無效 UTF-8 與慢速檔案保護。測試作品使用正式 workflow builder，不使用簡略圖冒充可還原設定。見 [V05 驗收](validation/settings-transfer-20261023.md)。
+V05 新增 12 項，當時瀏覽器回歸共 **59 項**。`npm.cmd run test:browser -- settings-transfer.spec.ts` 在 1440px／390px 實際下載三種一般創作設定及作品來源設定，保存檔案並比對 API bytes／檔名；真正檔案選擇器、剪貼簿貼上、取消及明確另存皆不生成。另核對原 workflow 大整數字串、未核實來源、晚到預覽、保存中停用、無效／跨流程文件，以及過大、無效 UTF-8 與慢速檔案保護。測試作品使用正式 workflow builder，不使用簡略圖冒充可還原設定。見 [V05 驗收](validation/settings-transfer-20261023.md)。
+
+V06 新增 21 項，現有瀏覽器回歸共 **80 項**。`npm.cmd run test:browser -- ui-accessibility.spec.ts` 逐頁檢查九個入口在 1440px／390px 的標題、可讀名稱、Tab／Enter、焦點、展開內容、文字狀態與整頁溢出；另覆蓋硬體卡片、離線／舊資料、四類模型編輯、作品收藏及對話框、素材讀取／空白／錯誤、診斷 JSON、圖生圖與遮罩。精確鎖定 axe Playwright 4.14.0，保存 violations 與 incomplete；漸層文字另核對目前主題的 RGB 端點對比，不把自動結果視為全 WCAG 認證。新增量測與截圖增加執行時間，整套瀏覽器預算由五分鐘改為八分鐘，單案 45 秒、單 worker 與零重試維持。頁面矩陣、截圖／JSON 及限制見 [V06 驗收](validation/ui-accessibility-20261023.md)。
 
 ## 依賴與驗收範圍（2026-10-22）
 

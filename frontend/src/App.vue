@@ -105,7 +105,7 @@ onUnmounted(() => { alive = false; ++settingsEpoch; refreshRequests.dispose(); c
   <div class="layout">
     <a class="skip-link" href="#main-content" @click.prevent="focusMain">跳至主要內容</a>
     <aside>
-      <a class="brand" href="#/system" @click.prevent="navigate('系統資訊')"><span class="brand-icon">M</span><span>Model Atelier<small>個人 AI 創作工作台</small></span></a>
+      <a class="brand" aria-label="Model Atelier · 系統資訊" href="#/system" @click.prevent="navigate('系統資訊')"><span class="brand-icon">M</span><span>Model Atelier<small>個人 AI 創作工作台</small></span></a>
       <div class="nav-label">WORKSPACE</div>
       <nav aria-label="主要導覽"><button v-for="(item, i) in pages" :key="item" :class="{ active: page === item }" :aria-label="item" :aria-current="page === item ? 'page' : undefined" :title="item" @click="navigate(item)"><span class="nav-icon" aria-hidden="true">{{ ['◈', '▦', '▧', '◉', '⚙', '▨'][i] }}</span>{{ item }}</button></nav>
       <div class="sidebar-footer"><span class="dot" :class="{ online: engine?.connected }"></span>{{ engine?.connected ? 'ComfyUI 已連線' : 'ComfyUI 未連線' }}<small>LOCAL STUDIO · v0.1</small></div>

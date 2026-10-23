@@ -77,7 +77,7 @@ aside {
 .nav-label {
   font-size: 10px;
   letter-spacing: 2px;
-  color: #787e83;
+  color: var(--text-muted);
   margin: 52px 12px 16px;
 }
 nav {
@@ -122,7 +122,7 @@ nav button.active {
   margin: 15px 0 0;
   font-size: 9px;
   letter-spacing: 1.5px;
-  color: #737b7e;
+  color: var(--text-muted);
 }
 .dot {
   display: inline-block;
@@ -262,7 +262,7 @@ h2 {
   justify-content: space-between;
 }
 .card-label span {
-  color: #788783;
+  color: var(--text-muted);
 }
 .card h2 {
   margin: 25px 0 0;

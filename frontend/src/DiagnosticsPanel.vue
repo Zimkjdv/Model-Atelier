@@ -59,7 +59,7 @@ onUnmounted(() => { alive = false; if (downloadUrl) URL.revokeObjectURL(download
       <button class="secondary" :disabled="busy">{{ busy ? '讀取中…' : '預覽診斷 JSON' }}</button>
     </form>
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
-    <template v-if="preview"><p class="footnote">以下是本次預覽快照；下載會保存完全相同內容，請先確認再自行分享。</p><pre tabindex="0" aria-label="診斷 JSON 預覽">{{ preview }}</pre><button class="primary" @click="download">下載此預覽 JSON</button></template>
+    <template v-if="preview"><p class="footnote">以下是本次預覽快照；下載會保存完全相同內容，請先確認再自行分享。</p><pre tabindex="0" role="region" aria-label="診斷 JSON 預覽">{{ preview }}</pre><button class="primary" @click="download">下載此預覽 JSON</button></template>
   </section>
 </template>
 <style scoped>

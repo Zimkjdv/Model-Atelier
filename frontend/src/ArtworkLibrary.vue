@@ -498,7 +498,7 @@ onBeforeUnmount(() => {
       {{ items.length }} 張</span
     ></div
   >
-  <div class="artwork-toolbar" aria-label="作品分頁"
+  <div class="artwork-toolbar" role="group" aria-label="作品分頁"
     ><button
       class="secondary"
       :disabled="busy || saving || !previousCursor"
@@ -561,7 +561,7 @@ onBeforeUnmount(() => {
         ><button
           class="secondary"
           :aria-label="(item.favorite ? '取消收藏：' : '收藏作品：') + item.title"
-          :aria-pressed="item.favorite"
+          :aria-pressed="!!item.favorite"
           :disabled="busy || saving"
           @click="
             organize(
@@ -632,7 +632,7 @@ onBeforeUnmount(() => {
             ><div class="organization-actions"
               ><button
                 class="secondary"
-                :aria-pressed="selected.favorite"
+                :aria-pressed="!!selected.favorite"
                 :disabled="busy || saving"
                 @click="
                   organize(
