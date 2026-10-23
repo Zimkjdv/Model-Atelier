@@ -1,5 +1,13 @@
 # Model Atelier — Changelog
 
+## 2026-10-23 · R03 Fooocus 專用修補與有限品質比較
+
+R01 已先以 `855714d` commit／push，再接入獨立 Fooocus SDXL v3 模板與修補模型選項。固定 head／v2.6 patch、Acly 節點及 Animagine 4.0 Opt，限制 denoise 1、無 LoRA；保存專用模型來源與三份輸入、精確 seed、原 UUID 恢復及完整設定還原。一般 v1／v2 保留，專用參數不進一般草稿／交換／比較格式。
+
+兩張動漫生成素材各比較 A0／A16／B16 與一般 v2 A16，共八件 RTX3060 結果。遮罩外像素差皆 0，引擎停止後八組僅 GET／hash 核對及 DATA 健全性通過。Fooocus 有矩形色塊、色偏、花紋／物件提示不符，未優於一般 v2，因此標示實驗選項並保持一般修補預設。第一次新版 COMBO 介面檢查失敗保留原紀錄，修正後使用新 UUID；沒有自動重送。
+
+新增六項後端及兩項桌面／390px 瀏覽器回歸；675 後端（1 既有跳過）、建置／契約與 103 Chromium 通過；最終兩項預覽／原設定還原另重跑通過。見 [操作與限制](docs/fooocus-inpainting.md)、[逐圖證據](docs/validation/fooocus-inpainting-20261023.md)。ROADMAP 剩餘 20 主項／31 子項，T03／T04 仍另排，沒有啟動訓練。
+
 ## 2026-10-23 · R01 SDXL 姿勢／相對深度
 
 依上游選型接入固定 controlnet_aux、DWPose／Depth Anything V2 Small 與兩種匹配 SDXL ControlNet，新增專用 v3 提交、結構類型選項、完整快照／精確還原、同次條件圖明確匯入與離線下載。保留 Canny v1／v2 及原 UUID 恢復，條件圖不匯入作品；完整備份／健全性核對涵蓋新目錄。

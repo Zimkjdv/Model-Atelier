@@ -134,7 +134,11 @@ class Pager:
         if workflow != 'all':
             families = dict(
                 flux=['flux1-schnell-text2image-v1'],
-                inpaint=['checkpoint-inpaint-v1', 'checkpoint-inpaint-feather-v2'],
+                inpaint=[
+                    'checkpoint-inpaint-v1',
+                    'checkpoint-inpaint-feather-v2',
+                    'checkpoint-fooocus-inpaint-v3',
+                ],
                 control=[
                     'checkpoint-canny-controlnet-v1',
                     'checkpoint-canny-controlnet-edge-v2',

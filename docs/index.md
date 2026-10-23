@@ -33,7 +33,7 @@
 | 專用流程格式 | [局部編輯／Canny 草稿、交換與比較的支援及方案](specialized-workflow-formats.md) |
 | 畫風／角色參考 | [R02 操作、固定來源與契約](models/ipadapter-reference.md)、[實際圖片用途／未訓練備註](validation/reference-inputs-20261023.md)、[12 組 GPU 與品質觀察](validation/reference-adapter-20261023.md) |
 | 圖生圖／素材 | [參考流程與版本](models/reference-workflows.md) |
-| 局部編輯 | [遮罩修補](inpainting.md)、[羽化](inpaint-feather.md) |
+| 局部編輯 | [遮罩修補](inpainting.md)、[羽化](inpaint-feather.md)、[R03 Fooocus 專用修補實驗選項與品質限制](fooocus-inpainting.md) |
 | Canny | [ControlNet 與原邊緣](controlnet.md)、[CPU 預覽](canny-preview.md) |
 | Pose／Depth | [R01 SDXL 姿勢／相對深度流程、安裝與 RTX3060 驗收](structure-reference.md) |
 | Pony Canny v2 實測 | [五組 LoRA、原邊緣／下載／還原與品質限制](validation/pony-canny-v2-20261023.md)、[可解析證據](validation/pony-canny-v2-20261023.json) |

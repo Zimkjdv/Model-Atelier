@@ -12,7 +12,7 @@ PARAMETERS = {'KSampler': ('steps','cfg','sampler_name','scheduler','denoise','s
     'RandomNoise': ('noise_seed',), 'CFGGuider': ('cfg',), 'UNETLoader': ('weight_dtype',),
     'DualCLIPLoader': ('device',)}
 REFERENCE_WORKFLOWS = {'checkpoint-image2image-v1','checkpoint-inpaint-v1','checkpoint-inpaint-feather-v2',
-    'checkpoint-canny-controlnet-v1','checkpoint-canny-controlnet-edge-v2','checkpoint-structure-controlnet-v3'}
+    'checkpoint-canny-controlnet-v1','checkpoint-canny-controlnet-edge-v2','checkpoint-structure-controlnet-v3','checkpoint-fooocus-inpaint-v3'}
 
 
 def number(value):

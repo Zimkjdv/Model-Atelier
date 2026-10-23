@@ -22,6 +22,18 @@ import httpx
 WORKSPACE = Path(__file__).resolve().parents[1]
 MANIFEST = WORKSPACE / 'models' / 'pony-v6-xl.json'
 SOURCES = {
+    'fooocus-inpaint-v26': (
+        'lllyasviel/fooocus_inpaint',
+        'inpaint_v26.fooocus.patch',
+        'inpaint_v26.fooocus.patch',
+        '74bbcc070e55219adb9b6c3b0d035b34e3697d1d',
+    ),
+    'fooocus-inpaint-head': (
+        'lllyasviel/fooocus_inpaint',
+        'fooocus_inpaint_head.pth',
+        'fooocus_inpaint_head.pth',
+        '74bbcc070e55219adb9b6c3b0d035b34e3697d1d',
+    ),
     'controlnet-depth-sdxl-1.0-fp16': (
         'diffusers/controlnet-depth-sdxl-1.0',
         'diffusion_pytorch_model.fp16.safetensors',
@@ -83,6 +95,7 @@ SOURCES = {
         '5440ac9c42ab16fea0d65e25bd149fc0f21b1271',
     ),
 }
+INPAINT_IDS = frozenset({'fooocus-inpaint-head', 'fooocus-inpaint-v26'})
 CONTROL_IDS = frozenset(
     {
         'controlnet-canny-sdxl-1.0-fp16',
@@ -146,7 +159,9 @@ def validate_manifest(value: dict) -> dict:
 def _paths(workspace: Path, filename: str, *, create=True) -> tuple[Path, Path, Path, Path]:
     root = workspace.resolve()
     category = (
-        'ipadapter'
+        'inpaint'
+        if filename in {SOURCES[key][2] for key in INPAINT_IDS}
+        else 'ipadapter'
         if filename == SOURCES['ip-adapter-plus-sdxl-vit-h'][2]
         else 'clip_vision'
         if filename == SOURCES['clip-vision-vit-h'][2]

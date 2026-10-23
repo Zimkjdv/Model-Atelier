@@ -93,6 +93,10 @@ def extract(artwork, validate, *, allow_lora=True):
         from backend import control_workflows
 
         return control_workflows.extract(artwork, validate)
+    if artwork.get('workflow_id') == 'checkpoint-fooocus-inpaint-v3':
+        from backend import fooocus_workflows
+
+        return fooocus_workflows.extract(artwork, validate)
     if artwork.get('workflow_id') == 'checkpoint-inpaint-feather-v2':
         from backend import inpaint_feather_workflows
 

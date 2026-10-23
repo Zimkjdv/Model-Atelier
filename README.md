@@ -39,7 +39,7 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 | 範圍 | 已提供 | 限制與說明 |
 | --- | --- | --- |
 | Checkpoint | 文生圖、單張圖生圖、精確字串 seed、草稿、設定交換、最多四個有序 LoRA | batch 固定 1；[參考流程](docs/models/reference-workflows.md)、[LoRA](docs/models/multi-lora-workflow.md) |
-| 局部編輯 | 遮罩筆刷／擦除／反相／PNG、v1 修補與 v2 內側羽化、原設定還原 | 一般草稿／交換／比較尚未支援；[格式評估](docs/specialized-workflow-formats.md)、[修補](docs/inpainting.md)、[羽化](docs/inpaint-feather.md) |
+| 局部編輯 | 遮罩筆刷／擦除／反相／PNG、v1／v2 羽化修補、Fooocus v3 實驗選項、原設定還原 | [Fooocus 限制與比較](docs/fooocus-inpainting.md)；一般草稿／交換／比較尚未支援；[一般修補](docs/inpainting.md)、[羽化](docs/inpaint-feather.md) |
 | 結構參考 | Canny v2／CPU 預覽；SDXL pose／depth v3、實際條件圖保存與完整還原 | [pose／depth 操作與實測限制](docs/structure-reference.md)、[Canny](docs/controlnet.md)；動漫骨架可能缺漏，不保證姿勢一致 |
 | 畫風／角色參考 | SDXL Plus ViT-H 單張推論、兩種模式、元件登記、原設定與來源快照 | 沒有訓練；可能帶入服裝／髮色／背景，無身份鎖定；[操作](docs/models/ipadapter-reference.md)、[12 組實測](docs/validation/reference-adapter-20261023.md) |
 | FLUX.1 [schnell] | 元件庫、固定來源預檢、獨立表單／草稿／交換、提交與還原 | 固定來源存取／安裝及 GPU 生成驗收未完成；[FLUX](docs/models/flux-workflow.md) |
@@ -61,11 +61,11 @@ L01 另完成像素畫 LoRA 的固定來源／獨立相容副本及 14 組順序
 
 2026-10-23 已收到 `artist_ref/ハシスタジオ_pixiv` 的 22 個檔案，去重後為 20 個不同檔案內容，並已確認棕髮綠眼、綠色髮飾的角色目標。**本輪 R02 沒有訓練模型：每次只用一張參考圖，實際選用 1 張畫風圖及 1 張角色圖分別測試，另留 6 張評估，不把 20 張全送入生成或訓練。** 檔名、差分分組、用途與之後 T01／T02 的補圖時點見 [R02 圖片用途紀錄](docs/validation/reference-inputs-20261023.md)。
 
-T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色分開的 SDXL LoRA 候選、固定基底、未來比較與圖片提醒；沒有開始訓練。T02 已完成 [資料契約／本機工具](docs/training/dataset-contract.md)與[官方介面評估](docs/training/tool-interface-research.md)：22 檔各建兩條路徑，10 張訓練候選、6 張開發評估、6 張排除；標註／來源及角色身分仍待審查，真實資料包尚不能匯出。R01 已完成 pose／depth 流程與固定案例驗收，接著 R03；T03／T04 另排。
+T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色分開的 SDXL LoRA 候選、固定基底、未來比較與圖片提醒；沒有開始訓練。T02 已完成 [資料契約／本機工具](docs/training/dataset-contract.md)與[官方介面評估](docs/training/tool-interface-research.md)：22 檔各建兩條路徑，10 張訓練候選、6 張開發評估、6 張排除；標註／來源及角色身分仍待審查，真實資料包尚不能匯出。R01 已完成 pose／depth 流程與固定案例驗收，R03 亦已完成有限修補比較，但 Fooocus 未優於一般修補；T03／T04 另排。
 
 完整的圖片選擇、資料分割／版本、有限任務數、模組擴充及驗收方式見 [動漫畫風驗證與開發計畫](docs/anime-style-development.md)。
 
-接下來開發先讀 [GitHub 借用與開發策略](docs/github-reuse-assessment-20261023.md)、[全部 47 個主項對照](docs/roadmap-upstream-map-20261023.md)與[動漫相關原碼研究](docs/anime-upstream-candidates-20261023.md)。優先沿用 ComfyUI 現成前處理／修補節點與 sd-scripts 工具，保留本平台架構；已完成功能僅針對具體問題優化。研究後已完成 R01 的固定節點整合與有限實測；下一項 R03，其他候選仍待驗證。
+接下來開發先讀 [GitHub 借用與開發策略](docs/github-reuse-assessment-20261023.md)、[全部 47 個主項對照](docs/roadmap-upstream-map-20261023.md)與[動漫相關原碼研究](docs/anime-upstream-candidates-20261023.md)。優先沿用 ComfyUI 現成前處理／修補節點與 sd-scripts 工具，保留本平台架構；已完成功能僅針對具體問題優化。研究後已完成 R01 的固定節點整合與有限實測；R03 已接入 Fooocus 實驗選項並記錄品質限制，其他候選仍待驗證。
 
 實作進入需要真實動漫圖片的品質驗收或訓練時，會先核對已提供資料，缺少時主動提醒使用者；提醒時點與所需內容見 [圖片提供提醒](docs/anime-style-development.md#image-input-reminders)。
 

@@ -30,6 +30,7 @@ import {
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
 import {
   inpaintFeatherWorkflowId,
+  fooocusWorkflowId,
   inpaintPendingMarker,
   inpaintSubmission,
   isInpaintWorkflow,
@@ -183,7 +184,14 @@ function freezeCurrentSubmission(): Record<string, unknown> {
         }
       : {}),
     ...(props.workflow === 'reference' ? { [referencePendingMarker]: referenceWorkflowId } : {}),
-    ...(props.workflow === 'inpaint' ? { [inpaintPendingMarker]: inpaintFeatherWorkflowId } : {}),
+    ...(props.workflow === 'inpaint'
+      ? {
+          [inpaintPendingMarker]:
+            'inpaint_model' in props.form && props.form.inpaint_model
+              ? fooocusWorkflowId
+              : inpaintFeatherWorkflowId,
+        }
+      : {}),
     ...(experiment ? { experiment } : {}),
   }
   // A failed local save must never make an unpersisted request dispatchable.

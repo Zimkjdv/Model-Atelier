@@ -10,6 +10,7 @@ function reset() { ++ticket;controller?.abort();busy.value=false;error.value='';
 async function preview() {
   if(!active || busy.value || props.disabled || props.blocked) return
   reset();const current=++ticket,key=identity.value,input=JSON.parse(JSON.stringify(props.form)),abort=new AbortController();controller=abort;busy.value=true
+  delete input.inpaint_model
   try {
     const response=await fetch('/api/inpaint-feather/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input),signal:abort.signal})
     const blob=await checkedBlendPreview(response,input)

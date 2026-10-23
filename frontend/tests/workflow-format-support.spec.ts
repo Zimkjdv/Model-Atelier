@@ -128,6 +128,6 @@ test('support read failure and retry preserve the unsaved form', async ({ page }
   await expect(panel.getByRole('alert')).toContainText('支援範圍暫時無法讀取')
   await page.unroute('**/api/reference-workflows/support?*')
   await panel.getByRole('button', { name: '重新讀取支援範圍', exact: true }).click()
-  await expect(panel.getByRole('listitem')).toHaveCount(2)
+  await expect(panel.getByRole('listitem')).toHaveCount(3)
   await expect(page.locator('#inpaint-prompt')).toHaveValue('keep this prompt')
 })

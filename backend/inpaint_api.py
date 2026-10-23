@@ -44,12 +44,15 @@ def install(app,host,submissions):
                 return existing
             if not value.checkpoint: raise HTTPException(422,'請先選擇 checkpoint')
             if value.engine_url!=host.engine_url(): raise HTTPException(409,'引擎設定已變更，請確認原引擎')
+            if hasattr(adapter,'recheck'):
+                try:adapter.recheck(host,value)
+                except ValueError as exc:raise HTTPException(409,str(exc)) from exc
             try: snapshots,encoded=await run_in_threadpool(adapter.prepare,host.DB,host.DATA,settings)
             except ValueError as exc: raise HTTPException(422,str(exc)) from exc
             submission=SimpleNamespace(request_id=value.request_id,engine_url=value.engine_url,checkpoint=value.checkpoint,
                 workflow=adapter.build(settings,value.request_id))
             return await submissions.submit_locked(submission,reference=dict(settings=settings,snapshots=snapshots,encoded=encoded,
-                workflow_id=adapter.ID,adapter=adapter))
+                workflow_id=adapter.ID,adapter=adapter,**(dict(recheck=lambda job:adapter.recheck(host,value,job)) if hasattr(adapter,'recheck') else {})))
 
     @app.post('/api/inpaint/generate')
     async def generate(value:Generate): return await submit(value,inpaint_workflows)
@@ -58,7 +61,7 @@ def install(app,host,submissions):
     def mask(job_id:UUID):
         try: job=jobs.get(host.DB,str(job_id))
         except KeyError: raise HTTPException(404,'找不到任務')
-        if job.get('workflow_id') not in (inpaint_workflows.ID,'checkpoint-inpaint-feather-v2'): raise HTTPException(404,'此任務沒有局部編輯遮罩')
+        if job.get('workflow_id') not in (inpaint_workflows.ID,'checkpoint-inpaint-feather-v2','checkpoint-fooocus-inpaint-v3'): raise HTTPException(404,'此任務沒有局部編輯遮罩')
         path=host.DATA/'job_inputs'/(str(job_id)+'.mask.png')
         if not path.is_file(): raise HTTPException(404,'原遮罩尚未保存或檔案遺失')
         return FileResponse(path,media_type='image/png',headers={'X-Content-Type-Options':'nosniff'})

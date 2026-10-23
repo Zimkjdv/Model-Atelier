@@ -153,9 +153,24 @@ watch(
   },
   { flush: 'sync' },
 )
+function selectInpaintModel(value: string) {
+  if (locked.value) return
+  if (value === 'fooocus-v2.6') {
+    form.inpaint_model = value
+    form.denoise = 1
+  } else delete form.inpaint_model
+  origin.value = null
+}
 const block = computed(() => {
   if (maskDirty.value) return '新遮罩尚未保存；請先保存或重新選擇已保存遮罩。'
   if (maskBusy.value || busy.value) return '正在更新輸入與引擎資料。'
+  if (
+    form.inpaint_model &&
+    (form.checkpoint !== 'animagine-xl-4.0-opt.safetensors' ||
+      form.denoise !== 1 ||
+      form.loras.length)
+  )
+    return 'Fooocus 首版需固定 Animagine 4.0 Opt、denoise 1、不組合 LoRA。'
   if (loraBlock.value) return loraBlock.value
   const input = inpaintProblem(form, source.value, mask.value) || featherProblem(form)
   if (input) return input
@@ -202,6 +217,7 @@ function apply(value: Restoration) {
   if (generationBusy.value || generationPending.value || maskBusy.value) return
   const copied = copyFeatherInpaint(value.settings)
   restores.cancel()
+  delete form.inpaint_model
   Object.assign(form, copied)
   origin.value = value
   pendingRestore.value = null
@@ -357,7 +373,17 @@ onBeforeUnmount(() => {
             @dirty="maskDirty = $event"
             @busy="maskBusy = $event"
           />
-          <label for="inpaint-prompt">提示詞</label
+          <label for="inpaint-model">修補模型</label
+          ><select
+            id="inpaint-model"
+            :value="form.inpaint_model ?? 'general'"
+            @change="selectInpaintModel(($event.target as HTMLSelectElement).value)"
+            ><option value="general">一般 checkpoint＋內側羽化 v2</option
+            ><option value="fooocus-v2.6">Fooocus SDXL 專用修補 v3</option></select
+          ><p class="footnote"
+            >Fooocus 為實驗選項，本次有限比較未優於一般修補。首版只支援固定 Animagine 4.0
+            Opt，需額外 head／patch 與節點；denoise 1，不組合 LoRA。切換不會生成或替換基底。</p
+          ><label for="inpaint-prompt">提示詞</label
           ><textarea
             id="inpaint-prompt"
             v-model="form.prompt"

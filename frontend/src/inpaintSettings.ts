@@ -57,14 +57,18 @@ export async function uploadMaskAsset(blob: Blob, name: string, fetcher: typeof 
 
 
 export const inpaintFeatherWorkflowId='checkpoint-inpaint-feather-v2'
+export const fooocusWorkflowId='checkpoint-fooocus-inpaint-v3'
 export const inpaintPendingMarker='_atelier_inpaint_workflow_id'
-export type FeatherForm=InpaintForm & {feather_radius:number}
-export const isInpaintWorkflow=(id:unknown)=>id===inpaintWorkflowId || id===inpaintFeatherWorkflowId
+export type FeatherForm=InpaintForm & {feather_radius:number;inpaint_model?:'fooocus-v2.6'}
+export const isInpaintWorkflow=(id:unknown)=>id===inpaintWorkflowId || id===inpaintFeatherWorkflowId || id===fooocusWorkflowId
 export const newFeatherInpaint=():FeatherForm=>({...newInpaint(),feather_radius:0})
 export function featherProblem(form:FeatherForm) { return Number.isInteger(form.feather_radius) && form.feather_radius>=0 && form.feather_radius<=64 ? '' : '羽化半徑需為 0–64 的整數輸出像素。' }
 export function copyFeatherInpaint(value:InpaintForm|FeatherForm):FeatherForm {
   try {
     const saved={...value} as Partial<FeatherForm>,radius='feather_radius' in saved ? saved.feather_radius : 0
+    const model=saved.inpaint_model
+    if(model!==undefined && model!=='fooocus-v2.6') throw new Error()
+    delete saved.inpaint_model
     delete saved.feather_radius
     const keys=Object.keys(newInpaint())
     if(Object.keys(saved).length!==keys.length || keys.some(k=>!(k in saved))) throw new Error()
@@ -72,6 +76,7 @@ export function copyFeatherInpaint(value:InpaintForm|FeatherForm):FeatherForm {
     const form={...copyInpaint(saved as InpaintForm),feather_radius:radius} as FeatherForm
     if(featherProblem(form) || !['fit','stretch'].includes(form.reference_resize) || inpaintProblem(form,{id:form.image_asset_id!,width:0,height:0,archived:false} as ReferenceAsset,{id:form.mask_asset_id!,width:0,height:0,archived:false} as ReferenceAsset)) throw new Error()
     if(!Array.isArray(form.loras) || form.loras.length>4 || new Set(form.loras.map(v=>v.name)).size!==form.loras.length || form.loras.some(v=>typeof v.name!=='string' || !v.name.trim() || typeof v.enabled!=='boolean' || [v.strength_model,v.strength_clip].some(n=>!Number.isFinite(n)||n< -20||n>20))) throw new Error()
+    if(model) { if(form.checkpoint!=='animagine-xl-4.0-opt.safetensors'||form.denoise!==1||form.loras.length)throw new Error();form.inpaint_model=model }
     return form
   } catch { throw new Error('不是完整局部編輯設定，未部分載入；請保留原流程。') }
 }
@@ -80,5 +85,5 @@ export function inpaintSubmission(value:Record<string,unknown>) {
   const version=inpaintPendingMarker in value ? value[inpaintPendingMarker] : inpaintWorkflowId
   if(!isInpaintWorkflow(version)) throw new Error('待確認請求流程版本未知，未提交；請保留原紀錄。')
   const body={...value};delete body[inpaintPendingMarker]
-  return {path:version===inpaintFeatherWorkflowId?'/api/inpaint-feather/generate':'/api/inpaint/generate',body}
+  return {path:version===fooocusWorkflowId?'/api/fooocus-inpaint/generate':version===inpaintFeatherWorkflowId?'/api/inpaint-feather/generate':'/api/inpaint/generate',body}
 }

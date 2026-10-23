@@ -1,5 +1,7 @@
 # 內側羽化局部編輯
 
+2026-10-23 R03：另有 [Fooocus SDXL 專用修補 v3](fooocus-inpainting.md)，仍使用獨立內側合成遮罩。固定基底、denoise 1、無 LoRA；有限比較未優於一般修補，保留實驗選項；一般格式邊界不因此開放。
+
 `checkpoint-inpaint-feather-v2` 是獨立十一節點流程（啟用的 LoRA 另計），不改寫 `checkpoint-inpaint-v1`。後端與專用工作台已完成；RTX 3060 四案例與離線重啟驗收已於第三項完成，見 [完整紀錄](validation/inpaint-feather-rtx3060.md)。
 
 ## 遮罩語意

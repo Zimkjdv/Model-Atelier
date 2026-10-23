@@ -1,0 +1,33 @@
+{
+  "id": "fooocus-inpaint-v26",
+  "name": "fooocus-inpaint-v26",
+  "version": "2.6",
+  "architecture": "SDXL",
+  "filename": "inpaint_v26.fooocus.patch",
+  "size_bytes": 1323362033,
+  "sha256": "f8657a025104e22d70f9c060635d8e8c2196f433871a2f68dc40abd2171f0d59",
+  "source": {
+    "provider": "Hugging Face",
+    "repository": "lllyasviel/fooocus_inpaint",
+    "revision": "74bbcc070e55219adb9b6c3b0d035b34e3697d1d",
+    "filename": "inpaint_v26.fooocus.patch",
+    "page_url": "https://huggingface.co/lllyasviel/fooocus_inpaint/blob/74bbcc070e55219adb9b6c3b0d035b34e3697d1d/README.md",
+    "download_url": "https://huggingface.co/lllyasviel/fooocus_inpaint/resolve/74bbcc070e55219adb9b6c3b0d035b34e3697d1d/inpaint_v26.fooocus.patch"
+  },
+  "license": {
+    "identifier": "openrail",
+    "name": "OpenRAIL (model card label)",
+    "url": "https://huggingface.co/lllyasviel/fooocus_inpaint/blob/74bbcc070e55219adb9b6c3b0d035b34e3697d1d/README.md",
+    "source": "official card metadata",
+    "terms_verified": false,
+    "note": "模型卡只有授權標籤，未含完整條款；保留來源，非無限制使用結論，基底另行適用。"
+  },
+  "dependencies": {
+    "loader": "INPAINT_LoadFooocusInpaint",
+    "node_revision": "5b7681746fe19e563113d27366ba85236bc1ba5b",
+    "workflow": "checkpoint-fooocus-inpaint-v3",
+    "restriction": "Only fixed Animagine 4.0 Opt, no LoRA, denoise 1; distilled merges unsupported.",
+    "verification": "Six Fooocus cases and two regular baselines on RTX3060; saved masks/images/settings and offline GET hashes verified. Fooocus did not outperform regular v2 on these cases; see docs/validation/fooocus-inpainting-20261023.md."
+  },
+  "validation": "rtx3060_fixed_animagine_fooocus_verified_quality_limited"
+}

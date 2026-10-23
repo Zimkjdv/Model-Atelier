@@ -109,6 +109,10 @@ def _reserve(
                 kind=(reference_settings or {}).get('control_kind', 'canny'),
             )
         context = experiment_context.freeze(db, experiment, generation_settings, model_metadata)
+        if workflow_id == 'checkpoint-fooocus-inpaint-v3':
+            from backend.fooocus_workflows import validate_model
+
+            validate_model(model_metadata)
         if workflow_id == 'checkpoint-ipadapter-reference-v1':
             from backend import adapter_catalog
 

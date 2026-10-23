@@ -1,0 +1,347 @@
+{
+  "cases": [
+    {
+      "case": "park-a0-validated",
+      "status": "passed",
+      "job_id": "cc1e76f5-86b6-489c-82ca-e8013da3739c",
+      "artwork_ids": [
+        "e29380e3-2ea1-5af6-9e8c-3caea762161f"
+      ],
+      "settings": {
+        "workflow_mode": "image2image",
+        "image_asset_id": "d6f31f42-5690-46b5-89c1-9502d774d7a5",
+        "reference_resize": "fit",
+        "loras": [],
+        "reference_ids": [
+          "d6f31f42-5690-46b5-89c1-9502d774d7a5",
+          "34b0ef89-d964-4bcd-bf01-4b9dd1b44735"
+        ],
+        "title": "R03 park Fooocus",
+        "prompt": "masterpiece, best quality, anime illustration, a flowering shrub with small white flowers beside a park path, green foliage",
+        "negative_prompt": "text, watermark, blurry, bad anatomy",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "animagine-xl-4.0-opt.safetensors",
+        "width": 768,
+        "height": 768,
+        "seed": "9007199254740993",
+        "steps": 20,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "mask_asset_id": "34b0ef89-d964-4bcd-bf01-4b9dd1b44735",
+        "grow_mask_by": 6,
+        "feather_radius": 0,
+        "inpaint_model": "fooocus-v2.6"
+      },
+      "target": "park",
+      "baseline": false,
+      "source_sha256": "b51ff508adc723c0ebe8f9f148356376e1a0757d4ff30f4bf2937b5409035c40",
+      "input_sha256": "a5ff77fdd187aa7ba59f22725f23b745633d80ba02085e96c9b9e0a33b5cc7fa",
+      "mask_sha256": "ff309c989286edccb9f64c3bfa1a96b37181d374080c69d5eb88054b7dc6559b",
+      "blend_sha256": "ff309c989286edccb9f64c3bfa1a96b37181d374080c69d5eb88054b7dc6559b",
+      "output_sha256": "cd5ec3702cd0dcceccd942e7b033cbe9c506654e2fbd0a1d22a68734cd0684f7",
+      "outside_mask_max_rgb_difference": 0
+    },
+    {
+      "case": "park-a16",
+      "status": "passed",
+      "job_id": "a4a63500-ee78-4b42-935c-4ebbbffe0584",
+      "artwork_ids": [
+        "a7f89e48-3374-5135-9a10-f24f82d26570"
+      ],
+      "settings": {
+        "workflow_mode": "image2image",
+        "image_asset_id": "7c7b5283-4921-42fe-a405-a6920c42101f",
+        "reference_resize": "fit",
+        "loras": [],
+        "reference_ids": [
+          "7c7b5283-4921-42fe-a405-a6920c42101f",
+          "d00c3fb9-4ba9-4a25-a0e6-9b9ce4c23345"
+        ],
+        "title": "R03 park Fooocus",
+        "prompt": "masterpiece, best quality, anime illustration, a flowering shrub with small white flowers beside a park path, green foliage",
+        "negative_prompt": "text, watermark, blurry, bad anatomy",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "animagine-xl-4.0-opt.safetensors",
+        "width": 768,
+        "height": 768,
+        "seed": "9007199254740993",
+        "steps": 20,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "mask_asset_id": "d00c3fb9-4ba9-4a25-a0e6-9b9ce4c23345",
+        "grow_mask_by": 6,
+        "feather_radius": 16,
+        "inpaint_model": "fooocus-v2.6"
+      },
+      "target": "park",
+      "baseline": false,
+      "source_sha256": "b51ff508adc723c0ebe8f9f148356376e1a0757d4ff30f4bf2937b5409035c40",
+      "input_sha256": "a5ff77fdd187aa7ba59f22725f23b745633d80ba02085e96c9b9e0a33b5cc7fa",
+      "mask_sha256": "ff309c989286edccb9f64c3bfa1a96b37181d374080c69d5eb88054b7dc6559b",
+      "blend_sha256": "a49f103d51990387d3ed6ff4eb8f627db8d09ffc5e1e1773d1ee0554243bb367",
+      "output_sha256": "5bc4b72e022236d7e8fa2ae6f781d29fe03d2eac4910e61229e8e616ece1c98b",
+      "outside_mask_max_rgb_difference": 0
+    },
+    {
+      "case": "park-b16",
+      "status": "passed",
+      "job_id": "92bdbcdf-89e8-46bb-9e9e-f6e153742652",
+      "artwork_ids": [
+        "25c6c81a-c628-5ba0-8265-86cdb7ae23c6"
+      ],
+      "settings": {
+        "workflow_mode": "image2image",
+        "image_asset_id": "854de4b1-2b3d-41a1-8645-811bee736a19",
+        "reference_resize": "fit",
+        "loras": [],
+        "reference_ids": [
+          "854de4b1-2b3d-41a1-8645-811bee736a19",
+          "5e4f4c06-1237-490a-88a9-e663a7a4c33d"
+        ],
+        "title": "R03 park Fooocus",
+        "prompt": "masterpiece, best quality, anime illustration, a flowering shrub with small white flowers beside a park path, green foliage",
+        "negative_prompt": "text, watermark, blurry, bad anatomy",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "animagine-xl-4.0-opt.safetensors",
+        "width": 768,
+        "height": 768,
+        "seed": "18446744073709551615",
+        "steps": 20,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "mask_asset_id": "5e4f4c06-1237-490a-88a9-e663a7a4c33d",
+        "grow_mask_by": 6,
+        "feather_radius": 16,
+        "inpaint_model": "fooocus-v2.6"
+      },
+      "target": "park",
+      "baseline": false,
+      "source_sha256": "b51ff508adc723c0ebe8f9f148356376e1a0757d4ff30f4bf2937b5409035c40",
+      "input_sha256": "a5ff77fdd187aa7ba59f22725f23b745633d80ba02085e96c9b9e0a33b5cc7fa",
+      "mask_sha256": "ff309c989286edccb9f64c3bfa1a96b37181d374080c69d5eb88054b7dc6559b",
+      "blend_sha256": "a49f103d51990387d3ed6ff4eb8f627db8d09ffc5e1e1773d1ee0554243bb367",
+      "output_sha256": "a1e39343c88d19e38dbb3907f93ae682109959cc7b7654bd04612205cb125059",
+      "outside_mask_max_rgb_difference": 0
+    },
+    {
+      "case": "park-baseline",
+      "status": "passed",
+      "job_id": "01a175e5-51ba-4cdb-a7d0-3c17f25a949e",
+      "artwork_ids": [
+        "2d704bf9-d15d-5527-a008-89cba5e351ab"
+      ],
+      "settings": {
+        "workflow_mode": "image2image",
+        "image_asset_id": "1fbe887e-3976-412e-a5ee-8e507c255360",
+        "reference_resize": "fit",
+        "loras": [],
+        "reference_ids": [
+          "1fbe887e-3976-412e-a5ee-8e507c255360",
+          "bfb43b6b-109a-44fb-9b75-41caaebdd429"
+        ],
+        "title": "R03 park baseline",
+        "prompt": "masterpiece, best quality, anime illustration, a flowering shrub with small white flowers beside a park path, green foliage",
+        "negative_prompt": "text, watermark, blurry, bad anatomy",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "animagine-xl-4.0-opt.safetensors",
+        "width": 768,
+        "height": 768,
+        "seed": "9007199254740993",
+        "steps": 20,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "mask_asset_id": "bfb43b6b-109a-44fb-9b75-41caaebdd429",
+        "grow_mask_by": 6,
+        "feather_radius": 16
+      },
+      "target": "park",
+      "baseline": true,
+      "source_sha256": "b51ff508adc723c0ebe8f9f148356376e1a0757d4ff30f4bf2937b5409035c40",
+      "input_sha256": "a5ff77fdd187aa7ba59f22725f23b745633d80ba02085e96c9b9e0a33b5cc7fa",
+      "mask_sha256": "ff309c989286edccb9f64c3bfa1a96b37181d374080c69d5eb88054b7dc6559b",
+      "blend_sha256": "a49f103d51990387d3ed6ff4eb8f627db8d09ffc5e1e1773d1ee0554243bb367",
+      "output_sha256": "e35554b0d71679c71e7c3cf8a5771b2dd8ac8295fda183d26cce611a622bfe1b",
+      "outside_mask_max_rgb_difference": 0
+    },
+    {
+      "case": "coat-a0",
+      "status": "passed",
+      "job_id": "14ec37c1-14e2-4595-8209-bfd706d5cdcf",
+      "artwork_ids": [
+        "dabcefdc-e527-5d07-a27a-3152041d6b32"
+      ],
+      "settings": {
+        "workflow_mode": "image2image",
+        "image_asset_id": "466a22ed-6887-4e6d-ab5a-97885078138f",
+        "reference_resize": "fit",
+        "loras": [],
+        "reference_ids": [
+          "466a22ed-6887-4e6d-ab5a-97885078138f",
+          "93f63e85-1faa-42c3-8d68-0e4c5ff3817b"
+        ],
+        "title": "R03 coat Fooocus",
+        "prompt": "masterpiece, best quality, anime illustration, long elegant dark blue coat with small gold embroidered flower patterns",
+        "negative_prompt": "text, watermark, blurry, bad anatomy",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "animagine-xl-4.0-opt.safetensors",
+        "width": 768,
+        "height": 768,
+        "seed": "9007199254740993",
+        "steps": 20,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "mask_asset_id": "93f63e85-1faa-42c3-8d68-0e4c5ff3817b",
+        "grow_mask_by": 6,
+        "feather_radius": 0,
+        "inpaint_model": "fooocus-v2.6"
+      },
+      "target": "coat",
+      "baseline": false,
+      "source_sha256": "ae56b3c9d2004b7acc5bdf9aa5aadb42e35da0bba368e4c3dbfeb88544e05f4d",
+      "input_sha256": "b102cab1d6e4f9ec7cd1eda2f6b574f6b5e0556b13b5051e96df01c68640f39a",
+      "mask_sha256": "f15988423965cdc9675b38b2337348561c9021cf786d266a1e25e6484c1435de",
+      "blend_sha256": "f15988423965cdc9675b38b2337348561c9021cf786d266a1e25e6484c1435de",
+      "output_sha256": "795d52ccbe3f8fceb88c8421c834915d7d001b18988e34f9c8f3b41cda83d046",
+      "outside_mask_max_rgb_difference": 0
+    },
+    {
+      "case": "coat-a16",
+      "status": "passed",
+      "job_id": "d62dcedd-3757-4b80-809e-d012955b1c4c",
+      "artwork_ids": [
+        "eb0f95a4-433b-5fda-a044-82c8046eaced"
+      ],
+      "settings": {
+        "workflow_mode": "image2image",
+        "image_asset_id": "1fc7655d-a83b-41d5-a10e-481da81c1b5a",
+        "reference_resize": "fit",
+        "loras": [],
+        "reference_ids": [
+          "1fc7655d-a83b-41d5-a10e-481da81c1b5a",
+          "8416d355-bf28-4c53-be2a-5ad87a3fc1ce"
+        ],
+        "title": "R03 coat Fooocus",
+        "prompt": "masterpiece, best quality, anime illustration, long elegant dark blue coat with small gold embroidered flower patterns",
+        "negative_prompt": "text, watermark, blurry, bad anatomy",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "animagine-xl-4.0-opt.safetensors",
+        "width": 768,
+        "height": 768,
+        "seed": "9007199254740993",
+        "steps": 20,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "mask_asset_id": "8416d355-bf28-4c53-be2a-5ad87a3fc1ce",
+        "grow_mask_by": 6,
+        "feather_radius": 16,
+        "inpaint_model": "fooocus-v2.6"
+      },
+      "target": "coat",
+      "baseline": false,
+      "source_sha256": "ae56b3c9d2004b7acc5bdf9aa5aadb42e35da0bba368e4c3dbfeb88544e05f4d",
+      "input_sha256": "b102cab1d6e4f9ec7cd1eda2f6b574f6b5e0556b13b5051e96df01c68640f39a",
+      "mask_sha256": "f15988423965cdc9675b38b2337348561c9021cf786d266a1e25e6484c1435de",
+      "blend_sha256": "ee67c259af95eaf5c512b48d14497648b9c644c6a2a13107aa98f60cc3fecf38",
+      "output_sha256": "f25e6d4231faed03101833ba0b23d77364c9b8da50fc7191bcb0dcd5d892a63b",
+      "outside_mask_max_rgb_difference": 0
+    },
+    {
+      "case": "coat-b16",
+      "status": "passed",
+      "job_id": "832b8640-620b-43ce-932b-01e988b9c6f1",
+      "artwork_ids": [
+        "a4753504-a522-58cb-a747-517b68345045"
+      ],
+      "settings": {
+        "workflow_mode": "image2image",
+        "image_asset_id": "2f8e5b06-af88-4e2e-ba84-73a4b2a22624",
+        "reference_resize": "fit",
+        "loras": [],
+        "reference_ids": [
+          "2f8e5b06-af88-4e2e-ba84-73a4b2a22624",
+          "39138955-09e9-4026-8bf8-6543ab153055"
+        ],
+        "title": "R03 coat Fooocus",
+        "prompt": "masterpiece, best quality, anime illustration, long elegant dark blue coat with small gold embroidered flower patterns",
+        "negative_prompt": "text, watermark, blurry, bad anatomy",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "animagine-xl-4.0-opt.safetensors",
+        "width": 768,
+        "height": 768,
+        "seed": "18446744073709551615",
+        "steps": 20,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "mask_asset_id": "39138955-09e9-4026-8bf8-6543ab153055",
+        "grow_mask_by": 6,
+        "feather_radius": 16,
+        "inpaint_model": "fooocus-v2.6"
+      },
+      "target": "coat",
+      "baseline": false,
+      "source_sha256": "ae56b3c9d2004b7acc5bdf9aa5aadb42e35da0bba368e4c3dbfeb88544e05f4d",
+      "input_sha256": "b102cab1d6e4f9ec7cd1eda2f6b574f6b5e0556b13b5051e96df01c68640f39a",
+      "mask_sha256": "f15988423965cdc9675b38b2337348561c9021cf786d266a1e25e6484c1435de",
+      "blend_sha256": "ee67c259af95eaf5c512b48d14497648b9c644c6a2a13107aa98f60cc3fecf38",
+      "output_sha256": "e2697912dc42db68c488885c23c54475976a8eb10e50af4cf03fc50ba95b50fa",
+      "outside_mask_max_rgb_difference": 0
+    },
+    {
+      "case": "coat-baseline",
+      "status": "passed",
+      "job_id": "a9c56614-9828-462f-a4b3-e0904124bda5",
+      "artwork_ids": [
+        "b703646c-0163-5fcd-8e72-11f94c3229e3"
+      ],
+      "settings": {
+        "workflow_mode": "image2image",
+        "image_asset_id": "6c4e9150-1674-449d-9df3-3abe828f18e5",
+        "reference_resize": "fit",
+        "loras": [],
+        "reference_ids": [
+          "6c4e9150-1674-449d-9df3-3abe828f18e5",
+          "1104f69c-fb71-4556-80ac-a14d42e361f8"
+        ],
+        "title": "R03 coat baseline",
+        "prompt": "masterpiece, best quality, anime illustration, long elegant dark blue coat with small gold embroidered flower patterns",
+        "negative_prompt": "text, watermark, blurry, bad anatomy",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "animagine-xl-4.0-opt.safetensors",
+        "width": 768,
+        "height": 768,
+        "seed": "9007199254740993",
+        "steps": 20,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "mask_asset_id": "1104f69c-fb71-4556-80ac-a14d42e361f8",
+        "grow_mask_by": 6,
+        "feather_radius": 16
+      },
+      "target": "coat",
+      "baseline": true,
+      "source_sha256": "ae56b3c9d2004b7acc5bdf9aa5aadb42e35da0bba368e4c3dbfeb88544e05f4d",
+      "input_sha256": "b102cab1d6e4f9ec7cd1eda2f6b574f6b5e0556b13b5051e96df01c68640f39a",
+      "mask_sha256": "f15988423965cdc9675b38b2337348561c9021cf786d266a1e25e6484c1435de",
+      "blend_sha256": "ee67c259af95eaf5c512b48d14497648b9c644c6a2a13107aa98f60cc3fecf38",
+      "output_sha256": "eb0409f05011f110b9086f9cd380e3e0691fc9dac78a7ab19f7d4a89792707aa",
+      "outside_mask_max_rgb_difference": 0
+    }
+  ],
+  "offline_get_verified": true
+}

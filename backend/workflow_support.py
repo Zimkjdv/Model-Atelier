@@ -8,6 +8,14 @@ from backend import control_workflows, control_edge_workflows
 
 FLOWS = (
     dict(
+        id='checkpoint-fooocus-inpaint-v3',
+        family='inpaint',
+        version=3,
+        name='Fooocus SDXL 專用修補 v3',
+        input_roles=['image_asset_id', 'mask_asset_id'],
+        parameters=['grow_mask_by', 'feather_radius', 'inpaint_model'],
+    ),
+    dict(
         id='checkpoint-structure-controlnet-v3',
         family='control',
         version=3,

@@ -5,6 +5,16 @@ from copy import deepcopy
 IMG2IMG_ID = 'checkpoint-image2image-v1'
 DESCRIPTIONS = [
     dict(
+        id='checkpoint-fooocus-inpaint-v3',
+        name='Fooocus SDXL 專用修補',
+        implemented=True,
+        architectures=['sdxl'],
+        image_count=2,
+        input_requirement='固定 Animagine 4.0 Opt、Fooocus head／v2.6 patch、原圖／二值遮罩與內側羽化。',
+        control='專用修補模型，denoise 1；不組合 LoRA 或蒸餾版。',
+        lora=False,
+    ),
+    dict(
         id='checkpoint-structure-controlnet-v3',
         name='SDXL 姿勢／深度參考',
         implemented=True,

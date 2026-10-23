@@ -6,7 +6,7 @@ from fastapi import HTTPException,Response
 from pydantic import Field
 from PIL import Image
 from starlette.concurrency import run_in_threadpool
-from backend import inpaint_feather_workflows as flow,jobs
+from backend import inpaint_feather_workflows as flow,jobs,fooocus_workflows
 
 
 def install(app,host,submissions):
@@ -33,9 +33,11 @@ def install(app,host,submissions):
     def blend_mask(job_id:UUID,download:bool=False):
         try: job=jobs.get(host.DB,str(job_id))
         except KeyError: raise HTTPException(404,'找不到任務')
-        if job.get('workflow_id')!=flow.ID: raise HTTPException(404,'舊版任務沒有獨立合成遮罩，不重新計算')
+        if job.get('workflow_id') not in (flow.ID,fooocus_workflows.ID): raise HTTPException(404,'舊版任務沒有獨立合成遮罩，不重新計算')
         try:
-            flow.extract(dict(job,source=dict(node_id='7')),validate)
+            adapter=fooocus_workflows if job['workflow_id']==fooocus_workflows.ID else flow
+            checked=(lambda value:host.FooocusInput.model_validate(value).model_dump(mode='json',exclude={'revision'})) if adapter is fooocus_workflows else validate
+            adapter.extract(dict(job,source=dict(node_id='7')),checked)
             prep=job['reference_metadata'][1]['blend_preprocessing'];path=flow.input_path(host.DATA,job_id,'blend')
             if not path.is_file(): raise FileNotFoundError()
             if path.stat().st_size!=prep['size'] or path.stat().st_size>flow.MAX_BYTES: raise ValueError('合成遮罩大小不符；請從備份還原')

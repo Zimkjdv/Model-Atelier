@@ -34,6 +34,7 @@ from backend import (
     inpaint_feather_workflows,
     adapter_workflows,
     structure_workflows,
+    fooocus_workflows,
     adapter_catalog,
 )
 from backend.reference_workflows import IMG2IMG_ID
@@ -615,6 +616,7 @@ def install(app, host):
             control_edge_workflows.ID,
             adapter_workflows.ID,
             structure_workflows.ID,
+            fooocus_workflows.ID,
         ):
             raise HTTPException(404, '此任務沒有圖生圖輸入')
         path = host.DATA / 'job_inputs' / (str(job_id) + '.png')
@@ -645,6 +647,7 @@ def install(app, host):
                 control_edge_workflows.ID,
                 adapter_workflows.ID,
                 structure_workflows.ID,
+                fooocus_workflows.ID,
             )
             and job['status'] in cancellation.TERMINAL
         ):
@@ -675,6 +678,8 @@ def install(app, host):
                 if job.get('workflow_id') == 'checkpoint-structure-controlnet-v3'
                 else host.ControlInput
                 if job.get('workflow_id') in (control_workflows.ID, control_edge_workflows.ID)
+                else host.FooocusInput
+                if job.get('workflow_id') == fooocus_workflows.ID
                 else host.InpaintFeatherInput
                 if job.get('workflow_id') == inpaint_feather_workflows.ID
                 else host.InpaintInput
@@ -746,6 +751,7 @@ def install(app, host):
                     control_edge_workflows.ID,
                     adapter_workflows.ID,
                     structure_workflows.ID,
+                    fooocus_workflows.ID,
                 )
                 else {}
             ),

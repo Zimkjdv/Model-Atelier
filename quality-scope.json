@@ -55,7 +55,12 @@
     "backend/test_structure_workflows.py",
     "scripts/structure_fixture.py",
     "scripts/verify_structure_generation.py",
-    "scripts/install_structure_preprocessors.py"
+    "scripts/install_structure_preprocessors.py",
+    "backend/fooocus_api.py",
+    "backend/fooocus_workflows.py",
+    "backend/test_fooocus_workflows.py",
+    "scripts/fooocus_fixture.py",
+    "scripts/verify_fooocus_generation.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -99,7 +104,8 @@
     "frontend/src/ReferenceComponentsSnapshot.vue",
     "frontend/tests/reference-recovery.spec.ts",
     "frontend/src/StructureOutput.vue",
-    "frontend/tests/structure-recovery.spec.ts"
+    "frontend/tests/structure-recovery.spec.ts",
+    "frontend/tests/fooocus-recovery.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

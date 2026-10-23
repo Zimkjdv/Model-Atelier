@@ -1,5 +1,7 @@
 # R07 · 局部編輯與 Canny 的草稿、交換及比較格式評估
 
+2026-10-23 R03：另有 [Fooocus SDXL 專用修補 v3](fooocus-inpainting.md)，仍使用獨立內側合成遮罩。固定基底、denoise 1、無 LoRA；有限比較未優於一般修補，保留實驗選項；一般格式邊界不因此開放。
+
 2026-10-23 決策：**必須使用專用版本格式，目前維持一般草稿／設定交換／比較方案不支援**。R07 的格式評估、能力說明及拒絕邊界完成，不表示這三項功能已上線。原任務／作品仍可完整載入保存的設定及下載完整 workflow；來源不完整時不部分還原。
 
 R02 補充：`checkpoint-ipadapter-reference-v1` 沿用相同保護，新增 `family=reference` 的唯讀能力；一般草稿、交換與比較均拒絕。模式、參考權重／起訖、adapter／ViT-H 編碼器、原素材與 224 方圖前處理須完整保存，不能套用一般 schema。完整原設定還原及原 workflow 下載已驗收；不支援多圖融合或 LoRA 組合。詳見 [參考流程契約](models/ipadapter-reference.md)、[R02 驗收](validation/reference-adapter-20261023.md)。下列四個版本與測試數為 R07 原驗收範圍。

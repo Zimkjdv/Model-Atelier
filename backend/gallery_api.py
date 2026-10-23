@@ -105,6 +105,8 @@ def install(app, host):
                 else host.ControlInput
                 if item.get('workflow_id')
                 in ('checkpoint-canny-controlnet-v1', 'checkpoint-canny-controlnet-edge-v2')
+                else host.FooocusInput
+                if item.get('workflow_id') == 'checkpoint-fooocus-inpaint-v3'
                 else host.InpaintFeatherInput
                 if item.get('workflow_id') == 'checkpoint-inpaint-feather-v2'
                 else host.InpaintInput

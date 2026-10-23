@@ -28,6 +28,7 @@ from fastapi import FastAPI
 from backend import assets, catalog, gallery, jobs, workflows
 from backend.main import create_app
 from scripts.structure_fixture import STRUCTURE_NODES
+from scripts import fooocus_fixture
 
 ENGINE = 'http://mock-engine.invalid:8188'
 
@@ -163,6 +164,10 @@ def fixture(data, count=None, legacy_ui=False):
             )
         if name == 'CheckpointLoaderSimple':
             value = {name: {'input': {'required': {'ckpt_name': [['demo.safetensors']]}}}}
+            if state.get('fooocus'):
+                value[name]['input']['required']['ckpt_name'][0].append(
+                    fooocus_fixture.flow.BASE['filename']
+                )
         elif name == 'KSampler':
             value = {
                 name: {
@@ -177,6 +182,8 @@ def fixture(data, count=None, legacy_ui=False):
                     }
                 }
             }
+        elif request.url.path.startswith('/object_info/') and name in fooocus_fixture.NODES:
+            value = {name: fooocus_fixture.NODES[name]}
         elif request.url.path.startswith('/object_info/') and name in STRUCTURE_NODES:
             value = {name: STRUCTURE_NODES[name]}
         elif request.url.path.startswith('/object_info/') and name in INPAINT_NODES:
@@ -266,6 +273,7 @@ def fixture(data, count=None, legacy_ui=False):
         return await call_next(request)
 
     wrapper = FastAPI(lifespan=app.router.lifespan_context)
+    fooocus_fixture.install(wrapper, context, state, ENGINE)
 
     @wrapper.get('/qa/state')
     def status():

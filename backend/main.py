@@ -121,6 +121,9 @@ def create_app(
     from backend import inpaint_feather_api
 
     inpaint_feather_api.install(app, context, inpaint_submissions)
+    from backend import fooocus_api
+
+    fooocus_api.install(app, context, inpaint_submissions)
     from backend import control_api, control_catalog
 
     control_catalog.install(app, context)
