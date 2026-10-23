@@ -18,6 +18,7 @@ def initial(engine_url):
         engine_execution_seconds=None,
         engine_timestamps_ms=None,
         resources_before_submission=None,
+        continuous_resources=None,
         task_vram_peak_bytes=None,
         timing_note='平台時鐘從提交起始到首次確認終態，包含佇列、網路與查詢延遲；引擎起訖包含載入及快取，皆非純 GPU 取樣。',
     )

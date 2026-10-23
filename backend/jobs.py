@@ -5,7 +5,7 @@ from copy import deepcopy
 import sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta, timezone
-from backend import job_measurements, experiment_context, diagnostics
+from backend import job_measurements, experiment_context, diagnostics, resource_sampling
 
 
 def display(value):
@@ -156,9 +156,9 @@ def _reserve(
 def get(path, job_id):
     with closing(sqlite3.connect(path)) as db:
         row = db.execute('SELECT value FROM settings WHERE key=?', ('job:' + job_id,)).fetchone()
-    if not row:
-        raise KeyError(job_id)
-    value = display(json.loads(row[0]))
+        if not row:
+            raise KeyError(job_id)
+        value = display(resource_sampling.project(db, json.loads(row[0])))
     diagnostics.bind_job(value)
     return value
 
@@ -196,6 +196,7 @@ def _update(path, job_id, expected_revision, changes):
         previous_state = value.get('status')
         value.update(changes, revision=revision + 1, updated_at=timestamp)
         job_measurements.advance(value, timestamp)
+        resource_sampling.transition(db, value, timestamp)
         db.execute(
             'UPDATE settings SET value=? WHERE key=?',
             (json.dumps(value, ensure_ascii=False), 'job:' + job_id),

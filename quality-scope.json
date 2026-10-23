@@ -1,5 +1,7 @@
 {
   "python": [
+    "backend/resource_sampling.py",
+    "backend/test_resource_sampling.py",
     "backend/main.py",
     "backend/job_measurements.py",
     "scripts/comparison_fixture.py",
@@ -13,6 +15,7 @@
     "scripts/check_style.py"
   ],
   "web": [
+    "frontend/tests/resource-sampling.spec.ts",
     "frontend/src/JobMeasurements.vue",
     "frontend/src/jobMeasurements.ts",
     "frontend/tests/ui-accessibility.spec.ts",

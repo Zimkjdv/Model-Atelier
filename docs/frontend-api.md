@@ -31,6 +31,8 @@ localStorage 保存失敗時不送請求；恢復使用原 UUID、設定、LoRA 
 
 V02 的原始 pending、v1／v2 端點、相同 body、遮罩／半徑、錯誤任務 ID 與未知版本已補上真實瀏覽器回歸；六種生成端點的 Node 契約另覆蓋異常成功 JSON 與錯誤回覆中的其他 job_id。見 [V02 驗收](validation/inpaint-recovery-20261023.md)。
 
+E05 的 `measurements.continuous_resources` 為選填的新任務觀察欄位。後端取樣 journal 不改 job revision；GET 詳情可在 revision 相同時回傳更新的時間點，不能以整個回應物件相等判斷任務狀態是否遭改動。列表／SSE 沿用最近狀態轉移的快照，終態後所有量測凍結；作品保留相同觀察，歷史缺欄位不回填，見 [量測契約](job-measurements.md)。
+
 ## 驗證（2026-10-22）
 
 ```powershell

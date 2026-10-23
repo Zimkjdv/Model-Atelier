@@ -337,6 +337,44 @@ def fixture(data, count=None, legacy_ui=False):
             records.append(record)
         return dict(group=group, items=records)
 
+    @wrapper.post('/qa/resource-samples')
+    def resource_samples():
+        from backend import resource_sampling
+        from datetime import datetime, timedelta, timezone
+
+        identifier = str(uuid4())
+        jobs.reserve(context.DB, identifier, ENGINE, graph, 'demo.safetensors', 'fixture-v1')
+        jobs.update(context.DB, identifier, status='submitting')
+        owner = 'fixture-resource-samples'
+        resource_sampling.claim(context.DB, owner, resource_sampling.now())
+        for seconds in (0, 2, 4):
+            stamp = (datetime.now(timezone.utc) + timedelta(seconds=seconds)).isoformat()
+            resource_sampling.record(
+                context.DB,
+                owner,
+                [identifier],
+                dict(
+                    system=dict(ram_total=16 * 1024**3, ram_free=8 * 1024**3),
+                    devices=[
+                        dict(
+                            name='測試 GPU',
+                            type='cuda',
+                            index=0,
+                            vram_total=12 * 1024**3,
+                            vram_free=5 * 1024**3,
+                        )
+                    ],
+                ),
+                stamp,
+            )
+        history = json.loads(json.dumps(job['history']))
+        history['outputs']['7']['images'][0]['filename'] = 'e05-' + identifier + '.png'
+        done = jobs.update(context.DB, identifier, status='completed', history=history)
+        record, _ = gallery.save(
+            context.DB, data / 'artworks', done, gallery.outputs(done)[0], raw.getvalue()
+        )
+        return record
+
     comparison_context = None
     comparison_registration = None
 

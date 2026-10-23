@@ -41,7 +41,14 @@ for (const width of [1440, 390]) test(`${width}px: diagnostic preview, ID filter
     expect(file.suggestedFilename()).toBe('model-atelier-diagnostics.json')
     await page.screenshot({ path: info.outputPath('diagnostic-preview.png') })
     expect((await (await request.get('/qa/state')).json()).prompts).toBe(prompts)
-    expect(await (await request.get('/api/jobs/' + jobId)).json()).toEqual(before)
+    // The independent sampler may advance while diagnostics are open. Generation
+    // ownership, revision and all submission-time measurements must remain unchanged.
+    const withoutLiveSamples = (job: any) => {
+      const copy = structuredClone(job)
+      delete copy.measurements.continuous_resources
+      return copy
+    }
+    expect(withoutLiveSamples(await (await request.get('/api/jobs/' + jobId)).json())).toEqual(withoutLiveSamples(before))
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
     await panel.locator('#diagnostic-request').fill('invalid')
     await expect(panel.getByRole('button', { name: '下載此預覽 JSON', exact: true })).not.toBeVisible()
