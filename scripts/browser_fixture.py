@@ -184,26 +184,21 @@ def fixture(data, count=None, legacy_ui=False):
     mask_bytes = io.BytesIO()
     mask_image.save(mask_bytes, 'PNG')
     mask_asset = assets.create(context.DB, data / 'assets', mask_bytes.getvalue(), 'qa-mask.png')
-    graph = {
-        '1': {'class_type': 'CheckpointLoaderSimple', 'inputs': {'ckpt_name': 'demo.safetensors'}},
-        '2': {'class_type': 'CLIPTextEncode', 'inputs': {'text': 'fixture forest'}},
-        '3': {'class_type': 'CLIPTextEncode', 'inputs': {'text': 'blurry'}},
-        '5': {
-            'class_type': 'KSampler',
-            'inputs': {
-                'positive': ['2', 0],
-                'negative': ['3', 0],
-                'seed': 2**64 - 1,
-                'steps': 20,
-                'cfg': 7,
-                'sampler_name': 'euler',
-                'scheduler': 'normal',
-                'denoise': 1,
-            },
-        },
-        '6': {'class_type': 'VAEDecode', 'inputs': {'samples': ['5', 0]}},
-        '7': {'class_type': 'SaveImage', 'inputs': {'images': ['6', 0]}},
-    }
+    graph = workflows.build(
+        dict(
+            checkpoint='demo.safetensors',
+            prompt='fixture forest',
+            negative_prompt='blurry',
+            width=64,
+            height=64,
+            seed=str(2**64 - 1),
+            steps=20,
+            cfg=7,
+            sampler_name='euler',
+            scheduler='normal',
+            denoise=1,
+        )
+    )
     job_id = str(uuid4())
     jobs.reserve(context.DB, job_id, ENGINE, graph, 'demo.safetensors', 'fixture-v1')
     job = jobs.update(

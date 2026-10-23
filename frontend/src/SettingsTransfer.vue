@@ -45,14 +45,15 @@ const rows = computed(() =>
     : [],
 )
 function invalidate() {
+  const pending = busy.value || preview.value !== null
   ++ticket
   controller?.abort()
   controller = null
   busy.value = false
-  if (preview.value) message.value = '文件或目前設定已變更，請重新驗證後套用。'
+  if (pending) message.value = '文件或目前設定已變更，請重新驗證後套用。'
   preview.value = null
 }
-watch(input, invalidate)
+watch(input, invalidate, { flush: 'sync' })
 watch(() => JSON.stringify(props.settings), invalidate)
 onBeforeUnmount(() => {
   invalidate()
@@ -63,20 +64,36 @@ async function readFile(event: Event) {
   const control = event.target as HTMLInputElement,
     file = control.files?.[0]
   if (!file) return
+  if (blocked.value) {
+    control.value = ''
+    return
+  }
   invalidate()
+  input.value = ''
   error.value = ''
-  message.value = ''
+  message.value = `正在讀取 ${file.name}…`
   const current = ticket
+  busy.value = true
   try {
     if (file.size > 256 * 1024) throw new Error('設定檔不可超過 256 KiB。')
-    const text = await file.text()
+    const bytes = await file.arrayBuffer()
+    let text: string
+    try {
+      text = new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+    } catch {
+      throw new Error('設定檔需為有效 UTF-8 JSON。')
+    }
     if (ticket === current) {
       input.value = text
       message.value = `已讀取 ${file.name}，請驗證並預覽。`
     }
   } catch (e) {
-    if (ticket === current) error.value = e instanceof Error ? e.message : '無法讀取設定檔。'
+    if (ticket === current) {
+      error.value = e instanceof Error ? e.message : '無法讀取設定檔。'
+      message.value = ''
+    }
   } finally {
+    if (ticket === current) busy.value = false
     control.value = ''
   }
 }

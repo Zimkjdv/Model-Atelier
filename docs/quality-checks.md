@@ -40,7 +40,9 @@ V02 再新增 9 項，當時瀏覽器回歸共 34 項。以 `npm.cmd run test:br
 
 V03 新增 5 項，當時瀏覽器回歸共 **39 項**。`npm.cmd run test:browser -- artwork-library.spec.ts` 實際操作 390px 作品整理、兩分頁筆記／評分修訂衝突、未保存及保存中保護、503 不重送、原圖與精確參數比較、橫向鍵盤捲動及四件選取上限。fixture 的 `/qa/artwork-set` 只建立臨時合成作品，不呼叫生成；每案檢查生成數不變，並附原圖／workflow bytes、管理修訂 JSON 與畫面。見 [V03 驗收](validation/artwork-library-20261023.md)。
 
-V04 新增 8 項，現有瀏覽器回歸共 **47 項**。`npm.cmd run test:browser -- comparison-validation.spec.ts` 在 1440px／390px 核對正反 8 步歷史品質條件、指定 LoRA model／CLIP 軸及錯誤、兩模型固定四案例逐組載入，以及任務／作品量測原來源、零與未知值。`scripts/comparison_fixture.py` 僅供臨時 fixture；完成後還原登記及移除本組紀錄，避免影響其他測試。另以本機歷史唯讀副本核對 11 件原 GPU 作品、四案例跨模型並排及設定還原，不以合成圖取代歷史結果。見 [V04 驗收](validation/comparison-measurements-20261023.md)。
+V04 新增 8 項，當時瀏覽器回歸共 **47 項**。`npm.cmd run test:browser -- comparison-validation.spec.ts` 在 1440px／390px 核對正反 8 步歷史品質條件、指定 LoRA model／CLIP 軸及錯誤、兩模型固定四案例逐組載入，以及任務／作品量測原來源、零與未知值。`scripts/comparison_fixture.py` 僅供臨時 fixture；完成後還原登記及移除本組紀錄，避免影響其他測試。另以本機歷史唯讀副本核對 11 件原 GPU 作品、四案例跨模型並排及設定還原，不以合成圖取代歷史結果。見 [V04 驗收](validation/comparison-measurements-20261023.md)。
+
+V05 新增 12 項，現有瀏覽器回歸共 **59 項**。`npm.cmd run test:browser -- settings-transfer.spec.ts` 在 1440px／390px 實際下載三種一般創作設定及作品來源設定，保存檔案並比對 API bytes／檔名；真正檔案選擇器、剪貼簿貼上、取消及明確另存皆不生成。另核對原 workflow 大整數字串、未核實來源、晚到預覽、保存中停用、無效／跨流程文件，以及過大、無效 UTF-8 與慢速檔案保護。測試作品使用正式 workflow builder，不使用簡略圖冒充可還原設定。見 [V05 驗收](validation/settings-transfer-20261023.md)。
 
 ## 依賴與驗收範圍（2026-10-22）
 
