@@ -1,0 +1,343 @@
+{
+  "$defs": {
+    "BaseAnchor": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "architecture": {
+          "const": "sdxl",
+          "title": "Architecture",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "source_revision": {
+          "pattern": "^[0-9a-f]{40}$",
+          "title": "Source Revision",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "architecture",
+        "sha256",
+        "size_bytes",
+        "source_revision"
+      ],
+      "title": "BaseAnchor",
+      "type": "object"
+    },
+    "Caption": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "default": "",
+          "maxLength": 4000,
+          "title": "Content",
+          "type": "string"
+        },
+        "style_description": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Style Description",
+          "type": "string"
+        },
+        "status": {
+          "default": "pending",
+          "enum": [
+            "pending",
+            "approved",
+            "rejected"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "reviewed_by": {
+          "default": "",
+          "maxLength": 200,
+          "title": "Reviewed By",
+          "type": "string"
+        }
+      },
+      "title": "Caption",
+      "type": "object"
+    },
+    "ImageRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "exclusiveMinimum": 0,
+          "maximum": 67108864,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "maximum": 65535,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "maximum": 65535,
+          "title": "Height",
+          "type": "integer"
+        },
+        "group_id": {
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,79}$",
+          "title": "Group Id",
+          "type": "string"
+        },
+        "split": {
+          "enum": [
+            "train",
+            "validation",
+            "test",
+            "excluded"
+          ],
+          "title": "Split",
+          "type": "string"
+        },
+        "exclusion_reason": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Exclusion Reason",
+          "type": "string"
+        },
+        "exposure": {
+          "items": {
+            "enum": [
+              "r02_contact_sheet",
+              "inference_reference",
+              "tuning",
+              "training",
+              "final_evaluation"
+            ],
+            "type": "string"
+          },
+          "maxItems": 5,
+          "title": "Exposure",
+          "type": "array"
+        },
+        "identity": {
+          "default": "unreviewed",
+          "enum": [
+            "unreviewed",
+            "target",
+            "other",
+            "mixed"
+          ],
+          "title": "Identity",
+          "type": "string"
+        },
+        "character_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Character Ids",
+          "type": "array"
+        },
+        "caption": {
+          "$ref": "#/$defs/Caption"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "sha256",
+        "size_bytes",
+        "width",
+        "height",
+        "group_id",
+        "split"
+      ],
+      "title": "ImageRecord",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "attribution": {
+          "default": "",
+          "maxLength": 500,
+          "title": "Attribution",
+          "type": "string"
+        },
+        "work_id": {
+          "default": "",
+          "maxLength": 200,
+          "title": "Work Id",
+          "type": "string"
+        },
+        "source_url": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Source Url",
+          "type": "string"
+        },
+        "training_use": {
+          "default": "unreviewed",
+          "enum": [
+            "unreviewed",
+            "recorded",
+            "exclude"
+          ],
+          "title": "Training Use",
+          "type": "string"
+        },
+        "usage_note": {
+          "default": "",
+          "maxLength": 4000,
+          "title": "Usage Note",
+          "type": "string"
+        },
+        "reviewed_by": {
+          "default": "",
+          "maxLength": 200,
+          "title": "Reviewed By",
+          "type": "string"
+        }
+      },
+      "title": "Provenance",
+      "type": "object"
+    },
+    "StudyAnchor": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "sha256"
+      ],
+      "title": "StudyAnchor",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "dataset_id": {
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,79}$",
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "version": {
+      "pattern": "^[a-z0-9][a-z0-9_.-]{0,79}$",
+      "title": "Version",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "style",
+        "character"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "subject_id": {
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,79}$",
+      "title": "Subject Id",
+      "type": "string"
+    },
+    "trigger": {
+      "pattern": "^[a-z][a-z0-9_]{2,63}$",
+      "title": "Trigger",
+      "type": "string"
+    },
+    "requirements_version": {
+      "const": "anime-training-requirements-v1",
+      "default": "anime-training-requirements-v1",
+      "title": "Requirements Version",
+      "type": "string"
+    },
+    "base_model": {
+      "$ref": "#/$defs/BaseAnchor"
+    },
+    "parent_study": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StudyAnchor"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "images": {
+      "items": {
+        "$ref": "#/$defs/ImageRecord"
+      },
+      "maxItems": 10000,
+      "minItems": 1,
+      "title": "Images",
+      "type": "array"
+    }
+  },
+  "required": [
+    "dataset_id",
+    "version",
+    "kind",
+    "subject_id",
+    "trigger",
+    "base_model",
+    "images"
+  ],
+  "title": "Dataset",
+  "type": "object"
+}

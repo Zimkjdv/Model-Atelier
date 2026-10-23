@@ -61,7 +61,7 @@ L01 另完成像素畫 LoRA 的固定來源／獨立相容副本及 14 組順序
 
 2026-10-23 已收到 `artist_ref/ハシスタジオ_pixiv` 的 22 個檔案，去重後為 20 個不同檔案內容，並已確認棕髮綠眼、綠色髮飾的角色目標。**本輪 R02 沒有訓練模型：每次只用一張參考圖，實際選用 1 張畫風圖及 1 張角色圖分別測試，另留 6 張評估，不把 20 張全送入生成或訓練。** 檔名、差分分組、用途與之後 T01／T02 的補圖時點見 [R02 圖片用途紀錄](docs/validation/reference-inputs-20261023.md)。
 
-T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色分開的 SDXL LoRA 候選、固定基底、未來比較與圖片提醒；沒有開始訓練，資料契約與工具介面由 T02 承接。
+T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色分開的 SDXL LoRA 候選、固定基底、未來比較與圖片提醒；沒有開始訓練。T02 已完成 [資料契約／本機工具](docs/training/dataset-contract.md)與[官方介面評估](docs/training/tool-interface-research.md)：22 檔各建兩條路徑，10 張訓練候選、6 張開發評估、6 張排除；標註／來源及角色身分仍待審查，真實資料包尚不能匯出。後續依序 R01 → R03，T03／T04 另排。
 
 完整的圖片選擇、資料分割／版本、有限任務數、模組擴充及驗收方式見 [動漫畫風驗證與開發計畫](docs/anime-style-development.md)。
 
@@ -97,6 +97,7 @@ model-atelier/
 ├── comfyui_extensions/         # 專案維護的 ComfyUI 執行裝置回報擴充
 ├── models/                     # 固定模型來源、版本與驗證資訊的 JSON manifest
 ├── experiments/                # 固定實驗案例與比較用 JSON 定義
+├── schemas/                    # 訓練資料契約 v1 JSON Schema（不是生成 API）
 ├── scripts/                    # 環境檢查、模型安裝與實機驗證工具
 ├── docs/                       # 操作、架構、功能契約與驗收文件
 │   ├── index.md                # 完整文件索引，按操作目的分類
@@ -106,6 +107,7 @@ model-atelier/
 │   ├── frontend-api.md         # 前端 HTTP 契約、取消與原請求恢復
 │   ├── ui-guidelines.md        # 介面與互動規範
 │   ├── models/                # 模型來源、LoRA、FLUX 與參考流程說明
+│   ├── training/              # 訓練需求、資料契約／CLI 與候選工具介面
 │   ├── validation/            # 限定環境與案例的驗收紀錄
 │   └── history/               # 歷史文件快照，僅供追溯
 ├── requirements.txt           # 後端直接依賴
@@ -130,6 +132,7 @@ model-atelier/
 | 排查故障 | [診斷與匯出](docs/diagnostics.md)：請求／任務 ID、平台／資料／引擎狀態與安全預覽 |
 | 尋找功能說明 | [文件索引](docs/index.md)：按創作、作品、實驗與模型流程查閱完整文件 |
 | 畫風／角色參考 | [R02 操作與契約](docs/models/ipadapter-reference.md)：單張推論、元件登記、精確還原；[圖片用途](docs/validation/reference-inputs-20261023.md)明確區分參考與訓練 |
+| 準備訓練資料 | [T02 契約與 CLI](docs/training/dataset-contract.md)：唯讀盤點、逐張審查、固定分割、不可覆寫出口；[本批缺項](docs/validation/training-dataset-20261023.md)，沒有啟動訓練 |
 | 專用流程保存與交換 | [R07 格式評估](docs/specialized-workflow-formats.md)：局部編輯／Canny 的版本別能力、明確拒絕及完整原流程下載 |
 | 理解或修改程式 | [架構與資料流](docs/architecture.md)、[應用程式工廠](docs/application-factory.md)、[前端 API](docs/frontend-api.md)：模組責任、配置隔離、通訊與任務生命週期 |
 | 驗證變更與清單效能 | [品質檢查與 CI](docs/quality-checks.md)、[分頁與量測](docs/list-pagination.md)：重跑命令、相容策略與驗收證據 |

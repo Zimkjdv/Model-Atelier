@@ -87,7 +87,7 @@
 
 ### 資料與檔案紀錄
 
-原圖及試驗產物可先放在已忽略的 `runtime/style-study/<study-id>/`，自行備份；不把原圖或權重隨文件提交 Git。下面是建議的資料整理方式，**不是目前已有的匯入器或 API schema**：
+原圖及試驗產物可先放在已忽略的 `runtime/style-study/<study-id>/`，自行備份；不把原圖或權重隨文件提交 Git。下面保留研究資料整理建議；T02 的正式本機訓練清單與出口已另見 [資料契約／CLI](training/dataset-contract.md)，兩者都不是生成 API schema：
 
 ```text
 runtime/style-study/<study-id>/
@@ -105,7 +105,7 @@ runtime/style-study/<study-id>/
 | 平台素材 | 上傳後 asset ID、正規化 SHA256、前處理版本；與原檔 SHA256 分開，不以檔名互換 |
 | 實驗結果 | 原模型／元件版本與 hash、完整設定、提示詞／字串 seed、方案／任務／作品 ID、原圖／workflow hash、人工觀察 |
 
-study ID 與資料分割先作研究紀錄；目前沒有這些專用 API 欄位，不直接塞入現有生成 body 或 experiment_context。R02 已定義單張推論 schema 與快照；T02 另定訓練資料集的正式 schema、驗證及保存位置。
+study ID 與資料分割先作研究紀錄；目前沒有這些專用 API 欄位，不直接塞入現有生成 body 或 experiment_context。R02 已定義單張推論 schema 與快照；T02 已另定訓練資料集的正式 [schema／驗證與保存位置](training/dataset-contract.md)，不向既有生成請求添加訓練欄位。
 
 ## R02 後的指定優先順序
 
@@ -117,6 +117,8 @@ study ID 與資料分割先作研究紀錄；目前沒有這些專用 API 欄位
 | T02 | 定義資料清單、原作群組／去重、角色辨識、內容 caption、畫風描述、來源／使用條件、版本與固定評估集，評估工具介面 | 不把本批 20 個不同內容全當同一角色；沿用既有圖片，只有缺少必要視角或分組時提醒補圖 |
 | R01 | 逐種加入 pose／depth 等結構控制，處理指定姿勢與構圖 | 不以 pose 控制代替角色身份或畫風訓練；每個模型／前處理另驗 |
 | R03 | 專用 inpainting 模型與更多羽化、接縫／邊界品質比較 | 不以能生成代替遮罩外保留或修補品質；保存失敗樣本 |
+
+T01／T02 已完成需求與資料介面。T02 唯讀盤點 22 檔，分為 10 張候選、6 張開發評估、6 張排除；兩路徑 caption／來源用途及角色身分仍待逐張審查，並無未曝光 final test，見 [缺項與驗收](validation/training-dataset-20261023.md)。試訓前才提醒審查或補齊必要圖片，T04 前另確認最終評估圖。
 
 本輪不因完成 T01／T02 就自動執行 T03 訓練；訓練環境、GPU 協調與產物回登依原 ROADMAP 另行決定。
 

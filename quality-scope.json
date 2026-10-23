@@ -43,7 +43,12 @@
     "backend/test_adapter_workflows.py",
     "scripts/verify_reference_generation.py",
     "scripts/install_ipadapter_nodes.py",
-    "backend/test_reference_acceptance.py"
+    "backend/test_reference_acceptance.py",
+    "backend/training_data.py",
+    "backend/training_bundle.py",
+    "scripts/training_dataset.py",
+    "backend/test_training_data.py",
+    "backend/test_training_bundle.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",

@@ -1,5 +1,13 @@
 # Model Atelier — Changelog
 
+## 2026-10-23 · T02 資料契約與訓練工具介面
+
+新增 v1 訓練清單／JSON Schema 與 CPU CLI：來源唯讀盤點、原作分組／固定分割／曝光、逐張 caption／來源用途／角色審查、版本 hash、只匯出 train 的不可覆寫資料包與獨立核對。固定 sd-scripts 候選資料 TOML，明確保留 tokenizer、獨立環境、VRAM、實際訓練及新 LoRA 載入待 T03／T04 實測；沒有安裝 trainer、啟動訓練或生成。
+
+既有 22 檔／20 不同內容／19 群組各建畫風與角色清單，10 張候選、6 張開發評估、6 張排除。caption／來源用途及角色身分仍待審查，真實資料出口正確拒絕；三張合成圖片的 train-only 出口與核對通過。新增 33 測試，完整格式／靜態、663 後端（1 跳過）、Vue 建置／契約與 97 Chromium 通過；原圖與正式 DATA 八檔 hash 不變。
+
+README／索引／圖片備註與 ROADMAP 同步，T02 及其子項完成，剩餘 22 主項／35 子項。需要圖片時的審查／補齊提醒已記錄；後續依指定順序 R01 → R03，T03／T04 另排。見 [契約與 CLI](docs/training/dataset-contract.md)、[官方工具介面](docs/training/tool-interface-research.md)、[T02 驗收](docs/validation/training-dataset-20261023.md)。
+
 ## 2026-10-23 · T01 訓練需求與驗收範圍
 
 依使用者的作者畫風／棕髮綠眼角色目標與 R02 偏差，記錄分開的 SDXL UNet LoRA 候選，固定 Animagine 基底身分、用途／排除範圍、兩路徑各 12 件未來比較與四面向人工判準。明確區分推論調整、單張參考、資料整理及實際訓練，保留現有分組／曝光紀錄與必要補圖時點；沒有啟動訓練或新增 GPU 工作。
