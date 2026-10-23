@@ -7,7 +7,7 @@ from contextlib import closing
 from datetime import datetime, timezone
 from copy import deepcopy
 from uuid import UUID
-from backend import gallery, image_workflows, workflows
+from backend import gallery, image_workflows, workflows, experiment_context
 
 MAX_BYTES = 8 * 1024 * 1024
 MAX_ENTRIES = 100
@@ -88,18 +88,10 @@ def create(path, folder, identifier, expected_hash, validate):
             variant = variants.get(context.get('variant_id'))
             if not variant:
                 raise ValueError('比較關聯指向不存在的組別，未匯出部分報告')
-            expected = dict(
-                plan_id=identifier,
-                plan_sha256=expected_hash,
-                variant_id=variant['id'],
-                schema_version=1,
-                plan_title=plan['title'],
-                workflow_id=plan['workflow_id'],
-                axis=plan['axis'],
-                target_lora=plan.get('target_lora'),
-                case_id=variant['case_id'],
-                value=variant['value'],
-                settings=variant['settings'],
+            expected = experiment_context.snapshot(
+                plan,
+                dict(plan_id=identifier, plan_sha256=expected_hash, variant_id=variant['id']),
+                variant,
             )
             if encoded(context) != encoded(expected):
                 raise ValueError('保存的比較關聯與原組設定不同，未匯出部分報告')

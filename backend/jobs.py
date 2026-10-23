@@ -99,7 +99,7 @@ def _reserve(
             control_catalog.validate_snapshot(
                 db, engine_url, checkpoint, component_metadata, model_metadata
             )
-        context = experiment_context.freeze(db, experiment, generation_settings)
+        context = experiment_context.freeze(db, experiment, generation_settings, model_metadata)
         frozen_refs = []
         for snapshot in reference_metadata or []:
             asset = db.execute(

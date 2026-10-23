@@ -1,5 +1,7 @@
 {
   "python": [
+    "backend/experiment_models.py",
+    "backend/test_extended_experiments.py",
     "backend/experiment_context.py",
     "backend/experiment_report.py",
     "backend/workflow_support.py",
@@ -22,6 +24,7 @@
     "scripts/check_style.py"
   ],
   "web": [
+    "frontend/tests/extended-experiments.spec.ts",
     "frontend/src/ExperimentPlanner.vue",
     "frontend/src/experimentSettings.ts",
     "frontend/src/ExperimentSnapshot.vue",

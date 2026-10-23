@@ -9,12 +9,23 @@ from fastapi import HTTPException, Request, Response, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 from backend import assets, experiment_store, settings_transfer, experiment_results
-from backend import workflow_support
+from backend import workflow_support, experiment_models
+from backend.experiment_context import plan_digest as digest
 
 SUITE = Path(__file__).resolve().parents[1] / 'experiments/general-illustration-v1.json'
 MAX_VARIANTS = 8
 MAX_DOCUMENT_BYTES = 1024 * 1024
-Axis = Literal['steps', 'cfg', 'seed', 'denoise', 'lora_strength_model', 'lora_strength_clip']
+Axis = Literal[
+    'steps',
+    'cfg',
+    'seed',
+    'denoise',
+    'lora_strength_model',
+    'lora_strength_clip',
+    'checkpoint',
+    'sampler_name',
+    'scheduler',
+]
 
 
 class Case(BaseModel):
@@ -79,7 +90,7 @@ class Variant(BaseModel):
 class Document(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     kind: Literal['model-atelier-comparison-plan']
-    schema_version: int = Field(strict=True, ge=1, le=1)
+    schema_version: int = Field(strict=True, ge=1, le=2)
     title: str = Field(min_length=1, max_length=100)
     workflow_id: Literal[settings_transfer.STANDARD, settings_transfer.IMAGE]
     baseline: dict = Field(min_length=1, max_length=64)
@@ -92,6 +103,9 @@ class Document(BaseModel):
     batch_size: int = Field(strict=True, ge=1, le=1)
     plan_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
     warnings: list[str] = Field(max_length=32)
+    model_snapshots: list[experiment_models.ModelSnapshot] | None = Field(
+        default=None, min_length=1, max_length=5
+    )
 
 
 class SaveInput(BaseModel):
@@ -104,14 +118,6 @@ class ArchiveInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
     revision: int = Field(strict=True, ge=1)
     archived: bool = Field(strict=True)
-
-
-def digest(value):
-    content = {key: item for key, item in value.items() if key not in ('plan_sha256', 'warnings')}
-    raw = json.dumps(
-        content, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False
-    )
-    return hashlib.sha256(raw.encode()).hexdigest()
 
 
 def suite():
@@ -151,7 +157,7 @@ def install(app, host):
                 '比較需完整 checkpoint 設定；文生圖不套用素材，圖生圖需一個相符的素材 ID。請確認模型、字串 seed、參數及欄位。',
             ) from exc
 
-    def build(value, original):
+    def build(value, original, model_snapshots=None):
         base = normalize(value.settings)
         if value.axis == 'denoise' and base['workflow_mode'] != 'image2image':
             raise HTTPException(422, 'Denoise 比較僅支援單張 checkpoint 圖生圖；未變更流程模式。')
@@ -184,6 +190,13 @@ def install(app, host):
                 422, 'LoRA 強度比較需選擇基準中已啟用的 LoRA；其他參數軸不可指定 LoRA。'
             )
         field = value.axis.removeprefix('lora_') if is_lora else value.axis
+        if value.axis in experiment_models.NEW_AXES and any(
+            not isinstance(item, str) or not item.strip() or item != item.strip()
+            for item in value.values
+        ):
+            raise HTTPException(
+                422, '模型、取樣器及排程器比較需精確名稱的字串陣列，不接受空白或數字'
+            )
 
         def vary(item):
             changes = (
@@ -229,7 +242,7 @@ def install(app, host):
                 )
         document = dict(
             kind='model-atelier-comparison-plan',
-            schema_version=1,
+            schema_version=2 if value.axis in experiment_models.NEW_AXES else 1,
             title=value.title.strip(),
             workflow_id=settings_transfer.IMAGE
             if base['workflow_mode'] == 'image2image'
@@ -244,6 +257,13 @@ def install(app, host):
         )
         if is_lora:
             document['target_lora'] = value.target_lora
+        if document['schema_version'] == 2:
+            try:
+                document['model_snapshots'] = experiment_models.collect(
+                    host.DB, base, variants, value.axis, model_snapshots
+                )
+            except ValueError as exc:
+                raise HTTPException(422, str(exc)) from exc
         document['plan_sha256'] = digest(document)
         if value.expected_plan_sha256 and value.expected_plan_sha256 != document['plan_sha256']:
             raise HTTPException(409, '原比較方案或測試集已變更，請重新預覽後再匯出。')
@@ -256,6 +276,17 @@ def install(app, host):
             document['warnings'].append(
                 '原引擎與目前設定不同，已保留原網址；生成前請確認引擎與模型。'
             )
+        if document['schema_version'] == 2:
+            document['warnings'].append(
+                '版本 2 保存模型登記快照，並非實際權重驗證；提交會核對登記身分，取樣器／排程器仍需原引擎即時驗證。'
+            )
+            if any(
+                not item['sha256'] or item['version'] == '未知'
+                for item in document['model_snapshots']
+            ):
+                document['warnings'].append(
+                    '部分模型版本或 hash 未登記，保持未知；同名未登記變更的權重無法由本快照偵測。'
+                )
         if base['workflow_mode'] == 'image2image':
             document['warnings'].append(
                 '每組沿用同一素材 ID 與前處理；文件不包含原圖片，固定案例只替換文字，不代表畫風或角色鎖定。'
@@ -280,6 +311,13 @@ def install(app, host):
     def validate_document(raw):
         try:
             value = Document.model_validate(raw)
+            new_axis = value.axis in experiment_models.NEW_AXES
+            if (
+                (value.schema_version == 2) != new_axis
+                or (new_axis and not value.model_snapshots)
+                or (not new_axis and value.model_snapshots is not None)
+            ):
+                raise ValueError('Comparison schema and model snapshot policy differ')
             original = value.suite.model_dump(mode='json') if value.suite else None
             selected = [case['id'] for case in original['cases']] if original else []
             parameters = Input(
@@ -290,7 +328,13 @@ def install(app, host):
                 target_lora=value.target_lora,
                 case_ids=selected,
             )
-            rebuilt = build(parameters, original)
+            rebuilt = build(
+                parameters,
+                original,
+                [item.model_dump(mode='json') for item in value.model_snapshots]
+                if new_axis
+                else None,
+            )
             if value.plan_sha256 != digest(raw) or value.plan_sha256 != rebuilt['plan_sha256']:
                 raise ValueError('Hash or reconstructed variants differ')
             if (

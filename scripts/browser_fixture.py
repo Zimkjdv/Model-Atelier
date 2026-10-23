@@ -33,6 +33,7 @@ ENGINE = 'http://mock-engine.invalid:8188'
 
 INPAINT_NODES = {
     'LoadImage': dict(input=dict(required=dict(image=[[]])), output=['IMAGE', 'MASK']),
+    'VAEEncode': dict(input=dict(required=dict(pixels=['IMAGE'], vae=['VAE'])), output=['LATENT']),
     'LoadImageMask': dict(
         input=dict(required=dict(image=[[]], channel=[['alpha', 'red', 'green', 'blue']])),
         output=['MASK'],
@@ -374,6 +375,42 @@ def fixture(data, count=None, legacy_ui=False):
             context.DB, data / 'artworks', done, gallery.outputs(done)[0], raw.getvalue()
         )
         return record
+
+    extended_registration = None
+
+    @wrapper.post('/qa/extended-models')
+    def extended_models():
+        nonlocal extended_registration
+        if extended_registration is None:
+            with closing(sqlite3.connect(context.DB)) as db:
+                extended_registration = db.execute(
+                    'SELECT value FROM settings WHERE key=?', ('catalog:' + ENGINE,)
+                ).fetchone()[0]
+        catalog.merge(context.DB, ENGINE, ['demo.safetensors', 'alternate.safetensors'])
+        for index, name in enumerate(('demo.safetensors', 'alternate.safetensors')):
+            catalog.update_metadata(
+                context.DB,
+                ENGINE,
+                name,
+                dict(
+                    architecture='sdxl',
+                    version='fixture-r06-' + str(index + 1),
+                    sha256=str(index + 1) * 64,
+                ),
+            )
+        return {'ok': True}
+
+    @wrapper.post('/qa/extended-models/reset')
+    def reset_extended_models():
+        nonlocal extended_registration
+        if extended_registration is not None:
+            with closing(sqlite3.connect(context.DB)) as db, db:
+                db.execute(
+                    'UPDATE settings SET value=? WHERE key=?',
+                    (extended_registration, 'catalog:' + ENGINE),
+                )
+            extended_registration = None
+        return {'ok': True}
 
     comparison_context = None
     comparison_registration = None

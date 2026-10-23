@@ -259,8 +259,16 @@ async function exportPlan() {
         >Denoise（圖生圖改動幅度）</option
       ><option value="seed">Seed（字串）</option
       ><option value="lora_strength_model">LoRA 模型強度</option
-      ><option value="lora_strength_clip">LoRA CLIP 強度</option></select
+      ><option value="lora_strength_clip">LoRA CLIP 強度</option>
+      <option value="checkpoint">Checkpoint 模型（同架構）</option>
+      <option value="sampler_name">取樣器（Sampler）</option>
+      <option value="scheduler">排程器（Scheduler）</option></select
     >
+    <p class="footnote" v-if="['checkpoint', 'sampler_name', 'scheduler'].includes(axis)">
+      名稱使用字串陣列，例如 ["model-a.safetensors", "model-b.safetensors"]、["euler", "dpmpp_2m"]
+      或 ["normal", "karras"]。模型比較需原引擎已登記的相同 SD 1.x／SDXL 架構；保存版本與 hash
+      登記快照，其他設定保留。取樣器／排程器仍在生成前驗證，不自動替換。
+    </p>
     <template v-if="isLoraAxis"
       ><label for="experiment-lora">要比較的已啟用 LoRA</label
       ><select id="experiment-lora" v-model="targetLora" :disabled="blocked"
@@ -315,6 +323,14 @@ async function exportPlan() {
     />
     <section v-if="plan" aria-label="參數比較預覽"
       ><h3>預計 {{ plan.expected_job_count }} 次生成 · 每次 1 張</h3>
+      <details v-if="plan.model_snapshots"
+        ><summary>模型登記快照（非權重驗證）</summary>
+        <p v-for="model in plan.model_snapshots" :key="model.name"
+          >{{ model.name }} · 版本 {{ model.version }} · {{ model.architecture }} · SHA256
+          {{ model.sha256 || '未知' }} · 原引擎 {{ model.engine_url }}</p
+        >
+        <p>模型登記變更後不能沿用原比較組提交；舊方案與已生成結果仍保留原快照。</p>
+      </details>
       <p v-if="savedRecord" class="notice"
         >保存方案：{{ savedRecord.plan.title
         }}{{
@@ -353,6 +369,10 @@ async function exportPlan() {
           }}<span v-if="variant.settings.workflow_mode === 'image2image'">
             · Denoise {{ variant.settings.denoise }}</span
           ></p
+        ><p
+          >模型 {{ variant.settings.checkpoint }} · {{ variant.settings.sampler_name }}／{{
+            variant.settings.scheduler
+          }}</p
         ><p>{{ variant.settings.prompt }}</p
         ><details
           ><summary>完整設定快照</summary

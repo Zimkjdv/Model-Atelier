@@ -7,6 +7,10 @@ defineProps<{ item?: ExperimentContext | null }>()
     ><summary>原比較方案：{{ item.plan_title }} · {{ item.variant_id }}</summary
     ><p>{{ item.case_id }} · {{ item.axis }} = {{ item.value }} · Seed {{ item.settings.seed }}</p
     ><p v-if="item.target_lora">LoRA：{{ item.target_lora }}</p
+    ><p v-if="item.expected_model_metadata"
+      >原比較模型：{{ item.expected_model_metadata.name }} · 版本
+      {{ item.expected_model_metadata.version }} · SHA256
+      {{ item.expected_model_metadata.sha256 || '未知' }}（登記快照，非權重驗證）</p
     ><p>方案 ID：{{ item.plan_id }}</p
     ><p>方案 SHA256：{{ item.plan_sha256 }}</p
     ><p class="footnote">這是提交當時的關聯；載入作品／任務設定不會自動沿用關聯或生成。</p></details

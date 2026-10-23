@@ -19,9 +19,22 @@ export type ExperimentVariant = {
   value: string | number
   settings: CreationForm
 }
+export type ComparisonModel = {
+  engine_url: string
+  name: string
+  version: string
+  architecture: string
+  sha256: string
+  size_bytes: number | null
+  source_url: string
+  license_name: string
+  license_url: string
+  metadata_updated_at: string | null
+  origin: 'user_registered'
+}
 export type ComparisonPlan = {
   kind: 'model-atelier-comparison-plan'
-  schema_version: 1
+  schema_version: 1 | 2
   title: string
   workflow_id: 'checkpoint-text2image-v1' | 'checkpoint-image2image-v1'
   plan_sha256: string
@@ -34,6 +47,7 @@ export type ComparisonPlan = {
   suite: ExperimentSuite | null
   variants: ExperimentVariant[]
   warnings: string[]
+  model_snapshots?: ComparisonModel[]
 }
 export type ExperimentSummary = {
   id: string
@@ -64,7 +78,7 @@ export type ExperimentLoad = {
   settings: CreationForm
 }
 export type ExperimentContext = ExperimentSelection & {
-  schema_version: 1
+  schema_version: 1 | 2
   plan_title: string
   workflow_id: ComparisonPlan['workflow_id']
   axis: string
@@ -72,6 +86,7 @@ export type ExperimentContext = ExperimentSelection & {
   case_id: string
   value: string | number
   settings: CreationForm
+  expected_model_metadata?: ComparisonModel
 }
 export type ExperimentOutput = {
   id: string
