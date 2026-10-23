@@ -20,7 +20,7 @@ Set-Location ..
 
 開啟 [本機平台](http://127.0.0.1:8000)。前端由 FastAPI 提供，不需另外啟動 Node。尚未開啟引擎時仍可保存草稿、整理素材、瀏覽已匯入作品；新資料庫不附作品或權重。
 
-生成另需獨立 ComfyUI、相容 PyTorch 與 checkpoint；完整步驟見 [安裝與操作](docs/setup-and-operations.md)。已有環境時另開終端執行 `./start-comfyui.ps1`，設定引擎網址並同步模型庫。`start-all.bat` 是兩個啟動腳本的捷徑，不代替安裝。
+生成另需獨立 ComfyUI、相容 PyTorch 與 checkpoint；完整步驟見 [安裝與操作](docs/setup-and-operations.md)。已有環境時另開終端執行 `./start-comfyui.ps1`，設定引擎網址並同步模型庫。`start-all.bat` 是兩個啟動腳本的捷徑，平台就緒後會自動以預設瀏覽器開啟 `http://127.0.0.1:8000/`；不代替安裝。
 
 ## 第一次生成
 
