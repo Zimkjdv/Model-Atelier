@@ -19,7 +19,7 @@ for (const width of [1440, 390]) {
       const panel = page.locator('.format-support')
       await panel.locator('summary').focus()
       await panel.locator('summary').press('Enter')
-      await expect(panel.getByRole('listitem')).toHaveCount(2)
+      await expect(panel.getByRole('listitem')).toHaveCount(report.workflows.length)
       await expect(panel).toContainText('workflow 不包含素材圖片')
       for (const workflow of report.workflows) {
         const row = panel.getByRole('listitem').filter({ hasText: workflow.name })

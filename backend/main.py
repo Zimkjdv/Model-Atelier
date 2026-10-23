@@ -135,6 +135,9 @@ def create_app(
     from backend import control_edges_api
 
     control_edges_api.install(app, context)
+    from backend import structure_outputs_api
+
+    structure_outputs_api.install(app, context)
     gallery_api.install(app, context)
     model_profiles.install(app, context)
     model_paths.install(app, context)

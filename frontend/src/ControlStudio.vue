@@ -57,17 +57,18 @@ const block=computed(()=>{
   if(catalog.value?.engine_url!==form.engine_url) return '原設定的引擎與目前設定不同，請連接原引擎再更新。'
   if(!catalog.value.models.some(m=>m.listed && m.name===form.checkpoint)) return '模型清單未確認此 checkpoint，請到模型庫同步。'
   if(profile.value?.engine_url!==form.engine_url || profile.value.name!==form.checkpoint || !['sd1','sdxl'].includes(profile.value.architecture)) return '需明確登記 SD 1.x 或 SDXL 架構，請確認模型庫。'
-  const control=registeredControlProblem(controls.value,form.engine_url,form.control_net_name,profile.value.architecture);if(control) return control
+  const control=registeredControlProblem(controls.value,form.engine_url,form.control_net_name,profile.value.architecture,form.control_kind ?? 'canny');if(control) return control
   const c=capabilities.value
   if(c?.engine_url!==form.engine_url || !c.available || !c.engine_matches || c.stale) return '需更新原引擎的取樣選項；历史快照不能用於生成。'
   if(!c.sampler_names.includes(form.sampler_name) || !c.schedulers.includes(form.scheduler)) return '目前取樣器或 scheduler 未在原引擎選項內，請手動調整。'
   return ''
 })
+function changeKind(kind:string) { if(locked.value) return;if(kind==='canny') delete form.control_kind;else if(kind==='pose'||kind==='depth') form.control_kind=kind;form.control_net_name='';origin.value=null }
 function selectSource(id:string|null) { if(!locked.value) {chooseSource(form,id);origin.value=null} }
 function apply(value:Restoration) {
   if(generationBusy.value || generationPending.value) return
   const copied=copyControl(value.settings)
-  restores.cancel();Object.assign(form,copied);origin.value=value;pendingRestore.value=null
+  restores.cancel();delete form.control_kind;Object.assign(form,copied);origin.value=value;pendingRestore.value=null
   baseline.value='';message.value='完整結構來源、控制模型與設定已載入。請手動確認，再生成新任務。';void load()
 }
 async function restore(kind:'jobs'|'artworks',id:string,token?:number) {
@@ -102,18 +103,18 @@ onBeforeUnmount(()=>{alive=false;loads.dispose();restores.dispose()})
         <h2>原圖與生成設定</h2><label for="control-title">名稱</label><input id="control-title" v-model="form.title" required maxlength="100">
         <label for="control-checkpoint">Checkpoint</label><select id="control-checkpoint" v-model="form.checkpoint"><option value="">選擇模型</option><option v-if="form.checkpoint && !catalog?.models.some(m=>m.name===form.checkpoint)" :value="form.checkpoint">{{form.checkpoint}}（清單未確認）</option><option v-for="model in catalog?.models" :key="model.name" :value="model.name" :disabled="!model.listed">{{model.name}}{{!model.listed?'（已不在清單）':''}}</option></select>
         <label for="control-source">原圖</label><select id="control-source" :value="form.image_asset_id ?? ''" @change="selectSource(($event.target as HTMLSelectElement).value || null)"><option value="">選擇原圖素材</option><option v-if="form.image_asset_id && !source" :value="form.image_asset_id">原素材不存在（{{form.image_asset_id}}）</option><option v-for="asset in assets.filter(a=>!a.archived || a.id===form.image_asset_id)" :key="asset.id" :value="asset.id" :disabled="asset.archived">{{asset.title}} · {{asset.width}} × {{asset.height}}{{asset.archived?'（已封存）':''}}</option></select>
-        <figure v-if="source" class="source-preview"><img :src="'/api/assets/'+source.id+'/image'" :alt="'結構參考素材：'+source.title"><figcaption>原素材預覽；生成時先縮放／補白，再由原引擎計算 Canny。此處不是邊緣圖。</figcaption></figure>
-        <label for="control-model">Canny ControlNet</label><select id="control-model" v-model="form.control_net_name"><option value="">選擇控制模型</option><option v-if="form.control_net_name && !controlModel" :value="form.control_net_name">{{form.control_net_name}}（清單未確認）</option><option v-for="model in controls?.controlnets" :key="model.name" :value="model.name" :disabled="!model.listed">{{model.name}} · {{model.version || '未知'}} · {{model.kind}}{{!model.listed?'（已不在清單）':''}}</option></select>
+        <figure v-if="source" class="source-preview"><img :src="'/api/assets/'+source.id+'/image'" :alt="'結構參考素材：'+source.title"><figcaption>原素材預覽；生成時先縮放／補白，再由原引擎計算所選條件。此處是原圖。</figcaption></figure>
+        <label for="control-kind">結構類型</label><select id="control-kind" :value="form.control_kind ?? 'canny'" @change="changeKind(($event.target as HTMLSelectElement).value)"><option value="canny">Canny 輪廓</option><option value="pose">Pose 姿勢（SDXL）</option><option value="depth">Depth 相對深度（SDXL）</option></select><p class="footnote">Pose／Depth 需額外前處理節點與匹配控制權重；同次實際條件圖在任務完成後保存。動漫偵測可能遺漏手部或臉部。</p><label for="control-model">ControlNet</label><select id="control-model" v-model="form.control_net_name"><option value="">選擇控制模型</option><option v-if="form.control_net_name && !controlModel" :value="form.control_net_name">{{form.control_net_name}}（清單未確認）</option><option v-for="model in controls?.controlnets" :key="model.name" :value="model.name" :disabled="!model.listed">{{model.name}} · {{model.version || '未知'}} · {{model.kind}}{{!model.listed?'（已不在清單）':''}}</option></select>
         <p class="footnote">控制模型版本 {{controlModel?.version || '未知'}} · 架構 {{controlModel?.architecture || '未知'}} · 類型 {{controlModel?.kind || '未知'}}。登記資料不是驗檔證明。</p>
         <label for="control-strength">控制強度<input id="control-strength" v-model.number="form.control_strength" type="number" min="0" max="10" step="any"></label>
         <div class="fields"><label for="control-start">作用起始<input id="control-start" v-model.number="form.control_start" type="number" min="0" max="1" step="any"></label><label for="control-end">作用結束<input id="control-end" v-model.number="form.control_end" type="number" min="0" max="1" step="any"></label></div>
-        <div class="fields"><label for="control-low">Canny 低閾值<input id="control-low" v-model.number="form.canny_low" type="number" min="0.01" max="0.99" step="any"></label><label for="control-high">Canny 高閾值<input id="control-high" v-model.number="form.canny_high" type="number" min="0.01" max="0.99" step="any"></label></div>
+        <div v-if="!form.control_kind" class="fields"><label for="control-low">Canny 低閾值<input id="control-low" v-model.number="form.canny_low" type="number" min="0.01" max="0.99" step="any"></label><label for="control-high">Canny 高閾值<input id="control-high" v-model.number="form.canny_high" type="number" min="0.01" max="0.99" step="any"></label></div>
         <p class="footnote">作用起始小於結束；低閾值小於高閾值。這是原生 Canny 浮點閾值，不是 OpenCV 的 0–255。控制強度沒有通用品質預設。</p>
         <label for="control-prompt">提示詞</label><textarea id="control-prompt" v-model="form.prompt" maxlength="20000" rows="5" placeholder="描述希望生成的物件、動作或場景"/>
         <label for="control-negative">負面提示詞</label><textarea id="control-negative" v-model="form.negative_prompt" maxlength="20000" rows="3"/>
         <div class="fields"><label for="control-width">寬度<input id="control-width" v-model.number="form.width" type="number" min="64" max="8192" step="8"></label><label for="control-height">高度<input id="control-height" v-model.number="form.height" type="number" min="64" max="8192" step="8"></label></div>
         <label for="control-resize">結構素材縮放</label><select id="control-resize" v-model="form.reference_resize"><option value="fit">等比縮放並補白</option><option value="stretch">拉伸至輸出尺寸</option></select>
-        <CannyPreview :form="form" :source="source" :disabled="locked"/>
+        <CannyPreview v-if="!form.control_kind" :form="form" :source="source" :disabled="locked"/>
         <label for="control-seed">Seed（精確整數）</label><input id="control-seed" v-model="form.seed" inputmode="numeric" maxlength="20" pattern="[0-9]{1,20}">
         <div class="fields"><label for="control-steps">Steps<input id="control-steps" v-model.number="form.steps" type="number" min="1" max="150" step="1"></label><label for="control-cfg">CFG<input id="control-cfg" v-model.number="form.cfg" type="number" min="0" max="30" step="any"></label></div>
         <label for="control-sampler">取樣器</label><select id="control-sampler" v-model="form.sampler_name"><option v-if="!capabilities?.sampler_names.includes(form.sampler_name)" :value="form.sampler_name">{{form.sampler_name}}（未確認）</option><option v-for="name in capabilities?.sampler_names" :key="name" :value="name">{{name}}</option></select>

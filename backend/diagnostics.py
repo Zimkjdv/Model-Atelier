@@ -23,7 +23,7 @@ STATES = {'validating', 'uploading_input', 'submitting', 'queued', 'running', 'u
 TERMINAL = {'completed', 'failed', 'cancelled', 'stopped'}
 WORKFLOWS = {'checkpoint-text2image-v1', 'checkpoint-image2image-v1', 'flux1-schnell-text2image-v1',
              'checkpoint-inpaint-v1', 'checkpoint-inpaint-feather-v2', 'checkpoint-canny-controlnet-v1',
-             'checkpoint-canny-controlnet-edge-v2'}
+             'checkpoint-canny-controlnet-edge-v2','checkpoint-structure-controlnet-v3'}
 STAGES = {'api_request', 'submission_new', 'submission_recovered', 'job_transition', 'observation_stale',
           'engine_submit', 'engine_history', 'engine_queue', 'engine_image', 'engine_preflight', 'engine_status',
           'engine_upload', 'engine_other'}

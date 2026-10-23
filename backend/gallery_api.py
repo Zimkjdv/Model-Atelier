@@ -100,6 +100,8 @@ def install(app, host):
             schema = (
                 host.ReferenceInput
                 if item.get('workflow_id') == 'checkpoint-ipadapter-reference-v1'
+                else host.StructureInput
+                if item.get('workflow_id') == 'checkpoint-structure-controlnet-v3'
                 else host.ControlInput
                 if item.get('workflow_id')
                 in ('checkpoint-canny-controlnet-v1', 'checkpoint-canny-controlnet-edge-v2')
@@ -177,6 +179,7 @@ def install(app, host):
                     'checkpoint-canny-controlnet-v1',
                     'checkpoint-canny-controlnet-edge-v2',
                     'checkpoint-ipadapter-reference-v1',
+                    'checkpoint-structure-controlnet-v3',
                 )
                 else {}
             ),

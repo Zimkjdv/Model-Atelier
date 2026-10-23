@@ -141,7 +141,7 @@ def capture(record):
     return catalog.capture(record,record['name']) | dict(role='controlnet',kind=record.get('kind','unknown'))
 
 
-def validate_snapshot(db,engine,checkpoint,components,model_metadata):
+def validate_snapshot(db,engine,checkpoint,components,model_metadata,kind='canny'):
     if not isinstance(components,list) or len(components)!=1 or components[0].get('role')!='controlnet':
         raise ValueError('結構參考需唯一 ControlNet 快照')
     snapshot=components[0]
@@ -151,16 +151,16 @@ def validate_snapshot(db,engine,checkpoint,components,model_metadata):
     model=next((r for r in catalog._read(db,engine)['models'] if r['name']==checkpoint),None)
     if not control or not control.get('listed') or library.get('sync_error') or not library.get('synced_at'):
         raise ValueError('ControlNet 尚未登記於成功同步的清單，請先同步')
-    if not model or model.get('architecture') not in ('sd1','sdxl') or control.get('architecture')!=model['architecture'] or control.get('kind')!='canny':
+    if kind not in ('canny','pose','depth') or not model or model.get('architecture') not in (('sd1','sdxl') if kind=='canny' else ('sdxl',)) or control.get('architecture')!=model['architecture'] or control.get('kind')!=kind:
         raise ValueError('Canny ControlNet 與 checkpoint 需明確登記相同的 SD 1.x／SDXL 架構與 canny 類型')
     for current,original in ((capture(control),snapshot),(catalog.capture(model,checkpoint),model_metadata)):
         if any(current.get(k)!=v for k,v in original.items() if k!='captured_at'):
             raise ValueError('控制模型或 checkpoint 登記在提交期間變更，請重新確認；未提交生成')
 
 
-def recheck(path,engine,checkpoint,components,model_metadata):
+def recheck(path,engine,checkpoint,components,model_metadata,kind='canny'):
     with closing(sqlite3.connect(path)) as db:
-        validate_snapshot(db,engine,checkpoint,components,model_metadata)
+        validate_snapshot(db,engine,checkpoint,components,model_metadata,kind=kind)
 
 
 def restoration_warnings(path,engine,components):

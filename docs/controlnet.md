@@ -1,5 +1,7 @@
 # Canny 結構參考
 
+R01 已另提供 [SDXL pose／depth v3](structure-reference.md)，使用獨立端點與前處理，並保存同次條件圖。本文的 v1／v2 仍僅接受 Canny。
+
 2026-10-23 R04：Pony Canny v2 的無 LoRA、IKEA、LCM、LCM → IKEA 與反向五組 RTX 3060 實測完成。固定原素材／seed、控制模型與各組參數；原邊緣、作品、完整 workflow、桌面／窄版下載及離線重啟還原通過。材質／畫風仍有偏差，不建立通用品質預設，詳見 [R04 實測與重跑 CLI](validation/pony-canny-v2-20261023.md)。此條件沒有套入一般文生圖的 LoRA 歷史匹配 registry。
 
 一般草稿、設定交換及比較尚未支援 Canny 專用格式；控制參數不會被當成一般設定而部分保存。工作台可展開 v1／v2 支援範圍，原設定及完整 workflow 保留，見 [R07 格式評估](specialized-workflow-formats.md)。

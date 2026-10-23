@@ -110,7 +110,7 @@ def stopped(data, database, *, exclusive):
 def inspect_records(db, files, database_key):
     counts, problems = {}, []
     assets, job_ids = {}, set()
-    kinds = ('asset', 'artwork', 'job', 'draft', 'flux_draft', 'experiment', 'control_edge')
+    kinds = ('asset', 'artwork', 'job', 'draft', 'flux_draft', 'experiment', 'control_edge', 'structure_output')
     def problem(code, key):
         if len(problems) < 1000:
             problems.append(dict(code=code, record=str(key)[:256]))
@@ -163,6 +163,8 @@ def inspect_records(db, files, database_key):
             expected(f'data/artworks/{identifier}.thumb.png', owner=key)
         elif kind == 'control_edge':
             expected(f'data/control_edges/{identifier}.png', value.get('sha256'), value.get('size_bytes'), owner=key)
+        elif kind == 'structure_output':
+            expected(f'data/structure_outputs/{identifier}.png', value.get('sha256'), value.get('size_bytes'), owner=key)
         refs = value.get('reference_metadata') or []
         if not isinstance(refs, list) or any(not isinstance(ref, dict) for ref in refs):
             problem('invalid_references', key); refs = []
@@ -176,7 +178,7 @@ def inspect_records(db, files, database_key):
         ids = reference_owner.get('reference_ids', []) if isinstance(reference_owner, dict) else None
         if not isinstance(ids, list) or any(not isinstance(item, str) or item not in assets for item in ids):
             problem('missing_reference_record', key)
-        if kind in ('artwork', 'control_edge') and (not isinstance(value.get('job_id'), str) or value.get('job_id') not in job_ids):
+        if kind in ('artwork', 'control_edge', 'structure_output') and (not isinstance(value.get('job_id'), str) or value.get('job_id') not in job_ids):
             problem('missing_original_job', key)
         if kind == 'job' and (value.get('input_upload') or value.get('input_uploads') or value.get('status') in ('queued', 'running', 'completed', 'stopped')):
             for reference in refs:

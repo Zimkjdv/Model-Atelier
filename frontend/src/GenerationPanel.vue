@@ -11,6 +11,7 @@ import WorkflowFormatSupport from './WorkflowFormatSupport.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
 import ControlSnapshot from './ControlSnapshot.vue'
 import ControlEdgePreview from './ControlEdgePreview.vue'
+import StructureOutput from './StructureOutput.vue'
 import ReferenceComponentsSnapshot from './ReferenceComponentsSnapshot.vue'
 import {
   referencePendingMarker,
@@ -20,6 +21,7 @@ import {
 } from './adapterSettings'
 import {
   controlEdgeWorkflowId,
+  structureWorkflowId,
   controlPendingMarker,
   controlSubmission,
   isControlWorkflow,
@@ -172,7 +174,14 @@ function freezeCurrentSubmission(): Record<string, unknown> {
   const candidate = {
     ...JSON.parse(JSON.stringify(props.form)),
     request_id: crypto.randomUUID(),
-    ...(props.workflow === 'control' ? { [controlPendingMarker]: controlEdgeWorkflowId } : {}),
+    ...(props.workflow === 'control'
+      ? {
+          [controlPendingMarker]:
+            'control_kind' in props.form && props.form.control_kind
+              ? structureWorkflowId
+              : controlEdgeWorkflowId,
+        }
+      : {}),
     ...(props.workflow === 'reference' ? { [referencePendingMarker]: referenceWorkflowId } : {}),
     ...(props.workflow === 'inpaint' ? { [inpaintPendingMarker]: inpaintFeatherWorkflowId } : {}),
     ...(experiment ? { experiment } : {}),
@@ -380,12 +389,20 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <p v-if="job.workflow_id === referenceWorkflowId" class="footnote"
         >畫風／角色外觀參考 · 單張來源、224 方圖前處理與元件已凍結；不代表身份重現。</p
       >
+      <StructureOutput
+        v-if="job.workflow_id === structureWorkflowId && job.status === 'completed'"
+        :job-id="job.id"
+      />
       <ControlEdgePreview
         v-if="job.workflow_id === controlEdgeWorkflowId && job.status === 'completed'"
         :job-id="job.id"
       />
       <p
-        v-else-if="isControlWorkflow(job.workflow_id) && job.status === 'completed'"
+        v-else-if="
+          job.workflow_id !== structureWorkflowId &&
+          isControlWorkflow(job.workflow_id) &&
+          job.status === 'completed'
+        "
         class="footnote"
         >舊版 v1 沒有保存同次邊緣輸出，不會重新計算歷史圖。</p
       >

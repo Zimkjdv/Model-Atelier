@@ -8,6 +8,20 @@ from backend import control_workflows, control_edge_workflows
 
 FLOWS = (
     dict(
+        id='checkpoint-structure-controlnet-v3',
+        family='control',
+        version=3,
+        name='SDXL 姿勢／深度 v3',
+        input_roles=['image_asset_id'],
+        parameters=[
+            'control_kind',
+            'control_net_name',
+            'control_strength',
+            'control_start',
+            'control_end',
+        ],
+    ),
+    dict(
         id='checkpoint-ipadapter-reference-v1',
         family='reference',
         version=1,
@@ -69,6 +83,7 @@ FLOWS = (
         ],
     ),
 )
+FLOWS = tuple(sorted(FLOWS, key=lambda flow: flow['version']))
 IDS = frozenset(flow['id'] for flow in FLOWS)
 SPECIAL_FIELDS = frozenset(field for flow in FLOWS for field in flow['parameters']) | {
     'mask_asset_id',

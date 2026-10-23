@@ -22,6 +22,18 @@ import httpx
 WORKSPACE = Path(__file__).resolve().parents[1]
 MANIFEST = WORKSPACE / 'models' / 'pony-v6-xl.json'
 SOURCES = {
+    'controlnet-depth-sdxl-1.0-fp16': (
+        'diffusers/controlnet-depth-sdxl-1.0',
+        'diffusion_pytorch_model.fp16.safetensors',
+        'controlnet-depth-sdxl-1.0-fp16.safetensors',
+        '17bb97973f29801224cd66f192c5ffacf82648b4',
+    ),
+    'controlnet-openpose-sdxl-1.0': (
+        'xinsir/controlnet-openpose-sdxl-1.0',
+        'diffusion_pytorch_model.safetensors',
+        'controlnet-openpose-sdxl-1.0.safetensors',
+        '23f966cd5cfdd3f7729c903e243d87152162d2b7',
+    ),
     'ip-adapter-plus-sdxl-vit-h': (
         'h94/IP-Adapter',
         'sdxl_models/ip-adapter-plus_sdxl_vit-h.safetensors',
@@ -71,7 +83,13 @@ SOURCES = {
         '5440ac9c42ab16fea0d65e25bd149fc0f21b1271',
     ),
 }
-CONTROL_IDS = frozenset({'controlnet-canny-sdxl-1.0-fp16'})
+CONTROL_IDS = frozenset(
+    {
+        'controlnet-canny-sdxl-1.0-fp16',
+        'controlnet-openpose-sdxl-1.0',
+        'controlnet-depth-sdxl-1.0-fp16',
+    }
+)
 LORA_IDS = frozenset({'lcm-lora-sdxl', 'ikea-instructions-lora-sdxl', 'pixel-art-lora-sdxl'})
 LOCAL_LORA_FILENAMES = frozenset({'pixel_art_lora_sdxl_comfy_v1.safetensors'})
 RESERVE_BYTES = 2 * 1024**3

@@ -35,6 +35,7 @@
 | 圖生圖／素材 | [參考流程與版本](models/reference-workflows.md) |
 | 局部編輯 | [遮罩修補](inpainting.md)、[羽化](inpaint-feather.md) |
 | Canny | [ControlNet 與原邊緣](controlnet.md)、[CPU 預覽](canny-preview.md) |
+| Pose／Depth | [R01 SDXL 姿勢／相對深度流程、安裝與 RTX3060 驗收](structure-reference.md) |
 | Pony Canny v2 實測 | [五組 LoRA、原邊緣／下載／還原與品質限制](validation/pony-canny-v2-20261023.md)、[可解析證據](validation/pony-canny-v2-20261023.json) |
 | 作品整理 | [收藏／筆記／封存](artwork-library.md)、[比較與人工評分](artwork-comparison.md) |
 | 實驗 | [固定案例](illustration-suite.md)、[比較方案](experiment-plans.md)、[保存／匯入](experiment-storage.md)、[任務關聯](experiment-runs.md)、[結果報告](comparison-report.md) |

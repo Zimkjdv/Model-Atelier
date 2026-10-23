@@ -3,17 +3,19 @@ import type { ReferenceAsset } from './referenceSettings'
 import type { ModelMetadata, ModelMetadataSnapshot } from './modelMetadata'
 export const controlWorkflowId = 'checkpoint-canny-controlnet-v1'
 export const controlEdgeWorkflowId = 'checkpoint-canny-controlnet-edge-v2'
+export const structureWorkflowId = 'checkpoint-structure-controlnet-v3'
 export const controlPendingMarker = '_atelier_control_workflow_id'
-export function isControlWorkflow(id: unknown): boolean { return id === controlWorkflowId || id === controlEdgeWorkflowId }
+export function isControlWorkflow(id: unknown): boolean { return id === controlWorkflowId || id === controlEdgeWorkflowId || id === structureWorkflowId }
 // The marker is local storage metadata; it never belongs to the strict API body.
 export function controlSubmission(value: Record<string, unknown>) {
   if (!value || Array.isArray(value) || typeof value !== 'object') throw new Error('待確認請求格式無效，請保留原紀錄。')
   const version = controlPendingMarker in value ? value[controlPendingMarker] : controlWorkflowId
   if (!isControlWorkflow(version)) throw new Error('待確認請求的流程版本未知，未提交；請保留原紀錄。')
   const body = { ...value }; delete body[controlPendingMarker]
-  return { path: version === controlEdgeWorkflowId ? '/api/control-edge/generate' : '/api/control/generate', body }
+  if(version === structureWorkflowId) { delete body.canny_low; delete body.canny_high }
+  return { path: version === structureWorkflowId ? '/api/structure/generate' : version === controlEdgeWorkflowId ? '/api/control-edge/generate' : '/api/control/generate', body }
 }
-export type ControlForm = CreationForm & { workflow_mode: 'text2image'; control_net_name: string; control_strength: number; control_start: number; control_end: number; canny_low: number; canny_high: number }
+export type ControlForm = CreationForm & { workflow_mode: 'text2image'; control_kind?: 'pose'|'depth'; control_net_name: string; control_strength: number; control_start: number; control_end: number; canny_low: number; canny_high: number }
 export type ControlModel = ModelMetadata & { name: string; listed: boolean; version: string; source_url: string; notes: string; kind: string }
 export type ControlCatalog = { engine_url: string; controlnets: ControlModel[]; synced_at: string | null; sync_error: string | null }
 export type ControlMetadata = ModelMetadataSnapshot & { role: string; kind?: string }
@@ -35,16 +37,19 @@ export function controlProblem(form: ControlForm, source?: ReferenceAsset): stri
   if (!['fit','stretch'].includes(form.reference_resize)) return '請確認素材縮放方式。'
   return ''
 }
-export function registeredControlProblem(library: ControlCatalog|null, engine: string, name: string, architecture: unknown): string {
+export function registeredControlProblem(library: ControlCatalog|null, engine: string, name: string, architecture: unknown, kind = 'canny'): string {
   if (!library || library.engine_url!==engine || !library.synced_at || library.sync_error) return '控制模型清單未確認，請到模型庫成功同步後更新。'
   const model=library.controlnets.find(m=>m.name===name)
   if (!model?.listed) return '所選控制模型不在最近成功同步的清單。'
-  if (model.kind!=='canny' || !['sd1','sdxl'].includes(String(architecture)) || model.architecture!==architecture) return '控制模型需登記 canny 類型，且與 checkpoint 同為 SD 1.x 或 SDXL。'
+  if (model.kind!==kind || (kind!=='canny' && architecture!=='sdxl') || !['sd1','sdxl'].includes(String(architecture)) || model.architecture!==architecture) return '控制模型類型需符合所選流程，且與 checkpoint 架構相同；pose／depth 僅支援 SDXL。'
   return ''
 }
 export function copyControl(value: ControlForm): ControlForm {
   try {
-    const keys=Object.keys(newControl())
+    const kind=value.control_kind
+    if(kind!==undefined && !['pose','depth'].includes(kind)) throw new Error()
+    if(kind!==undefined) value={...value,canny_low:value.canny_low ?? .4,canny_high:value.canny_high ?? .8}
+    const keys=Object.keys(newControl());if(kind!==undefined) keys.push('control_kind')
     if (!value || Object.keys(value).length!==keys.length || keys.some(k=>!(k in value))) throw new Error()
     if (['title','prompt','negative_prompt','engine_url','checkpoint','control_net_name','sampler_name','scheduler','seed'].some(k=>typeof (value as unknown as Record<string,unknown>)[k]!=='string') || !value.engine_url || !value.checkpoint || !value.image_asset_id) throw new Error()
     if (!Array.isArray(value.loras)||value.loras.length>4 || new Set(value.loras.map(v=>v.name)).size!==value.loras.length || value.loras.some(v=>!v.name?.trim()||typeof v.enabled!=='boolean'||[v.strength_model,v.strength_clip].some(n=>!Number.isFinite(n)||n< -20||n>20))) throw new Error()

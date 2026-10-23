@@ -27,7 +27,7 @@ def prepare(db,folder,settings):
     return source,encoded
 
 
-async def check_nodes(client,engine,*,settings):
+async def check_nodes(client,engine,*,settings,include_canny=True):
     specs=(('LoadImage',{'image':None},{},['IMAGE','MASK']),('Canny',{'image':'IMAGE','low_threshold':'FLOAT','high_threshold':'FLOAT'},{},['IMAGE']),
         ('ControlNetLoader',{'control_net_name':None},{},['CONTROL_NET']),
         ('ControlNetApplyAdvanced',{'positive':'CONDITIONING','negative':'CONDITIONING','control_net':'CONTROL_NET','image':'IMAGE','strength':'FLOAT','start_percent':'FLOAT','end_percent':'FLOAT'},{'vae':'VAE'},['CONDITIONING','CONDITIONING']))
@@ -50,7 +50,7 @@ async def check_nodes(client,engine,*,settings):
             if kind=='FLOAT':
                 bounds=spec[1] if len(spec)>1 and isinstance(spec[1],dict) else {};low,high=bounds.get('min'),bounds.get('max')
                 if type(low) not in (int,float) or type(high) not in (int,float) or not math.isfinite(low) or not math.isfinite(high) or not low<=values[key]<=high: raise ArithmeticError('控制參數超出原節點範圍：'+key)
-    results=await asyncio.gather(*(inspect(*spec) for spec in specs),return_exceptions=True)
+    results=await asyncio.gather(*(inspect(*spec) for spec in specs if include_canny or spec[0]!='Canny'),return_exceptions=True)
     for result in results:
         if isinstance(result,BaseException): raise result
 

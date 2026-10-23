@@ -1,5 +1,11 @@
 # Model Atelier — Changelog
 
+## 2026-10-23 · R01 SDXL 姿勢／相對深度
+
+依上游選型接入固定 controlnet_aux、DWPose／Depth Anything V2 Small 與兩種匹配 SDXL ControlNet，新增專用 v3 提交、結構類型選項、完整快照／精確還原、同次條件圖明確匯入與離線下載。保留 Canny v1／v2 及原 UUID 恢復，條件圖不匯入作品；完整備份／健全性核對涵蓋新目錄。
+
+兩種 Animagine／RTX3060 固定案例均完成唯一生成、條件圖、唯一作品與重建平台後 GET 核對。人工保留骨架缺漏、姿勢偏離、衣著／背景變化與深度構圖分界，沒有訓練或角色一致性保證。669 後端測試（1 既有跳過）、前端建置／契約與 101 Chromium 通過；另有四項桌面／390px 遺失回應恢復測試，以及15項新流程／備份回歸。操作、固定來源與完整證據見 [R01](docs/structure-reference.md)。ROADMAP 剩餘 21 主項／33 子項，下一項 R03。
+
 ## 2026-10-23 · T02 資料契約與訓練工具介面
 
 新增 v1 訓練清單／JSON Schema 與 CPU CLI：來源唯讀盤點、原作分組／固定分割／曝光、逐張 caption／來源用途／角色審查、版本 hash、只匯出 train 的不可覆寫資料包與獨立核對。固定 sd-scripts 候選資料 TOML，明確保留 tokenizer、獨立環境、VRAM、實際訓練及新 LoRA 載入待 T03／T04 實測；沒有安裝 trainer、啟動訓練或生成。

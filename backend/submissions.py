@@ -33,6 +33,7 @@ from backend import (
     control_edge_workflows,
     inpaint_feather_workflows,
     adapter_workflows,
+    structure_workflows,
     adapter_catalog,
 )
 from backend.reference_workflows import IMG2IMG_ID
@@ -613,6 +614,7 @@ def install(app, host):
             control_workflows.ID,
             control_edge_workflows.ID,
             adapter_workflows.ID,
+            structure_workflows.ID,
         ):
             raise HTTPException(404, '此任務沒有圖生圖輸入')
         path = host.DATA / 'job_inputs' / (str(job_id) + '.png')
@@ -642,6 +644,7 @@ def install(app, host):
                 control_workflows.ID,
                 control_edge_workflows.ID,
                 adapter_workflows.ID,
+                structure_workflows.ID,
             )
             and job['status'] in cancellation.TERMINAL
         ):
@@ -651,7 +654,7 @@ def install(app, host):
             for node_id, node in job['workflow'].items()
             if isinstance(node, dict) and node.get('class_type') == 'SaveImage'
         ]
-        if job.get('workflow_id') == control_edge_workflows.ID:
+        if job.get('workflow_id') in (control_edge_workflows.ID, structure_workflows.ID):
             outputs = [node for node in outputs if node == '7']
         if len(outputs) != 1:
             raise HTTPException(
@@ -668,6 +671,8 @@ def install(app, host):
             schema = (
                 host.ReferenceInput
                 if job.get('workflow_id') == adapter_workflows.ID
+                else host.StructureInput
+                if job.get('workflow_id') == 'checkpoint-structure-controlnet-v3'
                 else host.ControlInput
                 if job.get('workflow_id') in (control_workflows.ID, control_edge_workflows.ID)
                 else host.InpaintFeatherInput
@@ -736,7 +741,12 @@ def install(app, host):
             **(
                 dict(component_metadata=job.get('component_metadata'))
                 if job.get('workflow_id')
-                in (control_workflows.ID, control_edge_workflows.ID, adapter_workflows.ID)
+                in (
+                    control_workflows.ID,
+                    control_edge_workflows.ID,
+                    adapter_workflows.ID,
+                    structure_workflows.ID,
+                )
                 else {}
             ),
             availability=dict(

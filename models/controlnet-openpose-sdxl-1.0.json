@@ -1,0 +1,33 @@
+{
+  "id": "controlnet-openpose-sdxl-1.0",
+  "name": "controlnet-openpose-sdxl-1.0",
+  "version": "1.0 FP16",
+  "architecture": "SDXL",
+  "kind": "pose",
+  "verified_at": "2026-10-23",
+  "filename": "controlnet-openpose-sdxl-1.0.safetensors",
+  "size_bytes": 2502139104,
+  "sha256": "b8524e557a7df60d081f5d4a0eb109967d107df217943bf88c2d99b9ebcc06c5",
+  "source": {
+    "provider": "Hugging Face",
+    "repository": "xinsir/controlnet-openpose-sdxl-1.0",
+    "revision": "23f966cd5cfdd3f7729c903e243d87152162d2b7",
+    "filename": "diffusion_pytorch_model.safetensors",
+    "page_url": "https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/23f966cd5cfdd3f7729c903e243d87152162d2b7/README.md",
+    "download_url": "https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/resolve/23f966cd5cfdd3f7729c903e243d87152162d2b7/diffusion_pytorch_model.safetensors"
+  },
+  "license": {
+    "identifier": "apache-2.0",
+    "name": "apache-2.0",
+    "url": "https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/23f966cd5cfdd3f7729c903e243d87152162d2b7/README.md",
+    "source": "pinned official model card",
+    "terms_verified": false,
+    "note": "模型卡標示；SDXL 基底與其他相依條款另行適用。"
+  },
+  "dependencies": {
+    "loader": "ControlNetLoader",
+    "workflow": "checkpoint-structure-controlnet-v3",
+    "verification": "One 768x768 Animagine RTX3060 run, actual condition PNG, artwork and settings restoration verified; quality limitations in docs/structure-reference.md."
+  },
+  "validation": "rtx3060_fixed_animagine_structure_verified"
+}

@@ -9,7 +9,7 @@ export type ReferenceSnapshot = ReferenceAsset & {
   sha256: string
   input_role?: 'source' | 'mask' | 'structure'
   blend_preprocessing?: {id:string;version:number;method:string;library_version:string;radius:number;radius_unit:string;binary_sha256:string;sha256:string;size:number;width:number;height:number}
-  control_preprocessing?: { id: string; version: number; low_threshold: number; high_threshold: number; execution: string; node_version: string | null }
+  control_preprocessing?: { id: string; version: number; low_threshold?: number; high_threshold?: number; kind?: string; expected_package_revision?: string; parameters?: Record<string,unknown>; execution: string; node_version: string | null }
   preprocessing: { version: number; library_version: string } | null
   generation_preprocessing: { threshold?: number; white?: string; black?: string; version: number; library_version: string; resize: string; width: number; height: number; sha256: string }
 }

@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import HTTPException
 from pydantic import ConfigDict,Field,model_validator
 from starlette.concurrency import run_in_threadpool
-from backend import jobs,control_catalog,control_workflows as flow,control_edge_workflows as edge_flow
+from backend import jobs,control_catalog,control_workflows as flow,control_edge_workflows as edge_flow,structure_workflows
 
 
 def install(app,host,submissions):
@@ -47,7 +47,7 @@ def install(app,host,submissions):
             try: snapshot,encoded=await run_in_threadpool(adapter.prepare,host.DB,host.DATA,settings)
             except ValueError as exc: raise HTTPException(422,str(exc)) from exc
             components=[control_catalog.capture(record)]
-            def recheck(job): control_catalog.recheck(host.DB,value.engine_url,value.checkpoint,job['component_metadata'],job['model_metadata'])
+            def recheck(job): control_catalog.recheck(host.DB,value.engine_url,value.checkpoint,job['component_metadata'],job['model_metadata'],kind=settings.get('control_kind','canny'))
             submission=SimpleNamespace(request_id=value.request_id,engine_url=value.engine_url,checkpoint=value.checkpoint,workflow=adapter.build(settings,value.request_id))
             return await submissions.submit_locked(submission,reference=dict(settings=settings,snapshot=snapshot,encoded=encoded,adapter=adapter,workflow_id=adapter.ID,component_metadata=components,recheck=recheck))
 
@@ -60,3 +60,24 @@ def install(app,host,submissions):
 
     @app.post('/api/control-edge/generate')
     async def generate_with_edge(value:Generate): return await submit(value,edge_flow)
+
+    class StructureInput(host.DraftInput):
+        model_config=ConfigDict(extra='forbid')
+        workflow_mode:Literal['text2image']='text2image'
+        denoise:float=Field(default=1,strict=True,ge=1,le=1)
+        control_kind:Literal['pose','depth']
+        control_net_name:str=Field(min_length=1,max_length=2048)
+        control_strength:float=Field(default=.5,strict=True,gt=0,le=10,allow_inf_nan=False)
+        control_start:float=Field(default=0,strict=True,ge=0,le=1,allow_inf_nan=False)
+        control_end:float=Field(default=1,strict=True,ge=0,le=1,allow_inf_nan=False)
+        @model_validator(mode='after')
+        def references(self):
+            if not self.control_net_name.strip() or not self.image_asset_id or self.reference_ids!=[self.image_asset_id] or self.control_start>=self.control_end: raise ValueError('需單張結構素材與有效控制範圍')
+            return self
+    host.StructureInput=StructureInput
+    class StructureGenerate(StructureInput): request_id:UUID
+    @app.get('/api/structure/workflow')
+    def structure_descriptor():
+        return dict(id=structure_workflows.ID,name='SDXL 姿勢／深度參考',architectures=['sdxl'],kinds=['pose','depth'],implemented=True,batch_size=1,expected_aux_revision=structure_workflows.AUX_REVISION,outputs=dict(artwork='7',condition='16'))
+    @app.post('/api/structure/generate')
+    async def structure_generate(value:StructureGenerate): return await submit(value,structure_workflows)

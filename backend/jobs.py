@@ -93,11 +93,20 @@ def _reserve(
             ):
                 raise ValueError('此請求 ID 已用於其他工作流程')
             return display(value), False
-        if workflow_id in ('checkpoint-canny-controlnet-v1', 'checkpoint-canny-controlnet-edge-v2'):
+        if workflow_id in (
+            'checkpoint-canny-controlnet-v1',
+            'checkpoint-canny-controlnet-edge-v2',
+            'checkpoint-structure-controlnet-v3',
+        ):
             from backend import control_catalog
 
             control_catalog.validate_snapshot(
-                db, engine_url, checkpoint, component_metadata, model_metadata
+                db,
+                engine_url,
+                checkpoint,
+                component_metadata,
+                model_metadata,
+                kind=(reference_settings or {}).get('control_kind', 'canny'),
             )
         context = experiment_context.freeze(db, experiment, generation_settings, model_metadata)
         if workflow_id == 'checkpoint-ipadapter-reference-v1':

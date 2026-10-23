@@ -77,6 +77,10 @@ def build(value, node_ids=None):
 
 def extract(artwork, validate, *, allow_lora=True):
     """Restore only a whole template; extra inputs or branches cannot be dropped."""
+    if artwork.get('workflow_id') == 'checkpoint-structure-controlnet-v3':
+        from backend import structure_workflows
+
+        return structure_workflows.extract(artwork, validate)
     if artwork.get('workflow_id') == 'checkpoint-ipadapter-reference-v1':
         from backend import adapter_workflows
 

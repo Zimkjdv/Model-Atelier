@@ -9,7 +9,7 @@
 - 平台 Python，以及 FastAPI、Starlette、Pydantic、HTTPX、Pillow、Uvicorn、WebSockets 的實際安裝版本；只來自平台 Python 程序。
 - 原引擎回報的 ComfyUI、Python、PyTorch，以及指定 Comfy 套件的 `installed`／`required` 分開欄位。未知值使用 null；不保存完整環境變數、命令列或任意套件清單。
 
-此端點沒有提供可靠 CUDA、驅動、Git revision 及各節點版本，這些欄位保持未知；不使用平台 GPU 診斷代替遠端引擎，也不從 PyTorch 的 `+cu130` 推定運行時 CUDA。自訂節點目前不能由這些提交流程使用。
+此端點沒有提供可靠 CUDA、驅動、Git revision 及各節點版本，這些欄位保持未知；不使用平台 GPU 診斷代替遠端引擎，也不從 PyTorch 的 `+cu130` 推定運行時 CUDA。R02 與 R01 的專用模板另允許固定介面的自訂節點，所需修訂與實際版本未知分開記錄，不接受任意節點圖。
 
 SQLite 在原任務 `validating` 且快照尚未保存時，透過一次交易凍結版本。一般更新、取消、進度、歷史刷新不能改寫它。原 UUID 恢復在任何版本查詢前回傳舊任務，不重送；新作品直接複製原任務快照，重複匯入不更新。舊任務、作品與提交前驗證失敗紀錄沒有快照時保持未知，不回填。作品預覽及載入歷史設定可查看快照；原始任務 JSON 也保留它。
 

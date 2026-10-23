@@ -14,7 +14,8 @@ import LoraSnapshot from './LoraSnapshot.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
 import ControlSnapshot from './ControlSnapshot.vue'
 import ControlEdgePreview from './ControlEdgePreview.vue'
-import { controlEdgeWorkflowId, isControlWorkflow } from './controlSettings'
+import StructureOutput from './StructureOutput.vue'
+import { controlEdgeWorkflowId, structureWorkflowId, isControlWorkflow } from './controlSettings'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
 import RuntimeSnapshot from './RuntimeSnapshot.vue'
 import ExperimentSnapshot from './ExperimentSnapshot.vue'
@@ -805,13 +806,22 @@ onBeforeUnmount(() => {
           <ExperimentSnapshot :item="selected.experiment_context" /><RuntimeSnapshot
             :item="selected.runtime_metadata"
           /><JobMeasurements :item="selected.measurements" />
+          <StructureOutput
+            v-if="selected.workflow_id === structureWorkflowId"
+            :job-id="selected.job_id"
+          />
           <ControlEdgePreview
             v-if="selected.workflow_id === controlEdgeWorkflowId"
             :key="selected.id"
             :job-id="selected.job_id"
             :artwork-id="selected.id"
           />
-          <p v-else-if="isControlWorkflow(selected.workflow_id)" class="footnote"
+          <p
+            v-else-if="
+              selected.workflow_id !== structureWorkflowId &&
+              isControlWorkflow(selected.workflow_id)
+            "
+            class="footnote"
             >舊版 v1 沒有保存同次邊緣輸出，不會重新計算歷史圖。</p
           >
           <ReferenceSnapshot

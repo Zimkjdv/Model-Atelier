@@ -1,0 +1,647 @@
+[
+  {
+    "status": "passed",
+    "kind": "pose",
+    "job_id": "3a63fd26-a6fd-493c-9e21-efd1ca8f8b86",
+    "settings": {
+      "workflow_mode": "text2image",
+      "image_asset_id": "6f4c64a9-d97f-4332-976f-a5541b6d3f1c",
+      "reference_resize": "fit",
+      "loras": [],
+      "reference_ids": [
+        "6f4c64a9-d97f-4332-976f-a5541b6d3f1c"
+      ],
+      "title": "R01 pose",
+      "prompt": "masterpiece, best quality, anime illustration, one adult woman, brown hair, green eyes, long blue coat, fully clothed, standing in a park",
+      "negative_prompt": "text, watermark, blurry, multiple people",
+      "engine_url": "http://127.0.0.1:8188",
+      "checkpoint": "animagine-xl-4.0-opt.safetensors",
+      "width": 768,
+      "height": 768,
+      "seed": "9007199254740993",
+      "steps": 20,
+      "cfg": 5.0,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "control_kind": "pose",
+      "control_net_name": "controlnet-openpose-sdxl-1.0.safetensors",
+      "control_strength": 0.5,
+      "control_start": 0.0,
+      "control_end": 1.0
+    },
+    "source_sha256": "ac9081a9aa0740b19581c6d6b2c7ba90563f4fde6e1832bea2b388e107424b97",
+    "component_metadata": [
+      {
+        "name": "controlnet-openpose-sdxl-1.0.safetensors",
+        "version": "1.0 FP16",
+        "source_url": "https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/23f966cd5cfdd3f7729c903e243d87152162d2b7/README.md",
+        "architecture": "sdxl",
+        "size_bytes": 2502139104,
+        "sha256": "b8524e557a7df60d081f5d4a0eb109967d107df217943bf88c2d99b9ebcc06c5",
+        "license_name": "",
+        "license_url": "",
+        "metadata_updated_at": "2026-10-23T11:46:46.078346+00:00",
+        "origin": "user_registered",
+        "captured_at": "2026-10-23T11:46:47.689336+00:00",
+        "role": "controlnet",
+        "kind": "pose"
+      }
+    ],
+    "runtime_metadata": {
+      "schema_version": 1,
+      "captured_at": "2026-10-23T11:46:47.920622+00:00",
+      "workflow": {
+        "id": "checkpoint-structure-controlnet-v3",
+        "sha256": "095bf0b4824dd4a2315821a3f576925c813889c9c158708cfd8efa7c0a90eecf",
+        "nodes": [
+          "CLIPTextEncode",
+          "CheckpointLoaderSimple",
+          "ControlNetApplyAdvanced",
+          "ControlNetLoader",
+          "DWPreprocessor",
+          "EmptyLatentImage",
+          "ImageScale",
+          "KSampler",
+          "LoadImage",
+          "SaveImage",
+          "VAEDecode"
+        ],
+        "node_versions": null,
+        "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+      },
+      "platform": {
+        "source": "platform Python process",
+        "python": "3.12.10",
+        "packages": [
+          {
+            "name": "fastapi",
+            "version": "0.141.1"
+          },
+          {
+            "name": "starlette",
+            "version": "1.6.0"
+          },
+          {
+            "name": "pydantic",
+            "version": "2.13.5"
+          },
+          {
+            "name": "httpx",
+            "version": "0.28.1"
+          },
+          {
+            "name": "Pillow",
+            "version": "12.3.0"
+          },
+          {
+            "name": "uvicorn",
+            "version": "0.52.4"
+          },
+          {
+            "name": "websockets",
+            "version": "17.1"
+          }
+        ]
+      },
+      "engine": {
+        "status": "reported",
+        "source": "http://127.0.0.1:8188/system_stats",
+        "comfyui": "0.34.0",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "pytorch": "2.14.0+cu130",
+        "packages": [
+          {
+            "name": "comfyui-frontend-package",
+            "installed": "1.51.9",
+            "required": "1.51.9"
+          },
+          {
+            "name": "comfyui-workflow-templates",
+            "installed": "0.11.55",
+            "required": "0.11.55"
+          },
+          {
+            "name": "comfyui-embedded-docs",
+            "installed": "0.5.11",
+            "required": "0.5.11"
+          },
+          {
+            "name": "comfy-kitchen",
+            "installed": "0.2.33",
+            "required": "0.2.33"
+          },
+          {
+            "name": "comfy-aimdo",
+            "installed": "0.5.2",
+            "required": "0.5.2"
+          }
+        ],
+        "cuda": null,
+        "driver": null,
+        "git_revision": null,
+        "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+      },
+      "execution_context": {
+        "schema_version": 1,
+        "workload": "inference",
+        "workflow_id": "checkpoint-structure-controlnet-v3",
+        "geometry": {
+          "width": 768,
+          "height": 768,
+          "batch_size": 1,
+          "source": "workflow node 4"
+        },
+        "parameters": [
+          {
+            "node_id": "5",
+            "class_type": "KSampler",
+            "settings": {
+              "steps": 20,
+              "cfg": 5.0,
+              "sampler_name": "euler_ancestral",
+              "scheduler": "normal",
+              "denoise": 1.0,
+              "seed": "9007199254740993"
+            }
+          }
+        ],
+        "models": [
+          {
+            "role": "checkpoint",
+            "name": "animagine-xl-4.0-opt.safetensors",
+            "version": "4.0 Opt",
+            "architecture": "sdxl",
+            "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac"
+          },
+          {
+            "role": "controlnet",
+            "name": "controlnet-openpose-sdxl-1.0.safetensors",
+            "version": "1.0 FP16",
+            "architecture": "sdxl",
+            "sha256": "b8524e557a7df60d081f5d4a0eb109967d107df217943bf88c2d99b9ebcc06c5"
+          }
+        ],
+        "loras": [],
+        "launch_policy": {
+          "source": "http://127.0.0.1:8188/system_stats.system.argv",
+          "reported": true,
+          "precision_flags": [],
+          "memory_flags": []
+        },
+        "actual_precision": null,
+        "actual_offload": null,
+        "cache_state": "unknown",
+        "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+      },
+      "execution_device": {
+        "schema_version": 1,
+        "engine_url": "http://127.0.0.1:8188",
+        "source": "http://127.0.0.1:8188/model_atelier/execution-device",
+        "checked_at": "2026-10-23T11:46:47.947630+00:00",
+        "probe_id": "775b7147-9d02-4ab2-b254-4801f28937ae",
+        "status": "available",
+        "reason": "device_selected",
+        "device": {
+          "type": "cuda",
+          "index": 0
+        },
+        "backend_available": true
+      }
+    },
+    "artwork_ids": [
+      "b24fc7bc-1916-50ac-bcef-1d95b505c4c8"
+    ],
+    "condition": {
+      "job_id": "3a63fd26-a6fd-493c-9e21-efd1ca8f8b86",
+      "workflow_id": "checkpoint-structure-controlnet-v3",
+      "anchor": {
+        "job_id": "3a63fd26-a6fd-493c-9e21-efd1ca8f8b86",
+        "workflow_id": "checkpoint-structure-controlnet-v3",
+        "engine_url": "http://127.0.0.1:8188",
+        "workflow_sha256": "f5c7b6fc08ad7cbd8bf0a90ecad984119090b4bc01b4871d585d22a602ed89bf",
+        "reference_metadata": [
+          {
+            "id": "6f4c64a9-d97f-4332-976f-a5541b6d3f1c",
+            "title": "4d48da96-8151-47c6-b5a3-f2377a1ec642.png",
+            "width": 2480,
+            "height": 3508,
+            "size": 14214512,
+            "sha256": "ac9081a9aa0740b19581c6d6b2c7ba90563f4fde6e1832bea2b388e107424b97",
+            "archived": false,
+            "purpose": "unspecified",
+            "revision": 1,
+            "preprocessing": {
+              "id": "asset-normalize",
+              "version": 1,
+              "library": "Pillow",
+              "library_version": "12.3.0",
+              "source_format": "PNG",
+              "source_size": [
+                2480,
+                3508
+              ],
+              "source_sha256": "ac9081a9aa0740b19581c6d6b2c7ba90563f4fde6e1832bea2b388e107424b97",
+              "operations": [
+                "exif_transpose",
+                "convert_rgba",
+                "remove_metadata",
+                "encode_png"
+              ]
+            },
+            "created_at": "2026-10-23T11:46:47.295632+00:00",
+            "generation_preprocessing": {
+              "id": "checkpoint-image-input",
+              "version": 1,
+              "library": "Pillow",
+              "library_version": "12.3.0",
+              "resize": "fit",
+              "resampling": "LANCZOS",
+              "background": "#ffffff",
+              "output_mode": "RGB",
+              "output_format": "PNG",
+              "width": 768,
+              "height": 768,
+              "sha256": "477c6166931c7f4d73f27f363e84de17d723b531270d5c67dcfd05e9be382b66",
+              "size": 677982
+            },
+            "input_role": "structure",
+            "control_preprocessing": {
+              "id": "DWPreprocessor",
+              "version": 1,
+              "parameters": {
+                "detect_hand": "enable",
+                "detect_body": "enable",
+                "detect_face": "enable",
+                "resolution": 512,
+                "bbox_detector": "yolox_l.onnx",
+                "pose_estimator": "dw-ll_ucoco_384.onnx",
+                "scale_stick_for_xinsr_cn": "enable"
+              },
+              "execution": "original-engine",
+              "expected_package_revision": "a587a4c1594524c1d2de5cd1a86cd868ff448e1c",
+              "node_version": null,
+              "output_resize": "bicubic-to-output-size",
+              "kind": "pose"
+            }
+          }
+        ],
+        "component_metadata": [
+          {
+            "name": "controlnet-openpose-sdxl-1.0.safetensors",
+            "version": "1.0 FP16",
+            "source_url": "https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/23f966cd5cfdd3f7729c903e243d87152162d2b7/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 2502139104,
+            "sha256": "b8524e557a7df60d081f5d4a0eb109967d107df217943bf88c2d99b9ebcc06c5",
+            "license_name": "",
+            "license_url": "",
+            "metadata_updated_at": "2026-10-23T11:46:46.078346+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T11:46:47.689336+00:00",
+            "role": "controlnet",
+            "kind": "pose"
+          }
+        ],
+        "width": 768,
+        "height": 768
+      },
+      "source": {
+        "node_id": "16",
+        "filename": "condition_00001_.png",
+        "subfolder": "model_atelier\\3a63fd26-a6fd-493c-9e21-efd1ca8f8b86",
+        "type": "output"
+      },
+      "sha256": "2e6f53a6635a4c60288642b2b50fef1a18c61b20882ba08eaaf08c1d1f210463",
+      "size_bytes": 29925,
+      "saved_at": "2026-10-23T11:47:30.383082+00:00",
+      "width": 768,
+      "height": 768,
+      "state": "saved",
+      "image_available": true,
+      "import_allowed": false,
+      "message": "原生 姿勢／深度 節點 13 的同次輸出；不是目前表單的即時預覽。",
+      "imported": true
+    }
+  },
+  {
+    "status": "passed",
+    "kind": "depth",
+    "job_id": "93af8989-29fd-4835-8e38-ff317fcb0c50",
+    "settings": {
+      "workflow_mode": "text2image",
+      "image_asset_id": "a5271185-300a-4b5c-8c4a-158589da8c87",
+      "reference_resize": "fit",
+      "loras": [],
+      "reference_ids": [
+        "a5271185-300a-4b5c-8c4a-158589da8c87"
+      ],
+      "title": "R01 depth",
+      "prompt": "masterpiece, best quality, anime illustration, one adult woman, brown hair, green eyes, long blue coat, fully clothed, standing in a park",
+      "negative_prompt": "text, watermark, blurry, multiple people",
+      "engine_url": "http://127.0.0.1:8188",
+      "checkpoint": "animagine-xl-4.0-opt.safetensors",
+      "width": 768,
+      "height": 768,
+      "seed": "9007199254740993",
+      "steps": 20,
+      "cfg": 5.0,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "control_kind": "depth",
+      "control_net_name": "controlnet-depth-sdxl-1.0-fp16.safetensors",
+      "control_strength": 0.5,
+      "control_start": 0.0,
+      "control_end": 1.0
+    },
+    "source_sha256": "ac9081a9aa0740b19581c6d6b2c7ba90563f4fde6e1832bea2b388e107424b97",
+    "component_metadata": [
+      {
+        "name": "controlnet-depth-sdxl-1.0-fp16.safetensors",
+        "version": "1.0 FP16",
+        "source_url": "https://huggingface.co/diffusers/controlnet-depth-sdxl-1.0/blob/17bb97973f29801224cd66f192c5ffacf82648b4/README.md",
+        "architecture": "sdxl",
+        "size_bytes": 2502139134,
+        "sha256": "66a6813e6bd7270ecfe68206a59ddd605a011ae85321188376605c66e0a4f303",
+        "license_name": "",
+        "license_url": "",
+        "metadata_updated_at": "2026-10-23T11:48:12.400753+00:00",
+        "origin": "user_registered",
+        "captured_at": "2026-10-23T11:48:14.024870+00:00",
+        "role": "controlnet",
+        "kind": "depth"
+      }
+    ],
+    "runtime_metadata": {
+      "schema_version": 1,
+      "captured_at": "2026-10-23T11:48:14.254190+00:00",
+      "workflow": {
+        "id": "checkpoint-structure-controlnet-v3",
+        "sha256": "34d23eecf8fc8dd3252ec412439716150082562cea01370db24e87b44f93f6c6",
+        "nodes": [
+          "CLIPTextEncode",
+          "CheckpointLoaderSimple",
+          "ControlNetApplyAdvanced",
+          "ControlNetLoader",
+          "DepthAnythingV2Preprocessor",
+          "EmptyLatentImage",
+          "ImageScale",
+          "KSampler",
+          "LoadImage",
+          "SaveImage",
+          "VAEDecode"
+        ],
+        "node_versions": null,
+        "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+      },
+      "platform": {
+        "source": "platform Python process",
+        "python": "3.12.10",
+        "packages": [
+          {
+            "name": "fastapi",
+            "version": "0.141.1"
+          },
+          {
+            "name": "starlette",
+            "version": "1.6.0"
+          },
+          {
+            "name": "pydantic",
+            "version": "2.13.5"
+          },
+          {
+            "name": "httpx",
+            "version": "0.28.1"
+          },
+          {
+            "name": "Pillow",
+            "version": "12.3.0"
+          },
+          {
+            "name": "uvicorn",
+            "version": "0.52.4"
+          },
+          {
+            "name": "websockets",
+            "version": "17.1"
+          }
+        ]
+      },
+      "engine": {
+        "status": "reported",
+        "source": "http://127.0.0.1:8188/system_stats",
+        "comfyui": "0.34.0",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "pytorch": "2.14.0+cu130",
+        "packages": [
+          {
+            "name": "comfyui-frontend-package",
+            "installed": "1.51.9",
+            "required": "1.51.9"
+          },
+          {
+            "name": "comfyui-workflow-templates",
+            "installed": "0.11.55",
+            "required": "0.11.55"
+          },
+          {
+            "name": "comfyui-embedded-docs",
+            "installed": "0.5.11",
+            "required": "0.5.11"
+          },
+          {
+            "name": "comfy-kitchen",
+            "installed": "0.2.33",
+            "required": "0.2.33"
+          },
+          {
+            "name": "comfy-aimdo",
+            "installed": "0.5.2",
+            "required": "0.5.2"
+          }
+        ],
+        "cuda": null,
+        "driver": null,
+        "git_revision": null,
+        "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+      },
+      "execution_context": {
+        "schema_version": 1,
+        "workload": "inference",
+        "workflow_id": "checkpoint-structure-controlnet-v3",
+        "geometry": {
+          "width": 768,
+          "height": 768,
+          "batch_size": 1,
+          "source": "workflow node 4"
+        },
+        "parameters": [
+          {
+            "node_id": "5",
+            "class_type": "KSampler",
+            "settings": {
+              "steps": 20,
+              "cfg": 5.0,
+              "sampler_name": "euler_ancestral",
+              "scheduler": "normal",
+              "denoise": 1.0,
+              "seed": "9007199254740993"
+            }
+          }
+        ],
+        "models": [
+          {
+            "role": "checkpoint",
+            "name": "animagine-xl-4.0-opt.safetensors",
+            "version": "4.0 Opt",
+            "architecture": "sdxl",
+            "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac"
+          },
+          {
+            "role": "controlnet",
+            "name": "controlnet-depth-sdxl-1.0-fp16.safetensors",
+            "version": "1.0 FP16",
+            "architecture": "sdxl",
+            "sha256": "66a6813e6bd7270ecfe68206a59ddd605a011ae85321188376605c66e0a4f303"
+          }
+        ],
+        "loras": [],
+        "launch_policy": {
+          "source": "http://127.0.0.1:8188/system_stats.system.argv",
+          "reported": true,
+          "precision_flags": [],
+          "memory_flags": []
+        },
+        "actual_precision": null,
+        "actual_offload": null,
+        "cache_state": "unknown",
+        "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+      },
+      "execution_device": {
+        "schema_version": 1,
+        "engine_url": "http://127.0.0.1:8188",
+        "source": "http://127.0.0.1:8188/model_atelier/execution-device",
+        "checked_at": "2026-10-23T11:48:14.282336+00:00",
+        "probe_id": "42c217e0-25c1-42e3-a48a-53c0caf10434",
+        "status": "available",
+        "reason": "device_selected",
+        "device": {
+          "type": "cuda",
+          "index": 0
+        },
+        "backend_available": true
+      }
+    },
+    "artwork_ids": [
+      "7aa974ae-c69f-582b-a520-8b411d2d70c6"
+    ],
+    "condition": {
+      "job_id": "93af8989-29fd-4835-8e38-ff317fcb0c50",
+      "workflow_id": "checkpoint-structure-controlnet-v3",
+      "anchor": {
+        "job_id": "93af8989-29fd-4835-8e38-ff317fcb0c50",
+        "workflow_id": "checkpoint-structure-controlnet-v3",
+        "engine_url": "http://127.0.0.1:8188",
+        "workflow_sha256": "34f8183dc62b62da3ed8c074b9c13c3f7bb504fc4300ead5c22d218636f3bc61",
+        "reference_metadata": [
+          {
+            "id": "a5271185-300a-4b5c-8c4a-158589da8c87",
+            "title": "4d48da96-8151-47c6-b5a3-f2377a1ec642.png",
+            "width": 2480,
+            "height": 3508,
+            "size": 14214512,
+            "sha256": "ac9081a9aa0740b19581c6d6b2c7ba90563f4fde6e1832bea2b388e107424b97",
+            "archived": false,
+            "purpose": "unspecified",
+            "revision": 1,
+            "preprocessing": {
+              "id": "asset-normalize",
+              "version": 1,
+              "library": "Pillow",
+              "library_version": "12.3.0",
+              "source_format": "PNG",
+              "source_size": [
+                2480,
+                3508
+              ],
+              "source_sha256": "ac9081a9aa0740b19581c6d6b2c7ba90563f4fde6e1832bea2b388e107424b97",
+              "operations": [
+                "exif_transpose",
+                "convert_rgba",
+                "remove_metadata",
+                "encode_png"
+              ]
+            },
+            "created_at": "2026-10-23T11:48:13.624157+00:00",
+            "generation_preprocessing": {
+              "id": "checkpoint-image-input",
+              "version": 1,
+              "library": "Pillow",
+              "library_version": "12.3.0",
+              "resize": "fit",
+              "resampling": "LANCZOS",
+              "background": "#ffffff",
+              "output_mode": "RGB",
+              "output_format": "PNG",
+              "width": 768,
+              "height": 768,
+              "sha256": "477c6166931c7f4d73f27f363e84de17d723b531270d5c67dcfd05e9be382b66",
+              "size": 677982
+            },
+            "input_role": "structure",
+            "control_preprocessing": {
+              "id": "DepthAnythingV2Preprocessor",
+              "version": 1,
+              "parameters": {
+                "ckpt_name": "depth_anything_v2_vits.pth",
+                "resolution": 512
+              },
+              "execution": "original-engine",
+              "expected_package_revision": "a587a4c1594524c1d2de5cd1a86cd868ff448e1c",
+              "node_version": null,
+              "output_resize": "bicubic-to-output-size",
+              "kind": "depth"
+            }
+          }
+        ],
+        "component_metadata": [
+          {
+            "name": "controlnet-depth-sdxl-1.0-fp16.safetensors",
+            "version": "1.0 FP16",
+            "source_url": "https://huggingface.co/diffusers/controlnet-depth-sdxl-1.0/blob/17bb97973f29801224cd66f192c5ffacf82648b4/README.md",
+            "architecture": "sdxl",
+            "size_bytes": 2502139134,
+            "sha256": "66a6813e6bd7270ecfe68206a59ddd605a011ae85321188376605c66e0a4f303",
+            "license_name": "",
+            "license_url": "",
+            "metadata_updated_at": "2026-10-23T11:48:12.400753+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-23T11:48:14.024870+00:00",
+            "role": "controlnet",
+            "kind": "depth"
+          }
+        ],
+        "width": 768,
+        "height": 768
+      },
+      "source": {
+        "node_id": "16",
+        "filename": "condition_00001_.png",
+        "subfolder": "model_atelier\\93af8989-29fd-4835-8e38-ff317fcb0c50",
+        "type": "output"
+      },
+      "sha256": "a7c3d767f9623fea6b74fdf43ec3d3c0e86be7e77deeca64e5cfb30b61503975",
+      "size_bytes": 171073,
+      "saved_at": "2026-10-23T11:48:36.795151+00:00",
+      "width": 768,
+      "height": 768,
+      "state": "saved",
+      "image_available": true,
+      "import_allowed": false,
+      "message": "原生 姿勢／深度 節點 13 的同次輸出；不是目前表單的即時預覽。",
+      "imported": true
+    }
+  }
+]

@@ -5,6 +5,16 @@ from copy import deepcopy
 IMG2IMG_ID = 'checkpoint-image2image-v1'
 DESCRIPTIONS = [
     dict(
+        id='checkpoint-structure-controlnet-v3',
+        name='SDXL 姿勢／深度參考',
+        implemented=True,
+        architectures=['sdxl'],
+        image_count=1,
+        input_requirement='單張素材、明確登記 pose／depth 的 SDXL ControlNet 與 controlnet_aux；同次條件圖另存。',
+        control='DWPose／Depth Anything V2 相對深度；不保證角色一致。',
+        lora=True,
+    ),
+    dict(
         id='checkpoint-text2image-v1',
         name='Checkpoint 文生圖',
         implemented=True,

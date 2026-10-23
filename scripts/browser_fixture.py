@@ -27,6 +27,7 @@ import uvicorn
 from fastapi import FastAPI
 from backend import assets, catalog, gallery, jobs, workflows
 from backend.main import create_app
+from scripts.structure_fixture import STRUCTURE_NODES
 
 ENGINE = 'http://mock-engine.invalid:8188'
 
@@ -176,6 +177,8 @@ def fixture(data, count=None, legacy_ui=False):
                     }
                 }
             }
+        elif request.url.path.startswith('/object_info/') and name in STRUCTURE_NODES:
+            value = {name: STRUCTURE_NODES[name]}
         elif request.url.path.startswith('/object_info/') and name in INPAINT_NODES:
             value = {name: INPAINT_NODES[name]}
         elif request.url.path.startswith('/object_info/') and name in REFERENCE_NODES:

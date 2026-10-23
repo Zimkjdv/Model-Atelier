@@ -1,0 +1,33 @@
+{
+  "id": "controlnet-depth-sdxl-1.0-fp16",
+  "name": "controlnet-depth-sdxl-1.0-fp16",
+  "version": "1.0 FP16",
+  "architecture": "SDXL",
+  "kind": "depth",
+  "verified_at": "2026-10-23",
+  "filename": "controlnet-depth-sdxl-1.0-fp16.safetensors",
+  "size_bytes": 2502139134,
+  "sha256": "66a6813e6bd7270ecfe68206a59ddd605a011ae85321188376605c66e0a4f303",
+  "source": {
+    "provider": "Hugging Face",
+    "repository": "diffusers/controlnet-depth-sdxl-1.0",
+    "revision": "17bb97973f29801224cd66f192c5ffacf82648b4",
+    "filename": "diffusion_pytorch_model.fp16.safetensors",
+    "page_url": "https://huggingface.co/diffusers/controlnet-depth-sdxl-1.0/blob/17bb97973f29801224cd66f192c5ffacf82648b4/README.md",
+    "download_url": "https://huggingface.co/diffusers/controlnet-depth-sdxl-1.0/resolve/17bb97973f29801224cd66f192c5ffacf82648b4/diffusion_pytorch_model.fp16.safetensors"
+  },
+  "license": {
+    "identifier": "openrail++",
+    "name": "openrail++",
+    "url": "https://huggingface.co/diffusers/controlnet-depth-sdxl-1.0/blob/17bb97973f29801224cd66f192c5ffacf82648b4/README.md",
+    "source": "pinned official model card",
+    "terms_verified": false,
+    "note": "模型卡標示；SDXL 基底與其他相依條款另行適用。"
+  },
+  "dependencies": {
+    "loader": "ControlNetLoader",
+    "workflow": "checkpoint-structure-controlnet-v3",
+    "verification": "One 768x768 Animagine RTX3060 run, actual condition PNG, artwork and settings restoration verified; quality limitations in docs/structure-reference.md."
+  },
+  "validation": "rtx3060_fixed_animagine_structure_verified"
+}

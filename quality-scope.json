@@ -48,7 +48,14 @@
     "backend/training_bundle.py",
     "scripts/training_dataset.py",
     "backend/test_training_data.py",
-    "backend/test_training_bundle.py"
+    "backend/test_training_bundle.py",
+    "backend/structure_workflows.py",
+    "backend/structure_outputs.py",
+    "backend/structure_outputs_api.py",
+    "backend/test_structure_workflows.py",
+    "scripts/structure_fixture.py",
+    "scripts/verify_structure_generation.py",
+    "scripts/install_structure_preprocessors.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -90,7 +97,9 @@
     "frontend/src/ReferenceStudio.vue",
     "frontend/src/ReferenceComponents.vue",
     "frontend/src/ReferenceComponentsSnapshot.vue",
-    "frontend/tests/reference-recovery.spec.ts"
+    "frontend/tests/reference-recovery.spec.ts",
+    "frontend/src/StructureOutput.vue",
+    "frontend/tests/structure-recovery.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

@@ -81,7 +81,7 @@ class WorkflowSupportTests(unittest.TestCase):
                 self.assertEqual(value['scope'], 'platform_formats')
                 self.assertEqual(
                     [row['version'] for row in value['workflows']],
-                    [1] if family == 'reference' else [1, 2],
+                    [1] if family == 'reference' else [1, 2, 3] if family == 'control' else [1, 2],
                 )
                 for row in value['workflows']:
                     all_ids.append(row['id'])
