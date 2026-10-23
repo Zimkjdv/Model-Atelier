@@ -1,5 +1,7 @@
 {
   "python": [
+    "backend/main.py",
+    "backend/job_measurements.py",
     "scripts/comparison_fixture.py",
     "scripts/browser_fixture.py",
     "backend/submissions.py",
@@ -11,6 +13,8 @@
     "scripts/check_style.py"
   ],
   "web": [
+    "frontend/src/JobMeasurements.vue",
+    "frontend/src/jobMeasurements.ts",
     "frontend/tests/ui-accessibility.spec.ts",
     "frontend/src/CreationStudio.vue",
     "frontend/src/theme.css",
