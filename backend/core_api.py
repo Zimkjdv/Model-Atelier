@@ -16,10 +16,28 @@ from fastapi.responses import FileResponse, JSONResponse
 from starlette.concurrency import run_in_threadpool
 from backend import assets, catalog, drafts, environment, execution_device, reference_workflows
 from backend.schemas import Settings, ModelTarget, ModelMetadata, DraftInput, AssetUpdate
+from pydantic import ConfigDict, model_validator
+from backend import workflow_support
 
 
 def install(app, host):
     catalog_lock = asyncio.Lock()
+    workflow_support.install(app)
+
+    class GeneralDraft(DraftInput):
+        model_config = ConfigDict(extra='forbid')
+
+        @model_validator(mode='before')
+        @classmethod
+        def complete_format(cls, value):
+            if message := workflow_support.problem(value, '一般草稿'):
+                raise ValueError(message)
+            if isinstance(value, dict):
+                # Existing clients can round-trip saved records or copied generation
+                # bodies. These known envelope fields never select a draft/job ID.
+                envelope = {'id', 'created_at', 'updated_at', 'model_version', 'request_id'}
+                return {key: item for key, item in value.items() if key not in envelope}
+            return value
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError):
@@ -197,14 +215,14 @@ def install(app, host):
         return [dict(loras=[]) | defaults | item for item in drafts.list_all(host.DB)]
 
     @app.post('/api/drafts', status_code=201)
-    def create_draft(value: DraftInput):
+    def create_draft(value: GeneralDraft):
         try:
             return drafts.save(host.DB, draft_payload(value))
         except ValueError as exc:
             raise HTTPException(409, str(exc))
 
     @app.put('/api/drafts/{draft_id}')
-    def update_draft(draft_id: str, value: DraftInput):
+    def update_draft(draft_id: str, value: GeneralDraft):
         try:
             return drafts.save(host.DB, draft_payload(value), draft_id, value.revision)
         except KeyError:

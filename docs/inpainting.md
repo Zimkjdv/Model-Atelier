@@ -1,5 +1,7 @@
 # Checkpoint 局部編輯
 
+一般草稿、設定交換及比較尚未支援專用格式；建立／更新一般草稿時的遮罩等欄位會明確拒絕，避免部分保存。工作台可展開版本別支援範圍，原任務／作品完整設定及 workflow 仍可載入／下載，見 [R07 格式評估](specialized-workflow-formats.md)。
+
 平台提供自有的 `checkpoint-inpaint-v1` 模板：原圖與遮罩各一張，使用已明確登記為 SD 1.x 或 SDXL 的 checkpoint，可依原順序掛載最多四個 LoRA。後端與局部編輯工作台已整合；Pony／Animagine 的 RTX 3060 固定實機驗證已完成，修補接縫及色彩偏差如實保留。見 [驗收紀錄](validation/checkpoint-inpaint-rtx3060.md)。
 
 ## 輸入與遮罩

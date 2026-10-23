@@ -25,6 +25,7 @@ flowchart LR
 | jobs、cancellation、stopping、progress | UUID 帳本、修訂、取消／停止、租約與歷史核對 |
 | catalog、loras、flux_catalog、control_catalog | 引擎範圍清單及登記版本／來源 |
 | gallery、assets、experiment_store 等 | 本地資料、整理修訂與引用 |
+| workflow_support、WorkflowFormatSupport | 專用版本的草稿／交換／比較能力，拒絕部分轉換；平台格式描述與引擎即時能力分開 |
 | runtime_metadata、execution_device、job_measurements、resource_sampling | 提交前環境／裝置觀察；原引擎有界背景取樣使用獨立 journal，終態凍結，任務專用峰值保持未知 |
 
 模板、來源相容與 CPU 預覽各有模組；不接受任意第三方節點圖，各專用流程需要完整模板與能力檢查。

@@ -9,6 +9,7 @@ from fastapi import HTTPException, Request, Response, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 from backend import assets, experiment_store, settings_transfer, experiment_results
+from backend import workflow_support
 
 SUITE = Path(__file__).resolve().parents[1] / 'experiments/general-illustration-v1.json'
 MAX_VARIANTS = 8
@@ -129,6 +130,7 @@ def install(app, host):
         model_config = ConfigDict(extra='forbid')
 
     def normalize(raw):
+        workflow_support.require_general(raw, '比較方案')
         try:
             if set(raw) != set(Settings.model_fields) - {'revision'}:
                 raise ValueError('Incomplete or unknown fields')

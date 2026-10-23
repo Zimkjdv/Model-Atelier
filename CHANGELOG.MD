@@ -1,5 +1,13 @@
 # Model Atelier — Changelog
 
+## 2026-10-23 · R07 專用格式評估與資料遺失保護
+
+完成局部編輯／羽化／Canny v1、v2 的專用草稿、設定交換與比較方案評估，新增唯讀版本別能力 API 及工作台支援說明。決策維持三項操作未支援，須完整保存雙輸入、羽化／控制參數、來源及版本後才能啟用；完整原設定載入與 workflow 下載保留，未借用一般 schema 丟棄資訊。
+
+修正一般草稿曾回傳 201 卻默默捨棄遮罩參數的問題：POST／PUT、一般交換與比較明確拒絕專用設定，不部分寫入；保留既有回讀／複製生成 body 的有限封套相容，封套不選擇草稿或任務 UUID。新增 5 項後端整合及 5 項瀏覽器案例，四版本原設定、完整 workflow 與精確 seed 保留。core_api／settings_transfer／experiment_plans 先以 `80abccc` 獨立格式提交，Python AST 與 23 項既有回歸一致。R07 與兩子項完成，剩餘 29 主項／47 子項；M01 授權適用仍待釐清，V01-02 實機觸控保留。方案、拒絕與驗收範圍見 [R07 文件](docs/specialized-workflow-formats.md)。
+
+完整品質入口通過格式／靜態、585 項後端（1 項既有權限跳過）、Vue 建置／四組契約及 87 項瀏覽器；檢視兩工作台 1440px／390px 截圖可讀。未新增 GPU 生成或實體觸控驗收。
+
 ## 2026-10-23 · M01 固定權重的授權來源查核
 
 補齊 Pony manifest 的固定模型卡、39 bytes／SHA256、發布檔案清單、標準完整條文與參考 hash、現有 workflow 依賴及未提供的上游元件版本。查出相同權重 SHA256 的 Civitai 發布頁列出修改版 Fair AI Public License 1.0-SD 與變現推論限制，與固定 Hugging Face 的 OpenRAIL-M 標記不同；`terms_verified=false`，不替發布者解決適用條款，也不改舊 provenance／作品快照。

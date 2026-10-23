@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 from backend import assets, catalog, flux_workflows, gallery, jobs, workflows
+from backend import workflow_support
 
 MAX_BYTES = 256 * 1024
 STANDARD = 'checkpoint-text2image-v1'
@@ -84,6 +85,7 @@ def install(app, host):
         model_config = ConfigDict(extra='forbid')
 
     def normalized(workflow_id, settings):
+        workflow_support.require_general(settings, '設定交換', workflow_id)
         try:
             cls = flux_workflows.Input if workflow_id == FLUX else CheckpointInput
             fields = set(cls.model_fields) - {'revision'}
@@ -120,6 +122,7 @@ def install(app, host):
 
     def original(item, kind):
         workflow_id = item.get('workflow_id') or STANDARD
+        workflow_support.require_general(item.get('reference_settings'), '設定交換', workflow_id)
         try:
             if workflow_id == FLUX:
                 settings = flux_workflows.extract(item)
@@ -169,8 +172,13 @@ def install(app, host):
 
     @app.post('/api/creation-settings/export')
     async def export_current(request: Request):
+        raw = await read_json(request)
+        if isinstance(raw, dict):
+            workflow_support.require_general(
+                raw.get('settings'), '設定交換', raw.get('workflow_id')
+            )
         try:
-            value = ExportInput.model_validate(await read_json(request))
+            value = ExportInput.model_validate(raw)
         except ValidationError as exc:
             raise HTTPException(422, '匯出需包含已支援 workflow_id 與完整 settings') from exc
         return download(
@@ -198,8 +206,13 @@ def install(app, host):
 
     @app.post('/api/creation-settings/import')
     async def import_settings(request: Request):
+        raw = await read_json(request)
+        if isinstance(raw, dict):
+            workflow_support.require_general(
+                raw.get('settings'), '設定交換', raw.get('workflow_id')
+            )
         try:
-            value = Bundle.model_validate(await read_json(request))
+            value = Bundle.model_validate(raw)
         except ValidationError as exc:
             raise HTTPException(
                 422,

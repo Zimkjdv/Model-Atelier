@@ -22,6 +22,7 @@
 | 工作 | 說明 |
 | --- | --- |
 | 一般設定交換 | [精確 JSON](creation-settings-transfer.md) |
+| 專用流程格式 | [局部編輯／Canny 草稿、交換與比較的支援及方案](specialized-workflow-formats.md) |
 | 圖生圖／素材 | [參考流程與版本](models/reference-workflows.md) |
 | 局部編輯 | [遮罩修補](inpainting.md)、[羽化](inpaint-feather.md) |
 | Canny | [ControlNet 與原邊緣](controlnet.md)、[CPU 預覽](canny-preview.md) |

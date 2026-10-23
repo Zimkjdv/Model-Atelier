@@ -7,6 +7,7 @@ import { experimentForSubmission, type ExperimentLoad } from './experimentSettin
 import type { CreationForm } from './creationSettings'
 import LoraSnapshot from './LoraSnapshot.vue'
 import JobMeasurements from './JobMeasurements.vue'
+import WorkflowFormatSupport from './WorkflowFormatSupport.vue'
 import ComponentSnapshot from './ComponentSnapshot.vue'
 import ControlSnapshot from './ControlSnapshot.vue'
 import ControlEdgePreview from './ControlEdgePreview.vue'
@@ -263,6 +264,10 @@ onBeforeUnmount(() => window.clearInterval(timer))
 <template>
   <article class="panel">
     <h2>生成任務</h2>
+    <WorkflowFormatSupport
+      v-if="workflow === 'inpaint' || workflow === 'control'"
+      :family="workflow"
+    />
     <p class="submission-state" role="status" aria-label="提交能力狀態">{{
       submissionAvailability
     }}</p>

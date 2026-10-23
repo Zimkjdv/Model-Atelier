@@ -25,6 +25,8 @@ Q05 的重新整理／關頁提示是另一項；本次只處理非同步讀取�
 
 ## 提交與未知結果
 
+一般草稿 POST／PUT 僅接受其完整已知設定；專用遮罩／羽化／控制／pending 欄位及其他未知欄位回傳 422，不再默默捨棄。舊回讀封套的 id、created_at、updated_at、model_version、request_id 保留有限相容但不影響保存內容或任務身分。`GET /api/reference-workflows/support?family=...` 是本版平台格式能力，不是引擎可生成證明；版本與拒絕範圍見 [R07](specialized-workflow-formats.md)。
+
 generationRequest.ts 的 submitOnce 接收既有凍結 path／body 與清除 pending 的 callback。成功 JSON 必須是物件，且 id 等於凍結的 request_id；null、陣列、缺少 id 或其他任務 ID 都保留 pending。可確認的 API 拒絕仍沿用原契約清除 pending；若錯誤 detail 帶 job_id，必須屬於原請求，其他任務 ID 不能確認本次提交。傳輸失敗、無法解析的回覆、無 job_id 的伺服器錯誤仍保留原請求，讓使用者明確恢復。確認平台已有原任務不等同引擎已生成成功，終態仍由原任務歷史核對。
 
 localStorage 保存失敗時不送請求；恢復使用原 UUID、設定、LoRA 順序與修補／Canny v1、v2 marker 選出的原端點。submitOnce 不讀現在表單、不自動重送；取消、停止及刷新也不由 client 重試。後端仍以原 UUID 帳本處理查詢／恢復，不新增重複 GPU 工作。

@@ -1,5 +1,7 @@
 {
   "python": [
+    "backend/workflow_support.py",
+    "backend/test_workflow_support.py",
     "backend/core_api.py",
     "backend/settings_transfer.py",
     "backend/experiment_plans.py",
@@ -18,6 +20,8 @@
     "scripts/check_style.py"
   ],
   "web": [
+    "frontend/src/WorkflowFormatSupport.vue",
+    "frontend/tests/workflow-format-support.spec.ts",
     "frontend/tests/resource-sampling.spec.ts",
     "frontend/src/JobMeasurements.vue",
     "frontend/src/jobMeasurements.ts",
