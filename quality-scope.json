@@ -62,7 +62,9 @@
     "scripts/fooocus_fixture.py",
     "scripts/verify_fooocus_generation.py",
     "backend/test_windows_temp_alias.py",
-    "backend/test_startup_scripts.py"
+    "backend/test_startup_scripts.py",
+    "backend/storage.py",
+    "backend/test_storage.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -107,7 +109,9 @@
     "frontend/tests/reference-recovery.spec.ts",
     "frontend/src/StructureOutput.vue",
     "frontend/tests/structure-recovery.spec.ts",
-    "frontend/tests/fooocus-recovery.spec.ts"
+    "frontend/tests/fooocus-recovery.spec.ts",
+    "frontend/src/StorageOverview.vue",
+    "frontend/tests/storage-overview.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

@@ -22,6 +22,7 @@
 - [請求／任務追蹤、狀態分離與診斷預覽匯出](diagnostics.md)
 - [格式、靜態檢查與高風險流程維護規則](maintenance.md)
 - [裝置回報](execution-device.md)、[環境版本](runtime-versions.md)、[效能條件](execution-context.md)、[量測](job-measurements.md)
+- [系統資訊目錄卡片、磁碟容量與開啟資料夾](storage-overview.md)、[狀態驗收](validation/storage-overview-20261024.md)
 
 ## 創作與作品
 
