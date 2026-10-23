@@ -33,6 +33,10 @@
 | 作品整理 | [收藏／筆記／封存](artwork-library.md)、[比較與人工評分](artwork-comparison.md) |
 | 實驗 | [固定案例](illustration-suite.md)、[比較方案](experiment-plans.md)、[保存／匯入](experiment-storage.md)、[任務關聯](experiment-runs.md)、[結果報告](comparison-report.md) |
 
+## 訓練準備
+
+- [T01 訓練需求與驗收範圍 v1](training/requirements.md)、[需求確認證據](validation/training-requirements-20261023.md)：畫風／角色分開、僅 SDXL 候選，沒有啟動訓練
+
 ## 模型與執行環境
 
 - [Animagine 來源與預設](models/animagine-xl-4.0-opt.md)
