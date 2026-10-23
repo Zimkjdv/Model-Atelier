@@ -19,6 +19,8 @@
 
 ## 創作與作品
 
+下一階段以動漫畫風為目標時，先讀 [動漫畫風驗證與開發計畫](anime-style-development.md)：R05 → L01 → R02 → T01 → T02、圖片數量／分組、保留評估集、流程擴充及驗收；這是計畫，不表示 adapter 或訓練已實作。
+
 | 工作 | 說明 |
 | --- | --- |
 | 一般設定交換 | [精確 JSON](creation-settings-transfer.md) |

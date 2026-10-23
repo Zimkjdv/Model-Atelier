@@ -2,7 +2,7 @@
 
 個人 AI 圖像創作與實驗工作台。Vue 3 + TypeScript 前端、FastAPI 後端，透過獨立 ComfyUI 執行生成；SQLite 與圖片保存在本機。
 
-現行待辦與驗收以 [ROADMAP.MD](ROADMAP.MD) 為準；開發與歷史實測見 [CHANGELOG.MD](CHANGELOG.MD)。文件整理日期：2026-10-22。
+現行待辦與驗收以 [ROADMAP.MD](ROADMAP.MD) 為準；開發與歷史實測見 [CHANGELOG.MD](CHANGELOG.MD)。文件整理日期：2026-10-23。
 
 ## 快速開始
 
@@ -39,7 +39,7 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 | 範圍 | 已提供 | 限制與說明 |
 | --- | --- | --- |
 | Checkpoint | 文生圖、單張圖生圖、精確字串 seed、草稿、設定交換、最多四個有序 LoRA | batch 固定 1；[參考流程](docs/models/reference-workflows.md)、[LoRA](docs/models/multi-lora-workflow.md) |
-| 局部編輯 | 遮罩筆刷／擦除／反相／PNG、v1 修補與 v2 內側羽化、原設定還原 | 一般草稿／交換／比較仍待 R07；[修補](docs/inpainting.md)、[羽化](docs/inpaint-feather.md) |
+| 局部編輯 | 遮罩筆刷／擦除／反相／PNG、v1 修補與 v2 內側羽化、原設定還原 | 一般草稿／交換／比較尚未支援；[格式評估](docs/specialized-workflow-formats.md)、[修補](docs/inpainting.md)、[羽化](docs/inpaint-feather.md) |
 | Canny | ControlNet 庫、結構引導、CPU 預覽、v2 原邊緣保存與離線查看 | [Pony v2 五組 LoRA 實測](docs/validation/pony-canny-v2-20261023.md) 有品質限制；depth／pose／角色 adapter 未接入；[流程](docs/controlnet.md)、[預覽](docs/canny-preview.md) |
 | FLUX.1 [schnell] | 元件庫、固定來源預檢、獨立表單／草稿／交換、提交與還原 | 固定來源存取／安裝及 GPU 生成驗收未完成；[FLUX](docs/models/flux-workflow.md) |
 | 作品與素材 | 原圖／縮圖、搜尋、收藏、筆記、人工評分、封存／還原、素材用途與引用保護 | 封存不釋放檔案，無一般作品永久刪除；[整理](docs/artwork-library.md)、[比較](docs/artwork-comparison.md) |
@@ -47,6 +47,16 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 | 執行 | 進度、取消／條件化停止、失敗保存、環境快照、原引擎連續資源取樣、E01 裝置回報 | 觀察最高值不等於任務專用峰值；[量測範圍](docs/job-measurements.md)、[裝置回報](docs/execution-device.md) |
 
 尚未提供訓練、多租戶／付費、自訂節點編輯器或官方付費 API。設定還原不保證跨環境逐像素一致；實測的來源條件與品質偏差均保留。
+
+## 動漫畫風的下一步
+
+以動漫畫風為目標時，建議依 **R05 品質基準 → L01 畫風 LoRA → R02 參考圖 adapter → T01 訓練需求 → T02 資料契約** 推進。先沿用現有生成與比較功能，再依結果決定是否訓練；整體 Vue／FastAPI／SQLite／ComfyUI 架構保留。
+
+第一輪可從三位作者／畫風各十張開始，每組七張候選參考、三張保留評估；只測一種畫風也可先準備一組。確定試訓時，每組可先用 20–50 張訓練圖，另留 5–10 張評估圖。這些是起始配額，不是硬性門檻或品質保證。參考圖 adapter 及訓練仍待實作，素材用途標籤不會啟用畫風條件。
+
+完整的圖片選擇、資料分割／版本、有限任務數、模組擴充及驗收方式見 [動漫畫風驗證與開發計畫](docs/anime-style-development.md)。
+
+實作進入需要真實動漫圖片的品質驗收或訓練時，會先核對已提供資料，缺少時主動提醒使用者；提醒時點與所需內容見 [圖片提供提醒](docs/anime-style-development.md#image-input-reminders)。
 
 ## 日常操作
 
@@ -115,5 +125,6 @@ model-atelier/
 | 驗證變更與清單效能 | [品質檢查與 CI](docs/quality-checks.md)、[分頁與量測](docs/list-pagination.md)：重跑命令、相容策略與驗收證據 |
 | 調整 UI | [UI 規範](docs/ui-guidelines.md)、[導覽與能力狀態](docs/navigation.md)、[逐頁視覺與無障礙驗收](docs/validation/ui-accessibility-20261023.md)：介面原則、可還原網址與桌面／窄視窗證據 |
 | 安排後續工作 | [ROADMAP](ROADMAP.MD)：尚未完成的項目與完成條件；[CHANGELOG](CHANGELOG.MD)：已完成變更 |
+| 開始動漫畫風驗證 | [開發計畫與圖片準備](docs/anime-style-development.md)：前五項順序、參考／評估／訓練資料、adapter 流程及人工驗收 |
 | 查核驗收證據 | [驗收目錄](docs/validation)：依硬體、模型、參數與日期記錄結果，不能視為所有環境的保證 |
 | 追溯舊文件 | [整理前 README 全文](docs/history/readme-before-q01-20261022.md)：舊限制、命令與歷史測試數，現行操作請以目前文件為準 |
