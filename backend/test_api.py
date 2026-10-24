@@ -22,7 +22,7 @@ class ApiTests(unittest.TestCase):
         self.app = main.create_app(data_root=Path(self.temp.name), database=self.db)
         self.host = self.app.state.context
         self.host.initialize()
-        self.client = TestClient(self.app)
+        self.client = TestClient(self.app, base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000))
 
     def tearDown(self):
         self.client.close()

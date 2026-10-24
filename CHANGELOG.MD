@@ -1,5 +1,19 @@
 # Model Atelier — Changelog
 
+## 2026-10-25 · D01 本機部署決策與存取保護
+
+使用者確認維持同一台電腦使用。平台新增全域來源 IP／Host／完整 Origin 檢查，拒絕非 loopback、重複標頭、DNS rebinding 型 Host 與跨站 API 寫入；原啟動腳本停用 forwarded-header 信任。系統頁顯示本機模式，分開平台／引擎／儲存來源，失敗保留上次資料。沒有新增遠端帳號認證，本機使用者與程式仍視為可信。
+
+718 項後端（1 既有跳過）、前端建置／契約及 108 項既有 Chromium 通過。新增兩項桌面／390px 案例最初誤把 mock-engine.invalid 預期為本機引擎，修正測試後兩項定向重跑通過；七項邊界測試及真正 loopback HTTP 隔離驗收通過。正式 DATA／GPU 工作未變更。操作與限制見 [部署說明](docs/deployment.md)、[驗收](docs/validation/local-deployment-20261025.md)。
+
+<a id="d01"></a>
+
+- [x] **D01 · 遠端 GPU／區網存取決策與連線保護**
+  - [x] 驗收 D01-01：確認是否需要獨立 GPU 主機或區網存取；目前本機執行決策與此後續需求分開記錄。
+  - [x] 驗收 D01-02：若開放存取，先驗證身分／連線保護及主機角色、硬體與儲存資訊來源。
+
+  - D01-01：本輪使用者已明確選擇本機；D01-02 的遠端身分驗證條件未啟用，不宣稱通過遠端驗證。本機邊界及角色來源已實測，未來區網需求須另開規劃。
+
 ## 2026-10-25 · ROADMAP 已完成項目移入變更紀錄
 
 ROADMAP 只保留 18 個未完成主項與 28 個待驗收子項；完整已完成敘述、驗收連結與圖片提醒移至 [歸檔](#roadmap-completed-20261025)。保留 V01 實機觸控待辦，僅移出已完成的 V01-01；修正原摘要表仍把 T03／T04 計為待辦的舊數字。項目狀態及既有品質限制不變，相關內部連結改指歸檔。
@@ -273,11 +287,11 @@ H001–H151 依首次出現順序編號，文字相同者合併索引；所有�
 | <a id="h001"></a>H001<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 真實 ComfyUI 連線、工作流程提交與生成結果保存尚待實作／驗證；目前導覽中的創作、模型與作品頁為待開發頁面。 | 已交付，見 [7541feb](https://github.com/Zimkjdv/Model-Atelier/commit/7541feb57d69550c6e35c05bdab6efe1cab8ee1e)、[c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96)、[631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1)、[6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)。 本地引擎、checkpoint、提交與作品匯入已分階段完成並實機驗證。 |
 | <a id="h002"></a>H002<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 後續 Docker 評估涵蓋資料持久化、GPU 存取、主機硬體資訊來源及 ComfyUI 連線；不預設容器內資訊等於宿主機全部資訊。 | 未完成保留 [D02](ROADMAP.MD#d02)。 本機穩定後評估。 |
 | <a id="h003"></a>H003<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 規劃由平台自動偵測 GPU 型號、VRAM、RAM 與可用磁碟空間，於 P1 實作系統資訊頁。 | 已交付，見 [4bc2d5c](https://github.com/Zimkjdv/Model-Atelier/commit/4bc2d5ca4a89c8302e5b248d0756c647ea8ec4d4)、[2960e56](https://github.com/Zimkjdv/Model-Atelier/commit/2960e561ca5de85487b42c170805472e6c697a1f)。 硬體來源、主機角色及未知／過期狀態已實作；未提供的引擎裝置資訊保持未知。 |
-| <a id="h004"></a>H004<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 確認 GPU 執行於本機或獨立主機；Web 平台與推論引擎分離。 | 已交付部分見 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff)；未完成保留 [D01](ROADMAP.MD#d01)。 首輪 Windows 本機／loopback 已決定；遠端 GPU 與區網後續需求仍未決定。 |
+| <a id="h004"></a>H004<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 確認 GPU 執行於本機或獨立主機；Web 平台與推論引擎分離。 | 已交付部分見 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff)；未完成保留 [D01](CHANGELOG.MD#d01)。 首輪 Windows 本機／loopback 已決定；遠端 GPU 與區網後續需求仍未決定。 |
 | <a id="h005"></a>H005<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 確認 Windows 原生或 WSL 的推論環境。 | 已交付，見 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff)。 初期環境、資料目錄、骨架、導覽與設定已交付；後續頁面在個別增量接入。 |
 | <a id="h006"></a>H006<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 確認資料方案：初期 SQLite + 本地檔案目錄。 | 已交付，見 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff)。 初期環境、資料目錄、骨架、導覽與設定已交付；後續頁面在個別增量接入。 |
 | <a id="h007"></a>H007<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 定義模型、輸入素材、輸出、縮圖及資料庫的儲存位置。 | 已交付，見 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff)。 初期環境、資料目錄、骨架、導覽與設定已交付；後續頁面在個別增量接入。 |
-| <a id="h008"></a>H008<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 定義本機存取設定；若開放區網或遠端，再加入驗證與連線保護。 | 已交付部分見 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff)；未完成保留 [D01](ROADMAP.MD#d01)。 首輪 Windows 本機／loopback 已決定；遠端 GPU 與區網後續需求仍未決定。 |
+| <a id="h008"></a>H008<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 定義本機存取設定；若開放區網或遠端，再加入驗證與連線保護。 | 已交付部分見 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff)；未完成保留 [D01](CHANGELOG.MD#d01)。 首輪 Windows 本機／loopback 已決定；遠端 GPU 與區網後續需求仍未決定。 |
 | <a id="h009"></a>H009<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 檢查模型執行環境的 GPU、驅動、PyTorch 與 CUDA 可用狀態；資料不可得時標示未知。 | 已交付，見 [4bc2d5c](https://github.com/Zimkjdv/Model-Atelier/commit/4bc2d5ca4a89c8302e5b248d0756c647ea8ec4d4)。 診斷與未知值處理已交付。 |
 | <a id="h010"></a>H010<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 建立模型與工作流程的相容性紀錄，區分已驗證、未驗證及已知不相容。 | 已交付，見 [6cb5e1c](https://github.com/Zimkjdv/Model-Atelier/commit/6cb5e1ce5d4be67f3529c4d412a38312d888a2dd)。 條件化相容性紀錄已交付。 |
 | <a id="h011"></a>H011<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 記錄生圖與訓練各自的實測資源需求，保留硬體、環境及測試設定，不提供未經驗證的效能保證。 | 已交付部分見 [6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)、[df8b141](https://github.com/Zimkjdv/Model-Atelier/commit/df8b14155b8e03fa42889d84ce6e8b28e7595b40)；未完成保留 [E04](ROADMAP.MD#e04)、[E02](ROADMAP.MD#e02)、[T01](CHANGELOG.MD#t01)、[T03](CHANGELOG.MD#t03)。 已有 RTX 3060 推論量測；訓練與 RTX 4080 不能借用該結果。 |
@@ -364,7 +378,7 @@ H001–H151 依首次出現順序編號，文字相同者合併索引；所有�
 | <a id="h092"></a>H092<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 提交前顯示資料將送往的服務及已知費用資訊。 | 未完成保留 [A05](ROADMAP.MD#a05)。 |
 | <a id="h093"></a>H093<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 處理限流、逾時、扣費狀態及重試，避免重複付費提交。 | 未完成保留 [A06](ROADMAP.MD#a06)。 |
 | <a id="h094"></a>H094<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 依服務支援範圍保存結果及請求設定。 | 未完成保留 [A07](ROADMAP.MD#a07)。 |
-| <a id="h095"></a>H095<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 推論跑本機或遠端 GPU；是否需要區網存取。 | 已交付部分見 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff)；未完成保留 [D01](ROADMAP.MD#d01)。 首輪 Windows 本機／loopback 已決定；遠端 GPU 與區網後續需求仍未決定。 |
+| <a id="h095"></a>H095<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 推論跑本機或遠端 GPU；是否需要區網存取。 | 已交付部分見 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff)；未完成保留 [D01](CHANGELOG.MD#d01)。 首輪 Windows 本機／loopback 已決定；遠端 GPU 與區網後續需求仍未決定。 |
 | <a id="h096"></a>H096<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 現有 ComfyUI 是否已安裝，是否有可沿用的模型目錄。 | 已交付，見 [7541feb](https://github.com/Zimkjdv/Model-Atelier/commit/7541feb57d69550c6e35c05bdab6efe1cab8ee1e)、[d6364f5](https://github.com/Zimkjdv/Model-Atelier/commit/d6364f5415ea13d20613a81dbdd0be924927ab06)。 本地 ComfyUI 安裝與既有模型路徑登記已完成。 |
 | <a id="h097"></a>H097<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 確認第一個模型採 Pony V6 XL，或依硬體與實測調整。 | 已交付，見 [6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)。 Pony／RTX 3060 首輪、環境及固定負載量測已完成，不外推其他硬體。 |
 | <a id="h098"></a>H098<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | Animagine XL 與 FLUX.1 的確切版本。 | 已交付，見 [2602811](https://github.com/Zimkjdv/Model-Atelier/commit/2602811267f7be836aa1f0e4410bfa6bd25e5804)、[5bf331f](https://github.com/Zimkjdv/Model-Atelier/commit/5bf331f543250fd5a0f88a71424f8eda7368eb96)。 Animagine 4.0 Opt 與 FLUX.1 [schnell] 版本已選定。 |
@@ -454,7 +468,7 @@ H001–H151 依首次出現順序編號，文字相同者合併索引；所有�
 | 265 | [H092](#h092) | [A05](ROADMAP.MD#a05) |
 | 266 | [H093](#h093) | [A06](ROADMAP.MD#a06) |
 | 267 | [H094](#h094) | [A07](ROADMAP.MD#a07) |
-| 287 | [H095](#h095) | [D01](ROADMAP.MD#d01) |
+| 287 | [H095](#h095) | [D01](CHANGELOG.MD#d01) |
 | 292 | [H099](#h099) | [A02](ROADMAP.MD#a02) |
 | 316 | [H107](#h107) | [F03](ROADMAP.MD#f03)、[F04](ROADMAP.MD#f04)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R07](CHANGELOG.MD#r07) |
 | 422 | [H114](#h114) | [E04](ROADMAP.MD#e04)、[E02](ROADMAP.MD#e02)、[T01](CHANGELOG.MD#t01)、[T03](CHANGELOG.MD#t03) |

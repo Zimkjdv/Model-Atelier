@@ -19,6 +19,7 @@ import LocalModelPaths from './LocalModelPaths.vue'
 import EngineEnvironment from './EngineEnvironment.vue'
 import LocalEnvironmentCheck from './LocalEnvironmentCheck.vue'
 import StorageOverview from './StorageOverview.vue'
+import DeploymentStatus from './DeploymentStatus.vue'
 import DiagnosticsPanel from './DiagnosticsPanel.vue'
 import type { EngineReport } from './environmentTypes'
 type Memory = { total: number | null; used: number | null; free: number | null }
@@ -353,6 +354,7 @@ onUnmounted(() => {
             @settings="navigate('設定')"
           />
           <LocalEnvironmentCheck />
+          <DeploymentStatus />
           <StorageOverview />
           <article class="panel details" v-if="system"
             ><h2>環境詳細資訊</h2

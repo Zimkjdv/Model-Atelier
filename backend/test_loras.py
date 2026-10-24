@@ -76,7 +76,7 @@ class LoraTests(unittest.TestCase):
         missing = next(item for item in result['loras'] if item['name'] == NAME)
         self.assertEqual(missing, saved | {'listed': False})
         self.client.close()
-        self.client = TestClient(main.create_app(data_root=self.db.parent, database=self.db))
+        self.client = TestClient(main.create_app(data_root=self.db.parent, database=self.db), base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000))
         self.assertEqual(self.client.get('/api/loras').json(), result)
         self.assertEqual(catalog.read(self.db, ENGINE), original)
 

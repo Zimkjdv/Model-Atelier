@@ -159,12 +159,12 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(len(recorder.snapshot()['events']), 1)
         self.client.get('/api/PRIVATE?token=PRIVATE', headers={'Authorization': 'PRIVATE'})
         self.assert_private(self.events())
-        with TestClient(main.create_app(data_root=self.host.DATA / 'separate')) as other:
+        with TestClient(main.create_app(data_root=self.host.DATA / 'separate'), base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000)) as other:
             self.assertEqual(other.get('/api/diagnostics').json()['events'], [])
 
     def test_snapshot_reboot_is_empty_and_route_headers_do_not_use_client_identity(self):
         self.client.get('/api/settings', headers={'X-Request-ID': 'PRIVATE'})
         self.assertTrue(self.events())
-        with TestClient(main.create_app(data_root=self.host.DATA, database=self.db)) as restarted:
+        with TestClient(main.create_app(data_root=self.host.DATA, database=self.db), base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000)) as restarted:
             self.assertEqual(restarted.get('/api/diagnostics').json()['events'], [])
         self.assert_private(self.events())

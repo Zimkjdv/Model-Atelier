@@ -61,7 +61,7 @@ def main():
     for count in [100, 1000, 10000]:
         with tempfile.TemporaryDirectory(prefix='atelier-benchmark-') as folder:
             app = create_app(data_root=folder, engine_client_factory=lambda **kw: httpx.AsyncClient(transport=httpx.MockTransport(lambda req: (_ for _ in ()).throw(AssertionError('benchmark is offline'))), **kw))
-            with TestClient(app) as client:
+            with TestClient(app, base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000)) as client:
                 seed(app.state.context, count)
                 result = dict(count_per_kind=count)
                 for kind in ['artworks', 'jobs', 'assets']:

@@ -24,7 +24,7 @@ class AppFactoryTests(unittest.TestCase):
             second = main.create_app(data_root=root / 'second', engine_client_factory=lambda **options: remotes[1])
             self.assertFalse((root / 'first').exists())
             self.assertFalse((root / 'second').exists())
-            with TestClient(first) as a, TestClient(second) as b:
+            with TestClient(first, base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000)) as a, TestClient(second, base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000)) as b:
                 a.put('/api/settings', json=dict(comfy_url='http://engine-a:8188'))
                 self.assertEqual(b.get('/api/settings').json()['comfy_url'], 'http://127.0.0.1:8188')
                 b.put('/api/settings', json=dict(comfy_url='http://engine-b:8188'))
@@ -43,7 +43,7 @@ class AppFactoryTests(unittest.TestCase):
                 self.assertIsNot(first.state.context.local_environment_state, second.state.context.local_environment_state)
                 for index, engine in enumerate(('http://engine-a:8188', 'http://engine-b:8188')):
                     self.assertTrue(all(call.args[0].startswith(engine) for call in remotes[index].get.await_args_list))
-            with TestClient(main.create_app(data_root=root / 'first')) as restarted:
+            with TestClient(main.create_app(data_root=root / 'first'), base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000)) as restarted:
                 self.assertEqual(restarted.get('/api/settings').json()['comfy_url'], 'http://engine-a:8188')
                 self.assertEqual(len(restarted.get('/api/jobs').json()), 1)
                 self.assertEqual(len(restarted.get('/api/assets').json()), 1)
@@ -70,7 +70,7 @@ print('import is read-only')
             with closing(sqlite3.connect(path)) as database, database:
                 database.execute('CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
                 database.execute('INSERT INTO settings VALUES (?, ?)', ('draft:old-draft', json.dumps(legacy)))
-            with TestClient(main.create_app(data_root=root / 'images', database=path)) as client:
+            with TestClient(main.create_app(data_root=root / 'images', database=path), base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000)) as client:
                 self.assertEqual(client.get('/api/drafts').json()[0]['seed'], legacy['seed'])
             with closing(sqlite3.connect(path)) as database:
                 self.assertEqual(json.loads(database.execute('SELECT value FROM settings').fetchone()[0]), legacy)

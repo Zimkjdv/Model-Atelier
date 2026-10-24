@@ -33,7 +33,7 @@ def main():
     data = root / 'runtime/r03-live-20261023/data'
     app = create_app(data_root=data)
     host = app.state.context
-    with TestClient(app) as client:
+    with TestClient(app, base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000)) as client:
 
         def call(method, path, **kw):
             r = client.request(method, '/api/' + path, **kw)

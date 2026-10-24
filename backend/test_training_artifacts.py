@@ -53,7 +53,7 @@ class ArtifactTests(fixtures.RunFixture):
     def api(self):
         app = main.create_app(data_root=self.root / 'platform')
         app.state.context.initialize()
-        client = TestClient(app)
+        client = TestClient(app, base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000))
         self.addCleanup(client.close)
         return client, app.state.context
 

@@ -81,7 +81,10 @@
     "backend/training_artifacts.py",
     "backend/test_training_artifacts.py",
     "scripts/training_artifact.py",
-    "scripts/verify_trained_lora.py"
+    "scripts/verify_trained_lora.py",
+    "backend/local_access.py",
+    "backend/test_local_access.py",
+    "scripts/verify_local_access.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -129,7 +132,9 @@
     "frontend/tests/fooocus-recovery.spec.ts",
     "frontend/src/StorageOverview.vue",
     "frontend/tests/storage-overview.spec.ts",
-    "training/environment.json"
+    "training/environment.json",
+    "frontend/src/DeploymentStatus.vue",
+    "frontend/tests/deployment.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

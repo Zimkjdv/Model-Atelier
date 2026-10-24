@@ -156,6 +156,9 @@ def create_app(
     settings_transfer.install(app, context)
     stack_validation.install(app, context)
     experiment_plans.install(app, context)
+    from backend import local_access
+
+    local_access.install(app, context)
 
     frontend = workspace / 'frontend' / 'dist'
     if frontend.is_dir():

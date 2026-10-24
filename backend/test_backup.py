@@ -60,7 +60,7 @@ class BackupTests(unittest.TestCase):
         self.assertEqual(backup.tree(self.data, 'data'), before)
         def offline(**options):
             raise AssertionError('restored offline reads must not contact engine')
-        with TestClient(main.create_app(data_root=restored, database=result['database'], engine_client_factory=offline)) as client:
+        with TestClient(main.create_app(data_root=restored, database=result['database'], engine_client_factory=offline), base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000)) as client:
             self.assertEqual(len(client.get('/api/jobs').json()), 2)
             self.assertEqual(client.get('/api/artworks/' + self.artwork['id'] + '/image').content, self.raw)
             self.assertIn(b'18446744073709551615', client.get('/api/jobs/' + self.feather['id'] + '/workflow').content)
@@ -74,7 +74,7 @@ class BackupTests(unittest.TestCase):
     def test_explicit_stop_and_running_platform_are_enforced_across_processes(self):
         with self.assertRaisesRegex(backup.BackupError, 'platform-stopped'):
             backup.backup(self.data, self.folder / 'unsafe', database=self.case.db)
-        with TestClient(main.create_app(data_root=self.data, database=self.case.db)):
+        with TestClient(main.create_app(data_root=self.data, database=self.case.db), base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000)):
             with self.assertRaises(DataBusyError):
                 self.create()
             result = subprocess.run([sys.executable, 'scripts/data_backup.py', 'backup', '--data', str(self.data),
@@ -87,7 +87,7 @@ class BackupTests(unittest.TestCase):
         self.assertFalse((self.folder / 'child').exists())
         with DataLease([self.data, self.case.db], maintenance=True):
             with self.assertRaises(DataBusyError):
-                with TestClient(main.create_app(data_root=self.data, database=self.case.db)):
+                with TestClient(main.create_app(data_root=self.data, database=self.case.db), base_url='http://127.0.0.1:8000', client=('127.0.0.1', 50000)):
                     self.fail('platform started during maintenance')
 
     def test_missing_corrupt_files_and_database_are_reported_without_changes(self):

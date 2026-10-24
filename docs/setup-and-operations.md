@@ -7,10 +7,12 @@
 依 [README 快速開始](../README.md#快速開始) 建立 `.venv`、安裝 `requirements.lock.txt`，frontend 使用 `npm.cmd ci`、`npm.cmd run build`。`start-local.ps1` 先確認 Python 與前端 dist 存在，再以 localhost:8000 啟動，優雅關閉等待上限 5 秒。PowerShell 不允許腳本時可執行相同命令：
 
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --timeout-graceful-shutdown 5
+.\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --no-proxy-headers --timeout-graceful-shutdown 5
 ```
 
 平台停止不會停止引擎的工作；重啟後查詢原 UUID。新安裝不附 checkpoint，無引擎時仍可保存草稿及查看已匯入作品。
+
+使用者已選擇同一台電腦使用；D01 的來源 IP／Host／Origin 保護與主機角色說明見 [部署與存取](deployment.md)。更新後需重啟平台；目前沒有遠端帳號登入，不要將平台埠開放區網。
 
 ## 獨立 ComfyUI
 
