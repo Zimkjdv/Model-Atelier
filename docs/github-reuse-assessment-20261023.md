@@ -57,7 +57,7 @@ R03 後續：[Fooocus 專用修補與八組比較](fooocus-inpainting.md)已完�
 
 整合前需固定依賴與估計器權重；其 requirements 並非完整 lock，節點會呼叫 `from_pretrained`，不能假定初次運行離線。DWPose 的 provider 探測清單甚至包含 CPU provider，因此啟動訊息不能代替實際裝置／速度量測；README 舊 CUDA 指引也不直接套入目前環境。[依賴清單](https://github.com/Fannovel16/comfyui_controlnet_aux/blob/a587a4c1594524c1d2de5cd1a86cd868ff448e1c/requirements.txt)、[provider 與模型載入](https://github.com/Fannovel16/comfyui_controlnet_aux/blob/a587a4c1594524c1d2de5cd1a86cd868ff448e1c/node_wrappers/dwpose.py#L11-L27)。
 
-建議先選一種 pose 或 depth 完成最小串接，保存來源圖、實際條件圖、前處理參數／版本與 hash，再驗證單次提交、離線讀取、精確還原與固定品質案例；通過後擴充第二種。這是 R01 內的實作方式建議，不改變原定 R01 → R03 順序。[R01 驗收](../ROADMAP.MD#r01)。
+建議先選一種 pose 或 depth 完成最小串接，保存來源圖、實際條件圖、前處理參數／版本與 hash，再驗證單次提交、離線讀取、精確還原與固定品質案例；通過後擴充第二種。這是 R01 內的實作方式建議，不改變原定 R01 → R03 順序。[R01 驗收](../CHANGELOG.MD#r01)。
 
 ## R03：優先評估 comfyui-inpaint-nodes
 

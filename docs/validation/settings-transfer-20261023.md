@@ -1,6 +1,6 @@
 # V05 · 創作設定下載與窄視窗驗收
 
-日期：2026-10-23。對應 [ROADMAP V05](../../ROADMAP.MD#v05)，使用一般創作設定 `kind: model-atelier-creation`／schema 1；比較方案或比較結果 JSON 不代替本項。
+日期：2026-10-23。對應 [ROADMAP V05](../../CHANGELOG.MD#v05)，使用一般創作設定 `kind: model-atelier-creation`／schema 1；比較方案或比較結果 JSON 不代替本項。
 
 ## 環境及範圍
 

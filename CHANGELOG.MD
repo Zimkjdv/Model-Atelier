@@ -1,5 +1,9 @@
 # Model Atelier — Changelog
 
+## 2026-10-25 · ROADMAP 已完成項目移入變更紀錄
+
+ROADMAP 只保留 18 個未完成主項與 28 個待驗收子項；完整已完成敘述、驗收連結與圖片提醒移至 [歸檔](#roadmap-completed-20261025)。保留 V01 實機觸控待辦，僅移出已完成的 V01-01；修正原摘要表仍把 T03／T04 計為待辦的舊數字。項目狀態及既有品質限制不變，相關內部連結改指歸檔。
+
 ## 2026-10-25 · T04 訓練產物回登與固定評估
 
 T03 已先以 `db7ab91` commit／push，再接入完整產物及最終狀態核對、不可覆寫安裝、來源 sidecar／SHA 與現有 LoRA 模型庫 API 回登。保留基底、資料／trigger、完整訓練設定、環境／trainer／續訓來源與權重識別，技術產物明確標示，不自動認列品質或產物條款。
@@ -276,9 +280,9 @@ H001–H151 依首次出現順序編號，文字相同者合併索引；所有�
 | <a id="h008"></a>H008<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 定義本機存取設定；若開放區網或遠端，再加入驗證與連線保護。 | 已交付部分見 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff)；未完成保留 [D01](ROADMAP.MD#d01)。 首輪 Windows 本機／loopback 已決定；遠端 GPU 與區網後續需求仍未決定。 |
 | <a id="h009"></a>H009<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 檢查模型執行環境的 GPU、驅動、PyTorch 與 CUDA 可用狀態；資料不可得時標示未知。 | 已交付，見 [4bc2d5c](https://github.com/Zimkjdv/Model-Atelier/commit/4bc2d5ca4a89c8302e5b248d0756c647ea8ec4d4)。 診斷與未知值處理已交付。 |
 | <a id="h010"></a>H010<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 建立模型與工作流程的相容性紀錄，區分已驗證、未驗證及已知不相容。 | 已交付，見 [6cb5e1c](https://github.com/Zimkjdv/Model-Atelier/commit/6cb5e1ce5d4be67f3529c4d412a38312d888a2dd)。 條件化相容性紀錄已交付。 |
-| <a id="h011"></a>H011<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 記錄生圖與訓練各自的實測資源需求，保留硬體、環境及測試設定，不提供未經驗證的效能保證。 | 已交付部分見 [6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)、[df8b141](https://github.com/Zimkjdv/Model-Atelier/commit/df8b14155b8e03fa42889d84ce6e8b28e7595b40)；未完成保留 [E04](ROADMAP.MD#e04)、[E02](ROADMAP.MD#e02)、[T01](ROADMAP.MD#t01)、[T03](ROADMAP.MD#t03)。 已有 RTX 3060 推論量測；訓練與 RTX 4080 不能借用該結果。 |
+| <a id="h011"></a>H011<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 記錄生圖與訓練各自的實測資源需求，保留硬體、環境及測試設定，不提供未經驗證的效能保證。 | 已交付部分見 [6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)、[df8b141](https://github.com/Zimkjdv/Model-Atelier/commit/df8b14155b8e03fa42889d84ce6e8b28e7595b40)；未完成保留 [E04](ROADMAP.MD#e04)、[E02](ROADMAP.MD#e02)、[T01](CHANGELOG.MD#t01)、[T03](CHANGELOG.MD#t03)。 已有 RTX 3060 推論量測；訓練與 RTX 4080 不能借用該結果。 |
 | <a id="h012"></a>H012<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 資源預估不足或尚未實測時提供提示，允許使用者嘗試；不因顯卡型號或估算 VRAM 單獨封鎖提交。 | 已交付，見 [0a9b72a](https://github.com/Zimkjdv/Model-Atelier/commit/0a9b72aa75ce2c7bb7ef89f136dbe742a10e506f)。 唯讀資源提示，不因 VRAM 估算封鎖。 |
-| <a id="h013"></a>H013<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 已確認無可用執行裝置、缺少必要元件或工作流程不相容時，只阻擋受影響任務並說明原因，不限制其他平台功能。 | 已交付部分見 [87647e9](https://github.com/Zimkjdv/Model-Atelier/commit/87647e9f58ebe5b71dabc4f32f1ea2e217b9ecb7)；未完成保留 [E01](ROADMAP.MD#e01)。 缺必要節點等檢查已完成；無裝置判斷仍需可靠引擎證據。 |
+| <a id="h013"></a>H013<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 已確認無可用執行裝置、缺少必要元件或工作流程不相容時，只阻擋受影響任務並說明原因，不限制其他平台功能。 | 已交付部分見 [87647e9](https://github.com/Zimkjdv/Model-Atelier/commit/87647e9f58ebe5b71dabc4f32f1ea2e217b9ecb7)；未完成保留 [E01](CHANGELOG.MD#e01)。 缺必要節點等檢查已完成；無裝置判斷仍需可靠引擎證據。 |
 | <a id="h014"></a>H014<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 執行記憶體不足時保留原設定並提供調整與重試入口；不默默改動解析度、精度或模型。 | 已交付，見 [bfbae93](https://github.com/Zimkjdv/Model-Atelier/commit/bfbae935974c587ed00f7ed6d58ce79898cf5803)。 保存失敗原設定與診斷，調整後才明確建立新任務。 |
 | <a id="h015"></a>H015<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 以現有 RTX 3060 主機完成首輪開發與驗證，保存實際硬體、環境版本及工作流程設定。 | 已交付，見 [6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)。 Pony／RTX 3060 首輪、環境及固定負載量測已完成，不外推其他硬體。 |
 | <a id="h016"></a>H016<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 首輪通過後，在現有 RTX 4080 主機重跑相同的基本功能與工作流程，記錄相容性、資源用量及耗時差異。 | 未完成保留 [E02](ROADMAP.MD#e02)。 |
@@ -300,10 +304,10 @@ H001–H151 依首次出現順序編號，文字相同者合併索引；所有�
 | <a id="h032"></a>H032<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 將常用參數直接呈現，進階參數收合，保留使用者設定狀態。 | 已交付，見 [1247600](https://github.com/Zimkjdv/Model-Atelier/commit/1247600aaeae5fd208509a669f2a705b48551702)。 |
 | <a id="h033"></a>H033<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 依選定模型與工作流程顯示適用選項，不相容設定需清楚說明原因。 | 已交付，見 [65175c4](https://github.com/Zimkjdv/Model-Atelier/commit/65175c465a241fe06761c6d460e07c0016bcac17)、[88fb32f](https://github.com/Zimkjdv/Model-Atelier/commit/88fb32faba6a2542347aa4d90c502e7f3cdddbd9)。 能力描述、模型預設、原參數保存及不相容保護已交付；FLUX 專用表單另見後續。 |
 | <a id="h034"></a>H034<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 清楚呈現排隊、執行、完成及失敗狀態，提供適用的取消與重新執行操作。 | 已交付，見 [8fcc946](https://github.com/Zimkjdv/Model-Atelier/commit/8fcc9460fe03f158577cea09deba2f91e43a81d9)、[97ecabe](https://github.com/Zimkjdv/Model-Atelier/commit/97ecabea4bffe86b445af6b8682df83867227180)、[2d64ec1](https://github.com/Zimkjdv/Model-Atelier/commit/2d64ec13836c3ecf5b830d74865357056271fbb0)。 任務狀態、原請求恢復、進度與適用取消已完成。 |
-| <a id="h035"></a>H035<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 作品可一鍵載入原設定，作為繼續創作的起點；圖片並排比較於 P6 實作。 | 已交付部分見 [f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2)、[a21b41e](https://github.com/Zimkjdv/Model-Atelier/commit/a21b41e578a235a2876b36787315a8615a94b9f6)；未完成保留 [V03](ROADMAP.MD#v03)。 原設定載入、桌面原圖並排與人工評分已完成；窄視窗仍需補驗。 |
-| <a id="h036"></a>H036<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 統一字體、間距、配色、按鈕、表單及載入、空白、錯誤狀態的視覺規範。 | 已交付部分見 [63794de](https://github.com/Zimkjdv/Model-Atelier/commit/63794decb1ad9ed49c430d81730d67fb23dfb618)、[6cbb4a9](https://github.com/Zimkjdv/Model-Atelier/commit/6cbb4a904602daa27ac172b766512ac66d480930)；未完成保留 [V06](ROADMAP.MD#v06)。 視覺規範及工作台／導覽已驗證，不能概括所有頁面。 |
+| <a id="h035"></a>H035<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 作品可一鍵載入原設定，作為繼續創作的起點；圖片並排比較於 P6 實作。 | 已交付部分見 [f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2)、[a21b41e](https://github.com/Zimkjdv/Model-Atelier/commit/a21b41e578a235a2876b36787315a8615a94b9f6)；未完成保留 [V03](CHANGELOG.MD#v03)。 原設定載入、桌面原圖並排與人工評分已完成；窄視窗仍需補驗。 |
+| <a id="h036"></a>H036<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 統一字體、間距、配色、按鈕、表單及載入、空白、錯誤狀態的視覺規範。 | 已交付部分見 [63794de](https://github.com/Zimkjdv/Model-Atelier/commit/63794decb1ad9ed49c430d81730d67fb23dfb618)、[6cbb4a9](https://github.com/Zimkjdv/Model-Atelier/commit/6cbb4a904602daa27ac172b766512ac66d480930)；未完成保留 [V06](CHANGELOG.MD#v06)。 視覺規範及工作台／導覽已驗證，不能概括所有頁面。 |
 | <a id="h037"></a>H037<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 建立適合桌面操作的工作台布局，較窄視窗可收合設定區，避免主要操作被擠出畫面。 | 已交付，見 [0c1f60b](https://github.com/Zimkjdv/Model-Atelier/commit/0c1f60bd98765289d02e66b8e9f15193d45772f2)。 |
-| <a id="h038"></a>H038<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 表單提供清楚標籤、鍵盤焦點及可讀對比；狀態不只用顏色區分。 | 已交付部分見 [63794de](https://github.com/Zimkjdv/Model-Atelier/commit/63794decb1ad9ed49c430d81730d67fb23dfb618)、[6cbb4a9](https://github.com/Zimkjdv/Model-Atelier/commit/6cbb4a904602daa27ac172b766512ac66d480930)；未完成保留 [V06](ROADMAP.MD#v06)。 視覺規範及工作台／導覽已驗證，不能概括所有頁面。 |
+| <a id="h038"></a>H038<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 表單提供清楚標籤、鍵盤焦點及可讀對比；狀態不只用顏色區分。 | 已交付部分見 [63794de](https://github.com/Zimkjdv/Model-Atelier/commit/63794decb1ad9ed49c430d81730d67fb23dfb618)、[6cbb4a9](https://github.com/Zimkjdv/Model-Atelier/commit/6cbb4a904602daa27ac172b766512ac66d480930)；未完成保留 [V06](CHANGELOG.MD#v06)。 視覺規範及工作台／導覽已驗證，不能概括所有頁面。 |
 | <a id="h039"></a>H039<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 由後端或模型執行主機上的資訊採集介面讀取硬體資料，不以瀏覽器所在電腦代表模型執行環境。 | 已交付，見 [4bc2d5c](https://github.com/Zimkjdv/Model-Atelier/commit/4bc2d5ca4a89c8302e5b248d0756c647ea8ec4d4)、[2960e56](https://github.com/Zimkjdv/Model-Atelier/commit/2960e561ca5de85487b42c170805472e6c697a1f)。 硬體來源、主機角色及未知／過期狀態已實作；未提供的引擎裝置資訊保持未知。 |
 | <a id="h040"></a>H040<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 顯示 GPU 型號；多 GPU 時逐張列出，並標示引擎使用的裝置，無法確認時顯示未知。 | 已交付，見 [4bc2d5c](https://github.com/Zimkjdv/Model-Atelier/commit/4bc2d5ca4a89c8302e5b248d0756c647ea8ec4d4)、[2960e56](https://github.com/Zimkjdv/Model-Atelier/commit/2960e561ca5de85487b42c170805472e6c697a1f)。 硬體來源、主機角色及未知／過期狀態已實作；未提供的引擎裝置資訊保持未知。 |
 | <a id="h041"></a>H041<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 顯示各 GPU 的 VRAM 總量、已用量與可用量，統一容量單位。 | 已交付，見 [4bc2d5c](https://github.com/Zimkjdv/Model-Atelier/commit/4bc2d5ca4a89c8302e5b248d0756c647ea8ec4d4)、[2960e56](https://github.com/Zimkjdv/Model-Atelier/commit/2960e561ca5de85487b42c170805472e6c697a1f)。 硬體來源、主機角色及未知／過期狀態已實作；未提供的引擎裝置資訊保持未知。 |
@@ -328,7 +332,7 @@ H001–H151 依首次出現順序編號，文字相同者合併索引；所有�
 | <a id="h060"></a>H060<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 支援選擇、啟用及移除 LoRA，保存工作流程支援的設定。 | 已交付，見 [ca019b3](https://github.com/Zimkjdv/Model-Atelier/commit/ca019b3019063146a7058c8ff718d1816aeb81b6)、[367ae73](https://github.com/Zimkjdv/Model-Atelier/commit/367ae73d8dcfd2926900818410b1bdeba26d6e5a)。 |
 | <a id="h061"></a>H061<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 顯示相容、未驗證或不相容狀態；不以檔名推斷相容性。 | 已交付，見 [d73c6da](https://github.com/Zimkjdv/Model-Atelier/commit/d73c6da540c03929a6324581ba238a2b0ff9bc0d)。 |
 | <a id="h062"></a>H062<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 提交前阻擋已知不相容組合。 | 已交付，見 [34145fe](https://github.com/Zimkjdv/Model-Atelier/commit/34145fe915312ae42d0a580b97fc813eb2cdb263)。 |
-| <a id="h063"></a>H063<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 先驗證單一 LoRA，再評估多個 LoRA 的組合支援。 | 已交付部分見 [7595335](https://github.com/Zimkjdv/Model-Atelier/commit/7595335697dc15cef43617b2ef82414f914dc2a6)、[367ae73](https://github.com/Zimkjdv/Model-Atelier/commit/367ae73d8dcfd2926900818410b1bdeba26d6e5a)、[4287634](https://github.com/Zimkjdv/Model-Atelier/commit/428763421fe3a2d3b3b5de269a9e7e02a3adfe5f)；未完成保留 [L01](ROADMAP.MD#l01)。 單一與有序多 LoRA 載入／還原已完成；其他組合及畫風品質仍待評估。 |
+| <a id="h063"></a>H063<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 先驗證單一 LoRA，再評估多個 LoRA 的組合支援。 | 已交付部分見 [7595335](https://github.com/Zimkjdv/Model-Atelier/commit/7595335697dc15cef43617b2ef82414f914dc2a6)、[367ae73](https://github.com/Zimkjdv/Model-Atelier/commit/367ae73d8dcfd2926900818410b1bdeba26d6e5a)、[4287634](https://github.com/Zimkjdv/Model-Atelier/commit/428763421fe3a2d3b3b5de269a9e7e02a3adfe5f)；未完成保留 [L01](CHANGELOG.MD#l01)。 單一與有序多 LoRA 載入／還原已完成；其他組合及畫風品質仍待評估。 |
 | <a id="h064"></a>H064<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 將 LoRA 版本及設定保存至生成紀錄。 | 已交付，見 [c80068e](https://github.com/Zimkjdv/Model-Atelier/commit/c80068e8c109b73632e4f86aed60787b4d11f6c7)。 |
 | <a id="h065"></a>H065<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 選定可本地執行的公開權重變體，記錄授權及使用條件。 | 已交付，見 [5bf331f](https://github.com/Zimkjdv/Model-Atelier/commit/5bf331f543250fd5a0f88a71424f8eda7368eb96)。 已固定 FLUX.1 [schnell] 變體；安裝與實機驗收另列 F01–F04。 |
 | <a id="h066"></a>H066<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 確認所需編碼器、解碼器、推論精度及硬體需求。 | 已交付部分見 [5bf331f](https://github.com/Zimkjdv/Model-Atelier/commit/5bf331f543250fd5a0f88a71424f8eda7368eb96)、[c7008c6](https://github.com/Zimkjdv/Model-Atelier/commit/c7008c6a4c503bca40658b99780ccf756f533513)；未完成保留 [F01](ROADMAP.MD#f01)、[F02](ROADMAP.MD#f02)。 固定元件與預檢已交付，尚不能視為已安裝或已驗證實際精度／資源。 |
@@ -338,20 +342,20 @@ H001–H151 依首次出現順序編號，文字相同者合併索引；所有�
 | <a id="h070"></a>H070<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 上傳、預覽及管理參考圖片，檢查格式和尺寸。 | 已交付，見 [47a7c59](https://github.com/Zimkjdv/Model-Atelier/commit/47a7c5961f1345fcfd4a7c38ccea0f924bcc8125)。 |
 | <a id="h071"></a>H071<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 標示參考用途：視覺風格、角色外觀、構圖等。 | 已交付，見 [5dfa86a](https://github.com/Zimkjdv/Model-Atelier/commit/5dfa86a0f16f941de793069cdf34ef39b691cf57)。 |
 | <a id="h072"></a>H072<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 建立每套工作流程的輸入需求與支援能力說明。 | 已交付，見 [5dfa86a](https://github.com/Zimkjdv/Model-Atelier/commit/5dfa86a0f16f941de793069cdf34ef39b691cf57)、[88fb32f](https://github.com/Zimkjdv/Model-Atelier/commit/88fb32faba6a2542347aa4d90c502e7f3cdddbd9)。 |
-| <a id="h073"></a>H073<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 逐項評估圖片生成圖片、局部編輯及結構參考流程。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)、[3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108)；未完成保留 [R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)。 單張圖生圖、checkpoint 局部編輯及 Canny 已接入；其他結構、adapter 與修補品質仍待評估。 |
+| <a id="h073"></a>H073<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 逐項評估圖片生成圖片、局部編輯及結構參考流程。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)、[3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108)；未完成保留 [R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)。 單張圖生圖、checkpoint 局部編輯及 Canny 已接入；其他結構、adapter 與修補品質仍待評估。 |
 | <a id="h074"></a>H074<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 保存參考圖與輸出的關聯；保存前處理設定及版本。 | 已交付，見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[b699024](https://github.com/Zimkjdv/Model-Atelier/commit/b699024f6885fa0635cc5724be5f5e6259216bdb)。 |
 | <a id="h075"></a>H075<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 檢查素材是否被任務引用，避免刪除後無法重建流程。 | 已交付，見 [5dfa86a](https://github.com/Zimkjdv/Model-Atelier/commit/5dfa86a0f16f941de793069cdf34ef39b691cf57)。 |
-| <a id="h076"></a>H076<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 支援作品篩選、收藏、備註與下載。 | 已交付部分見 [9ca7c22](https://github.com/Zimkjdv/Model-Atelier/commit/9ca7c221012f33c0dc96ba604816b77b0393c860)、[f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2)；未完成保留 [V03](ROADMAP.MD#v03)。 作品整理與原設定載入已交付，桌面已驗證；窄視窗整理驗收未完成。 |
-| <a id="h077"></a>H077<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 支援設定匯出、匯入及從歷史紀錄重新執行。 | 已交付部分見 [5c44382](https://github.com/Zimkjdv/Model-Atelier/commit/5c4438218ee3338aede710e5c3f597a8e79a936b)；未完成保留 [V05](ROADMAP.MD#v05)。 創作設定交換後端與桌面介面已交付；原生下載落盤及 390px 尚缺。 |
+| <a id="h076"></a>H076<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 支援作品篩選、收藏、備註與下載。 | 已交付部分見 [9ca7c22](https://github.com/Zimkjdv/Model-Atelier/commit/9ca7c221012f33c0dc96ba604816b77b0393c860)、[f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2)；未完成保留 [V03](CHANGELOG.MD#v03)。 作品整理與原設定載入已交付，桌面已驗證；窄視窗整理驗收未完成。 |
+| <a id="h077"></a>H077<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 支援設定匯出、匯入及從歷史紀錄重新執行。 | 已交付部分見 [5c44382](https://github.com/Zimkjdv/Model-Atelier/commit/5c4438218ee3338aede710e5c3f597a8e79a936b)；未完成保留 [V05](CHANGELOG.MD#v05)。 創作設定交換後端與桌面介面已交付；原生下載落盤及 390px 尚缺。 |
 | <a id="h078"></a>H078<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 保存模型、LoRA、工作流程、引擎及依賴版本。 | 已交付，見 [d4391de](https://github.com/Zimkjdv/Model-Atelier/commit/d4391de9650b567ff2c7577a63a6e4e23c8c78a9)、[c80068e](https://github.com/Zimkjdv/Model-Atelier/commit/c80068e8c109b73632e4f86aed60787b4d11f6c7)、[7f32d47](https://github.com/Zimkjdv/Model-Atelier/commit/7f32d47b0f21e6e97de1f0d6a4502ed39c7ab72e)。 |
-| <a id="h079"></a>H079<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 提供圖片並排比較與人工評分。 | 已交付部分見 [f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2)、[a21b41e](https://github.com/Zimkjdv/Model-Atelier/commit/a21b41e578a235a2876b36787315a8615a94b9f6)；未完成保留 [V03](ROADMAP.MD#v03)。 原設定載入、桌面原圖並排與人工評分已完成；窄視窗仍需補驗。 |
-| <a id="h080"></a>H080<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 使用固定的一般插畫測試集，比較提示服從、角色一致、視覺風格及構圖。 | 已交付部分見 [e3ef1d2](https://github.com/Zimkjdv/Model-Atelier/commit/e3ef1d2261e0c47947b39930cea61312d7d2890b)；未完成保留 [R05](ROADMAP.MD#r05)、[R02](ROADMAP.MD#r02)、[V04](ROADMAP.MD#v04)。 固定兩模型四案例 GPU 完成；更多 seed、作者提示及角色／畫風品質不被涵蓋，新的 UI 仍需補驗。 |
-| <a id="h081"></a>H081<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 支援有限範圍的參數比較，提交前顯示預計任務數。 | 已交付部分見 [0ed66ce](https://github.com/Zimkjdv/Model-Atelier/commit/0ed66ce82acafbc0e8337663b2a0bae17a927043)、[8d9aa15](https://github.com/Zimkjdv/Model-Atelier/commit/8d9aa15a2dc10a34b3a817c03716bbc61b190bd3)、[ea31058](https://github.com/Zimkjdv/Model-Atelier/commit/ea310584c69d5a3416d45a0d6feb5498c6aa5d36)、[2a64a9a](https://github.com/Zimkjdv/Model-Atelier/commit/2a64a9a41a7b4c5a1a6f0fdb6e748cf63bd96930)；未完成保留 [R06](ROADMAP.MD#r06)、[R07](ROADMAP.MD#r07)。 有界預覽、既有參數軸與關聯已交付；擴充工作流程／參數另評估。自動批次與自動品質評分是排除範圍。 |
-| <a id="h082"></a>H082<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 記錄耗時及可取得的資源用量，無法測得的數值不推估填入。 | 已交付部分見 [df8b141](https://github.com/Zimkjdv/Model-Atelier/commit/df8b14155b8e03fa42889d84ce6e8b28e7595b40)；未完成保留 [E05](ROADMAP.MD#e05)。 既有耗時與提交前快照已交付；連續／任務專用峰值尚缺。 |
-| <a id="h083"></a>H083<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 確認是否有超出推論參數調整的實際訓練需求。 | 未完成保留 [T01](ROADMAP.MD#t01)。 |
-| <a id="h084"></a>H084<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 評估資料集管理、標註、版本及訓練工具介面。 | 未完成保留 [T02](ROADMAP.MD#t02)。 |
-| <a id="h085"></a>H085<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 規劃獨立環境與 GPU 資源協調，避免與生成任務互相干擾。 | 未完成保留 [T03](ROADMAP.MD#t03)。 |
-| <a id="h086"></a>H086<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 規劃訓練產物回登模型庫及評估流程。 | 未完成保留 [T04](ROADMAP.MD#t04)。 |
+| <a id="h079"></a>H079<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 提供圖片並排比較與人工評分。 | 已交付部分見 [f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2)、[a21b41e](https://github.com/Zimkjdv/Model-Atelier/commit/a21b41e578a235a2876b36787315a8615a94b9f6)；未完成保留 [V03](CHANGELOG.MD#v03)。 原設定載入、桌面原圖並排與人工評分已完成；窄視窗仍需補驗。 |
+| <a id="h080"></a>H080<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 使用固定的一般插畫測試集，比較提示服從、角色一致、視覺風格及構圖。 | 已交付部分見 [e3ef1d2](https://github.com/Zimkjdv/Model-Atelier/commit/e3ef1d2261e0c47947b39930cea61312d7d2890b)；未完成保留 [R05](CHANGELOG.MD#r05)、[R02](CHANGELOG.MD#r02)、[V04](CHANGELOG.MD#v04)。 固定兩模型四案例 GPU 完成；更多 seed、作者提示及角色／畫風品質不被涵蓋，新的 UI 仍需補驗。 |
+| <a id="h081"></a>H081<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 支援有限範圍的參數比較，提交前顯示預計任務數。 | 已交付部分見 [0ed66ce](https://github.com/Zimkjdv/Model-Atelier/commit/0ed66ce82acafbc0e8337663b2a0bae17a927043)、[8d9aa15](https://github.com/Zimkjdv/Model-Atelier/commit/8d9aa15a2dc10a34b3a817c03716bbc61b190bd3)、[ea31058](https://github.com/Zimkjdv/Model-Atelier/commit/ea310584c69d5a3416d45a0d6feb5498c6aa5d36)、[2a64a9a](https://github.com/Zimkjdv/Model-Atelier/commit/2a64a9a41a7b4c5a1a6f0fdb6e748cf63bd96930)；未完成保留 [R06](CHANGELOG.MD#r06)、[R07](CHANGELOG.MD#r07)。 有界預覽、既有參數軸與關聯已交付；擴充工作流程／參數另評估。自動批次與自動品質評分是排除範圍。 |
+| <a id="h082"></a>H082<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 記錄耗時及可取得的資源用量，無法測得的數值不推估填入。 | 已交付部分見 [df8b141](https://github.com/Zimkjdv/Model-Atelier/commit/df8b14155b8e03fa42889d84ce6e8b28e7595b40)；未完成保留 [E05](CHANGELOG.MD#e05)。 既有耗時與提交前快照已交付；連續／任務專用峰值尚缺。 |
+| <a id="h083"></a>H083<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 確認是否有超出推論參數調整的實際訓練需求。 | 未完成保留 [T01](CHANGELOG.MD#t01)。 |
+| <a id="h084"></a>H084<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 評估資料集管理、標註、版本及訓練工具介面。 | 未完成保留 [T02](CHANGELOG.MD#t02)。 |
+| <a id="h085"></a>H085<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 規劃獨立環境與 GPU 資源協調，避免與生成任務互相干擾。 | 未完成保留 [T03](CHANGELOG.MD#t03)。 |
+| <a id="h086"></a>H086<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 規劃訓練產物回登模型庫及評估流程。 | 未完成保留 [T04](CHANGELOG.MD#t04)。 |
 | <a id="h087"></a>H087<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | NovelAI：確認官方 API、驗證方式、使用條件、費用及可接入功能。 | 未完成保留 [A01](ROADMAP.MD#a01)。 |
 | <a id="h088"></a>H088<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | Mango 2：先確認確切模型與提供者，再核對公開權重或官方 API。 | 未完成保留 [A02](ROADMAP.MD#a02)。 |
 | <a id="h089"></a>H089<br>2026-09-06 [cd1d1af](https://github.com/Zimkjdv/Model-Atelier/commit/cd1d1af3aa94ad5b8cd6990a61735acab4b87dff) | 只有已確認正式接入方式的服務才列入實作，不假設網站功能等於 API 功能。 | 未完成保留 [A03](ROADMAP.MD#a03)。 |
@@ -368,55 +372,55 @@ H001–H151 依首次出現順序編號，文字相同者合併索引；所有�
 | <a id="h100"></a>H100<br>2026-09-06 [7699c4f](https://github.com/Zimkjdv/Model-Atelier/commit/7699c4f86109fb88bda39c9d38509754dd97839d) | 真實 ComfyUI 連線與模型同步仍待驗證；工作流程提交與生成結果保存尚未實作，創作與作品頁仍為待開發頁面。 | 已交付，見 [7541feb](https://github.com/Zimkjdv/Model-Atelier/commit/7541feb57d69550c6e35c05bdab6efe1cab8ee1e)、[c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96)、[631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1)、[6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)。 本地引擎、checkpoint、提交與作品匯入已分階段完成並實機驗證。 |
 | <a id="h101"></a>H101<br>2026-09-06 [7699c4f](https://github.com/Zimkjdv/Model-Atelier/commit/7699c4f86109fb88bda39c9d38509754dd97839d) | 模型庫後續補齊檔案雜湊、大小、版本與架構等資料；目前來源與備註為使用者登記資訊，不能視為已驗證。 | 已交付，見 [d4391de](https://github.com/Zimkjdv/Model-Atelier/commit/d4391de9650b567ff2c7577a63a6e4e23c8c78a9)。 |
 | <a id="h102"></a>H102<br>2026-09-06 [7541feb](https://github.com/Zimkjdv/Model-Atelier/commit/7541feb57d69550c6e35c05bdab6efe1cab8ee1e) | 尚未安裝 checkpoint，非空模型清單、實際模型載入與生成仍待驗證；工作流程提交與生成結果保存尚未實作。 | 已交付，見 [7541feb](https://github.com/Zimkjdv/Model-Atelier/commit/7541feb57d69550c6e35c05bdab6efe1cab8ee1e)、[c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96)、[631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1)、[6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)。 本地引擎、checkpoint、提交與作品匯入已分階段完成並實機驗證。 |
-| <a id="h103"></a>H103<br>2026-09-06 [47a7c59](https://github.com/Zimkjdv/Model-Atelier/commit/47a7c5961f1345fcfd4a7c38ccea0f924bcc8125) | 參考素材目前僅管理與記錄，尚未串接 ComfyUI 圖片輸入、用途或參考權重。 | 已交付部分見 [5dfa86a](https://github.com/Zimkjdv/Model-Atelier/commit/5dfa86a0f16f941de793069cdf34ef39b691cf57)、[7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[b699024](https://github.com/Zimkjdv/Model-Atelier/commit/b699024f6885fa0635cc5724be5f5e6259216bdb)；未完成保留 [R02](ROADMAP.MD#r02)。 素材用途與單張圖生圖已完成；風格／角色 adapter 尚未接入。 |
+| <a id="h103"></a>H103<br>2026-09-06 [47a7c59](https://github.com/Zimkjdv/Model-Atelier/commit/47a7c5961f1345fcfd4a7c38ccea0f924bcc8125) | 參考素材目前僅管理與記錄，尚未串接 ComfyUI 圖片輸入、用途或參考權重。 | 已交付部分見 [5dfa86a](https://github.com/Zimkjdv/Model-Atelier/commit/5dfa86a0f16f941de793069cdf34ef39b691cf57)、[7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[b699024](https://github.com/Zimkjdv/Model-Atelier/commit/b699024f6885fa0635cc5724be5f5e6259216bdb)；未完成保留 [R02](CHANGELOG.MD#r02)。 素材用途與單張圖生圖已完成；風格／角色 adapter 尚未接入。 |
 | <a id="h104"></a>H104<br>2026-09-06 [c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96) | 尚未安裝 checkpoint，非空模型清單、實際模型載入與生成仍待驗證；工作流程提交已實作，生成圖片匯入作品庫尚未實作。 | 已交付，見 [7541feb](https://github.com/Zimkjdv/Model-Atelier/commit/7541feb57d69550c6e35c05bdab6efe1cab8ee1e)、[c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96)、[631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1)、[6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)。 本地引擎、checkpoint、提交與作品匯入已分階段完成並實機驗證。 |
 | <a id="h105"></a>H105<br>2026-09-06 [c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96) | 安裝 checkpoint 後驗證完整成功生成及實際 VRAM／耗時。 | 已交付，見 [6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)。 Pony／RTX 3060 首輪、環境及固定負載量測已完成，不外推其他硬體。 |
 | <a id="h106"></a>H106<br>2026-09-06 [c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96) | 輸出圖片匯入平台作品庫、預覽與備份。 | 已交付，見 [631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1)、[bfbae93](https://github.com/Zimkjdv/Model-Atelier/commit/bfbae935974c587ed00f7ed6d58ce79898cf5803)。 作品匯入、預覽、完整流程與失敗紀錄已交付；備份方法見 README。 |
-| <a id="h107"></a>H107<br>2026-09-06 [c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96) | 參考圖、LoRA、FLUX 各自的相容工作流程。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[367ae73](https://github.com/Zimkjdv/Model-Atelier/commit/367ae73d8dcfd2926900818410b1bdeba26d6e5a)、[2f8f23e](https://github.com/Zimkjdv/Model-Atelier/commit/2f8f23e28d092ecdda05bd6c78b2381c14a8fe1e)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)；未完成保留 [F03](ROADMAP.MD#f03)、[F04](ROADMAP.MD#f04)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R07](ROADMAP.MD#r07)。 參考圖、LoRA 與 FLUX 各有專用流程；FLUX GPU／擴充能力及其他參考流程仍待實測。 |
+| <a id="h107"></a>H107<br>2026-09-06 [c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96) | 參考圖、LoRA、FLUX 各自的相容工作流程。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[367ae73](https://github.com/Zimkjdv/Model-Atelier/commit/367ae73d8dcfd2926900818410b1bdeba26d6e5a)、[2f8f23e](https://github.com/Zimkjdv/Model-Atelier/commit/2f8f23e28d092ecdda05bd6c78b2381c14a8fe1e)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)；未完成保留 [F03](ROADMAP.MD#f03)、[F04](ROADMAP.MD#f04)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R07](CHANGELOG.MD#r07)。 參考圖、LoRA 與 FLUX 各有專用流程；FLUX GPU／擴充能力及其他參考流程仍待實測。 |
 | <a id="h108"></a>H108<br>2026-09-06 [631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1) | 尚未安裝 checkpoint，非空模型清單、實際模型載入與生成仍待驗證；工作流程提交及作品庫匯入已實作，已用測試圖片驗證讀取流程。 | 已交付，見 [7541feb](https://github.com/Zimkjdv/Model-Atelier/commit/7541feb57d69550c6e35c05bdab6efe1cab8ee1e)、[c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96)、[631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1)、[6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)。 本地引擎、checkpoint、提交與作品匯入已分階段完成並實機驗證。 |
 | <a id="h109"></a>H109<br>2026-09-06 [631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1) | 安裝 checkpoint 後驗證「生成 → 完成 → 匯入作品」完整實機流程。 | 已交付，見 [7541feb](https://github.com/Zimkjdv/Model-Atelier/commit/7541feb57d69550c6e35c05bdab6efe1cab8ee1e)、[c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96)、[631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1)、[6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)。 本地引擎、checkpoint、提交與作品匯入已分階段完成並實機驗證。 |
-| <a id="h110"></a>H110<br>2026-09-06 [631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1) | 作品收藏、備註、封存與一鍵載入創作設定。 | 已交付部分見 [9ca7c22](https://github.com/Zimkjdv/Model-Atelier/commit/9ca7c221012f33c0dc96ba604816b77b0393c860)、[f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2)；未完成保留 [V03](ROADMAP.MD#v03)。 作品整理與原設定載入已交付，桌面已驗證；窄視窗整理驗收未完成。 |
-| <a id="h111"></a>H111<br>2026-10-02 [f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2) | 作品收藏、備註與封存。 | 已交付部分見 [9ca7c22](https://github.com/Zimkjdv/Model-Atelier/commit/9ca7c221012f33c0dc96ba604816b77b0393c860)、[f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2)；未完成保留 [V03](ROADMAP.MD#v03)。 作品整理與原設定載入已交付，桌面已驗證；窄視窗整理驗收未完成。 |
+| <a id="h110"></a>H110<br>2026-09-06 [631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1) | 作品收藏、備註、封存與一鍵載入創作設定。 | 已交付部分見 [9ca7c22](https://github.com/Zimkjdv/Model-Atelier/commit/9ca7c221012f33c0dc96ba604816b77b0393c860)、[f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2)；未完成保留 [V03](CHANGELOG.MD#v03)。 作品整理與原設定載入已交付，桌面已驗證；窄視窗整理驗收未完成。 |
+| <a id="h111"></a>H111<br>2026-10-02 [f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2) | 作品收藏、備註與封存。 | 已交付部分見 [9ca7c22](https://github.com/Zimkjdv/Model-Atelier/commit/9ca7c221012f33c0dc96ba604816b77b0393c860)、[f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2)；未完成保留 [V03](CHANGELOG.MD#v03)。 作品整理與原設定載入已交付，桌面已驗證；窄視窗整理驗收未完成。 |
 | <a id="h112"></a>H112<br>2026-10-02 [f167b9a](https://github.com/Zimkjdv/Model-Atelier/commit/f167b9ad4d04874098a4118d02d13042741eaca2) | 尚無 checkpoint；實際 GPU 出圖、P1 完整實機驗收與 P2 模型整合仍待驗證。 | 已交付，見 [7541feb](https://github.com/Zimkjdv/Model-Atelier/commit/7541feb57d69550c6e35c05bdab6efe1cab8ee1e)、[c651cfa](https://github.com/Zimkjdv/Model-Atelier/commit/c651cfa543d490ba61ef0c25234877c011471c96)、[631834d](https://github.com/Zimkjdv/Model-Atelier/commit/631834d9a45f546ddc9655e681d3cf707640a7f1)、[6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)。 本地引擎、checkpoint、提交與作品匯入已分階段完成並實機驗證。 |
 | <a id="h113"></a>H113<br>2026-10-02 [8fcc946](https://github.com/Zimkjdv/Model-Atelier/commit/8fcc9460fe03f158577cea09deba2f91e43a81d9) | 執行中停止仍需另行驗證引擎語意，避免中斷其他任務。 | 已交付，見 [8fcc946](https://github.com/Zimkjdv/Model-Atelier/commit/8fcc9460fe03f158577cea09deba2f91e43a81d9)、[2d64ec1](https://github.com/Zimkjdv/Model-Atelier/commit/2d64ec13836c3ecf5b830d74865357056271fbb0)。 排隊取消及指定執行中任務停止已交付，後者具 RTX 3060 驗收。 |
-| <a id="h114"></a>H114<br>2026-10-03 [6cb5e1c](https://github.com/Zimkjdv/Model-Atelier/commit/6cb5e1ce5d4be67f3529c4d412a38312d888a2dd) | 訓練及 RTX 4080 的實測資源紀錄仍待驗證。 | 已交付部分見 [6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)、[df8b141](https://github.com/Zimkjdv/Model-Atelier/commit/df8b14155b8e03fa42889d84ce6e8b28e7595b40)；未完成保留 [E04](ROADMAP.MD#e04)、[E02](ROADMAP.MD#e02)、[T01](ROADMAP.MD#t01)、[T03](ROADMAP.MD#t03)。 已有 RTX 3060 推論量測；訓練與 RTX 4080 不能借用該結果。 |
-| <a id="h115"></a>H115<br>2026-10-03 [87647e9](https://github.com/Zimkjdv/Model-Atelier/commit/87647e9f58ebe5b71dabc4f32f1ea2e217b9ecb7) | 無可用裝置需引擎提供可靠證據，不能只憑空裝置清單推定；P0 此部分保持待驗證。 | 已交付部分見 [87647e9](https://github.com/Zimkjdv/Model-Atelier/commit/87647e9f58ebe5b71dabc4f32f1ea2e217b9ecb7)；未完成保留 [E01](ROADMAP.MD#e01)。 缺必要節點等檢查已完成；無裝置判斷仍需可靠引擎證據。 |
+| <a id="h114"></a>H114<br>2026-10-03 [6cb5e1c](https://github.com/Zimkjdv/Model-Atelier/commit/6cb5e1ce5d4be67f3529c4d412a38312d888a2dd) | 訓練及 RTX 4080 的實測資源紀錄仍待驗證。 | 已交付部分見 [6578394](https://github.com/Zimkjdv/Model-Atelier/commit/6578394b9c0ff91c9f4403d0cae876b148aa0216)、[df8b141](https://github.com/Zimkjdv/Model-Atelier/commit/df8b14155b8e03fa42889d84ce6e8b28e7595b40)；未完成保留 [E04](ROADMAP.MD#e04)、[E02](ROADMAP.MD#e02)、[T01](CHANGELOG.MD#t01)、[T03](CHANGELOG.MD#t03)。 已有 RTX 3060 推論量測；訓練與 RTX 4080 不能借用該結果。 |
+| <a id="h115"></a>H115<br>2026-10-03 [87647e9](https://github.com/Zimkjdv/Model-Atelier/commit/87647e9f58ebe5b71dabc4f32f1ea2e217b9ecb7) | 無可用裝置需引擎提供可靠證據，不能只憑空裝置清單推定；P0 此部分保持待驗證。 | 已交付部分見 [87647e9](https://github.com/Zimkjdv/Model-Atelier/commit/87647e9f58ebe5b71dabc4f32f1ea2e217b9ecb7)；未完成保留 [E01](CHANGELOG.MD#e01)。 缺必要節點等檢查已完成；無裝置判斷仍需可靠引擎證據。 |
 | <a id="h116"></a>H116<br>2026-10-04 [cbc0ee1](https://github.com/Zimkjdv/Model-Atelier/commit/cbc0ee10748e9c763477b87f451e32587a752efc) | FLUX.1 的確切公開權重變體。 | 已交付，見 [5bf331f](https://github.com/Zimkjdv/Model-Atelier/commit/5bf331f543250fd5a0f88a71424f8eda7368eb96)。 已固定 FLUX.1 [schnell] 變體；安裝與實機驗收另列 F01–F04。 |
-| <a id="h117"></a>H117<br>2026-10-04 [7595335](https://github.com/Zimkjdv/Model-Atelier/commit/7595335697dc15cef43617b2ef82414f914dc2a6) | 評估多個 LoRA 的組合支援及其他畫風 LoRA 的品質。 | 已交付部分見 [7595335](https://github.com/Zimkjdv/Model-Atelier/commit/7595335697dc15cef43617b2ef82414f914dc2a6)、[367ae73](https://github.com/Zimkjdv/Model-Atelier/commit/367ae73d8dcfd2926900818410b1bdeba26d6e5a)、[4287634](https://github.com/Zimkjdv/Model-Atelier/commit/428763421fe3a2d3b3b5de269a9e7e02a3adfe5f)；未完成保留 [L01](ROADMAP.MD#l01)。 單一與有序多 LoRA 載入／還原已完成；其他組合及畫風品質仍待評估。 |
+| <a id="h117"></a>H117<br>2026-10-04 [7595335](https://github.com/Zimkjdv/Model-Atelier/commit/7595335697dc15cef43617b2ef82414f914dc2a6) | 評估多個 LoRA 的組合支援及其他畫風 LoRA 的品質。 | 已交付部分見 [7595335](https://github.com/Zimkjdv/Model-Atelier/commit/7595335697dc15cef43617b2ef82414f914dc2a6)、[367ae73](https://github.com/Zimkjdv/Model-Atelier/commit/367ae73d8dcfd2926900818410b1bdeba26d6e5a)、[4287634](https://github.com/Zimkjdv/Model-Atelier/commit/428763421fe3a2d3b3b5de269a9e7e02a3adfe5f)；未完成保留 [L01](CHANGELOG.MD#l01)。 單一與有序多 LoRA 載入／還原已完成；其他組合及畫風品質仍待評估。 |
 | <a id="h118"></a>H118<br>2026-10-05 [5bf331f](https://github.com/Zimkjdv/Model-Atelier/commit/5bf331f543250fd5a0f88a71424f8eda7368eb96) | 驗證實際推論精度、卸載、GPU／RAM 需求與各元件上游授權；來源選型不代表權重已安裝或可生成。 | 已交付部分見 [5bf331f](https://github.com/Zimkjdv/Model-Atelier/commit/5bf331f543250fd5a0f88a71424f8eda7368eb96)、[c7008c6](https://github.com/Zimkjdv/Model-Atelier/commit/c7008c6a4c503bca40658b99780ccf756f533513)；未完成保留 [F01](ROADMAP.MD#f01)、[F02](ROADMAP.MD#f02)。 固定元件與預檢已交付，尚不能視為已安裝或已驗證實際精度／資源。 |
-| <a id="h119"></a>H119<br>2026-10-05 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15) | 逐項評估圖片生成圖片、局部編輯及結構參考流程；單張 checkpoint 圖生圖後端與 Pony／RTX 3060 已驗證，其他流程仍待整合。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)、[3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108)；未完成保留 [R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)。 單張圖生圖、checkpoint 局部編輯及 Canny 已接入；其他結構、adapter 與修補品質仍待評估。 |
-| <a id="h120"></a>H120<br>2026-10-05 [b699024](https://github.com/Zimkjdv/Model-Atelier/commit/b699024f6885fa0635cc5724be5f5e6259216bdb) | 逐項評估圖片生成圖片、局部編輯及結構參考流程；單張 checkpoint 圖生圖後端／介面與 Pony／RTX 3060 已驗證，其他流程仍待整合。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)、[3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108)；未完成保留 [R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)。 單張圖生圖、checkpoint 局部編輯及 Canny 已接入；其他結構、adapter 與修補品質仍待評估。 |
-| <a id="h121"></a>H121<br>2026-10-08 [e3ef1d2](https://github.com/Zimkjdv/Model-Atelier/commit/e3ef1d2261e0c47947b39930cea61312d7d2890b) | 更多 seed、模型及作者提示格式的品質比較；其他畫風、參考引導／角色鎖定仍待驗證。 | 已交付部分見 [e3ef1d2](https://github.com/Zimkjdv/Model-Atelier/commit/e3ef1d2261e0c47947b39930cea61312d7d2890b)；未完成保留 [R05](ROADMAP.MD#r05)、[R02](ROADMAP.MD#r02)、[V04](ROADMAP.MD#v04)。 固定兩模型四案例 GPU 完成；更多 seed、作者提示及角色／畫風品質不被涵蓋，新的 UI 仍需補驗。 |
-| <a id="h122"></a>H122<br>2026-10-08 [8d9aa15](https://github.com/Zimkjdv/Model-Atelier/commit/8d9aa15a2dc10a34b3a817c03716bbc61b190bd3) | 更多強度／seed 的實際畫風品質仍待評估，不能把參數比較支援當成品質驗證。 | 已交付部分見 [79ea409](https://github.com/Zimkjdv/Model-Atelier/commit/79ea409438830a57c8b86f9672a952ec6cee0bfa)；未完成保留 [L01](ROADMAP.MD#l01)、[R05](ROADMAP.MD#r05)。 已有固定強度／兩 seed 比較，不能替代廣泛畫風品質。 |
-| <a id="h123"></a>H123<br>2026-10-08 [ea31058](https://github.com/Zimkjdv/Model-Atelier/commit/ea310584c69d5a3416d45a0d6feb5498c6aa5d36) | 不同 denoise／模型的 GPU 品質與新 UI 實機驗收待進行；本輪沒有新增 GPU 任務或正式資料。局部編輯、結構／畫風 adapter 仍待整合。 | 已交付部分見 [4df715a](https://github.com/Zimkjdv/Model-Atelier/commit/4df715a4f6fe8461d5d53a982dc630089778ed54)、[17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)；未完成保留 [R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)。 兩模型 0.3／0.6 denoise、結果介面與報告下載已補驗；更多素材／模型／adapter／修補品質待辦保留。 |
-| <a id="h124"></a>H124<br>2026-10-08 [eab5e76](https://github.com/Zimkjdv/Model-Atelier/commit/eab5e76a5babe9d7c10e1289d3c1234e4fb8afb6) | 比較結果與方案自動關聯、更多模型／流程／參數軸待規劃，不提供自動批次與品質評分。 | 已交付部分見 [0ed66ce](https://github.com/Zimkjdv/Model-Atelier/commit/0ed66ce82acafbc0e8337663b2a0bae17a927043)、[8d9aa15](https://github.com/Zimkjdv/Model-Atelier/commit/8d9aa15a2dc10a34b3a817c03716bbc61b190bd3)、[ea31058](https://github.com/Zimkjdv/Model-Atelier/commit/ea310584c69d5a3416d45a0d6feb5498c6aa5d36)、[2a64a9a](https://github.com/Zimkjdv/Model-Atelier/commit/2a64a9a41a7b4c5a1a6f0fdb6e748cf63bd96930)；未完成保留 [R06](ROADMAP.MD#r06)、[R07](ROADMAP.MD#r07)。 有界預覽、既有參數軸與關聯已交付；擴充工作流程／參數另評估。自動批次與自動品質評分是排除範圍。 |
-| <a id="h125"></a>H125<br>2026-10-08 [eab5e76](https://github.com/Zimkjdv/Model-Atelier/commit/eab5e76a5babe9d7c10e1289d3c1234e4fb8afb6) | UI 工具 sandbox 啟動失敗，本輪瀏覽器／原生下載／窄視窗驗收未完成。更多 GPU 品質、局部編輯／adapter、FLUX 安裝與 RTX 4080 仍待完成。 | 已交付部分見 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)；未完成保留 [R05](ROADMAP.MD#r05)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 比較方案實際下載、匯入、精確載入與 390px 已補驗；其他範圍仍未完成。 |
-| <a id="h126"></a>H126<br>2026-10-08 [79ea409](https://github.com/Zimkjdv/Model-Atelier/commit/79ea409438830a57c8b86f9672a952ec6cee0bfa) | 其他畫風、更廣泛品質、RTX 4080 與訓練資源仍待驗證。 | 已交付部分見 [79ea409](https://github.com/Zimkjdv/Model-Atelier/commit/79ea409438830a57c8b86f9672a952ec6cee0bfa)；未完成保留 [L01](ROADMAP.MD#l01)、[R05](ROADMAP.MD#r05)、[E02](ROADMAP.MD#e02)、[E04](ROADMAP.MD#e04)、[T01](ROADMAP.MD#t01)、[T03](ROADMAP.MD#t03)。 固定強度品質比較已完成，未外推其他畫風、硬體或訓練。 |
+| <a id="h119"></a>H119<br>2026-10-05 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15) | 逐項評估圖片生成圖片、局部編輯及結構參考流程；單張 checkpoint 圖生圖後端與 Pony／RTX 3060 已驗證，其他流程仍待整合。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)、[3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108)；未完成保留 [R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)。 單張圖生圖、checkpoint 局部編輯及 Canny 已接入；其他結構、adapter 與修補品質仍待評估。 |
+| <a id="h120"></a>H120<br>2026-10-05 [b699024](https://github.com/Zimkjdv/Model-Atelier/commit/b699024f6885fa0635cc5724be5f5e6259216bdb) | 逐項評估圖片生成圖片、局部編輯及結構參考流程；單張 checkpoint 圖生圖後端／介面與 Pony／RTX 3060 已驗證，其他流程仍待整合。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)、[3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108)；未完成保留 [R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)。 單張圖生圖、checkpoint 局部編輯及 Canny 已接入；其他結構、adapter 與修補品質仍待評估。 |
+| <a id="h121"></a>H121<br>2026-10-08 [e3ef1d2](https://github.com/Zimkjdv/Model-Atelier/commit/e3ef1d2261e0c47947b39930cea61312d7d2890b) | 更多 seed、模型及作者提示格式的品質比較；其他畫風、參考引導／角色鎖定仍待驗證。 | 已交付部分見 [e3ef1d2](https://github.com/Zimkjdv/Model-Atelier/commit/e3ef1d2261e0c47947b39930cea61312d7d2890b)；未完成保留 [R05](CHANGELOG.MD#r05)、[R02](CHANGELOG.MD#r02)、[V04](CHANGELOG.MD#v04)。 固定兩模型四案例 GPU 完成；更多 seed、作者提示及角色／畫風品質不被涵蓋，新的 UI 仍需補驗。 |
+| <a id="h122"></a>H122<br>2026-10-08 [8d9aa15](https://github.com/Zimkjdv/Model-Atelier/commit/8d9aa15a2dc10a34b3a817c03716bbc61b190bd3) | 更多強度／seed 的實際畫風品質仍待評估，不能把參數比較支援當成品質驗證。 | 已交付部分見 [79ea409](https://github.com/Zimkjdv/Model-Atelier/commit/79ea409438830a57c8b86f9672a952ec6cee0bfa)；未完成保留 [L01](CHANGELOG.MD#l01)、[R05](CHANGELOG.MD#r05)。 已有固定強度／兩 seed 比較，不能替代廣泛畫風品質。 |
+| <a id="h123"></a>H123<br>2026-10-08 [ea31058](https://github.com/Zimkjdv/Model-Atelier/commit/ea310584c69d5a3416d45a0d6feb5498c6aa5d36) | 不同 denoise／模型的 GPU 品質與新 UI 實機驗收待進行；本輪沒有新增 GPU 任務或正式資料。局部編輯、結構／畫風 adapter 仍待整合。 | 已交付部分見 [4df715a](https://github.com/Zimkjdv/Model-Atelier/commit/4df715a4f6fe8461d5d53a982dc630089778ed54)、[17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)；未完成保留 [R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)。 兩模型 0.3／0.6 denoise、結果介面與報告下載已補驗；更多素材／模型／adapter／修補品質待辦保留。 |
+| <a id="h124"></a>H124<br>2026-10-08 [eab5e76](https://github.com/Zimkjdv/Model-Atelier/commit/eab5e76a5babe9d7c10e1289d3c1234e4fb8afb6) | 比較結果與方案自動關聯、更多模型／流程／參數軸待規劃，不提供自動批次與品質評分。 | 已交付部分見 [0ed66ce](https://github.com/Zimkjdv/Model-Atelier/commit/0ed66ce82acafbc0e8337663b2a0bae17a927043)、[8d9aa15](https://github.com/Zimkjdv/Model-Atelier/commit/8d9aa15a2dc10a34b3a817c03716bbc61b190bd3)、[ea31058](https://github.com/Zimkjdv/Model-Atelier/commit/ea310584c69d5a3416d45a0d6feb5498c6aa5d36)、[2a64a9a](https://github.com/Zimkjdv/Model-Atelier/commit/2a64a9a41a7b4c5a1a6f0fdb6e748cf63bd96930)；未完成保留 [R06](CHANGELOG.MD#r06)、[R07](CHANGELOG.MD#r07)。 有界預覽、既有參數軸與關聯已交付；擴充工作流程／參數另評估。自動批次與自動品質評分是排除範圍。 |
+| <a id="h125"></a>H125<br>2026-10-08 [eab5e76](https://github.com/Zimkjdv/Model-Atelier/commit/eab5e76a5babe9d7c10e1289d3c1234e4fb8afb6) | UI 工具 sandbox 啟動失敗，本輪瀏覽器／原生下載／窄視窗驗收未完成。更多 GPU 品質、局部編輯／adapter、FLUX 安裝與 RTX 4080 仍待完成。 | 已交付部分見 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)；未完成保留 [R05](CHANGELOG.MD#r05)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 比較方案實際下載、匯入、精確載入與 390px 已補驗；其他範圍仍未完成。 |
+| <a id="h126"></a>H126<br>2026-10-08 [79ea409](https://github.com/Zimkjdv/Model-Atelier/commit/79ea409438830a57c8b86f9672a952ec6cee0bfa) | 其他畫風、更廣泛品質、RTX 4080 與訓練資源仍待驗證。 | 已交付部分見 [79ea409](https://github.com/Zimkjdv/Model-Atelier/commit/79ea409438830a57c8b86f9672a952ec6cee0bfa)；未完成保留 [L01](CHANGELOG.MD#l01)、[R05](CHANGELOG.MD#r05)、[E02](ROADMAP.MD#e02)、[E04](ROADMAP.MD#e04)、[T01](CHANGELOG.MD#t01)、[T03](CHANGELOG.MD#t03)。 固定強度品質比較已完成，未外推其他畫風、硬體或訓練。 |
 | <a id="h127"></a>H127<br>2026-10-08 [2a64a9a](https://github.com/Zimkjdv/Model-Atelier/commit/2a64a9a41a7b4c5a1a6f0fdb6e748cf63bd96930) | 前端關聯操作與結果查看接續第三項；不提供自動批次、品質評分或反向補關聯。 | 已交付，見 [9abddcf](https://github.com/Zimkjdv/Model-Atelier/commit/9abddcf5dec70d4ac0661fdd45e53dddbf5b1c2d)、[17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)。 前端明確關聯及結果查看／報告介面已補驗；自動批次、品質評分及反向補關聯不在範圍。 |
-| <a id="h128"></a>H128<br>2026-10-08 [9abddcf](https://github.com/Zimkjdv/Model-Atelier/commit/9abddcf5dec70d4ac0661fdd45e53dddbf5b1c2d) | 更多模型／流程／參數軸待規劃，不提供自動批次與品質評分。 | 已交付部分見 [0ed66ce](https://github.com/Zimkjdv/Model-Atelier/commit/0ed66ce82acafbc0e8337663b2a0bae17a927043)、[8d9aa15](https://github.com/Zimkjdv/Model-Atelier/commit/8d9aa15a2dc10a34b3a817c03716bbc61b190bd3)、[ea31058](https://github.com/Zimkjdv/Model-Atelier/commit/ea310584c69d5a3416d45a0d6feb5498c6aa5d36)、[2a64a9a](https://github.com/Zimkjdv/Model-Atelier/commit/2a64a9a41a7b4c5a1a6f0fdb6e748cf63bd96930)；未完成保留 [R06](ROADMAP.MD#r06)、[R07](ROADMAP.MD#r07)。 有界預覽、既有參數軸與關聯已交付；擴充工作流程／參數另評估。自動批次與自動品質評分是排除範圍。 |
-| <a id="h129"></a>H129<br>2026-10-08 [9abddcf](https://github.com/Zimkjdv/Model-Atelier/commit/9abddcf5dec70d4ac0661fdd45e53dddbf5b1c2d) | 瀏覽器工具仍因 Windows sandbox `helper_unknown_error` 無法啟動，畫面點擊、實際下載及窄視窗未驗收；其他畫風、更廣泛品質、局部編輯／adapter、FLUX 安裝及 RTX 4080 仍待完成。 | 已交付部分見 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)；未完成保留 [L01](ROADMAP.MD#l01)、[R05](ROADMAP.MD#r05)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 比較結果、原圖縮圖、報告下載與窄視窗已補驗；其他畫風／模型／硬體不能借用。 |
-| <a id="h130"></a>H130<br>2026-10-09 [7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9) | 遮罩操作介面及 RTX 3060 實機驗收接續開發；比較／一般草稿／交換 JSON 不借用舊格式丟棄遮罩。 | 已交付部分見 [ddac4d6](https://github.com/Zimkjdv/Model-Atelier/commit/ddac4d6c27c1cfe3010fcd49b967dbe6d9e6c893)、[3e06576](https://github.com/Zimkjdv/Model-Atelier/commit/3e06576576d153c2b4cd1b4105fdbe95b2394d3f)、[962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52)；未完成保留 [R07](ROADMAP.MD#r07)、[V01](ROADMAP.MD#v01)、[V02](ROADMAP.MD#v02)。 遮罩工作台與固定 GPU 驗收已完成；真實筆刷／觸控及 pending 補驗仍缺，舊草稿／交換／比較格式維持拒絕。 |
+| <a id="h128"></a>H128<br>2026-10-08 [9abddcf](https://github.com/Zimkjdv/Model-Atelier/commit/9abddcf5dec70d4ac0661fdd45e53dddbf5b1c2d) | 更多模型／流程／參數軸待規劃，不提供自動批次與品質評分。 | 已交付部分見 [0ed66ce](https://github.com/Zimkjdv/Model-Atelier/commit/0ed66ce82acafbc0e8337663b2a0bae17a927043)、[8d9aa15](https://github.com/Zimkjdv/Model-Atelier/commit/8d9aa15a2dc10a34b3a817c03716bbc61b190bd3)、[ea31058](https://github.com/Zimkjdv/Model-Atelier/commit/ea310584c69d5a3416d45a0d6feb5498c6aa5d36)、[2a64a9a](https://github.com/Zimkjdv/Model-Atelier/commit/2a64a9a41a7b4c5a1a6f0fdb6e748cf63bd96930)；未完成保留 [R06](CHANGELOG.MD#r06)、[R07](CHANGELOG.MD#r07)。 有界預覽、既有參數軸與關聯已交付；擴充工作流程／參數另評估。自動批次與自動品質評分是排除範圍。 |
+| <a id="h129"></a>H129<br>2026-10-08 [9abddcf](https://github.com/Zimkjdv/Model-Atelier/commit/9abddcf5dec70d4ac0661fdd45e53dddbf5b1c2d) | 瀏覽器工具仍因 Windows sandbox `helper_unknown_error` 無法啟動，畫面點擊、實際下載及窄視窗未驗收；其他畫風、更廣泛品質、局部編輯／adapter、FLUX 安裝及 RTX 4080 仍待完成。 | 已交付部分見 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)；未完成保留 [L01](CHANGELOG.MD#l01)、[R05](CHANGELOG.MD#r05)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 比較結果、原圖縮圖、報告下載與窄視窗已補驗；其他畫風／模型／硬體不能借用。 |
+| <a id="h130"></a>H130<br>2026-10-09 [7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9) | 遮罩操作介面及 RTX 3060 實機驗收接續開發；比較／一般草稿／交換 JSON 不借用舊格式丟棄遮罩。 | 已交付部分見 [ddac4d6](https://github.com/Zimkjdv/Model-Atelier/commit/ddac4d6c27c1cfe3010fcd49b967dbe6d9e6c893)、[3e06576](https://github.com/Zimkjdv/Model-Atelier/commit/3e06576576d153c2b4cd1b4105fdbe95b2394d3f)、[962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52)；未完成保留 [R07](CHANGELOG.MD#r07)、[V01](ROADMAP.MD#v01)、[V02](CHANGELOG.MD#v02)。 遮罩工作台與固定 GPU 驗收已完成；真實筆刷／觸控及 pending 補驗仍缺，舊草稿／交換／比較格式維持拒絕。 |
 | <a id="h131"></a>H131<br>2026-10-09 [ddac4d6](https://github.com/Zimkjdv/Model-Atelier/commit/ddac4d6c27c1cfe3010fcd49b967dbe6d9e6c893) | 瀏覽器工具仍因 sandbox helper 啟動失敗，實際畫面操作／下載／窄視窗未驗收；RTX 3060 接續第三項。 | 已交付部分見 [3e06576](https://github.com/Zimkjdv/Model-Atelier/commit/3e06576576d153c2b4cd1b4105fdbe95b2394d3f)、[962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52)；未完成保留 [V01](ROADMAP.MD#v01)。 RTX 3060、預覽、歷史下載及 390px 已後續補驗；筆刷／觸控不能視為已驗證。 |
-| <a id="h132"></a>H132<br>2026-10-09 [3e06576](https://github.com/Zimkjdv/Model-Atelier/commit/3e06576576d153c2b4cd1b4105fdbe95b2394d3f) | 逐項評估圖片生成圖片、局部編輯及結構參考流程；單張圖生圖與 checkpoint 局部編輯已完成後端／介面及固定 RTX 3060 驗證，結構參考與修補品質改善仍待完成。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)、[3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108)；未完成保留 [R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)。 單張圖生圖、checkpoint 局部編輯及 Canny 已接入；其他結構、adapter 與修補品質仍待評估。 |
-| <a id="h133"></a>H133<br>2026-10-09 [3e06576](https://github.com/Zimkjdv/Model-Atelier/commit/3e06576576d153c2b4cd1b4105fdbe95b2394d3f) | 瀏覽器工具仍無法啟動，實際筆刷／觸控／下載／窄視窗待驗收；羽化／邊界融合、專用 inpainting checkpoint、更多 seed、ControlNet／adapter、FLUX 權重与 RTX 4080 保留後續工作。 | 已交付部分見 [962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52)、[7b03393](https://github.com/Zimkjdv/Model-Atelier/commit/7b033934fa75bba06990af37c59c06017feda2e8)；未完成保留 [V01](ROADMAP.MD#v01)、[V02](ROADMAP.MD#v02)、[R03](ROADMAP.MD#r03)、[R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 羽化、Canny 及固定 GPU／歷史介面已交付；實際筆刷觸控與其他範圍仍待補驗。 |
+| <a id="h132"></a>H132<br>2026-10-09 [3e06576](https://github.com/Zimkjdv/Model-Atelier/commit/3e06576576d153c2b4cd1b4105fdbe95b2394d3f) | 逐項評估圖片生成圖片、局部編輯及結構參考流程；單張圖生圖與 checkpoint 局部編輯已完成後端／介面及固定 RTX 3060 驗證，結構參考與修補品質改善仍待完成。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)、[3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108)；未完成保留 [R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)。 單張圖生圖、checkpoint 局部編輯及 Canny 已接入；其他結構、adapter 與修補品質仍待評估。 |
+| <a id="h133"></a>H133<br>2026-10-09 [3e06576](https://github.com/Zimkjdv/Model-Atelier/commit/3e06576576d153c2b4cd1b4105fdbe95b2394d3f) | 瀏覽器工具仍無法啟動，實際筆刷／觸控／下載／窄視窗待驗收；羽化／邊界融合、專用 inpainting checkpoint、更多 seed、ControlNet／adapter、FLUX 權重与 RTX 4080 保留後續工作。 | 已交付部分見 [962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52)、[7b03393](https://github.com/Zimkjdv/Model-Atelier/commit/7b033934fa75bba06990af37c59c06017feda2e8)；未完成保留 [V01](ROADMAP.MD#v01)、[V02](CHANGELOG.MD#v02)、[R03](CHANGELOG.MD#r03)、[R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 羽化、Canny 及固定 GPU／歷史介面已交付；實際筆刷觸控與其他範圍仍待補驗。 |
 | <a id="h134"></a>H134<br>2026-10-09 [87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95) | 專用工作台與固定 SDXL Canny／RTX 3060 接續第二／三項；未宣稱畫風／角色鎖定或實機品質。 | 已交付，見 [8c61d4d](https://github.com/Zimkjdv/Model-Atelier/commit/8c61d4df91774feaba35cc4b1d7f1f2b26de3422)、[7b03393](https://github.com/Zimkjdv/Model-Atelier/commit/7b033934fa75bba06990af37c59c06017feda2e8)、[ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)。 專用工作台、固定 SDXL／RTX 3060 與後續瀏覽器／窄視窗已驗證。 |
 | <a id="h135"></a>H135<br>2026-10-09 [8c61d4d](https://github.com/Zimkjdv/Model-Atelier/commit/8c61d4df91774feaba35cc4b1d7f1f2b26de3422) | 瀏覽器工具本輪仍因 Node kernel 啟動失敗，畫面操作與窄視窗待驗收；固定控制權重／RTX 3060 接續第三項。 | 已交付，見 [8c61d4d](https://github.com/Zimkjdv/Model-Atelier/commit/8c61d4df91774feaba35cc4b1d7f1f2b26de3422)、[7b03393](https://github.com/Zimkjdv/Model-Atelier/commit/7b033934fa75bba06990af37c59c06017feda2e8)、[ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)。 專用工作台、固定 SDXL／RTX 3060 與後續瀏覽器／窄視窗已驗證。 |
-| <a id="h136"></a>H136<br>2026-10-09 [7b03393](https://github.com/Zimkjdv/Model-Atelier/commit/7b033934fa75bba06990af37c59c06017feda2e8) | 瀏覽器工具仍無法啟動，畫面／下載／窄視窗未驗收；下一批評估邊緣預覽／保存、更多 seed／強度、depth／pose／adapter、專用局部編輯／羽化、FLUX 安裝容量及 RTX 4080。 | 已交付部分見 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)、[e992b00](https://github.com/Zimkjdv/Model-Atelier/commit/e992b00a990fb531516ba65a093e6a4aa5ac43bc)、[962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52)；未完成保留 [R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 Canny 邊緣保存／預覽／下載／窄視窗、兩 seed／強度與羽化已後續完成。 |
-| <a id="h137"></a>H137<br>2026-10-09 [3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108) | 逐項評估圖片生成圖片、局部編輯及結構參考流程；單張圖生圖與 checkpoint 局部編輯已完成後端／介面及固定 RTX 3060 驗證，Canny 結構已完成固定整合，其他結構流程與修補品質改善仍待完成。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)、[3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108)；未完成保留 [R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)。 單張圖生圖、checkpoint 局部編輯及 Canny 已接入；其他結構、adapter 與修補品質仍待評估。 |
+| <a id="h136"></a>H136<br>2026-10-09 [7b03393](https://github.com/Zimkjdv/Model-Atelier/commit/7b033934fa75bba06990af37c59c06017feda2e8) | 瀏覽器工具仍無法啟動，畫面／下載／窄視窗未驗收；下一批評估邊緣預覽／保存、更多 seed／強度、depth／pose／adapter、專用局部編輯／羽化、FLUX 安裝容量及 RTX 4080。 | 已交付部分見 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)、[e992b00](https://github.com/Zimkjdv/Model-Atelier/commit/e992b00a990fb531516ba65a093e6a4aa5ac43bc)、[962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52)；未完成保留 [R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 Canny 邊緣保存／預覽／下載／窄視窗、兩 seed／強度與羽化已後續完成。 |
+| <a id="h137"></a>H137<br>2026-10-09 [3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108) | 逐項評估圖片生成圖片、局部編輯及結構參考流程；單張圖生圖與 checkpoint 局部編輯已完成後端／介面及固定 RTX 3060 驗證，Canny 結構已完成固定整合，其他結構流程與修補品質改善仍待完成。 | 已交付部分見 [7302384](https://github.com/Zimkjdv/Model-Atelier/commit/7302384d92bd38d9de3dd43a350b20398cdbad15)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)、[87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95)、[3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108)；未完成保留 [R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)。 單張圖生圖、checkpoint 局部編輯及 Canny 已接入；其他結構、adapter 與修補品質仍待評估。 |
 | <a id="h138"></a>H138<br>2026-10-09 [3dc10b8](https://github.com/Zimkjdv/Model-Atelier/commit/3dc10b8c2d71883b1514c85db9f353c48476e108) | 介面与两 seed／两強度 RTX 3060 比較接續第二／三項。 | 已交付，見 [c8b1cf5](https://github.com/Zimkjdv/Model-Atelier/commit/c8b1cf578d5a61faa33ef5bafd1d66d1b6d85ccf)、[e992b00](https://github.com/Zimkjdv/Model-Atelier/commit/e992b00a990fb531516ba65a093e6a4aa5ac43bc)、[ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)。 介面、兩 seed／兩強度 GPU 與後續瀏覽器驗收已完成。 |
 | <a id="h139"></a>H139<br>2026-10-09 [c8b1cf5](https://github.com/Zimkjdv/Model-Atelier/commit/c8b1cf578d5a61faa33ef5bafd1d66d1b6d85ccf) | 介面已於第二項完成；兩 seed／兩強度 RTX 3060 比較接續第三項。 | 已交付，見 [c8b1cf5](https://github.com/Zimkjdv/Model-Atelier/commit/c8b1cf578d5a61faa33ef5bafd1d66d1b6d85ccf)、[e992b00](https://github.com/Zimkjdv/Model-Atelier/commit/e992b00a990fb531516ba65a093e6a4aa5ac43bc)、[ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)。 介面、兩 seed／兩強度 GPU 與後續瀏覽器驗收已完成。 |
 | <a id="h140"></a>H140<br>2026-10-09 [c8b1cf5](https://github.com/Zimkjdv/Model-Atelier/commit/c8b1cf578d5a61faa33ef5bafd1d66d1b6d85ccf) | 瀏覽器工具 Node kernel 無法啟動，畫面操作／窄視窗仍待驗收；兩 seed／兩強度 RTX 3060 接續第三項。 | 已交付，見 [c8b1cf5](https://github.com/Zimkjdv/Model-Atelier/commit/c8b1cf578d5a61faa33ef5bafd1d66d1b6d85ccf)、[e992b00](https://github.com/Zimkjdv/Model-Atelier/commit/e992b00a990fb531516ba65a093e6a4aa5ac43bc)、[ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)。 介面、兩 seed／兩強度 GPU 與後續瀏覽器驗收已完成。 |
-| <a id="h141"></a>H141<br>2026-10-09 [e992b00](https://github.com/Zimkjdv/Model-Atelier/commit/e992b00a990fb531516ba65a093e6a4aa5ac43bc) | 瀏覽器畫面／窄視窗操作、未提交設定即時邊緣預覽、Pony v2／其他 LoRA、depth／pose／adapter、局部編輯品質改善、FLUX 安裝容量與 RTX 4080 接續評估。 | 已交付部分見 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)；未完成保留 [R04](ROADMAP.MD#r04)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 Canny v2 邊緣介面、送出前 CPU 預覽及窄視窗已補驗；Pony v2 組合等其餘內容仍待實測。 |
-| <a id="h142"></a>H142<br>2026-10-22 [b9bd7d7](https://github.com/Zimkjdv/Model-Atelier/commit/b9bd7d74c256c2f416d19d1cc3f4967f9f4a8676) | 工作台預覽／新參數／pending 相容與 RTX 3060 比較依序接續第二／三項。詳見 docs/inpaint-feather.md。 | 已交付部分見 [2c43e47](https://github.com/Zimkjdv/Model-Atelier/commit/2c43e470723d05725e6f78c0b2d131696bd0bae1)、[962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52)；未完成保留 [V02](ROADMAP.MD#v02)。 新工作台、預覽與 GPU 已完成；pending 邏輯測試已通過，真實遺失回應仍未注入驗收。 |
+| <a id="h141"></a>H141<br>2026-10-09 [e992b00](https://github.com/Zimkjdv/Model-Atelier/commit/e992b00a990fb531516ba65a093e6a4aa5ac43bc) | 瀏覽器畫面／窄視窗操作、未提交設定即時邊緣預覽、Pony v2／其他 LoRA、depth／pose／adapter、局部編輯品質改善、FLUX 安裝容量與 RTX 4080 接續評估。 | 已交付部分見 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)；未完成保留 [R04](CHANGELOG.MD#r04)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 Canny v2 邊緣介面、送出前 CPU 預覽及窄視窗已補驗；Pony v2 組合等其餘內容仍待實測。 |
+| <a id="h142"></a>H142<br>2026-10-22 [b9bd7d7](https://github.com/Zimkjdv/Model-Atelier/commit/b9bd7d74c256c2f416d19d1cc3f4967f9f4a8676) | 工作台預覽／新參數／pending 相容與 RTX 3060 比較依序接續第二／三項。詳見 docs/inpaint-feather.md。 | 已交付部分見 [2c43e47](https://github.com/Zimkjdv/Model-Atelier/commit/2c43e470723d05725e6f78c0b2d131696bd0bae1)、[962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52)；未完成保留 [V02](CHANGELOG.MD#v02)。 新工作台、預覽與 GPU 已完成；pending 邏輯測試已通過，真實遺失回應仍未注入驗收。 |
 | <a id="h143"></a>H143<br>2026-10-22 [2c43e47](https://github.com/Zimkjdv/Model-Atelier/commit/2c43e470723d05725e6f78c0b2d131696bd0bae1) | 真實 RTX 3060 羽化比較及新歷史介面核對接續第三項；筆刷觸控尚未重驗。 | 已交付部分見 [962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52)；未完成保留 [V01](ROADMAP.MD#v01)。 羽化 GPU 與新歷史介面已核對；筆刷觸控未重驗。 |
-| <a id="h144"></a>H144<br>2026-10-22 [962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52) | P5 固定 BFL 權重需先取得來源存取；P6 專用 inpainting 模型／其他半徑與 seed、depth／pose／adapter、Canny 未提交即時預覽及 RTX 4080 接續評估。 | 已交付部分見 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)；未完成保留 [F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[R03](ROADMAP.MD#r03)、[R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[E02](ROADMAP.MD#e02)。 Canny 送出前 CPU 預覽已完成；FLUX 存取、修補品質、其他參考與硬體仍待驗證。 |
-| <a id="h145"></a>H145<br>2026-10-22 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd) | 更多模型／seed／強度、depth／pose／adapter、專用局部編輯品質、FLUX 來源存取及 RTX 4080 待評估；邊緣預覽／保存、羽化與瀏覽器畫面／下載／窄視窗已於後續完成。 | 已交付部分見 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)；未完成保留 [R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 邊緣保存／預覽、羽化、歷史下載及窄視窗已完成，其餘保留。 |
-| <a id="h146"></a>H146<br>2026-10-22 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd) | Pony v2／其他 LoRA、depth／pose／adapter、局部編輯品質改善、FLUX 安裝容量與 RTX 4080 接續評估。 | 未完成保留 [R04](ROADMAP.MD#r04)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 |
-| <a id="h147"></a>H147<br>2026-10-22 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd) | P5 固定 BFL 權重需先取得來源存取；P6 專用 inpainting 模型／其他半徑與 seed、depth／pose／adapter及 RTX 4080 接續評估；Canny 送出前 CPU 預覽已於後續完成。 | 已交付部分見 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)；未完成保留 [F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[R03](ROADMAP.MD#r03)、[R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[E02](ROADMAP.MD#e02)。 Canny 送出前 CPU 預覽已完成；FLUX 存取、修補品質、其他參考與硬體仍待驗證。 |
-| <a id="h148"></a>H148<br>2026-10-22 [4df715a](https://github.com/Zimkjdv/Model-Atelier/commit/4df715a4f6fe8461d5d53a982dc630089778ed54) | 更廣泛 denoise／素材／模型品質、結構／畫風 adapter 待評估；2026-10-22 已完成 Pony／Animagine 各 0.3／0.6 圖生圖及比較關聯 GPU 驗收，瀏覽器結果介面接續報告匯出項目。 | 已交付部分見 [4df715a](https://github.com/Zimkjdv/Model-Atelier/commit/4df715a4f6fe8461d5d53a982dc630089778ed54)、[17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)；未完成保留 [R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)。 兩模型 0.3／0.6 denoise、結果介面與報告下載已補驗；更多素材／模型／adapter／修補品質待辦保留。 |
-| <a id="h149"></a>H149<br>2026-10-22 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) | 更廣泛 denoise／素材／模型品質、結構／畫風 adapter 待評估；2026-10-22 已完成 Pony／Animagine 各 0.3／0.6 圖生圖及比較關聯 GPU 驗收，瀏覽器結果介面與報告匯出亦已於第三項驗收。 | 已交付部分見 [4df715a](https://github.com/Zimkjdv/Model-Atelier/commit/4df715a4f6fe8461d5d53a982dc630089778ed54)、[17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)；未完成保留 [R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)。 兩模型 0.3／0.6 denoise、結果介面與報告下載已補驗；更多素材／模型／adapter／修補品質待辦保留。 |
-| <a id="h150"></a>H150<br>2026-10-22 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) | 更多素材／seed 品質、專用局部編輯／adapter、FLUX 來源存取與 RTX 4080 待完成；2026-10-22 已補驗比較方案下載／匯入、精確設定載入及 390px。 | 已交付部分見 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)；未完成保留 [R05](ROADMAP.MD#r05)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 比較方案實際下載、匯入、精確載入與 390px 已補驗；其他範圍仍未完成。 |
-| <a id="h151"></a>H151<br>2026-10-22 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) | 其他畫風、更廣泛品質、專用局部編輯／adapter、FLUX 來源存取及 RTX 4080 待完成；2026-10-22 已補驗比較關聯結果、原圖縮圖、報告實際下載與窄視窗。 | 已交付部分見 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)；未完成保留 [L01](ROADMAP.MD#l01)、[R05](ROADMAP.MD#r05)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 比較結果、原圖縮圖、報告下載與窄視窗已補驗；其他畫風／模型／硬體不能借用。 |
+| <a id="h144"></a>H144<br>2026-10-22 [962216b](https://github.com/Zimkjdv/Model-Atelier/commit/962216ba12f73b800bd500904d91526bbe499a52) | P5 固定 BFL 權重需先取得來源存取；P6 專用 inpainting 模型／其他半徑與 seed、depth／pose／adapter、Canny 未提交即時預覽及 RTX 4080 接續評估。 | 已交付部分見 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)；未完成保留 [F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[R03](CHANGELOG.MD#r03)、[R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[E02](ROADMAP.MD#e02)。 Canny 送出前 CPU 預覽已完成；FLUX 存取、修補品質、其他參考與硬體仍待驗證。 |
+| <a id="h145"></a>H145<br>2026-10-22 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd) | 更多模型／seed／強度、depth／pose／adapter、專用局部編輯品質、FLUX 來源存取及 RTX 4080 待評估；邊緣預覽／保存、羽化與瀏覽器畫面／下載／窄視窗已於後續完成。 | 已交付部分見 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)；未完成保留 [R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 邊緣保存／預覽、羽化、歷史下載及窄視窗已完成，其餘保留。 |
+| <a id="h146"></a>H146<br>2026-10-22 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd) | Pony v2／其他 LoRA、depth／pose／adapter、局部編輯品質改善、FLUX 安裝容量與 RTX 4080 接續評估。 | 未完成保留 [R04](CHANGELOG.MD#r04)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 |
+| <a id="h147"></a>H147<br>2026-10-22 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd) | P5 固定 BFL 權重需先取得來源存取；P6 專用 inpainting 模型／其他半徑與 seed、depth／pose／adapter及 RTX 4080 接續評估；Canny 送出前 CPU 預覽已於後續完成。 | 已交付部分見 [ab17b82](https://github.com/Zimkjdv/Model-Atelier/commit/ab17b82dd9092f9abb35a7cc6ea635877c3f61bd)；未完成保留 [F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[R03](CHANGELOG.MD#r03)、[R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[E02](ROADMAP.MD#e02)。 Canny 送出前 CPU 預覽已完成；FLUX 存取、修補品質、其他參考與硬體仍待驗證。 |
+| <a id="h148"></a>H148<br>2026-10-22 [4df715a](https://github.com/Zimkjdv/Model-Atelier/commit/4df715a4f6fe8461d5d53a982dc630089778ed54) | 更廣泛 denoise／素材／模型品質、結構／畫風 adapter 待評估；2026-10-22 已完成 Pony／Animagine 各 0.3／0.6 圖生圖及比較關聯 GPU 驗收，瀏覽器結果介面接續報告匯出項目。 | 已交付部分見 [4df715a](https://github.com/Zimkjdv/Model-Atelier/commit/4df715a4f6fe8461d5d53a982dc630089778ed54)、[17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)；未完成保留 [R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)。 兩模型 0.3／0.6 denoise、結果介面與報告下載已補驗；更多素材／模型／adapter／修補品質待辦保留。 |
+| <a id="h149"></a>H149<br>2026-10-22 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) | 更廣泛 denoise／素材／模型品質、結構／畫風 adapter 待評估；2026-10-22 已完成 Pony／Animagine 各 0.3／0.6 圖生圖及比較關聯 GPU 驗收，瀏覽器結果介面與報告匯出亦已於第三項驗收。 | 已交付部分見 [4df715a](https://github.com/Zimkjdv/Model-Atelier/commit/4df715a4f6fe8461d5d53a982dc630089778ed54)、[17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)、[7e5680f](https://github.com/Zimkjdv/Model-Atelier/commit/7e5680faf49ab76980493afd9c778f3610c392a9)；未完成保留 [R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)。 兩模型 0.3／0.6 denoise、結果介面與報告下載已補驗；更多素材／模型／adapter／修補品質待辦保留。 |
+| <a id="h150"></a>H150<br>2026-10-22 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) | 更多素材／seed 品質、專用局部編輯／adapter、FLUX 來源存取與 RTX 4080 待完成；2026-10-22 已補驗比較方案下載／匯入、精確設定載入及 390px。 | 已交付部分見 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)；未完成保留 [R05](CHANGELOG.MD#r05)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 比較方案實際下載、匯入、精確載入與 390px 已補驗；其他範圍仍未完成。 |
+| <a id="h151"></a>H151<br>2026-10-22 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) | 其他畫風、更廣泛品質、專用局部編輯／adapter、FLUX 來源存取及 RTX 4080 待完成；2026-10-22 已補驗比較關聯結果、原圖縮圖、報告實際下載與窄視窗。 | 已交付部分見 [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571)；未完成保留 [L01](CHANGELOG.MD#l01)、[R05](CHANGELOG.MD#r05)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02)。 比較結果、原圖縮圖、報告下載與窄視窗已補驗；其他畫風／模型／硬體不能借用。 |
 
 <a id="current-open-map"></a>
 
@@ -427,21 +431,21 @@ H001–H151 依首次出現順序編號，文字相同者合併索引；所有�
 | 舊行號 | 歷史索引 | 現行未完成去向 |
 | ---: | --- | --- |
 | 52 | [H002](#h002) | [D02](ROADMAP.MD#d02) |
-| 116 | [H011](#h011) | [E04](ROADMAP.MD#e04)、[E02](ROADMAP.MD#e02)、[T01](ROADMAP.MD#t01)、[T03](ROADMAP.MD#t03) |
-| 118 | [H013](#h013) | [E01](ROADMAP.MD#e01) |
+| 116 | [H011](#h011) | [E04](ROADMAP.MD#e04)、[E02](ROADMAP.MD#e02)、[T01](CHANGELOG.MD#t01)、[T03](CHANGELOG.MD#t03) |
+| 118 | [H013](#h013) | [E01](CHANGELOG.MD#e01) |
 | 121 | [H016](#h016) | [E02](ROADMAP.MD#e02) |
 | 122 | [H017](#h017) | [E03](ROADMAP.MD#e03) |
-| 198 | [H117](#h117) | [L01](ROADMAP.MD#l01) |
+| 198 | [H117](#h117) | [L01](CHANGELOG.MD#l01) |
 | 212 | [H118](#h118) | [F01](ROADMAP.MD#f01)、[F02](ROADMAP.MD#f02) |
 | 215 | [H068](#h068) | [F03](ROADMAP.MD#f03) |
 | 216 | [H069](#h069) | [F04](ROADMAP.MD#f04) |
-| 227 | [H137](#h137) | [R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03) |
-| 238 | [H121](#h121) | [R05](ROADMAP.MD#r05)、[R02](ROADMAP.MD#r02)、[V04](ROADMAP.MD#v04) |
-| 244 | [H128](#h128) | [R06](ROADMAP.MD#r06)、[R07](ROADMAP.MD#r07) |
-| 251 | [H083](#h083) | [T01](ROADMAP.MD#t01) |
-| 252 | [H084](#h084) | [T02](ROADMAP.MD#t02) |
-| 253 | [H085](#h085) | [T03](ROADMAP.MD#t03) |
-| 254 | [H086](#h086) | [T04](ROADMAP.MD#t04) |
+| 227 | [H137](#h137) | [R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03) |
+| 238 | [H121](#h121) | [R05](CHANGELOG.MD#r05)、[R02](CHANGELOG.MD#r02)、[V04](CHANGELOG.MD#v04) |
+| 244 | [H128](#h128) | [R06](CHANGELOG.MD#r06)、[R07](CHANGELOG.MD#r07) |
+| 251 | [H083](#h083) | [T01](CHANGELOG.MD#t01) |
+| 252 | [H084](#h084) | [T02](CHANGELOG.MD#t02) |
+| 253 | [H085](#h085) | [T03](CHANGELOG.MD#t03) |
+| 254 | [H086](#h086) | [T04](CHANGELOG.MD#t04) |
 | 260 | [H087](#h087) | [A01](ROADMAP.MD#a01) |
 | 261 | [H088](#h088) | [A02](ROADMAP.MD#a02) |
 | 262 | [H089](#h089) | [A03](ROADMAP.MD#a03) |
@@ -452,19 +456,19 @@ H001–H151 依首次出現順序編號，文字相同者合併索引；所有�
 | 267 | [H094](#h094) | [A07](ROADMAP.MD#a07) |
 | 287 | [H095](#h095) | [D01](ROADMAP.MD#d01) |
 | 292 | [H099](#h099) | [A02](ROADMAP.MD#a02) |
-| 316 | [H107](#h107) | [F03](ROADMAP.MD#f03)、[F04](ROADMAP.MD#f04)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R07](ROADMAP.MD#r07) |
-| 422 | [H114](#h114) | [E04](ROADMAP.MD#e04)、[E02](ROADMAP.MD#e02)、[T01](ROADMAP.MD#t01)、[T03](ROADMAP.MD#t03) |
-| 440 | [H115](#h115) | [E01](ROADMAP.MD#e01) |
-| 579 | [H122](#h122) | [L01](ROADMAP.MD#l01)、[R05](ROADMAP.MD#r05) |
-| 587 | [H149](#h149) | [R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03) |
-| 597 | [H150](#h150) | [R05](ROADMAP.MD#r05)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02) |
-| 606 | [H126](#h126) | [L01](ROADMAP.MD#l01)、[R05](ROADMAP.MD#r05)、[E02](ROADMAP.MD#e02)、[E04](ROADMAP.MD#e04)、[T01](ROADMAP.MD#t01)、[T03](ROADMAP.MD#t03) |
-| 626 | [H151](#h151) | [L01](ROADMAP.MD#l01)、[R05](ROADMAP.MD#r05)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02) |
+| 316 | [H107](#h107) | [F03](ROADMAP.MD#f03)、[F04](ROADMAP.MD#f04)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R07](CHANGELOG.MD#r07) |
+| 422 | [H114](#h114) | [E04](ROADMAP.MD#e04)、[E02](ROADMAP.MD#e02)、[T01](CHANGELOG.MD#t01)、[T03](CHANGELOG.MD#t03) |
+| 440 | [H115](#h115) | [E01](CHANGELOG.MD#e01) |
+| 579 | [H122](#h122) | [L01](CHANGELOG.MD#l01)、[R05](CHANGELOG.MD#r05) |
+| 587 | [H149](#h149) | [R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03) |
+| 597 | [H150](#h150) | [R05](CHANGELOG.MD#r05)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02) |
+| 606 | [H126](#h126) | [L01](CHANGELOG.MD#l01)、[R05](CHANGELOG.MD#r05)、[E02](ROADMAP.MD#e02)、[E04](ROADMAP.MD#e04)、[T01](CHANGELOG.MD#t01)、[T03](CHANGELOG.MD#t03) |
+| 626 | [H151](#h151) | [L01](CHANGELOG.MD#l01)、[R05](CHANGELOG.MD#r05)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02) |
 | 643 | [H131](#h131) | [V01](ROADMAP.MD#v01) |
-| 654 | [H133](#h133) | [V01](ROADMAP.MD#v01)、[V02](ROADMAP.MD#v02)、[R03](ROADMAP.MD#r03)、[R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02) |
-| 685 | [H145](#h145) | [R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02) |
-| 715 | [H146](#h146) | [R04](ROADMAP.MD#r04)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[R03](ROADMAP.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02) |
-| 746 | [H147](#h147) | [F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[R03](ROADMAP.MD#r03)、[R05](ROADMAP.MD#r05)、[R01](ROADMAP.MD#r01)、[R02](ROADMAP.MD#r02)、[E02](ROADMAP.MD#e02) |
+| 654 | [H133](#h133) | [V01](ROADMAP.MD#v01)、[V02](CHANGELOG.MD#v02)、[R03](CHANGELOG.MD#r03)、[R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02) |
+| 685 | [H145](#h145) | [R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02) |
+| 715 | [H146](#h146) | [R04](CHANGELOG.MD#r04)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[R03](CHANGELOG.MD#r03)、[F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[E02](ROADMAP.MD#e02) |
+| 746 | [H147](#h147) | [F01](ROADMAP.MD#f01)、[F03](ROADMAP.MD#f03)、[R03](CHANGELOG.MD#r03)、[R05](CHANGELOG.MD#r05)、[R01](CHANGELOG.MD#r01)、[R02](CHANGELOG.MD#r02)、[E02](ROADMAP.MD#e02) |
 
 <a id="acceptance-recovery"></a>
 
@@ -475,18 +479,18 @@ H001–H151 依首次出現順序編號，文字相同者合併索引；所有�
 | 編號／來源 | 原行 | 仍需完成的驗收去向 |
 | --- | --- | --- |
 | U01 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L175 | - [x] 固定 Pony V6 XL 作者來源／修訂與 SHA256，記錄模型卡授權標記及依賴；完整授權條款仍待核對。 | [M01](ROADMAP.MD#m01)。只有模型卡標記，全文核對未完成。 |
-| U02 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L151 | - [x] 圖片並排比較與人工評分已於 P6 實作；窄視窗實際操作仍待驗收。 | [V03](ROADMAP.MD#v03)。並排與評分的窄視窗尚缺，不借用結果報告驗收。 |
-| U03 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L510 | - [x] 354 項後端測試（353 通過、1 項既有 Windows 權限跳過）、Vue 型別／建置、兩個視窗衝突及桌面瀏覽器驗收通過；viewport override 實際未生效，390px 本轮保持未驗收。 | [V03](ROADMAP.MD#v03)。作品整理桌面已過，viewport override 未生效。 |
-| U04 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L531 | - [x] 370 項後端測試（369 通過、1 項既有權限跳過）、Vue 型別／建置及桌面 UI 驗收通過；IAB Blob 下載事件未回報，僅確認 API bytes、下載連結及完整 JSON，其他瀏覽器下載與 390px 待驗收。 | [V05](ROADMAP.MD#v05)。一般創作設定交換不是比較方案 JSON。 |
-| U05 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L557 | - [x] 384 項後端測試（383 通過、1 項既有 Windows 權限跳過）、Vue 型別／建置、API 及原圖觀察；瀏覽器工具無法啟動，UI 實機驗收未完成。見 `docs/validation/animagine-multi-lora-quality-rtx3060.md`。 | [V04](ROADMAP.MD#v04)。較早有序匹配桌面已過，但新 8 步品質紀錄未補驗。 |
-| U06 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L563 | - [x] 390 項後端測試（389 通過、1 項既有 Windows 權限跳過）、Vue 型別／建置與 RTX 3060 真實量測、作品及離線核對；瀏覽器 UI 實機驗收未完成。見 `docs/job-measurements.md`。 | [V04](ROADMAP.MD#v04)。任務量測 UI 尚未補驗。 |
-| U07 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L570 | - [x] 394 項後端測試（393 通過、1 項既有 Windows 權限跳過）、Vue 型別／建置通過；本輪瀏覽器工具環境故障，UI 實機驗收未完成。 | [V04](ROADMAP.MD#v04)。固定四案例 GPU 已過，新的 UI 實際驗收未完成。 |
-| U08 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L578 | - [x] 397 項後端測試（396 通過、1 項既有 Windows 權限跳過）及 Vue 型別／建置通過；工具 sandbox 啟動失敗，UI 實機驗收未完成。沒有新增 GPU 任務或正式資料。 | [V04](ROADMAP.MD#v04)。LoRA 強度軸 UI 未完成，不能以 denoise 操作替代。 |
-| U09 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L245 | - [x] 新任務保存平台觀察耗時、原引擎歷史起訖及提交前資源快照；作品沿用，未知值不推估或回填。連續／任務專用峰值仍待實作。 | [E05](ROADMAP.MD#e05)。單次快照不能作連續或任務專用峰值。 |
-| U10 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L452 | - 全站視覺規範及所有頁面的無障礙驗收仍可繼續完善，本項驗證以創作工作台與主要導覽為範圍。 | [V06](ROADMAP.MD#v06)。原驗收只涵蓋工作台及主要導覽。 |
+| U02 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L151 | - [x] 圖片並排比較與人工評分已於 P6 實作；窄視窗實際操作仍待驗收。 | [V03](CHANGELOG.MD#v03)。並排與評分的窄視窗尚缺，不借用結果報告驗收。 |
+| U03 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L510 | - [x] 354 項後端測試（353 通過、1 項既有 Windows 權限跳過）、Vue 型別／建置、兩個視窗衝突及桌面瀏覽器驗收通過；viewport override 實際未生效，390px 本轮保持未驗收。 | [V03](CHANGELOG.MD#v03)。作品整理桌面已過，viewport override 未生效。 |
+| U04 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L531 | - [x] 370 項後端測試（369 通過、1 項既有權限跳過）、Vue 型別／建置及桌面 UI 驗收通過；IAB Blob 下載事件未回報，僅確認 API bytes、下載連結及完整 JSON，其他瀏覽器下載與 390px 待驗收。 | [V05](CHANGELOG.MD#v05)。一般創作設定交換不是比較方案 JSON。 |
+| U05 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L557 | - [x] 384 項後端測試（383 通過、1 項既有 Windows 權限跳過）、Vue 型別／建置、API 及原圖觀察；瀏覽器工具無法啟動，UI 實機驗收未完成。見 `docs/validation/animagine-multi-lora-quality-rtx3060.md`。 | [V04](CHANGELOG.MD#v04)。較早有序匹配桌面已過，但新 8 步品質紀錄未補驗。 |
+| U06 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L563 | - [x] 390 項後端測試（389 通過、1 項既有 Windows 權限跳過）、Vue 型別／建置與 RTX 3060 真實量測、作品及離線核對；瀏覽器 UI 實機驗收未完成。見 `docs/job-measurements.md`。 | [V04](CHANGELOG.MD#v04)。任務量測 UI 尚未補驗。 |
+| U07 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L570 | - [x] 394 項後端測試（393 通過、1 項既有 Windows 權限跳過）、Vue 型別／建置通過；本輪瀏覽器工具環境故障，UI 實機驗收未完成。 | [V04](CHANGELOG.MD#v04)。固定四案例 GPU 已過，新的 UI 實際驗收未完成。 |
+| U08 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L578 | - [x] 397 項後端測試（396 通過、1 項既有 Windows 權限跳過）及 Vue 型別／建置通過；工具 sandbox 啟動失敗，UI 實機驗收未完成。沒有新增 GPU 任務或正式資料。 | [V04](CHANGELOG.MD#v04)。LoRA 強度軸 UI 未完成，不能以 denoise 操作替代。 |
+| U09 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L245 | - [x] 新任務保存平台觀察耗時、原引擎歷史起訖及提交前資源快照；作品沿用，未知值不推估或回填。連續／任務專用峰值仍待實作。 | [E05](CHANGELOG.MD#e05)。單次快照不能作連續或任務專用峰值。 |
+| U10 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L452 | - 全站視覺規範及所有頁面的無障礙驗收仍可繼續完善，本項驗證以創作工作台與主要導覽為範圍。 | [V06](CHANGELOG.MD#v06)。原驗收只涵蓋工作台及主要導覽。 |
 | U11 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L733 | - [x] 真實 RTX 3060 羽化比較及新歷史介面已於第三項核對；筆刷觸控尚未重驗。 | [V01](ROADMAP.MD#v01)。筆刷觸控仍未重驗。 |
-| U12 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L742 | - [x] 真實瀏覽器預覽／390px、歷史羽化來源／下載 hash／精確 seed 與半徑還原通過；筆刷觸控與真實遺失回應的 pending 未重驗。 | [V01](ROADMAP.MD#v01)、[V02](ROADMAP.MD#v02)。預覽、下載、390px 已過，觸控及未知回應注入仍缺。 |
-| U13 · [87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95) L10 | 本輪接續 P6 ControlNet：第一項 Canny 結構參考後端已完成，451 項後端測試（450 通過、1 項既有 Windows 權限跳過）。專用工作台及固定 SDXL 控制模型／RTX 3060 驗收接續實作；一般草稿／比較方案、adapter 畫風／角色、FLUX 安裝與 RTX 4080 仍待完成。 | [R07](ROADMAP.MD#r07)。保留歷史中一般草稿／比較方案的後續評估；不擅自宣稱已支援。 |
+| U12 · [17440f4](https://github.com/Zimkjdv/Model-Atelier/commit/17440f47e2a3f263fa4e3d28399cbb4312c7f571) L742 | - [x] 真實瀏覽器預覽／390px、歷史羽化來源／下載 hash／精確 seed 與半徑還原通過；筆刷觸控與真實遺失回應的 pending 未重驗。 | [V01](ROADMAP.MD#v01)、[V02](CHANGELOG.MD#v02)。預覽、下載、390px 已過，觸控及未知回應注入仍缺。 |
+| U13 · [87d277d](https://github.com/Zimkjdv/Model-Atelier/commit/87d277d5716c0c1f3a4307e1b3049d588abe2f95) L10 | 本輪接續 P6 ControlNet：第一項 Canny 結構參考後端已完成，451 項後端測試（450 通過、1 項既有 Windows 權限跳過）。專用工作台及固定 SDXL 控制模型／RTX 3060 驗收接續實作；一般草稿／比較方案、adapter 畫風／角色、FLUX 安裝與 RTX 4080 仍待完成。 | [R07](CHANGELOG.MD#r07)。保留歷史中一般草稿／比較方案的後續評估；不擅自宣稱已支援。 |
 
 <a id="history"></a>
 
@@ -4160,3 +4164,328 @@ Mango 2 的確切提供者、權重可用性及 API 狀態尚未確認，暫留 
 <!-- roadmap-final-snapshot:end -->
 
 </details>
+
+
+<a id="roadmap-completed-20261025"></a>
+
+## 2026-10-25 · 已完成 ROADMAP 條目歸檔
+
+依使用者要求，將已完成條目的原驗收敘述、提醒與證據移至此處；不新增驗收或改動原結論。來源為 [33512b8 的 ROADMAP](https://github.com/Zimkjdv/Model-Atelier/blob/33512b8df02d35206a3b27a90f6918a8b56b4534/ROADMAP.MD)。日期與測試數均屬各次歷史紀錄；最新未完成工作見 [ROADMAP.MD](ROADMAP.MD)。
+
+### 2026-10-22 整體檢視與改善計畫
+
+#### 範圍、現況與判斷
+
+本輪盤點專案檔案，重點閱讀 FastAPI 組裝／提交／任務／作品／素材儲存、Vue 主介面及四種工作台、共用生成與事件處理、樣式、啟動與驗證腳本、README、功能文件及既有路線圖。以下是原始碼與文件檢視加上自動檢查，並非每個分支的完整稽核；未執行真實瀏覽器操作、讀屏／觸控驗證、GPU 生成或大量資料效能測試。
+
+目前架構為 Vue 工作台 → FastAPI 功能模組 → SQLite 的 `settings(key, value)` JSON 紀錄與本地圖片 → 獨立 ComfyUI。任務另以 SSE／WebSocket 傳遞進度，最終狀態仍由歷史核對。既有優點包括：原 UUID 恢復與避免重送、精確 seed、不可變來源快照、修訂衝突處理、離線作品保存，以及功能與實機證據分開記錄。這些約束應作為改善時的回歸底線，不因抽象化而放寬。
+
+| 面向 | 已確認的現況 | 改善判斷／對應 |
+| --- | --- | --- |
+| 程式 | 工作台分別包裝 HTTP 與載入狀態；部分檔案將多個狀態操作壓在同一行 | 共用錯誤／取消契約與提升可讀性，保留專用流程差異；Q03、Q10 |
+| 架構 | `main.py` 匯入即建立資料目錄／資料表，多個模組透過 `install(app, sys.modules[__name__])` 取得依賴 | 顯式配置與應用程式工廠可改善測試隔離；Q02，不需重寫或改成微服務 |
+| 資料與效能 | jobs／artworks／assets 用 `fetchall()` 讀取 JSON；作品頁全量抓取作品與任務再篩選 | 資料量成長風險已確認，實際卡頓尚未量測；Q04 |
+| 文件 | README 開頭已列收藏／筆記，後段仍寫「目前尚無作品刪除、收藏或備註」 | 同頁現況矛盾，且歷史驗收與使用說明交錯；Q01 |
+| 功能可靠性 | Checkpoint 有 `beforeunload` 保護；其他三種工作台未見同等註冊，KeepAlive 只保留站內切頁狀態 | 補齊重新整理／關頁的未保存保護；Q05，實際瀏覽器行為仍待驗證 |
+| UI | 已有共用配色、焦點、收合設定及四種工作流程；App 用區域狀態切頁，未與 URL 同步 | 先改善導覽與能力狀態可見性；Q08。視覺／觸控／無障礙仍依 V01–V06 補驗 |
+| 維運 | 已有大量 unittest 與三組前端邏輯腳本；備份主要依文件要求整份 data 保存 | 補可重跑檢查入口、恢復演練與診斷；Q06、Q07、Q09 |
+
+#### 本次檢查基線
+
+- 後端：`.venv/Scripts/python.exe -m unittest discover -s backend -p 'test_*.py'`，530 項，529 通過、1 跳過（Windows symlink 權限條件）；不能推論真實 GPU 或所有 UI 已通過。
+- 前端：`npm.cmd run build` 通過 Vue 型別檢查與 Vite 正式建置；`check:experiments`、`check:inpaint`、`check:control` 均通過。首次建置受沙箱父目錄存取限制失敗，提升權限重跑同一指令後通過，未改動程式修復。
+- 建置輸出基線：主 JS 約 370.42 kB（gzip 118.39 kB），CSS 約 56.62 kB（gzip 10.14 kB）。這是檔案大小，不是載入時間，也不足以宣稱需要立即拆包。
+- 測試顯示 Starlette TestClient 的 httpx 棄用提示；列入 Q06 評估相容版本，不直接更換鎖定依賴。本輪未查詢線上版本或進行依賴漏洞稽核。
+- 整體檢視階段僅更新路線圖，Q01–Q10 全部保持未完成；後續 E01 實作另見其驗收紀錄，不將既有測試通過視為新增項目的驗收。
+
+#### 可執行改善項
+
+優先級為本節局部排序：高＝下一輪先處理；中＝本地穩定化階段；低＝有量測或相關維護需求時實作。工作量為相對範圍（小／中／大），不是交付日期。
+
+<a id="q01"></a>
+
+- [x] **Q01 · 文件現況一致性與閱讀入口**（高／小）
+  - 依據：`README.md` 的「目前範圍」與後段「作品庫」對收藏／筆記支援說明矛盾，安裝、功能說明與多日期驗收交錯；既有 `docs/review-2026-10-03.md` 是歷史檢查，不是當前全量結果。
+  - 作法：README 保留快速開始、現有功能與限制、日常操作與文件索引；功能細節以各 docs 為準，歷史數據連到驗收紀錄／CHANGELOG。補一份架構及資料流說明，標示任務狀態、原引擎綁定與資料存放位置。
+  - [x] 驗收 Q01-01：README 改為現行功能／限制，完整舊文保存在有明確日期及來源 commit 的歷史快照；架構資料流、操作指南及文件索引分工。
+  - [x] 驗收 Q01-02：依腳本／端點核對 lock 安裝、啟動、首次生成、離線與備份步驟，130 個本地連結／錨點通過；固定模型唯讀預檢通過，來源／硬體及 ComfyUI 非完整 lock 限制已記錄。
+  - 2026-10-22：本次為文件整理與命令／來源對照，未重新下載依賴／權重或宣稱新主機 GPU 驗收；現行入口見 [文件索引](docs/index.md)，舊 README 全文見 [歷史快照](docs/history/readme-before-q01-20261022.md)。
+
+<a id="q02"></a>
+
+- [x] **Q02 · 顯式應用程式配置與模組依賴**（中／大）
+  - 依據：`backend/main.py` 在匯入時建立 DATA／DB，功能模組由 `install(app, host)` 讀取整個 main 模組；`backend/test_api.py` 等測試需 patch 全域 DB／DATA。
+  - 作法：先引入可注入 data root／資料庫／引擎存取的 `create_app` 與小型 context，再逐個模組移轉；初始化放在明確啟動階段。維持既有路由與本機部署，不要求換資料庫或引入完整 ORM。
+  - [x] 驗收 Q02-01：create_app 與 AppContext 明確配置資料／DB／引擎 HTTP；雙 app 同時運作隔離設定、相同 UUID 任務、素材與快取；匯入不 mkdir／connect，測試改用自身 context。
+  - [x] 驗收 Q02-02：548 項回歸（547 通過、1 項既有權限跳過）；所有 install 模組移轉 context，啟動入口不變，重開 app 及舊 JSON／seed 不改寫驗證通過。
+  - 2026-10-22：未改 SQLite schema、資料 key、工作流程或 HTTP 格式；回退僅切換程式版本並重啟。配置與重跑指令見 [應用程式工廠](docs/application-factory.md)。
+
+<a id="q03"></a>
+
+- [x] **Q03 · 前端 API 契約與可取消載入的共用邊界**（中／中）
+  - 依據：`App.vue`、`CreationStudio.vue`、`FluxStudio.vue`、`InpaintStudio.vue`、`ControlStudio.vue`、`ArtworkLibrary.vue` 各有 API helper；錯誤解析與取消方式各自實作。已有 `GenerationPanel.vue`／`jobEvents.ts` 共用邏輯，應沿用。
+  - 作法：先統一 HTTP 狀態、字串／結構化 422、非 JSON 回應、AbortSignal 與錯誤型別；抽出確實重複的載入狀態。普通 JSON 與保留大整數的原始 bytes／workflow 下載分開，避免 seed 精度流失。
+  - [x] 驗收 Q03-01：共用 ApiError／HTTP 解析與 request scope 覆蓋離線、409／422／500、非 JSON、取消及過期回覆；實際四種 SFC 的 KeepAlive／卸載回歸與瀏覽器未保存內容保留通過。
+  - [x] 驗收 Q03-02：四流程實際 GenerationPanel 遺失回應恢復，以及修補／Canny v1、v2 原端點與字串 seed／LoRA 順序通過；原 bytes／文字下載不重新序列化，生成／停止／取消無自動重試。
+  - 2026-10-22：前端型別／正式建置與 check:api、既有三組邏輯檢查通過；作品 409 保留筆記／修訂號，真實瀏覽器驗證 422 與四流程切換，模擬引擎只收到一次生成。契約、涵蓋範圍與重跑見 [前端 API](docs/frontend-api.md)。
+
+<a id="q04"></a>
+
+- [x] **Q04 · 清單分頁、摘要查詢與資料成長基準**（中／大）
+  - 依據：`backend/jobs.py`、`gallery.py`、`assets.py` 的 `list_all()` 全量取值；`gallery_api.py` 在全量資料上篩選及檢查檔案；`ArtworkLibrary.vue` 同時讀取 `artworks?scope=all` 與 `jobs`，再做瀏覽器搜尋。
+  - 作法：以隔離資料量測 100／1,000／10,000 筆的 API 耗時、回應 bytes、記憶體與畫面可操作時間；導入有上限且排序穩定的清單 API，將搜尋／篩選移至後端，詳情按需讀取。必要時建立可索引摘要表與版本化遷移，不破壞歷史 JSON。
+  - [x] 驗收 Q04-01：分頁搜尋、收藏／模型／封存組合篩選、跨頁選取比較與最新任務可用；新增／更新資料時沒有重複或漏項，既有 API 相容策略明確。
+  - [x] 驗收 Q04-02：在相同硬體／資料集記錄前後指標與事先訂定的效能預算；如果遷移，驗證重跑、失敗回退、舊紀錄與不可變快照，不先宣稱效能提升幅度。
+
+- 2026-10-22：新增三類有上限的摘要 API，作品／任務／素材介面改用分頁、後端搜尋與按需詳情；固定查詢成員避免更新位移，跨頁比較及已選素材保留。100／1,000／10,000 同機合成資料前後 API／流量／記憶體及 UI 指標已記錄並通過預算；舊 API 保留，無 schema／JSON 遷移，詳見 [分頁與驗收證據](docs/list-pagination.md)。
+
+<a id="q05"></a>
+
+- [x] **Q05 · 四工作台一致的未保存內容與關頁保護**（高／中）
+  - 依據：`CreationStudio.vue` 註冊 dirty 時的 `beforeunload`；`FluxStudio.vue`、`InpaintStudio.vue`、`ControlStudio.vue` 未見對等保護。`App.vue` 的 KeepAlive 可保留站內切頁內容，無法保證重新整理或關頁後仍在。
+  - 作法：統一表單／遮罩 dirty 訊號與離頁警示，明示「保留於本頁」和「已保存」的差異；先處理遺失提示，專用流程草稿／交換仍由 R07 決定，不順便建立不完整格式。
+  - [x] 驗收 Q05-01：在真實瀏覽器分別測四流程未保存、已保存、正在保存、筆刷編輯後的重新整理／關頁與站內切換；支援時出現警示，記錄行動瀏覽器不保證觸發的限制。
+  - [x] 驗收 Q05-02：提示取消後內容不變；確認離開不觸發生成；未確認提交的原 UUID／端點仍可恢復，且 dirty 提示不把已提交內容誤稱為可自動恢復草稿。與 V01／V02 共用操作證據。
+
+- 2026-10-22：四工作台共用 dirty／保存中離頁保護，KeepAlive 隱藏內容仍受保護；Chrome 隔離資料驗證重新整理／關頁取消、保存中與保存後、實際筆刷及確認離開，模擬引擎提交 0 次。前端建置與四組檢查通過，行動限制及範圍見 [說明與證據](docs/unsaved-changes.md)。
+
+<a id="q06"></a>
+
+- [x] **Q06 · 可重跑品質檢查與瀏覽器回歸入口**（高／中）
+  - 依據：`frontend/package.json` 有 build 與三個 check 腳本，尚無統一 test 入口；本輪檔案盤點未見已提交的 CI 或瀏覽器測試設定。現有 Node 邏輯檢查不能代替 DOM、下載、焦點與觸控驗收。
+  - 作法：提供單一可失敗即停止的檢查命令，串接後端、前端型別／建置與三組腳本；再加入使用隔離 DATA 與模擬引擎的瀏覽器測試，並建立相應 CI。真實 GPU／觸控保留獨立人工驗收；評估 TestClient 棄用提示與鎖版相容性。
+  - [x] 驗收 Q06-01：乾淨安裝使用 lock 檔可重跑，任何子檢查失敗回傳非零；測試不讀寫使用者作品、不啟動真實推論，明列跳過原因及依賴警告處理結果。
+  - [x] 驗收 Q06-02：自動覆蓋遺失回應只恢復原請求、修訂衝突保留內容、實際 JSON 下載、鍵盤預覽開關與 390px 基本操作；失敗保存可追溯證據，V01–V06 仍逐項驗收，不一鍵宣稱全站通過。
+
+- 2026-10-22：單一 fail-fast 品質入口、精確鎖版 Playwright、臨時 DATA／模擬引擎與 Windows CI 已加入；乾淨安裝、550 項後端（1 權限跳過）、型別／建置、四組契約及 8 項瀏覽器回歸通過，失敗探針確認非零與證據保存。TestClient 警告保留並記錄相容性，Vite／source-map-js 更新修補版後 npm audit 為 0；範圍及重跑見 [品質指南](docs/quality-checks.md)。
+
+<a id="q07"></a>
+
+- [x] **Q07 · 完整備份、離線還原與資料健全性工具**（中／中）
+  - 依據：README 要求停平台後備份整份 `data/`；`docs/validation/inpaint-feather-rtx3060.md` 等另指出 runtime 的整份隔離 DATA／報告需保存。設定 JSON 與比較報告都不能取代完整資料備份。
+  - 作法：先提供明確停機條件下的備份／唯讀檢查命令，列出資料庫、素材、作品、job_inputs、control_edges 與選定證據的涵蓋範圍；權重與外部 ComfyUI 目錄另列，不偷偷納入巨量檔案。含 hash manifest，恢復到新目錄驗證後再明確切換。
+  - [x] 驗收 Q07-01：在隔離目錄完成備份→還原→引擎離線讀取，核對任務／作品數、精確 seed、來源、遮罩、邊緣圖與圖片 hash；若不能保證一致快照，拒絕備份並說明停機需求。
+  - [x] 驗收 Q07-02：損壞／缺檔／空間不足能報告且不覆寫原資料；盤點只讀，修復或清理須另行明確操作，不以重新生成取代遺失的歷史檔案。
+
+- 2026-10-23：新增停機 check／backup／verify／restore 與明確資料啟動命令；全 DATA、外置 DB、選定證據及 SHA256 manifest，目的地只接受新目錄。隔離還原、離線來源／遮罩／邊緣及精確 seed、程序鎖、損壞／缺檔／空間不足／來源變動回歸通過；操作與限制見 [完整備份工具](docs/data-backup.md)。
+
+<a id="q08"></a>
+
+- [x] **Q08 · UI 導覽、能力狀態與資訊層級**（中／中）
+  - 依據：`App.vue` 用 `page`／`studioMode` 切換，首頁固定系統資訊，四種流程同時呈現；頁面未與 URL 同步。元件採靜態匯入，但現有 bundle 大小本身不足以證明載入有問題。
+  - 作法：建立可還原的頁面／流程 URL 或 hash，處理返回、重新整理與焦點；讓首次使用可直接看見「連線→選模型→建立作品」的下一步。清楚區分可提交、缺元件、程式已接入但尚未實機驗證；詳細版本／來源保留在可展開區。量測後才評估延遲載入非當前頁。
+  - [x] 驗收 Q08-01：直接開啟、返回／前進、重新整理與錯誤網址均有明確結果；站內切換保留表單，重新整理遵守 Q05，焦點與目前導覽標記一致，沒有因恢復網址自動提交。
+  - [x] 驗收 Q08-02：以桌面與 390px 完成首次連線、選流程、生成後找到作品、離線查閱；保留未知／未驗證能力提示。共用 token、對比、按鈕狀態與鍵盤操作沿 V06 驗收；若拆包，另比對首屏與切頁耗時。
+
+- 2026-10-23：頁面／四流程／原匯入任務採用 hash URL，返回前進、錯誤網址、焦點及筆記取消離頁驗證通過；KeepAlive／Q05 保留，無自動提交。1440px／390px 隔離首用、明確生成、匯入及引擎離線原圖通過；能力分層、未知／未驗證與大小比較見 [導覽說明](docs/navigation.md)，未拆包或宣稱 V06 全部完成。
+
+<a id="q09"></a>
+
+- [x] **Q09 · 可追溯且可控的故障診斷**（中／中）
+  - 依據：`failures.py`／任務 JSON 已保存分類與上游證據，`/api/health` 僅回報 `ok`；目前主模組未提供統一的結構化診斷事件入口。應補跨 API／任務／引擎的排查能力，不重做既有失敗分類。
+  - 作法：統一記錄 request／job ID、流程、階段、耗時及錯誤分類；提供可預覽的診斷匯出，區分服務存活、資料可用與引擎連線狀態。引擎離線不應把可用的離線作品庫判成失效。
+  - [x] 驗收 Q09-01：用模擬離線、遺失回應、409 及磁碟錯誤追蹤同一任務；原 UUID 恢復不被誤記為新提交，過期觀察與終態區分清楚。
+  - [x] 驗收 Q09-02：預設診斷不包含提示詞、圖片、完整 workflow、憑證或不必要的個人路徑；記錄有大小／保留期限限制，產生診斷不連帶修改任務或重新生成。
+
+- 2026-10-23：新增限量記憶體 request／job／workflow／stage／耗時追蹤、明確恢復與過期觀察事件，以及平台／資料／引擎狀態分離。模擬離線、遺失回應、409、提交後磁碟失敗保持原 UUID 且不重送；1440px／390px 預覽與逐字下載、不改任務及敏感值排除通過。保留上限、API／UI 與驗證見 [診斷說明](docs/diagnostics.md)。
+
+<a id="q10"></a>
+
+- [x] **Q10 · 高風險流程的可讀性與維護規則**（低／中）
+  - 依據：`frontend/src/style.css`、部分工作台與後端流程含高密度單行寫法；本輪未見統一 formatter／lint 設定。對同時處理 busy、pending、revision 與恢復的程式，審閱成本較高。
+  - 作法：訂定 Python／TypeScript／Vue／CSS 格式與少量有實質價值的靜態檢查；優先整理正在修改的提交、恢復與 UI 狀態邏輯，使用具名函式及清楚的轉移條件。避免一次全庫格式化混入功能差異。
+  - [x] 驗收 Q10-01：格式命令可重跑且第二次無差異，檢查入口納入 Q06；整理後能清楚辨識未送出、送出結果未知、確認中與終態的操作邊界。
+  - [x] 驗收 Q10-02：純格式／重構與功能改動分開審閱，現有相關測試與前端檢查通過；不為追求抽象而合併不同 workflow 的驗證或更改公開資料格式。
+
+- 2026-10-23：以鎖版 Ruff／Prettier／CSS-tree 建立明確範圍的格式與少量靜態檢查，接入 Q06／CI；16 檔第二次格式零差異、格式語意比對及錯誤探針通過。格式與具名提交／恢復／確認狀態重構分開提交，四流程保存失敗不送出、原 UUID／版本端點恢復、明確回覆清除及後端 revision／終態回歸通過；規則與證據見 [維護指南](docs/maintenance.md) 與 [Q10 驗收](docs/validation/maintenance-20261023.md)。
+
+#### 與原待辦的去重與依賴
+
+- V01–V06 保留真實 UI 驗收責任；Q05／Q08 是具體行為改善，Q06 是讓可自動化部分持續可重跑，三者不能代替觸控、視覺或硬體實測。
+- R07 繼續負責專用流程草稿／交換／比較格式；Q05 先補離頁保護，不另列一套相同功能。
+- E05 是推論資源取樣；Q04 是平台清單效能、Q09 是應用診斷，各自量測與驗收。
+- D01／D02 與 A01–A07 的部署／官方服務先後不變；本輪沒有新增社群、多租戶、付費、自動重試或自動品質評分範圍。
+
+### E01
+
+<a id="e01"></a>
+
+- [x] **E01 · 可靠辨識無可用執行裝置**
+  - [x] 驗收 E01-01：引擎程序內的專案唯讀回報確認目前設定的裝置；nonce／版本／來源驗證，空裝置清單、離線、缺回報及異常資料保持未知，CPU 是有效裝置。
+  - [x] 驗收 E01-02：標準／直接 workflow／圖生圖／修補 v1、v2／Canny v1、v2／FLUX 只在新提交取得明確不可用證據時阻擋，保留失敗 UUID；草稿、離線作品、CPU 預覽與原有相容性保護均已回歸。
+  - 2026-10-22：545 項後端測試（544 通過、1 項既有 symlink 權限跳過）、前端型別／建置與三組邏輯檢查通過；真實隔離 ComfyUI CPU 模式回報可用、HTTP 故障注入及三種瀏覽器提示通過。未刻意破壞真實 GPU／驅動；見 [操作與限制](docs/execution-device.md)、[驗收證據](docs/validation/execution-device-20261022.md)。
+
+### E05
+
+<a id="e05"></a>
+
+- [x] **E05 · 連續資源取樣與任務專用峰值評估**
+  - [x] 驗收 E05-01：先定義取樣範圍、頻率與程序歸屬，區分整卡用量、提交前快照及任務專用峰值。
+  - [x] 驗收 E05-02：以實際任務驗證量測、保存與顯示；無法可靠歸屬時標示限制，不把單次快照當峰值。
+  - 2026-10-23：新任務從首次提交起背景查詢原引擎，獨立 journal 有界保存時間點／缺口及觀察最高值，終態凍結並隨作品保存；不改 revision、不重送生成、不回填歷史。RTX 3060／Animagine 實際取得 22 次取樣，任務與作品一致，離線和 1440px／390px 顯示核對通過。引擎裝置用量不同於 nvidia-smi 整卡用量，任務專用峰值仍為未知；見 [範圍](docs/job-measurements.md)、[E05 證據](docs/validation/resource-sampling-20261023.md)。
+
+### V02
+
+<a id="v02"></a>
+
+- [x] **V02 · 羽化 v1／v2 pending 遺失回應的真實瀏覽器補驗**
+  - [x] 驗收 V02-01：在隔離資料實際製造未知／遺失回應，核對原 UUID、端點、遮罩／半徑與重新載入後恢復。
+  - [x] 驗收 V02-02：確認只查詢原請求、不自動重送，v1 不被新表單改為 v2；保留原證據。
+
+  2026-10-23：1440px／390px 的 v1／v2 × 引擎回覆遺失／平台異常 JSON 共 8 案例，以及未知版本保護通過。原 pending、完整 body／端點、精確 seed、雙素材與處理輸入／羽化半徑保持一致；重載及輪詢不送生成，手動恢復只返回原 UUID 帳本，引擎每案例仍僅一次提交。修正成功 JSON 或明確錯誤攜帶其他任務 ID 時誤清除 pending；原始請求、任務 JSON、呼叫紀錄與畫面保留於測試證據。見 [V02 驗收紀錄](docs/validation/inpaint-recovery-20261023.md)。V01 實機觸控仍待驗收。
+
+### V03
+
+<a id="v03"></a>
+
+- [x] **V03 · 作品整理、並排比較與人工評分的窄視窗補驗**
+  - [x] 驗收 V03-01：在 390px 實際完成篩選、收藏、筆記、封存／還原、未保存保護及修訂衝突處理。
+  - [x] 驗收 V03-02：操作原圖並排、參數差異及人工評分的保存／衝突；不以比較報告結果頁的 390px 驗收替代。
+  - 2026-10-23：五項 390 × 844 瀏覽器操作完成，雙分頁筆記／評分 409、明確重讀、保存中與 503 保護，以及原圖／workflow bytes、精確 seed 與 LoRA 順序核對通過。修正空篩選提示、預覽保存忙碌狀態與比較區鍵盤捲動；使用臨時合成作品，沒有 GPU 推論或正式資料變更。證據及重跑見 [V03 驗收](docs/validation/artwork-library-20261023.md)；實機觸控與全站 UI 仍依 V01／V06 待驗收。
+
+### V04
+
+<a id="v04"></a>
+
+- [x] **V04 · 比較與量測介面仍缺少的實際操作驗收**
+  - [x] 驗收 V04-01：核對 8 步正／反向多 LoRA 新品質紀錄的條件及品質限制，不借用較早桌面匹配驗收。
+  - [x] 驗收 V04-02：實際操作指定 LoRA 的 model／CLIP 強度軸，確認其餘強度、順序、精確 seed 及錯誤處理。
+  - [x] 驗收 V04-03：核對固定四案例跨模型結果及案例設定載入，不以兩個 denoise 方案的 UI 驗收概括四案例。
+  - [x] 驗收 V04-04：核對任務與作品的量測來源、平台／引擎耗時及未知值顯示，不把效能條件快照等同量測 UI。
+  - 2026-10-23：1440px／390px 八項回歸覆蓋有序 8 步品質條件、指定 LoRA 兩種強度軸、四案例逐組載入，以及任務／作品原來源、零與未知量測。另在歷史唯讀副本核對 11 件原作品、八次跨模型並排及 22 次設定還原，來源 DB／原圖／workflow 不變；未新增 GPU 推論或品質預設。證據及限制見 [V04 驗收](docs/validation/comparison-measurements-20261023.md)。
+
+### V05
+
+<a id="v05"></a>
+
+- [x] **V05 · 一般創作設定交換的實際下載與窄視窗補驗**
+  - [x] 驗收 V05-01：在能觀察下載結果的瀏覽器核對創作設定 JSON 檔案、原 bytes、精確 seed 及匯入預覽。
+  - [x] 驗收 V05-02：在 390px 驗證匯出、檔案選取／貼上、取消及套用保護；比較方案 JSON 的驗收不替代此格式。
+  - 2026-10-23：1440px／390px 十二項瀏覽器回歸核對 checkpoint、圖生圖、FLUX 及作品來源的實際下載、檔名／磁碟 bytes／精確 seed、檔案選擇器與剪貼簿貼上、取消、舊預覽失效及另存新草稿。修正失敗新檔仍保留舊候選、非嚴格 UTF-8 與讀取期間保護；未生成圖片或改正式資料。證據與限制見 [V05 驗收](docs/validation/settings-transfer-20261023.md)。
+
+### V06
+
+<a id="v06"></a>
+
+- [x] **V06 · 全站視覺規範與無障礙補驗**
+  - [x] 驗收 V06-01：逐頁核對視覺狀態、標籤、鍵盤操作、焦點、可讀對比與非顏色狀態提示。
+  - [x] 驗收 V06-02：保存各頁桌面／窄視窗的結果及限制；既有工作台與主要導覽驗收不代表全站通過。
+  - 2026-10-23：新增 21 項 Chromium 回歸，逐一驗證六主頁／四流程的九個入口與展開、編輯、預覽、讀取、空白及錯誤狀態，保存 1440px／390px 的截圖與 axe JSON。修正文字／漸層對比、收藏 ARIA 值、標題層級、窄版品牌名稱及可捲區焦點。保留 incomplete 判讀與瀏覽器／讀屏限制，不宣稱完整 WCAG 認證；V01-02 實機觸控仍未完成。頁面矩陣及重跑見 [V06 驗收](docs/validation/ui-accessibility-20261023.md)。
+
+### L01
+
+<a id="l01"></a>
+
+- [x] **L01 · 更多多 LoRA 組合及其他畫風品質比較**
+  - [x] 驗收 L01-01：固定像素 LoRA 原來源及獨立鍵名相容副本；Animagine 上完成 14 組原生單／雙／三 LoRA、正反順序、model／CLIP 強度、兩個精確 seed 與兩題材，保存完整版本、原圖、設定及逐圖觀察。
+  - [x] 驗收 L01-02：原格式四組雖出圖但全鍵未載入，另存拒絕證據；原生批次零未載入警告，LCM 模糊、造型偏移與裁切等品質限制保留。新六筆歷史條件及舊三筆低對比紀錄分開保存，不當成當前畫風品質通過。
+  - 2026-10-23：新增固定來源、排他／可追溯 header 轉換、單組工具與 10 項後端／2 項瀏覽器回歸；615 後端（1 跳過）、建置／契約及 93 Chromium 通過。14 份報告停引擎／平台重啟後僅 GET 核對，正式 DATA 八檔 hash 不變。見 [L01 實測與限制](docs/validation/style-matrix-20261023.md)。
+  - 圖片提醒：優先沿用 R05 已確認的畫風目標圖；換畫風或樣本不足時，品質比對前主動提醒使用者補齊，見 [圖片提供提醒](docs/anime-style-development.md#image-input-reminders)。
+
+### R01
+
+<a id="r01"></a>
+
+- [x] **R01 · depth／pose 等其他結構參考流程**
+  - [x] 驗收 R01-01：逐種核對前處理、控制模型、架構、版本與條件；Canny 的既有驗收不代表其他類型可用。
+  - [x] 驗收 R01-02：完成各流程的提交、快照、結果、精確設定還原及實機驗收。
+  - 2026-10-23：SDXL pose／depth v3、固定 aux／估計器與控制權重，兩種 RTX3060 唯一生成、同次條件圖／作品及完整還原通過；動漫骨架缺漏、姿勢偏離及深度構圖分界保留。見 [R01 操作與證據](docs/structure-reference.md)。
+
+### R02
+
+<a id="r02"></a>
+
+- [x] **R02 · 畫風與角色參考 adapter**
+  - [x] 驗收 R02-01：固定 SDXL Plus ViT-H／編碼器／節點，接入單張嚴格流程、元件登記、來源／224 方圖前處理及完整快照；權重 0／0.6／1 與兩個精確 seed 分開比較。
+  - [x] 驗收 R02-02：使用已確認的棕髮綠眼角色，另外比較肖像／書店／公園，12 組 RTX 3060 原圖保存；保留粉髮、服裝帶入、雙人、張傘與背景弱化，不保證身份鎖定或作者畫風完全重現。
+  - 2026-10-23：630 項後端（1 既有跳過）、建置／契約與 97 Chromium 通過；12 報告停引擎／改登記／平台重啟後只 GET，1440px／390px 實際下載與精確權重／seed 還原通過，正式 DATA 八檔 hash 不變。見 [R02 證據與限制](docs/validation/reference-adapter-20261023.md)。本輪沒有訓練，每次只用一張參考；22 檔／20 不同內容與 6 張保留評估見 [圖片用途](docs/validation/reference-inputs-20261023.md)。
+  - 圖片提醒：真實畫風驗收前核對參考／保留評估圖，缺少時提醒使用者提供；角色驗收另確認同一角色的圖片，不借用不同角色的畫風樣本。見 [圖片提供提醒](docs/anime-style-development.md#image-input-reminders)。
+
+### R03
+
+<a id="r03"></a>
+
+- [x] **R03 · 專用 inpainting 模型與更多羽化／修補品質**
+  - [x] 驗收 R03-01：選定並核對專用模型來源與相容性；完成載入、生成、保存及還原驗證。
+  - [x] 驗收 R03-02：比較更多素材、半徑與 seed 的接縫、邊界融合及遮罩外保留，保留色偏／截斷等觀察。
+  - 2026-10-23：固定 Fooocus head／v2.6 patch＋Animagine，六組專用修補／兩組一般 v2 對照通過生成、唯一作品與完整還原；引擎停止後八組 GET／hash 核對通過。遮罩外像素差皆 0，但 Fooocus 未優於一般修補，色塊／色偏及提示偏離保留；維持實驗選項而非預設。見 [R03 操作](docs/fooocus-inpainting.md)、[逐圖驗收](docs/validation/fooocus-inpainting-20261023.md)。
+
+### R04
+
+<a id="r04"></a>
+
+- [x] **R04 · Pony 搭配 Canny v2 及其他 LoRA 的實測**
+  - [x] 驗收 R04-01：另以 Pony v2 完成無 LoRA、IKEA、LCM、LCM → IKEA 與反向五組 RTX 3060 實測，固定控制權重、原素材、seed、各組取樣條件及順序／強度；不借用舊模型證據推定通過。
+  - [x] 驗收 R04-02：五份原邊緣／完整 workflow／唯一作品／快照與設定還原通過；1440px／390px 實際下載、引擎離線／改登記／平台重啟核對不重送。各組另記中空材質與平面線框等品質限制，未建立品質推薦。
+  - 2026-10-23：新增單次驗收 CLI、固定可重跑椅子 fixture 及精簡證據 JSON；5 任務／5 作品／5 原邊緣、零自動重試，正式 DATA 8 檔 hash 不變。見 [R04 驗收與限制](docs/validation/pony-canny-v2-20261023.md)。
+
+### R05
+
+<a id="r05"></a>
+
+- [x] **R05 · 更多模型、seed、素材與作者提示格式的品質比較**
+  - [x] 驗收 R05-01：獨立動漫 v1 測試集、正／反向完整文字比較與單組 CLI；Pony／Animagine 三題材、兩個精確 seed、品質標籤與兩種新素材 denoise 0.3／0.6，共 18 件 GPU 原圖及完整設定／版本／hash 保存。
+  - [x] 驗收 R05-02：逐圖記錄提示服從、角色一致、畫風與構圖；保留雙人、開書、裁切及高 denoise 臉／手扭曲等失敗。18 份報告停引擎／平台重啟後僅 GET 核對；有限基準不代表全面模型、作者畫風或角色品質通過。
+  - 2026-10-23：6 項新增後端及 1440px／390px 操作驗收，完整 605 項後端（1 跳過）、建置／契約與 91 項瀏覽器通過；正式 DATA 八檔 hash 不變。見 [R05 證據與限制](docs/validation/anime-baseline-20261023.md)。
+  - 圖片提醒：指定作者／畫風品質比對前主動核對使用者的目標圖與資料分組；缺圖時可先做無參考基準，該畫風品質保持待驗收。見 [圖片提供提醒](docs/anime-style-development.md#image-input-reminders)。
+
+### R06
+
+<a id="r06"></a>
+
+- [x] **R06 · 更多模型／工作流程／參數比較軸**
+  - [x] 驗收 R06-01：新增 checkpoint 模型、sampler_name、scheduler 三軸，涵蓋文生圖／單張圖生圖；單一變因最多 8 組。schema 2 保存原模型登記與完整設定，舊六軸 schema 1 不改寫。
+  - [x] 驗收 R06-02：保存／匯入／匯出、逐組載入與任務／作品／報告追溯通過；生成交易核對原登記，原 UUID 恢復不重送，未生成組保持空，無自動批次／重試／品質評分。
+  - 2026-10-23：9 項新增後端整合及 1440px／390px 瀏覽器操作，保留精確 seed、停用 LoRA、原素材與未知版本；來源快照非權重驗證。邊界與證據見 [R06 驗收](docs/validation/extended-comparisons-20261023.md)。
+
+### R07
+
+<a id="r07"></a>
+
+- [x] **R07 · 局部編輯／結構流程的一般草稿、設定交換及比較方案評估**
+  - [x] 驗收 R07-01：評估專用格式與能力描述，完整保存雙輸入、羽化／控制參數及版本；不借用舊格式丟棄資訊。
+  - [x] 驗收 R07-02：支援時另驗證保存／匯入／還原／比較；尚未支援時維持明確拒絕與完整 workflow 下載。
+  - 2026-10-23：完成四版本的專用格式方案、唯讀能力 API 與桌面／390px 工作台說明；目前三種操作維持不支援。修正一般草稿默默丟棄遮罩／控制參數的問題，POST／PUT、交換及比較明確拒絕且不部分寫入；有限保留既有回讀封套相容。四版本原任務／作品完整還原及 workflow／64 位 seed 保留通過。R07 是評估及拒絕邊界驗收，不表示專用草稿／交換／比較已上線；見 [R07 決策與證據](docs/specialized-workflow-formats.md)。
+
+### T01
+
+<a id="t01"></a>
+
+- [x] **T01 · 確認實際訓練需求**
+  - [x] 驗收 T01-01：依 R02 偏差決定畫風／角色分開的 SDXL UNet LoRA 候選，固定 Animagine 基底身分、用途／排除範圍、兩路徑各 12 件未來比較及四面向人工判準；推論參數、參考圖、資料準備與實際權重更新明確區分。
+  - 2026-10-23：需求 v1 與圖片提醒／曝光界線完成，未安裝 trainer、未訓練或新增 GPU 工作；T02 之後仍依使用者排序 R01 → R03，T03／T04 另排。見 [訓練需求](docs/training/requirements.md)、[T01 驗收](docs/validation/training-requirements-20261023.md)。
+  - 圖片提醒：決定試訓後依 T02 缺項提醒使用者完成審查或補齊訓練／獨立評估圖；需求討論不要求先備齊訓練集。
+
+### T02
+
+<a id="t02"></a>
+
+- [x] **T02 · 資料集、標註、版本與訓練工具介面評估**
+  - [x] 驗收 T02-01：完成 v1 清單／Schema、單行 caption／角色／來源審查、原作分組／固定分割／曝光、版本 hash 與本機檢查／不可覆寫出口；評估固定 sd-scripts 資料介面並保留可追溯紀錄。
+  - 2026-10-23：既有 22 檔各建畫風／角色清單，10 張訓練候選、6 張開發評估、6 張排除；caption／來源與角色身分未完成，真實資料出口正確拒絕。合成資料出口與驗證通過，沒有安裝 trainer 或開始訓練。見 [契約與操作](docs/training/dataset-contract.md)、[工具介面](docs/training/tool-interface-research.md)、[T02 驗收](docs/validation/training-dataset-20261023.md)。
+  - 圖片提醒：實際訓練前核對每種畫風的訓練／評估分割、標註與來源，先沿用適用的既有資料，只提醒補齊缺少部分；T04 最終驗收另確認保留集未被反覆調參使用。見 [圖片提供提醒](docs/anime-style-development.md#image-input-reminders)。
+
+### T03
+
+<a id="t03"></a>
+
+- [x] **T03 · 訓練獨立環境與 GPU 資源協調**
+  - [x] 驗收 T03-01：規劃與平台／推論分離的環境，驗證佔用與釋放、衝突及失敗恢復。
+  - [x] 驗收 T03-02：記錄訓練專用資源需求，與 E04 聯動，不讓訓練干擾既有生成任務。
+  - 2026-10-25：固定獨立 Windows trainer／依賴／tokenizer，提供封存 run、明確停止／完整狀態續訓及本機生成互斥；RTX 3060 自製幾何資料實測拒絕衝突、停止釋放及新 UUID 續訓至 step 3。上游步數重設失敗保留，修正後核對最終 state。作者圖片未訓練，1024／RTX 4080／畫風品質與 E04 其餘工作負載未認列。見 [操作](docs/training/runtime.md)、[實測與資源](docs/validation/training-runtime-20261025.md)。
+
+### T04
+
+<a id="t04"></a>
+
+- [x] **T04 · 訓練產物回登與評估**
+  - [x] 驗收 T04-01：定義模型庫回登、來源／版本／hash／訓練條件及固定比較流程，保存品質限制。
+  - 2026-10-25：T03 `db7ab91` 先 commit／push 後實作；完整產物／狀態驗證、來源 sidecar、原生 LoRA 模型庫回登、三題材兩 seed 的 12 格比較與人工模板完成。合成 LoRA 在 RTX 3060 原生載入、保存及引擎離線查回／完整還原通過；只實際生成兩件技術案例，作者品質與最終保留圖仍未認列。見 [操作](docs/training/artifacts.md)、[技術驗收](docs/validation/training-artifacts-20261025.md)。
+
+<a id="v01-01"></a>
+
+### V01-01 · 已完成的遮罩操作驗收
+
+- [x] 驗收 V01-01：實際操作筆刷、擦除、反相、PNG 載入與保存，核對縮放座標及未保存保護。
+
+2026-10-23 的 [瀏覽器驗收](docs/validation/mask-editor-20261023.md)已完成；V01-02 實機觸控與 V01 主項仍留在 ROADMAP，沒有因移動而關閉。
