@@ -14,6 +14,8 @@
 
 使用者已選擇同一台電腦使用；D01 的來源 IP／Host／Origin 保護與主機角色說明見 [部署與存取](deployment.md)。更新後需重啟平台；目前沒有遠端帳號登入，不要將平台埠開放區網。
 
+另可選用 [Docker Desktop／WSL2 本機部署](docker.md)：容器平台預設 8001、原生 ComfyUI 8188、獨立 DATA 與鎖卷；不取代以下原生啟動步驟。容器的 Linux／RAM／磁碟資訊及 Windows 路徑、備份、訓練限制須分開閱讀。
+
 ## 獨立 ComfyUI
 
 目錄為 `runtime/ComfyUI`，Python 為其內的 `.venv`。runtime 不在 Git；需自行安裝或沿用既有環境。以下是本專案已驗證來源與 cu130 配置的重建步驟，**不是所有顯卡或驅動的通用安裝建議**：

@@ -2,6 +2,8 @@
 
 2026-10-25 使用者確認：**維持同一台電腦使用**。平台與 ComfyUI 分開執行，但目前不需要其他區網裝置、獨立 GPU 主機或公開網站。本輪 D01 完成此決策及本機邊界；Docker 是 D02 的選擇性部署方式，不改變這個使用範圍。
 
+D02 已完成 [Docker 本機部署](docker.md)與[限定實測](validation/docker-deployment-20261025.md)。容器入口明確適配實際 bridge gateway，發布埠仍限 loopback，Host／Origin 保護保留；原生入口的 loopback peer 預設不變。
+
 ## 本機模式
 
 日常仍由 `start-all.bat` 啟動平台 8000 與受管理 ComfyUI 8188，瀏覽器開啟 `http://127.0.0.1:8000/`。平台啟動腳本明確綁定 127.0.0.1，並停用 Uvicorn forwarded-header 信任。直接啟動時：

@@ -5,7 +5,7 @@ import { createRequestScope } from './requestScope'
 
 type Deployment = {
   schema_version: 1
-  mode: 'local-only'
+  mode: 'local-only' | 'container-local'
   lan_enabled: boolean
   engine: { url: string; role: 'local-engine' | 'external-engine' }
   storage: { path: string }
@@ -37,7 +37,10 @@ onUnmounted(() => scope.dispose())
     <p>目前規劃：同一台電腦使用，平台與 ComfyUI 分開執行。</p>
     <p v-if="error" role="alert">{{ error }}{{ report ? '下方保留上次資料。' : '' }}</p>
     <template v-if="report">
-      <p><span class="chip">本機存取</span> 未開放區網或公開連線。</p>
+      <p
+        ><span class="chip">{{ report.mode === 'container-local' ? '本機容器' : '本機存取' }}</span>
+        未開放區網或公開連線。</p
+      >
       <dl>
         <dt>平台與資料</dt><dd>平台程序讀取硬體資訊，圖片與資料庫保存在平台的檔案系統。</dd>
         <dt>選定引擎</dt

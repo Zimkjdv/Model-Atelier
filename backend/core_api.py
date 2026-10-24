@@ -70,7 +70,11 @@ def install(app, host):
         disk = shutil.disk_usage(host.DATA)
         return {
             'host': platform.node(),
-            'role': '平台主機',
+            'role': '容器平台' if host.deployment.kind == 'container' else '平台主機',
+            'runtime_kind': host.deployment.kind,
+            'hardware_scope': 'container-visible environment; physical host RAM/OS not reported'
+            if host.deployment.kind == 'container'
+            else 'native platform OS',
             'os': platform.platform(),
             'python': platform.python_version(),
             'updated_at': datetime.now(timezone.utc).isoformat(),

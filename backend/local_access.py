@@ -45,9 +45,9 @@ def origin(value):
     return parsed.scheme, parsed.hostname.lower(), port
 
 
-def allowed(scope):
+def allowed(scope, profile=None):
     peer = scope.get('client')
-    if not peer or not loopback(peer[0]):
+    if not peer or not (loopback(peer[0]) or profile is not None and profile.trusts(peer[0])):
         return False
     headers = {}
     for key, value in scope.get('headers', []):
@@ -78,13 +78,14 @@ def allowed(scope):
 
 
 class LocalAccess:
-    def __init__(self, app):
+    def __init__(self, app, profile):
         self.app = app
+        self.profile = profile
 
     async def __call__(self, scope, receive, send):
         if scope['type'] not in ('http', 'websocket'):
             return await self.app(scope, receive, send)
-        if not allowed(scope):
+        if not allowed(scope, self.profile):
             if scope['type'] == 'websocket':
                 return await send(dict(type='websocket.close', code=1008))
             response = JSONResponse(
@@ -102,12 +103,20 @@ def install(app, host):
         engine = host.engine_url()
         return dict(
             schema_version=1,
-            mode='local-only',
+            mode='container-local' if host.deployment.kind == 'container' else 'local-only',
             lan_enabled=False,
             public_access_enabled=False,
             authentication='none-local-machine-trust',
-            ingress='loopback-peer-and-host; same-origin browser requests',
-            platform=dict(role='platform', source='platform Python process'),
+            ingress='loopback-host; explicit bridge peer; same-origin browser requests'
+            if host.deployment.kind == 'container'
+            else 'loopback-peer-and-host; same-origin browser requests',
+            platform=dict(
+                role='platform',
+                source='container Python process'
+                if host.deployment.kind == 'container'
+                else 'platform Python process',
+                runtime_kind=host.deployment.kind,
+            ),
             engine=dict(
                 url=engine,
                 role='local-engine' if local_engine(engine) else 'external-engine',
@@ -118,4 +127,4 @@ def install(app, host):
         )
 
     # Outermost middleware: rejected ingress cannot reach APIs or static files.
-    app.add_middleware(LocalAccess)
+    app.add_middleware(LocalAccess, profile=host.deployment)

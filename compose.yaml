@@ -1,0 +1,28 @@
+name: model-atelier
+services:
+  platform:
+    image: "${ATELIER_IMAGE:-model-atelier:local}"
+    build: .
+    ports:
+      - "127.0.0.1:${ATELIER_PORT:-8001}:8000"
+    environment:
+      ATELIER_ENGINE_URL: "${ATELIER_ENGINE_URL:-http://host.docker.internal:8188}"
+      ATELIER_CONTAINER_PEERS: "${ATELIER_CONTAINER_PEERS:-}"
+      ATELIER_DATA: "${ATELIER_DATA:-/data}"
+    volumes:
+      - atelier-data:/data
+      - atelier-locks:/locks
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    init: true
+    pids_limit: 256
+    stop_grace_period: 15s
+    restart: "no"
+volumes:
+  atelier-data:
+  atelier-locks:

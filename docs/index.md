@@ -54,6 +54,7 @@
 ## 模型與執行環境
 
 - [部署決策與本機存取](deployment.md)、[D01 HTTP／UI 驗收](validation/local-deployment-20261025.md)：同一台電腦、角色來源與連線邊界
+- [選用 Docker 本機部署](docker.md)、[D02 GPU／出圖／資料持久化與還原驗收](validation/docker-deployment-20261025.md)：容器平台接原生 ComfyUI，保留原生操作與訓練限制
 
 - [Animagine 來源與預設](models/animagine-xl-4.0-opt.md)
 - [LoRA 庫](models/lora-library.md)、[多 LoRA](models/multi-lora-workflow.md)、[有序證據](models/ordered-lora-evidence.md)

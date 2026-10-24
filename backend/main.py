@@ -24,6 +24,7 @@ from backend.schemas import Settings, ModelTarget, ModelMetadata, DraftInput, As
 from backend.app_context import AppContext
 from backend.data_lease import DataLease
 from backend.resource_sampling import Monitor
+from backend.deployment_profile import Profile
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -86,6 +87,8 @@ def create_app(
     database: str | Path | None = None,
     root: str | Path | None = None,
     engine_client_factory=None,
+    deployment_profile: Profile | None = None,
+    initial_engine_url: str | None = None,
 ):
     """Build isolated routes; initialize SQLite only when ASGI lifespan starts.
 
@@ -96,7 +99,16 @@ def create_app(
     workspace = Path(root).resolve() if root is not None else ROOT
     data = Path(data_root).resolve() if data_root is not None else workspace / 'data'
     db = Path(database).resolve() if database is not None else data / 'atelier.sqlite3'
-    context = AppContext(workspace, data, db, engine_client_factory, gpu_info)
+    default_engine = Settings(comfy_url=initial_engine_url or 'http://127.0.0.1:8188').comfy_url
+    context = AppContext(
+        workspace,
+        data,
+        db,
+        engine_client_factory,
+        gpu_info,
+        deployment=deployment_profile or Profile(),
+        default_engine_url=default_engine,
+    )
 
     @asynccontextmanager
     async def lifespan(app):

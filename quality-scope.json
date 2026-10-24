@@ -84,7 +84,12 @@
     "scripts/verify_trained_lora.py",
     "backend/local_access.py",
     "backend/test_local_access.py",
-    "scripts/verify_local_access.py"
+    "scripts/verify_local_access.py",
+    "backend/deployment_profile.py",
+    "backend/container_main.py",
+    "backend/test_container_deployment.py",
+    "backend/app_context.py",
+    "scripts/verify_container_generation.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -134,7 +139,8 @@
     "frontend/tests/storage-overview.spec.ts",
     "training/environment.json",
     "frontend/src/DeploymentStatus.vue",
-    "frontend/tests/deployment.spec.ts"
+    "frontend/tests/deployment.spec.ts",
+    "frontend/tests/container-deployment.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

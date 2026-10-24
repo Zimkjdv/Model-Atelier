@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-25",
+  "status": "passed",
+  "scope": "Windows Docker Desktop WSL2 platform container, native Windows ComfyUI; technical transport/save/restore only",
+  "docker": {
+    "desktop": "4.95.0",
+    "engine": "29.8.2",
+    "compose": "5.6.0",
+    "image_id": "sha256:9f944f7dba1b202e094148962e665db1964c06ed56f5222a1227d923da453090",
+    "image_architecture": "amd64",
+    "container_python": "3.12.15",
+    "uid_gid": "10001:10001",
+    "read_only_root": true,
+    "port_bindings": {
+      "8000/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "18101"
+        }
+      ]
+    },
+    "cap_drop": [
+      "ALL"
+    ],
+    "security_opt": [
+      "no-new-privileges:true"
+    ]
+  },
+  "inputs": {
+    "checkpoint": "animagine-xl-4.0-opt.safetensors",
+    "model_sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+    "model_size_bytes": 6938350040,
+    "settings": {
+      "title": "D02 container technical case",
+      "engine_url": "http://host.docker.internal:8188",
+      "checkpoint": "animagine-xl-4.0-opt.safetensors",
+      "prompt": "one small tree, flat colored illustration, plain pale background",
+      "negative_prompt": "text, watermark, blurry",
+      "seed": "18446744073709551615",
+      "width": 512,
+      "height": 512,
+      "steps": 4,
+      "cfg": 5.0,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "reference_ids": []
+    },
+    "artist_images_used": false
+  },
+  "original": {
+    "job_id": "72a5089b-d1f2-47db-b855-19a51ed9c36a",
+    "artwork_ids": [
+      "6c41a32f-8f70-59c9-a703-96452ffaa71d"
+    ],
+    "image_sha256": "0edfc018826d598135e906595f15fa1141e9620e0a127bb26a18a3f1f33c35cd",
+    "workflow_bytes_sha256": "951349ee01791d2574448f6a0628daf86242bbd0286af395696a72c8e60e7d38"
+  },
+  "checks": {
+    "cuda_kernel_sample": true,
+    "cuda_sample_image": "nvcr.io/nvidia/k8s/cuda-sample:nbody@sha256:59261e419d6d48a772aad5bb213f9f1588fcdb042b115ceb7166c89a51f03363",
+    "compose_gpu_observer": true,
+    "gpu_name": "NVIDIA GeForce RTX 3060",
+    "native_comfyui_connected": true,
+    "generation_submissions": 1,
+    "live_backup_rejected": true,
+    "stopped_backup_verified": true,
+    "backup_files": 4,
+    "backup_counts": {
+      "artwork": 1,
+      "asset": 1,
+      "draft": 1,
+      "job": 1
+    },
+    "recreated_original_records_verified": true,
+    "new_volume_restore_verified": true,
+    "offline_restored_engine_connected": false,
+    "offline_original_verification": "passed",
+    "rejected_writes_each_platform": [
+      403,
+      403,
+      403,
+      403
+    ],
+    "browser_viewports": [
+      1440,
+      390
+    ]
+  },
+  "hardware_sources": {
+    "platform_os": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.36",
+    "platform_ram_total_bytes": 33623519232,
+    "platform_scope": "container-visible environment; physical host RAM/OS not reported",
+    "native_engine_os": "win32",
+    "native_engine_ram_total_bytes": 68654481408
+  },
+  "validation": {
+    "backend_tests_run": 722,
+    "backend_existing_skips": 1,
+    "browser_tests_passed": 112,
+    "final_container_ui_targeted_passed": 2,
+    "final_build_static_and_live_ui_passed": true
+  },
+  "limitations": [
+    "No container inference performance comparison",
+    "No Windows DATA path migration",
+    "No container trainer or cross-OS GPU lease",
+    "No remote/multi-user deployment acceptance",
+    "No RTX 4080, FLUX or author-style quality claim"
+  ],
+  "source_sha256": {
+    "Dockerfile": "931b95be31aa9397df016e0ba411201bb4f1a49eb314dc36dccfdc3044f84d69",
+    ".dockerignore": "472d0febbb32cdb8cf5b67d588558d0e08d2401c39b545ed1bff64b4053095fd",
+    "compose.yaml": "24ede14af1f978d55fe4a0bf482a7f0d30d1fa886c25054461d7aaaa5626b9d7",
+    "compose.gpu.yaml": "2b7b420aa218071e997c897509cdda9bab00ae3485504c7f4e20954236834859",
+    "requirements.lock.txt": "f8ff6c9f5845d30936fcff654a041dc0f382d6323a7077ea273a3bd5c893aa24",
+    "frontend/package-lock.json": "bf6e25520aab686252484e08ebc91fe4e22f30c6c870e154ed51712684aa04b6",
+    "scripts/verify_container_generation.py": "e76941eda493233d753b8b0c8bd78356c3b4173d629434b15475d3a86e379af7"
+  }
+}

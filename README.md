@@ -22,6 +22,8 @@ Set-Location ..
 
 生成另需獨立 ComfyUI、相容 PyTorch 與 checkpoint；完整步驟見 [安裝與操作](docs/setup-and-operations.md)。已有環境時另開終端執行 `./start-comfyui.ps1`，設定引擎網址並同步模型庫。`start-all.bat` 是兩個啟動腳本的捷徑，平台就緒後會自動以預設瀏覽器開啟 `http://127.0.0.1:8000/`；不代替安裝。
 
+若選用 Docker Desktop／WSL2，可執行 `docker compose up -d --build --wait`，在 `http://127.0.0.1:8001/` 使用獨立資料卷的平台；ComfyUI 仍在 Windows 原生執行。GPU 資訊、資料持久化、備份還原與訓練限制見 [Docker 本機部署](docs/docker.md)。Docker 不是原生使用的必要條件。
+
 ## 第一次生成
 
 1. 啟動平台與 ComfyUI；設定頁確認引擎網址，預設 `http://127.0.0.1:8188`。
@@ -85,8 +87,12 @@ model-atelier/
 ├── ROADMAP.MD                  # 現行待辦、優先順序與驗收條件
 ├── CHANGELOG.MD                # 已完成變更與歷史實測紀錄
 ├── .github/workflows/          # lock 安裝、完整品質檢查與失敗證據 CI
+├── Dockerfile                  # 固定基底、前端建置與非 root 平台映像
+├── compose.yaml                # 選用本機 Docker 平台與持久資料／鎖卷
+├── compose.gpu.yaml            # 選用容器 GPU 資訊觀察，不執行推論
 ├── backend/                    # FastAPI、SQLite、生成流程與本機檔案管理
 │   ├── main.py                 # create_app 工廠與 ASGI 應用程式入口
+│   ├── container_main.py       # Linux 容器入口、資料卷及明確 gateway 來源
 │   ├── app_context.py          # 每個應用程式的配置、路徑與引擎 HTTP 介面
 │   ├── core_api.py             # 核心 API 註冊
 │   ├── schemas.py              # API 請求型別
@@ -105,6 +111,8 @@ model-atelier/
 ├── docs/                       # 操作、架構、功能契約與驗收文件
 │   ├── index.md                # 完整文件索引，按操作目的分類
 │   ├── setup-and-operations.md # 安裝、啟停、埠與備份還原
+│   ├── deployment.md           # 本機存取邊界與平台／引擎角色
+│   ├── docker.md               # 選用 Docker、資料卷、備份與原生差異
 │   ├── architecture.md         # 模組責任、資料流與保存約束
 │   ├── application-factory.md  # 後端工廠、配置與測試隔離
 │   ├── frontend-api.md         # 前端 HTTP 契約、取消與原請求恢復
@@ -131,6 +139,7 @@ model-atelier/
 | 閱讀目的 | 文件與用途 |
 | --- | --- |
 | 安裝與維護 | [安裝與操作](docs/setup-and-operations.md)：環境準備、首次生成、啟停與備份還原 |
+| 本機 Docker | [Docker 部署](docs/docker.md)：Linux 平台接原生 ComfyUI、獨立資料卷與還原；[實測範圍](docs/validation/docker-deployment-20261025.md) |
 | 保護與還原資料 | [完整備份工具](docs/data-backup.md)：停機盤點、hash 驗證、新目錄還原與明確切換 |
 | 排查故障 | [診斷與匯出](docs/diagnostics.md)：請求／任務 ID、平台／資料／引擎狀態與安全預覽 |
 | 尋找功能說明 | [文件索引](docs/index.md)：按創作、作品、實驗與模型流程查閱完整文件 |

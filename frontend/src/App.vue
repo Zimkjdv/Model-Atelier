@@ -24,6 +24,7 @@ import DiagnosticsPanel from './DiagnosticsPanel.vue'
 import type { EngineReport } from './environmentTypes'
 type Memory = { total: number | null; used: number | null; free: number | null }
 type System = {
+  runtime_kind?: 'native' | 'container'
   host: string
   os: string
   python: string
@@ -300,15 +301,22 @@ onUnmounted(() => {
         /></KeepAlive>
         <template v-if="page === '系統資訊'">
           <div class="host-bar"
-            ><span class="chip">平台主機</span><strong>{{ system?.host ?? '讀取中' }}</strong
+            ><span class="chip">{{
+              system?.runtime_kind === 'container' ? '容器平台' : '平台主機'
+            }}</span
+            ><strong>{{ system?.host ?? '讀取中' }}</strong
             ><span class="muted"
               >{{ systemStale ? '上次資料 · 本次更新失敗' : '每 15 秒更新' }} ·
               {{ system ? new Date(system.updated_at).toLocaleTimeString() : '等待資訊' }}</span
             ></div
           >
           <p class="footnote"
-            >此區來源為平台主機：RAM／磁碟由本機系統查詢，GPU／驅動由 nvidia-smi
-            回報；與下方選定引擎的環境分開。</p
+            >{{
+              system?.runtime_kind === 'container'
+                ? '此區為容器可見的 Linux／RAM／掛載磁碟與 GPU；不是 Windows 宿主機的完整資訊。'
+                : '此區來源為平台主機：RAM／磁碟由本機系統查詢，GPU／驅動由 nvidia-smi 回報。'
+            }}
+            與下方選定引擎的環境分開。</p
           >
           <div class="cards" v-if="system">
             <article class="card gpu" v-for="gpu in system.gpus" :key="gpu.index"
@@ -353,7 +361,14 @@ onUnmounted(() => {
             :selected-url="savedUrl"
             @settings="navigate('設定')"
           />
-          <LocalEnvironmentCheck />
+          <LocalEnvironmentCheck v-if="system?.runtime_kind !== 'container'" />
+          <article v-else class="panel">
+            <h2>原生 ComfyUI 安裝檢查</h2>
+            <p class="footnote"
+              >容器無法檢查 Windows 的原生 Python 安裝；請在 Windows
+              平台執行本機安裝檢查。上方選定引擎的連線與裝置回報仍可使用。</p
+            >
+          </article>
           <DeploymentStatus />
           <StorageOverview />
           <article class="panel details" v-if="system"
