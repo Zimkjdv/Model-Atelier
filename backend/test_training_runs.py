@@ -9,7 +9,7 @@ from backend import compute_lease, training_bundle, training_files, training_run
 from backend.test_training_data import DatasetFixture
 
 
-class TrainingRunTests(DatasetFixture):
+class RunFixture(DatasetFixture):
     def setUp(self):
         super().setUp()
         self.checkpoint = self.root / 'base.safetensors'
@@ -77,6 +77,8 @@ class TrainingRunTests(DatasetFixture):
         )
         return result, folder, state
 
+
+class TrainingRunTests(RunFixture):
     def test_frozen_work_contains_only_training_split_and_explicit_resolution(self):
         before = training_files.file_manifest(self.sealed)
         result = self.prepare()

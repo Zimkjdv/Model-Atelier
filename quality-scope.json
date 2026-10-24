@@ -77,7 +77,11 @@
     "backend/flux_workflows.py",
     "backend/failures.py",
     "scripts/training_fixture.py",
-    "backend/test_training_environment.py"
+    "backend/test_training_environment.py",
+    "backend/training_artifacts.py",
+    "backend/test_training_artifacts.py",
+    "scripts/training_artifact.py",
+    "scripts/verify_trained_lora.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",

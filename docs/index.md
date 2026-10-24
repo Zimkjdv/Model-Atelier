@@ -41,13 +41,15 @@
 | 作品整理 | [收藏／筆記／封存](artwork-library.md)、[比較與人工評分](artwork-comparison.md) |
 | 實驗 | [固定案例](illustration-suite.md)、[比較方案](experiment-plans.md)、[保存／匯入](experiment-storage.md)、[任務關聯](experiment-runs.md)、[結果報告](comparison-report.md) |
 
-## 訓練準備
+## 訓練與資料
 
 - [T01 訓練需求與驗收範圍 v1](training/requirements.md)、[需求確認證據](validation/training-requirements-20261023.md)：畫風／角色分開、僅 SDXL 候選，沒有啟動訓練
 
 - [T02 資料契約、Schema 與本機 CLI](training/dataset-contract.md)、[固定官方工具介面評估](training/tool-interface-research.md)、[22 檔盤點與出口驗收](validation/training-dataset-20261023.md)：真實資料仍待審查，沒有訓練
 
 - [T03 獨立訓練環境與明確 run](training/runtime.md)、[RTX 3060 技術與資源驗收](validation/training-runtime-20261025.md)：只用自製幾何資料，作者圖未訓練；網頁訓練介面未提供
+
+- [T04 產物回登與固定比較](training/artifacts.md)、[技術載入／保存／離線還原證據](validation/training-artifacts-20261025.md)：原生模型庫與六份比較方案，品質未認列
 
 ## 模型與執行環境
 

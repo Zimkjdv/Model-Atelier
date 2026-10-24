@@ -61,7 +61,7 @@ L01 另完成像素畫 LoRA 的固定來源／獨立相容副本及 14 組順序
 
 2026-10-23 已收到 `artist_ref/ハシスタジオ_pixiv` 的 22 個檔案，去重後為 20 個不同檔案內容，並已確認棕髮綠眼、綠色髮飾的角色目標。**本輪 R02 沒有訓練模型：每次只用一張參考圖，實際選用 1 張畫風圖及 1 張角色圖分別測試，另留 6 張評估，不把 20 張全送入生成或訓練。** 檔名、差分分組、用途與之後 T01／T02 的補圖時點見 [R02 圖片用途紀錄](docs/validation/reference-inputs-20261023.md)。
 
-T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色分開的 SDXL LoRA 候選、固定基底、未來比較與圖片提醒；沒有開始訓練。T02 已完成 [資料契約／本機工具](docs/training/dataset-contract.md)與[官方介面評估](docs/training/tool-interface-research.md)：22 檔各建兩條路徑，10 張訓練候選、6 張開發評估、6 張排除；標註／來源及角色身分仍待審查，真實資料包尚不能匯出。R01 已完成 pose／depth 流程與固定案例驗收，R03 亦已完成有限修補比較，但 Fooocus 未優於一般修補；T03 已有獨立環境與技術試訓，T04 接續產物回登與比較。
+T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色分開的 SDXL LoRA 候選、固定基底、未來比較與圖片提醒；沒有開始訓練。T02 已完成 [資料契約／本機工具](docs/training/dataset-contract.md)與[官方介面評估](docs/training/tool-interface-research.md)：22 檔各建兩條路徑，10 張訓練候選、6 張開發評估、6 張排除；標註／來源及角色身分仍待審查，真實資料包尚不能匯出。R01 已完成 pose／depth 流程與固定案例驗收，R03 亦已完成有限修補比較，但 Fooocus 未優於一般修補；T03 已有獨立環境與技術試訓，T04 已接上產物回登與固定比較流程；作者品質仍待資料審查與實測。
 
 完整的圖片選擇、資料分割／版本、有限任務數、模組擴充及驗收方式見 [動漫畫風驗證與開發計畫](docs/anime-style-development.md)。
 
@@ -137,6 +137,7 @@ model-atelier/
 | 畫風／角色參考 | [R02 操作與契約](docs/models/ipadapter-reference.md)：單張推論、元件登記、精確還原；[圖片用途](docs/validation/reference-inputs-20261023.md)明確區分參考與訓練 |
 | 準備訓練資料 | [T02 契約與 CLI](docs/training/dataset-contract.md)：唯讀盤點、逐張審查、固定分割、不可覆寫出口；[本批缺項](docs/validation/training-dataset-20261023.md)，沒有啟動訓練 |
 | 本機 SDXL 訓練 | [T03 環境與操作](docs/training/runtime.md)：獨立安裝、凍結 run、停止／續訓與生成互斥；[資源與限制](docs/validation/training-runtime-20261025.md)，技術測試不代表作者品質 |
+| 訓練產物與評估 | [T04 回登與固定比較](docs/training/artifacts.md)：來源／版本／hash／條件封存、模型庫登記、12 格計畫與人工審查模板；[技術驗收](docs/validation/training-artifacts-20261025.md)，作者圖仍未訓練 |
 | 專用流程保存與交換 | [R07 格式評估](docs/specialized-workflow-formats.md)：局部編輯／Canny 的版本別能力、明確拒絕及完整原流程下載 |
 | 理解或修改程式 | [架構與資料流](docs/architecture.md)、[應用程式工廠](docs/application-factory.md)、[前端 API](docs/frontend-api.md)：模組責任、配置隔離、通訊與任務生命週期 |
 | 驗證變更與清單效能 | [品質檢查與 CI](docs/quality-checks.md)、[分頁與量測](docs/list-pagination.md)：重跑命令、相容策略與驗收證據 |

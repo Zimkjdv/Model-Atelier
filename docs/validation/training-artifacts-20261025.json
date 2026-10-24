@@ -1,0 +1,754 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-25",
+  "scope": "Technical registration, native comparison plans and real load/save/restore; no author-style quality acceptance",
+  "training_commit": "db7ab91",
+  "run_id": "a27f7a75-0791-41ca-958d-bf93bb1f1b89",
+  "manifest_sha256": "f48d751be1cf1560918a433d81ca43e77d801d1eb1674bece45acbbcc7e85a37",
+  "weight": {
+    "sha256": "a60bdfdd75f1f41778edfa64612c7f9d6e1e6a594e463512e4972904bec4bb33",
+    "size_bytes": 21584828
+  },
+  "installed_provenance_sha256": "99f0c3b43698ba53cbd1c2c2080a7ae7bd8922bcc6970e9ad0364dbe056fc3d5",
+  "technical_only": true,
+  "base": {
+    "architecture": "sdxl",
+    "id": "animagine-xl-4.0-opt",
+    "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+    "size_bytes": 6938350040,
+    "version": "4.0 Opt"
+  },
+  "dataset": {
+    "bundle_sha256": "5a08b98f4ef8e61c6edcbbd4b7a4105c8f68ef09aa2ff7300e7970ad71d0735e",
+    "id": "technical-geometry",
+    "kind": "style",
+    "manifest_sha256": "f29b788ff1e9a366286a834c14e05b52641389b67903d207cf81ef274233db43",
+    "subject_id": "synthetic-geometry",
+    "train_count": 1,
+    "trigger": "ma_geometry_fixture",
+    "version": "v1"
+  },
+  "trainer_revision": "11d8cedd0c67b93a10f8b2d75f43554f6f12c794",
+  "tests": [
+    {
+      "status": "passed",
+      "mode": "verify_report",
+      "job_id": "dc53c8aa-44a2-40cc-831a-52f095d1c788",
+      "artwork_ids": [
+        "1aa06a1a-a8d4-550a-8165-58a0a002598b"
+      ],
+      "settings": {
+        "title": "T04 technical trained LoRA baseline",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "animagine-xl-4.0-opt.safetensors",
+        "prompt": "ma_geometry_fixture, flat colored rectangle and circle, plain background",
+        "negative_prompt": "blurry, text, watermark",
+        "seed": "9007199254740993",
+        "width": 512,
+        "height": 512,
+        "steps": 4,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "reference_ids": [],
+        "loras": []
+      },
+      "weight_snapshots": {
+        "model_metadata": {
+          "name": "animagine-xl-4.0-opt.safetensors",
+          "version": "4.0 Opt",
+          "source_url": "",
+          "architecture": "sdxl",
+          "size_bytes": 6938350040,
+          "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-24T22:33:49.582648+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-24T22:35:27.261211+00:00"
+        },
+        "lora_metadata": []
+      },
+      "verified_artworks": [
+        {
+          "id": "1aa06a1a-a8d4-550a-8165-58a0a002598b",
+          "sha256": "9b813ff165c870fbb72bada29bbef513ed36aa14dd17e3492f1d4fdfbdfc499a",
+          "bytes": 246301,
+          "format": "PNG",
+          "width": 512,
+          "height": 512,
+          "model_version": "4.0 Opt",
+          "restore_settings": {
+            "artwork_id": "1aa06a1a-a8d4-550a-8165-58a0a002598b",
+            "settings": {
+              "workflow_mode": "text2image",
+              "image_asset_id": null,
+              "reference_resize": "fit",
+              "loras": [],
+              "reference_ids": [],
+              "title": "ModelAtelier_00058_.png",
+              "prompt": "ma_geometry_fixture, flat colored rectangle and circle, plain background",
+              "negative_prompt": "blurry, text, watermark",
+              "engine_url": "http://127.0.0.1:8188",
+              "checkpoint": "animagine-xl-4.0-opt.safetensors",
+              "width": 512,
+              "height": 512,
+              "seed": "9007199254740993",
+              "steps": 4,
+              "cfg": 5.0,
+              "sampler_name": "euler_ancestral",
+              "scheduler": "normal",
+              "denoise": 1.0
+            },
+            "model_version": "4.0 Opt",
+            "model_metadata": {
+              "name": "animagine-xl-4.0-opt.safetensors",
+              "version": "4.0 Opt",
+              "source_url": "",
+              "architecture": "sdxl",
+              "size_bytes": 6938350040,
+              "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+              "license_name": "",
+              "license_url": "",
+              "metadata_updated_at": "2026-10-24T22:33:49.582648+00:00",
+              "origin": "user_registered",
+              "captured_at": "2026-10-24T22:35:27.261211+00:00"
+            },
+            "lora_metadata": [],
+            "runtime_metadata": {
+              "schema_version": 1,
+              "captured_at": "2026-10-24T22:35:27.519185+00:00",
+              "workflow": {
+                "id": "checkpoint-text2image-v1",
+                "sha256": "5a6f7a615edb85a3bc7f8110136514647f53c56654be65e6be68653d3ed302d8",
+                "nodes": [
+                  "CLIPTextEncode",
+                  "CheckpointLoaderSimple",
+                  "EmptyLatentImage",
+                  "KSampler",
+                  "SaveImage",
+                  "VAEDecode"
+                ],
+                "node_versions": null,
+                "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+              },
+              "platform": {
+                "source": "platform Python process",
+                "python": "3.12.10",
+                "packages": [
+                  {
+                    "name": "fastapi",
+                    "version": "0.141.1"
+                  },
+                  {
+                    "name": "starlette",
+                    "version": "1.6.0"
+                  },
+                  {
+                    "name": "pydantic",
+                    "version": "2.13.5"
+                  },
+                  {
+                    "name": "httpx",
+                    "version": "0.28.1"
+                  },
+                  {
+                    "name": "Pillow",
+                    "version": "12.3.0"
+                  },
+                  {
+                    "name": "uvicorn",
+                    "version": "0.52.4"
+                  },
+                  {
+                    "name": "websockets",
+                    "version": "17.1"
+                  }
+                ]
+              },
+              "engine": {
+                "status": "reported",
+                "source": "http://127.0.0.1:8188/system_stats",
+                "comfyui": "0.34.0",
+                "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+                "pytorch": "2.14.0+cu130",
+                "packages": [
+                  {
+                    "name": "comfyui-frontend-package",
+                    "installed": "1.51.9",
+                    "required": "1.51.9"
+                  },
+                  {
+                    "name": "comfyui-workflow-templates",
+                    "installed": "0.11.55",
+                    "required": "0.11.55"
+                  },
+                  {
+                    "name": "comfyui-embedded-docs",
+                    "installed": "0.5.11",
+                    "required": "0.5.11"
+                  },
+                  {
+                    "name": "comfy-kitchen",
+                    "installed": "0.2.33",
+                    "required": "0.2.33"
+                  },
+                  {
+                    "name": "comfy-aimdo",
+                    "installed": "0.5.2",
+                    "required": "0.5.2"
+                  }
+                ],
+                "cuda": null,
+                "driver": null,
+                "git_revision": null,
+                "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+              },
+              "execution_context": {
+                "schema_version": 1,
+                "workload": "inference",
+                "workflow_id": "checkpoint-text2image-v1",
+                "geometry": {
+                  "width": 512,
+                  "height": 512,
+                  "batch_size": 1,
+                  "source": "workflow node 4"
+                },
+                "parameters": [
+                  {
+                    "node_id": "5",
+                    "class_type": "KSampler",
+                    "settings": {
+                      "steps": 4,
+                      "cfg": 5.0,
+                      "sampler_name": "euler_ancestral",
+                      "scheduler": "normal",
+                      "denoise": 1.0,
+                      "seed": "9007199254740993"
+                    }
+                  }
+                ],
+                "models": [
+                  {
+                    "role": "checkpoint",
+                    "name": "animagine-xl-4.0-opt.safetensors",
+                    "version": "4.0 Opt",
+                    "architecture": "sdxl",
+                    "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac"
+                  }
+                ],
+                "loras": [],
+                "launch_policy": {
+                  "source": "http://127.0.0.1:8188/system_stats.system.argv",
+                  "reported": true,
+                  "precision_flags": [],
+                  "memory_flags": []
+                },
+                "actual_precision": null,
+                "actual_offload": null,
+                "cache_state": "unknown",
+                "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+              },
+              "execution_device": {
+                "schema_version": 1,
+                "engine_url": "http://127.0.0.1:8188",
+                "source": "http://127.0.0.1:8188/model_atelier/execution-device",
+                "checked_at": "2026-10-24T22:35:27.549198+00:00",
+                "probe_id": "8897041a-3d57-4f8e-ab9c-273d00769b51",
+                "status": "available",
+                "reason": "device_selected",
+                "device": {
+                  "type": "cuda",
+                  "index": 0
+                },
+                "backend_available": true
+              }
+            },
+            "reference_metadata": null,
+            "warnings": [
+              "checkpoint 僅在最近同步清單中，實際可用性將於生成前再次檢查"
+            ],
+            "availability": {
+              "current_engine_url": "http://127.0.0.1:8188",
+              "engine_matches": true,
+              "checkpoint_status": "available",
+              "catalog_synced_at": "2026-10-24T22:35:10.785742+00:00",
+              "loras": [],
+              "lora_synced_at": "2026-10-24T22:34:18.606043+00:00"
+            }
+          }
+        }
+      ],
+      "trained_artifact": {
+        "run_id": "a27f7a75-0791-41ca-958d-bf93bb1f1b89",
+        "branch": "baseline",
+        "manifest_sha256": "f48d751be1cf1560918a433d81ca43e77d801d1eb1674bece45acbbcc7e85a37",
+        "weight": {
+          "sha256": "a60bdfdd75f1f41778edfa64612c7f9d6e1e6a594e463512e4972904bec4bb33",
+          "size_bytes": 21584828
+        },
+        "scope": "Technical load/save/restore only; no style or character quality acceptance."
+      }
+    },
+    {
+      "status": "passed",
+      "mode": "verify_report",
+      "job_id": "ef601857-6bac-427b-8740-2b2faac0fd35",
+      "artwork_ids": [
+        "f25603fb-ff49-5bb9-9269-a460e39960c3"
+      ],
+      "settings": {
+        "title": "T04 technical trained LoRA candidate",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "animagine-xl-4.0-opt.safetensors",
+        "prompt": "ma_geometry_fixture, flat colored rectangle and circle, plain background",
+        "negative_prompt": "blurry, text, watermark",
+        "seed": "9007199254740993",
+        "width": 512,
+        "height": 512,
+        "steps": 4,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0,
+        "reference_ids": [],
+        "loras": [
+          {
+            "name": "ma-trained-a27f7a75-0791-41ca-958d-bf93bb1f1b89.safetensors",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 0.0
+          }
+        ]
+      },
+      "weight_snapshots": {
+        "model_metadata": {
+          "name": "animagine-xl-4.0-opt.safetensors",
+          "version": "4.0 Opt",
+          "source_url": "",
+          "architecture": "sdxl",
+          "size_bytes": 6938350040,
+          "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-24T22:33:49.582648+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-24T22:34:18.818835+00:00"
+        },
+        "lora_metadata": [
+          {
+            "name": "ma-trained-a27f7a75-0791-41ca-958d-bf93bb1f1b89.safetensors",
+            "version": "run-a27f7a75-0791-41ca-958d-bf93bb1f1b89",
+            "source_url": "",
+            "architecture": "sdxl",
+            "size_bytes": 21584828,
+            "sha256": "a60bdfdd75f1f41778edfa64612c7f9d6e1e6a594e463512e4972904bec4bb33",
+            "license_name": "Unreviewed trained output",
+            "license_url": "",
+            "metadata_updated_at": "2026-10-24T22:33:50.465630+00:00",
+            "origin": "user_registered",
+            "captured_at": "2026-10-24T22:34:18.818835+00:00",
+            "enabled": true,
+            "strength_model": 1.0,
+            "strength_clip": 0.0
+          }
+        ]
+      },
+      "verified_artworks": [
+        {
+          "id": "f25603fb-ff49-5bb9-9269-a460e39960c3",
+          "sha256": "8d0ebe89afe116b52d4f9803794f0a24703267df73e3d92da29e37d4773ab3a0",
+          "bytes": 241236,
+          "format": "PNG",
+          "width": 512,
+          "height": 512,
+          "model_version": "4.0 Opt",
+          "restore_settings": {
+            "artwork_id": "f25603fb-ff49-5bb9-9269-a460e39960c3",
+            "settings": {
+              "workflow_mode": "text2image",
+              "image_asset_id": null,
+              "reference_resize": "fit",
+              "loras": [
+                {
+                  "name": "ma-trained-a27f7a75-0791-41ca-958d-bf93bb1f1b89.safetensors",
+                  "enabled": true,
+                  "strength_model": 1.0,
+                  "strength_clip": 0.0
+                }
+              ],
+              "reference_ids": [],
+              "title": "ModelAtelier_00057_.png",
+              "prompt": "ma_geometry_fixture, flat colored rectangle and circle, plain background",
+              "negative_prompt": "blurry, text, watermark",
+              "engine_url": "http://127.0.0.1:8188",
+              "checkpoint": "animagine-xl-4.0-opt.safetensors",
+              "width": 512,
+              "height": 512,
+              "seed": "9007199254740993",
+              "steps": 4,
+              "cfg": 5.0,
+              "sampler_name": "euler_ancestral",
+              "scheduler": "normal",
+              "denoise": 1.0
+            },
+            "model_version": "4.0 Opt",
+            "model_metadata": {
+              "name": "animagine-xl-4.0-opt.safetensors",
+              "version": "4.0 Opt",
+              "source_url": "",
+              "architecture": "sdxl",
+              "size_bytes": 6938350040,
+              "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+              "license_name": "",
+              "license_url": "",
+              "metadata_updated_at": "2026-10-24T22:33:49.582648+00:00",
+              "origin": "user_registered",
+              "captured_at": "2026-10-24T22:34:18.818835+00:00"
+            },
+            "lora_metadata": [
+              {
+                "name": "ma-trained-a27f7a75-0791-41ca-958d-bf93bb1f1b89.safetensors",
+                "version": "run-a27f7a75-0791-41ca-958d-bf93bb1f1b89",
+                "source_url": "",
+                "architecture": "sdxl",
+                "size_bytes": 21584828,
+                "sha256": "a60bdfdd75f1f41778edfa64612c7f9d6e1e6a594e463512e4972904bec4bb33",
+                "license_name": "Unreviewed trained output",
+                "license_url": "",
+                "metadata_updated_at": "2026-10-24T22:33:50.465630+00:00",
+                "origin": "user_registered",
+                "captured_at": "2026-10-24T22:34:18.818835+00:00",
+                "enabled": true,
+                "strength_model": 1.0,
+                "strength_clip": 0.0
+              }
+            ],
+            "runtime_metadata": {
+              "schema_version": 1,
+              "captured_at": "2026-10-24T22:34:19.049087+00:00",
+              "workflow": {
+                "id": "checkpoint-text2image-v1",
+                "sha256": "6b277e1cc4dceba7519ff8b19d458084680fdc737883171c5c648c4d104bada1",
+                "nodes": [
+                  "CLIPTextEncode",
+                  "CheckpointLoaderSimple",
+                  "EmptyLatentImage",
+                  "KSampler",
+                  "LoraLoader",
+                  "SaveImage",
+                  "VAEDecode"
+                ],
+                "node_versions": null,
+                "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+              },
+              "platform": {
+                "source": "platform Python process",
+                "python": "3.12.10",
+                "packages": [
+                  {
+                    "name": "fastapi",
+                    "version": "0.141.1"
+                  },
+                  {
+                    "name": "starlette",
+                    "version": "1.6.0"
+                  },
+                  {
+                    "name": "pydantic",
+                    "version": "2.13.5"
+                  },
+                  {
+                    "name": "httpx",
+                    "version": "0.28.1"
+                  },
+                  {
+                    "name": "Pillow",
+                    "version": "12.3.0"
+                  },
+                  {
+                    "name": "uvicorn",
+                    "version": "0.52.4"
+                  },
+                  {
+                    "name": "websockets",
+                    "version": "17.1"
+                  }
+                ]
+              },
+              "engine": {
+                "status": "reported",
+                "source": "http://127.0.0.1:8188/system_stats",
+                "comfyui": "0.34.0",
+                "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+                "pytorch": "2.14.0+cu130",
+                "packages": [
+                  {
+                    "name": "comfyui-frontend-package",
+                    "installed": "1.51.9",
+                    "required": "1.51.9"
+                  },
+                  {
+                    "name": "comfyui-workflow-templates",
+                    "installed": "0.11.55",
+                    "required": "0.11.55"
+                  },
+                  {
+                    "name": "comfyui-embedded-docs",
+                    "installed": "0.5.11",
+                    "required": "0.5.11"
+                  },
+                  {
+                    "name": "comfy-kitchen",
+                    "installed": "0.2.33",
+                    "required": "0.2.33"
+                  },
+                  {
+                    "name": "comfy-aimdo",
+                    "installed": "0.5.2",
+                    "required": "0.5.2"
+                  }
+                ],
+                "cuda": null,
+                "driver": null,
+                "git_revision": null,
+                "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+              },
+              "execution_context": {
+                "schema_version": 1,
+                "workload": "inference",
+                "workflow_id": "checkpoint-text2image-v1",
+                "geometry": {
+                  "width": 512,
+                  "height": 512,
+                  "batch_size": 1,
+                  "source": "workflow node 4"
+                },
+                "parameters": [
+                  {
+                    "node_id": "5",
+                    "class_type": "KSampler",
+                    "settings": {
+                      "steps": 4,
+                      "cfg": 5.0,
+                      "sampler_name": "euler_ancestral",
+                      "scheduler": "normal",
+                      "denoise": 1.0,
+                      "seed": "9007199254740993"
+                    }
+                  }
+                ],
+                "models": [
+                  {
+                    "role": "checkpoint",
+                    "name": "animagine-xl-4.0-opt.safetensors",
+                    "version": "4.0 Opt",
+                    "architecture": "sdxl",
+                    "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac"
+                  }
+                ],
+                "loras": [
+                  {
+                    "name": "ma-trained-a27f7a75-0791-41ca-958d-bf93bb1f1b89.safetensors",
+                    "version": "run-a27f7a75-0791-41ca-958d-bf93bb1f1b89",
+                    "source_url": "",
+                    "architecture": "sdxl",
+                    "size_bytes": 21584828,
+                    "sha256": "a60bdfdd75f1f41778edfa64612c7f9d6e1e6a594e463512e4972904bec4bb33",
+                    "license_name": "Unreviewed trained output",
+                    "license_url": "",
+                    "metadata_updated_at": "2026-10-24T22:33:50.465630+00:00",
+                    "origin": "user_registered",
+                    "captured_at": "2026-10-24T22:34:18.818835+00:00",
+                    "enabled": true,
+                    "strength_model": 1.0,
+                    "strength_clip": 0.0
+                  }
+                ],
+                "launch_policy": {
+                  "source": "http://127.0.0.1:8188/system_stats.system.argv",
+                  "reported": true,
+                  "precision_flags": [],
+                  "memory_flags": []
+                },
+                "actual_precision": null,
+                "actual_offload": null,
+                "cache_state": "unknown",
+                "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+              },
+              "execution_device": {
+                "schema_version": 1,
+                "engine_url": "http://127.0.0.1:8188",
+                "source": "http://127.0.0.1:8188/model_atelier/execution-device",
+                "checked_at": "2026-10-24T22:34:19.080265+00:00",
+                "probe_id": "8a182c23-ee71-42df-b129-3acc42b645fa",
+                "status": "available",
+                "reason": "device_selected",
+                "device": {
+                  "type": "cuda",
+                  "index": 0
+                },
+                "backend_available": true
+              }
+            },
+            "reference_metadata": null,
+            "warnings": [
+              "checkpoint 僅在最近同步清單中，實際可用性將於生成前再次檢查",
+              "LoRA ma-trained-a27f7a75-0791-41ca-958d-bf93bb1f1b89.safetensors：僅在最近同步清單中；生成前會重新查詢，不代表權重可載入。",
+              "已完整還原 LoRA 的順序、名稱與兩種強度；未載入權重或提交任務，原快照是登記資料而非檔案驗證。"
+            ],
+            "availability": {
+              "current_engine_url": "http://127.0.0.1:8188",
+              "engine_matches": true,
+              "checkpoint_status": "available",
+              "catalog_synced_at": "2026-10-24T22:35:10.785742+00:00",
+              "loras": [
+                {
+                  "name": "ma-trained-a27f7a75-0791-41ca-958d-bf93bb1f1b89.safetensors",
+                  "status": "available"
+                }
+              ],
+              "lora_synced_at": "2026-10-24T22:34:18.606043+00:00"
+            }
+          }
+        }
+      ],
+      "trained_artifact": {
+        "run_id": "a27f7a75-0791-41ca-958d-bf93bb1f1b89",
+        "branch": "candidate",
+        "manifest_sha256": "f48d751be1cf1560918a433d81ca43e77d801d1eb1674bece45acbbcc7e85a37",
+        "weight": {
+          "sha256": "a60bdfdd75f1f41778edfa64612c7f9d6e1e6a594e463512e4972904bec4bb33",
+          "size_bytes": 21584828
+        },
+        "scope": "Technical load/save/restore only; no style or character quality acceptance."
+      }
+    }
+  ],
+  "evaluation": {
+    "manifest_sha256": "597adea445ab85341ec2eeddc8b2955888fc47d898295de2e2788f3a1f922e99",
+    "expected_job_count": 12,
+    "generation_started": false,
+    "quality_status": "not-reviewed",
+    "source": {
+      "cases": [
+        {
+          "character_key": "anime-adult-traveler-v1",
+          "checks": [
+            "正向要求：單一成年角色、短黑髮、圓眼鏡、藍外套與紅圍巾",
+            "角色：與全身及場景案例逐項比較；文字相同不代表身份鎖定",
+            "畫風：觀察線條、平塗／漸層與陰影，不依成功出圖判定",
+            "構圖：半身、紅書、背景；另記手部與眼鏡偏差"
+          ],
+          "id": "anime-portrait",
+          "name": "成年旅人半身像",
+          "prompt": "anime illustration, one adult traveler, short black hair, round glasses, blue coat, red scarf, waist-up portrait, holding a closed red book, soft daylight, plain pale background"
+        },
+        {
+          "character_key": "anime-adult-traveler-v1",
+          "checks": [
+            "正向要求：服裝顏色、完整鞋子及紅書",
+            "角色：與半身及場景對照髮型、眼鏡、外套；分開記錄未保持的特徵",
+            "畫風：線條與上色是否一致；不以像素差替代觀察",
+            "構圖：全身不裁腳、姿勢及肢體；保存失敗原圖"
+          ],
+          "id": "anime-full-body",
+          "name": "成年旅人全身與服裝",
+          "prompt": "anime illustration, one adult traveler, short black hair, round glasses, blue coat, red scarf, black trousers, brown boots, full body, holding a closed red book, standing on a pale background, feet visible"
+        },
+        {
+          "character_key": "anime-adult-traveler-v1",
+          "checks": [
+            "正向要求：角色、紅書、車站及山景",
+            "角色：跨場景的髮型、眼鏡、外套；未接入角色 adapter",
+            "畫風：人物與場景線條、陰影及細節協調；作者畫風仍需目標圖",
+            "構圖：左側全身人物、車站與遠山；記錄裁切及空間關係"
+          ],
+          "id": "anime-station",
+          "name": "成年旅人與車站場景",
+          "prompt": "anime illustration, one adult traveler, short black hair, round glasses, blue coat, red scarf, holding a closed red book, full body on the left of a rural train station platform, green mountains in the background, wide composition, daylight"
+        }
+      ],
+      "sha256": "a1f648ab4fb8850a187a4a5843d161a51ce203da4617def2d5bb643250eaac82",
+      "source": "experiments/anime-illustration-v1.json"
+    },
+    "seeds": [
+      "9007199254740993",
+      "18446744073709551615"
+    ],
+    "plan_hashes": [
+      {
+        "case_id": "anime-portrait",
+        "branch": "baseline",
+        "sha256": "e2aa677324dd901dea31bd3824d7848f8361cb0f2f6b762548fedbe0445b4e21"
+      },
+      {
+        "case_id": "anime-portrait",
+        "branch": "candidate",
+        "sha256": "76d251c6a65de257e9afd5ac8a5fb258bd4f81b5852e6930f1cc984808a9da0c"
+      },
+      {
+        "case_id": "anime-full-body",
+        "branch": "baseline",
+        "sha256": "2c2d8a302d5d9667068c7ff80345adab948faf4ec0591c77af38fa86552ce18a"
+      },
+      {
+        "case_id": "anime-full-body",
+        "branch": "candidate",
+        "sha256": "9eb13108960d431d0f5893fc694fce73a2ebd2bbf8442b47d39364f8cc91ac63"
+      },
+      {
+        "case_id": "anime-station",
+        "branch": "baseline",
+        "sha256": "d6a53c52392012b55aa976ed8366efa08c355a56f3f521d26c3ab39473414492"
+      },
+      {
+        "case_id": "anime-station",
+        "branch": "candidate",
+        "sha256": "2c878a466caf1c6d8b5ae249e928da378ed387eff918bc5fc936eedb4a7c2221"
+      }
+    ],
+    "review_cells": 6
+  },
+  "saved_native_plans": [
+    {
+      "case_id": "anime-portrait",
+      "branch": "baseline",
+      "plan_id": "7a4828b8-ed77-413b-a88a-b5de8a07565c",
+      "plan_sha256": "e2aa677324dd901dea31bd3824d7848f8361cb0f2f6b762548fedbe0445b4e21"
+    },
+    {
+      "case_id": "anime-portrait",
+      "branch": "candidate",
+      "plan_id": "b391cc34-7e4e-4a58-a944-6aa626ad7861",
+      "plan_sha256": "76d251c6a65de257e9afd5ac8a5fb258bd4f81b5852e6930f1cc984808a9da0c"
+    },
+    {
+      "case_id": "anime-full-body",
+      "branch": "baseline",
+      "plan_id": "fbc028dc-a1c9-4690-b9ae-8e9dc7fb95bf",
+      "plan_sha256": "2c2d8a302d5d9667068c7ff80345adab948faf4ec0591c77af38fa86552ce18a"
+    },
+    {
+      "case_id": "anime-full-body",
+      "branch": "candidate",
+      "plan_id": "3e853a8d-e424-4f62-886c-234b7bc82f3b",
+      "plan_sha256": "9eb13108960d431d0f5893fc694fce73a2ebd2bbf8442b47d39364f8cc91ac63"
+    },
+    {
+      "case_id": "anime-station",
+      "branch": "baseline",
+      "plan_id": "4ab29078-d033-4a19-9d1a-7ffbde0b0634",
+      "plan_sha256": "d6a53c52392012b55aa976ed8366efa08c355a56f3f521d26c3ab39473414492"
+    },
+    {
+      "case_id": "anime-station",
+      "branch": "candidate",
+      "plan_id": "7177b50d-c28c-4610-9e9e-6aff71e77dad",
+      "plan_sha256": "2c878a466caf1c6d8b5ae249e928da378ed387eff918bc5fc936eedb4a7c2221"
+    }
+  ],
+  "actual_gpu_jobs": 2,
+  "engine_log_observation": "SDXL: 722 patches attached for candidate; CLIP: 0 patches. Both outputs saved and restored."
+}

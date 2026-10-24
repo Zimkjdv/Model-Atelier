@@ -1,5 +1,15 @@
 # Model Atelier — Changelog
 
+## 2026-10-25 · T04 訓練產物回登與固定評估
+
+T03 已先以 `db7ab91` commit／push，再接入完整產物及最終狀態核對、不可覆寫安裝、來源 sidecar／SHA 與現有 LoRA 模型庫 API 回登。保留基底、資料／trigger、完整訓練設定、環境／trainer／續訓來源與權重識別，技術產物明確標示，不自動認列品質或產物條款。
+
+建立三題材、兩個精確 seed、空 LoRA 基準／UNet 候選的 12 格比較，沿用六份原生方案與既有作品比較；封存來源 prompt／hash、先核對模型登記並提供人工審查模板。建立與保存方案不生成，保留原 request_id 查回；作者 caption／來源／角色審查與獨立最終保留圖提醒仍在文件。
+
+T03 幾何技術 LoRA 在 RTX 3060 原生載入成功，候選有 UNet 722 patches、CLIP 0 patches；只生成兩件 512／4 steps 基準／候選，保存、精確 seed、完整設定與權重快照還原通過。暫停閒置引擎後，兩組原紀錄 GET 查回也通過且沒有重送，原引擎已恢復。使用隔離平台 DATA，作者圖未訓練、12 件畫風品質比較未執行。
+
+最終 711 項後端（1 項既有跳過）、18 項產物／run 定向重跑與靜態檢查通過；前端程式未變更，沿用 T03 同次已通過的建置／契約及 108 Chromium。ROADMAP T04 流程完成，剩餘 18 主項／28 子項。見 [回登與比較操作](docs/training/artifacts.md)、[技術驗收與限制](docs/validation/training-artifacts-20261025.md)。
+
 ## 2026-10-25 · T03 獨立 SDXL 訓練環境與資源協調
 
 固定 sd-scripts、Windows／Python 3.12／CUDA 13 的獨立訓練環境與離線 tokenizer，提供本機 CLI 的設定／資料／模型封存、明確啟動、停止及新 UUID 完整狀態續訓。訓練與本機生成共享跨程序 OS 租約；既有 UUID 查回先行，新 prompt 衝突拒絕且不自動重送，遠端引擎分開處理。

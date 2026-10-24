@@ -1,6 +1,6 @@
 # T03 獨立訓練與運算協調
 
-2026-10-25：獨立環境、明確 run／停止／續訓及生成互斥介面已建立；技術驗收見 [RTX 3060 紀錄](../validation/training-runtime-20261025.md)。後續依序為 T04；T03 驗收、commit、push 後才實作 T04。
+2026-10-25：獨立環境、明確 run／停止／續訓及生成互斥介面已建立；技術驗收見 [RTX 3060 紀錄](../validation/training-runtime-20261025.md)。T03 已先 commit／push，再完成 [T04 回登與評估流程](artifacts.md)；作者品質仍未認列。
 
 沿用 T02 的 sd-scripts `11d8cedd0c67b93a10f8b2d75f43554f6f12c794`，在 `runtime/training/sd-scripts` 與 `runtime/training/.venv` 安裝，平台與 ComfyUI 的 Python 不安裝 trainer 依賴。Windows x64／Python 3.12／CUDA 13.0 的精確版本位於 `training/requirements-win-py312.lock.txt`；來源及兩份 tokenizer 的固定修訂、大小與 hash 位於 `training/environment.json`。訓練使用離線 tokenizer，不於執行期間下載檔案。
 
