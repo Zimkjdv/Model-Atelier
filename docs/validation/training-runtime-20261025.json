@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-25",
+  "scope": "synthetic technical smoke only",
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3060",
+    "memory_bytes": 12884901888
+  },
+  "runs": [
+    {
+      "run_id": "d9e85ee5-7b84-46a1-ba4f-ca8d3902a29a",
+      "manifest_sha256": "4949acb8051ad4fcd84f601678626eedc2536d873a170aa028d977c05bcf3243",
+      "status": "blocked",
+      "resources_released": true,
+      "configuration": {
+        "gpu_index": 0,
+        "label": "512 geometry technical smoke; no style quality claim",
+        "learning_rate": 0.0001,
+        "max_steps": 3,
+        "purpose": "technical-smoke",
+        "rank": 4,
+        "resolution": 512,
+        "save_every_steps": 1,
+        "schema_version": 1,
+        "seed": 42
+      },
+      "dataset": {
+        "bundle_sha256": "5a08b98f4ef8e61c6edcbbd4b7a4105c8f68ef09aa2ff7300e7970ad71d0735e",
+        "id": "technical-geometry",
+        "kind": "style",
+        "manifest_sha256": "f29b788ff1e9a366286a834c14e05b52641389b67903d207cf81ef274233db43",
+        "subject_id": "synthetic-geometry",
+        "train_count": 1,
+        "trigger": "ma_geometry_fixture",
+        "version": "v1"
+      },
+      "environment": {
+        "profile_sha256": "60ac6cfb460e4e67648975bf729df62cc9b97c91d8da9b300449d4a21165f2e8",
+        "dependencies_sha256": "1908239131e18bfbe561893196bc39e87dfc0bd748dcba7b47af9ac43a0f8326",
+        "trainer_revision": "11d8cedd0c67b93a10f8b2d75f43554f6f12c794"
+      },
+      "base": {
+        "architecture": "sdxl",
+        "id": "animagine-xl-4.0-opt",
+        "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+        "size_bytes": 6938350040,
+        "version": "4.0 Opt"
+      },
+      "resume": null,
+      "elapsed_seconds": 0.0,
+      "torch_peak_allocated_bytes": null,
+      "torch_peak_reserved_bytes": null,
+      "observed_max_rss_bytes": null,
+      "observed_max_process_peak_working_set_bytes": null,
+      "observed_max_whole_gpu_used_bytes": null
+    },
+    {
+      "run_id": "c243b6a4-821a-4b05-9119-6465a3548e2c",
+      "manifest_sha256": "afa0682107916e17399600ce266910042bd6f98a62b2d6c93054a642c7f53752",
+      "status": "stopped",
+      "resources_released": true,
+      "configuration": {
+        "gpu_index": 0,
+        "label": "512 geometry technical smoke; no style quality claim",
+        "learning_rate": 0.0001,
+        "max_steps": 3,
+        "purpose": "technical-smoke",
+        "rank": 4,
+        "resolution": 512,
+        "save_every_steps": 1,
+        "schema_version": 1,
+        "seed": 42
+      },
+      "dataset": {
+        "bundle_sha256": "5a08b98f4ef8e61c6edcbbd4b7a4105c8f68ef09aa2ff7300e7970ad71d0735e",
+        "id": "technical-geometry",
+        "kind": "style",
+        "manifest_sha256": "f29b788ff1e9a366286a834c14e05b52641389b67903d207cf81ef274233db43",
+        "subject_id": "synthetic-geometry",
+        "train_count": 1,
+        "trigger": "ma_geometry_fixture",
+        "version": "v1"
+      },
+      "environment": {
+        "profile_sha256": "97704299dbbff13fb2666a5f0bdabd0b9fd203d56688dca20cc0634bf79051ad",
+        "dependencies_sha256": "1908239131e18bfbe561893196bc39e87dfc0bd748dcba7b47af9ac43a0f8326",
+        "trainer_revision": "11d8cedd0c67b93a10f8b2d75f43554f6f12c794"
+      },
+      "base": {
+        "architecture": "sdxl",
+        "id": "animagine-xl-4.0-opt",
+        "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+        "size_bytes": 6938350040,
+        "version": "4.0 Opt"
+      },
+      "resume": null,
+      "elapsed_seconds": 69.843,
+      "torch_peak_allocated_bytes": 5598029312,
+      "torch_peak_reserved_bytes": 5861539840,
+      "observed_max_rss_bytes": 22359732224,
+      "observed_max_process_peak_working_set_bytes": 22399766528,
+      "observed_max_whole_gpu_used_bytes": 9148825600
+    },
+    {
+      "run_id": "2aca53c7-3b15-455d-b0ee-aed2a31a9bc1",
+      "manifest_sha256": "d9224a7789d436911aad0ade757c2bb0dfc5d5410a146458c221c5c07d4193c0",
+      "status": "failed",
+      "resources_released": true,
+      "configuration": {
+        "gpu_index": 0,
+        "label": "512 geometry technical smoke; no style quality claim",
+        "learning_rate": 0.0001,
+        "max_steps": 3,
+        "purpose": "technical-smoke",
+        "rank": 4,
+        "resolution": 512,
+        "save_every_steps": 1,
+        "schema_version": 1,
+        "seed": 42
+      },
+      "dataset": {
+        "bundle_sha256": "5a08b98f4ef8e61c6edcbbd4b7a4105c8f68ef09aa2ff7300e7970ad71d0735e",
+        "id": "technical-geometry",
+        "kind": "style",
+        "manifest_sha256": "f29b788ff1e9a366286a834c14e05b52641389b67903d207cf81ef274233db43",
+        "subject_id": "synthetic-geometry",
+        "train_count": 1,
+        "trigger": "ma_geometry_fixture",
+        "version": "v1"
+      },
+      "environment": {
+        "profile_sha256": "97704299dbbff13fb2666a5f0bdabd0b9fd203d56688dca20cc0634bf79051ad",
+        "dependencies_sha256": "1908239131e18bfbe561893196bc39e87dfc0bd748dcba7b47af9ac43a0f8326",
+        "trainer_revision": "11d8cedd0c67b93a10f8b2d75f43554f6f12c794"
+      },
+      "base": {
+        "architecture": "sdxl",
+        "id": "animagine-xl-4.0-opt",
+        "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+        "size_bytes": 6938350040,
+        "version": "4.0 Opt"
+      },
+      "resume": {
+        "checkpoint": "step-1",
+        "files": {
+          "model.safetensors": {
+            "sha256": "d216c9590f0c689f3c8124f310556026dd79af03db0828b8bda4499e6deef285",
+            "size_bytes": 42862304
+          },
+          "optimizer.bin": {
+            "sha256": "7a3e6cec4ae51bc251d5302052fa306d397cb43f263ccce4bf6a4cfc73092b5f",
+            "size_bytes": 86333391
+          },
+          "random_states_0.pkl": {
+            "sha256": "0dd9b91de8b60e76fd97bff8e233268fccc23c3b2028c789c3aabb5275d42557",
+            "size_bytes": 14821
+          },
+          "scaler.pt": {
+            "sha256": "d902fe4112db4f188225b3199db73931f3a9c98d75e59b7588a0d81721ed5d87",
+            "size_bytes": 1383
+          },
+          "scheduler.bin": {
+            "sha256": "5a24622a359b592dbb44e4d443c4c7e188315d677b39fdcae1f288c441a59625",
+            "size_bytes": 1401
+          },
+          "train_state.json": {
+            "sha256": "7e72fc7808ad302f6aa500eb8906e6f7c24c2871d613daebe8d69ff0586d9e35",
+            "size_bytes": 39
+          }
+        },
+        "receipt_sha256": "d0e487b992f637e5ea7e2978e168904692616aebd84c21477c68dcbefc75ce91",
+        "run_id": "c243b6a4-821a-4b05-9119-6465a3548e2c",
+        "step": 1
+      },
+      "elapsed_seconds": 61.156,
+      "torch_peak_allocated_bytes": 5598790144,
+      "torch_peak_reserved_bytes": 5861539840,
+      "observed_max_rss_bytes": 22359511040,
+      "observed_max_process_peak_working_set_bytes": 22428307456,
+      "observed_max_whole_gpu_used_bytes": 9522118656,
+      "artifacts": {
+        "files": {
+          "model-step00000001.safetensors": {
+            "sha256": "fffd108759670ee776027bc2ee2aec77f4be8defa93c8dbc4c361055e8936e83",
+            "size_bytes": 21584828
+          },
+          "model-step00000002.safetensors": {
+            "sha256": "5d0828d3542faa4fa6787d14cc319b1627dfc053981434adc19f4591c171e305",
+            "size_bytes": 21584828
+          },
+          "model.safetensors": {
+            "sha256": "4ffa3dad685e58728e02e18341bcd15b488039ad883fb2f582aa627d57d6f40f",
+            "size_bytes": 21584828
+          }
+        },
+        "manifest_sha256": "d9224a7789d436911aad0ade757c2bb0dfc5d5410a146458c221c5c07d4193c0",
+        "run_id": "2aca53c7-3b15-455d-b0ee-aed2a31a9bc1",
+        "schema_version": 1,
+        "technical_only": true
+      },
+      "final_train_state": {
+        "current_epoch": 3,
+        "current_step": 2
+      }
+    },
+    {
+      "run_id": "a27f7a75-0791-41ca-958d-bf93bb1f1b89",
+      "manifest_sha256": "f48d751be1cf1560918a433d81ca43e77d801d1eb1674bece45acbbcc7e85a37",
+      "status": "completed",
+      "resources_released": true,
+      "configuration": {
+        "gpu_index": 0,
+        "label": "512 geometry technical smoke; no style quality claim",
+        "learning_rate": 0.0001,
+        "max_steps": 3,
+        "purpose": "technical-smoke",
+        "rank": 4,
+        "resolution": 512,
+        "save_every_steps": 1,
+        "schema_version": 1,
+        "seed": 42
+      },
+      "dataset": {
+        "bundle_sha256": "5a08b98f4ef8e61c6edcbbd4b7a4105c8f68ef09aa2ff7300e7970ad71d0735e",
+        "id": "technical-geometry",
+        "kind": "style",
+        "manifest_sha256": "f29b788ff1e9a366286a834c14e05b52641389b67903d207cf81ef274233db43",
+        "subject_id": "synthetic-geometry",
+        "train_count": 1,
+        "trigger": "ma_geometry_fixture",
+        "version": "v1"
+      },
+      "environment": {
+        "profile_sha256": "97704299dbbff13fb2666a5f0bdabd0b9fd203d56688dca20cc0634bf79051ad",
+        "dependencies_sha256": "1908239131e18bfbe561893196bc39e87dfc0bd748dcba7b47af9ac43a0f8326",
+        "trainer_revision": "11d8cedd0c67b93a10f8b2d75f43554f6f12c794"
+      },
+      "base": {
+        "architecture": "sdxl",
+        "id": "animagine-xl-4.0-opt",
+        "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+        "size_bytes": 6938350040,
+        "version": "4.0 Opt"
+      },
+      "resume": {
+        "checkpoint": "step-1",
+        "files": {
+          "model.safetensors": {
+            "sha256": "d216c9590f0c689f3c8124f310556026dd79af03db0828b8bda4499e6deef285",
+            "size_bytes": 42862304
+          },
+          "optimizer.bin": {
+            "sha256": "7a3e6cec4ae51bc251d5302052fa306d397cb43f263ccce4bf6a4cfc73092b5f",
+            "size_bytes": 86333391
+          },
+          "random_states_0.pkl": {
+            "sha256": "0dd9b91de8b60e76fd97bff8e233268fccc23c3b2028c789c3aabb5275d42557",
+            "size_bytes": 14821
+          },
+          "scaler.pt": {
+            "sha256": "d902fe4112db4f188225b3199db73931f3a9c98d75e59b7588a0d81721ed5d87",
+            "size_bytes": 1383
+          },
+          "scheduler.bin": {
+            "sha256": "5a24622a359b592dbb44e4d443c4c7e188315d677b39fdcae1f288c441a59625",
+            "size_bytes": 1401
+          },
+          "train_state.json": {
+            "sha256": "7e72fc7808ad302f6aa500eb8906e6f7c24c2871d613daebe8d69ff0586d9e35",
+            "size_bytes": 39
+          }
+        },
+        "receipt_sha256": "d0e487b992f637e5ea7e2978e168904692616aebd84c21477c68dcbefc75ce91",
+        "run_id": "c243b6a4-821a-4b05-9119-6465a3548e2c",
+        "step": 1
+      },
+      "elapsed_seconds": 66.0,
+      "torch_peak_allocated_bytes": 5598790144,
+      "torch_peak_reserved_bytes": 5861539840,
+      "observed_max_rss_bytes": 22375907328,
+      "observed_max_process_peak_working_set_bytes": 22435360768,
+      "observed_max_whole_gpu_used_bytes": 9309257728,
+      "artifacts": {
+        "files": {
+          "model-step00000001.safetensors": {
+            "sha256": "b1ea500d8b44bcd757715236913f0792d2ace140cadbd545a8be4f782d7f9825",
+            "size_bytes": 21584828
+          },
+          "model-step00000002.safetensors": {
+            "sha256": "5a90d6efb7f8f73c75e7a7aeeb82d54e48b5d5e2452ace7d28b8e59e338e8ea5",
+            "size_bytes": 21584828
+          },
+          "model.safetensors": {
+            "sha256": "a60bdfdd75f1f41778edfa64612c7f9d6e1e6a594e463512e4972904bec4bb33",
+            "size_bytes": 21584828
+          }
+        },
+        "manifest_sha256": "f48d751be1cf1560918a433d81ca43e77d801d1eb1674bece45acbbcc7e85a37",
+        "run_id": "a27f7a75-0791-41ca-958d-bf93bb1f1b89",
+        "schema_version": 1,
+        "technical_only": true
+      },
+      "final_train_state": {
+        "current_epoch": 2,
+        "current_step": 3
+      }
+    }
+  ]
+}

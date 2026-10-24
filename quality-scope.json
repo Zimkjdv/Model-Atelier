@@ -64,7 +64,20 @@
     "backend/test_windows_temp_alias.py",
     "backend/test_startup_scripts.py",
     "backend/storage.py",
-    "backend/test_storage.py"
+    "backend/test_storage.py",
+    "backend/compute_lease.py",
+    "backend/test_compute_lease.py",
+    "backend/training_files.py",
+    "backend/training_environment.py",
+    "backend/training_runs.py",
+    "backend/test_training_runs.py",
+    "scripts/training_environment.py",
+    "scripts/training_run.py",
+    "scripts/training_worker.py",
+    "backend/flux_workflows.py",
+    "backend/failures.py",
+    "scripts/training_fixture.py",
+    "backend/test_training_environment.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -111,7 +124,8 @@
     "frontend/tests/structure-recovery.spec.ts",
     "frontend/tests/fooocus-recovery.spec.ts",
     "frontend/src/StorageOverview.vue",
-    "frontend/tests/storage-overview.spec.ts"
+    "frontend/tests/storage-overview.spec.ts",
+    "training/environment.json"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

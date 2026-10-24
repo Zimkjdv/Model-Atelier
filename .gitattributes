@@ -1,4 +1,6 @@
 experiments/*.json text eol=lf
+training/*.json text eol=lf
+training/*.txt text eol=lf
 *.bat text eol=crlf
 *.py text eol=lf
 *.ts text eol=lf

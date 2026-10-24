@@ -24,6 +24,8 @@ Set-Location ..
 
 不需要 ComfyUI、GPU、權重或使用者作品。前端使用 package-lock.json，Playwright 固定 1.64.1；瀏覽器另由該版本安裝。可在 frontend 以 `npm.cmd run test:browser` 單獨重跑，需先完成 `npm.cmd run build`。完整入口將目前 Python 傳給 fixture；單獨執行預設使用根目錄 .venv，也可指定 `ATELIER_TEST_PYTHON`。
 
+請在真實訓練 worker 結束並釋放租約後執行完整回歸；部分既有 API fixture 沿用專案根目錄，真實訓練佔用會正確拒絕這些本機生成 mock。GPU 技術驗收與 CPU／瀏覽器全套分開執行，不以互斥中的失敗視為功能回歸。
+
 ## 隔離與覆蓋
 
 `scripts/browser_fixture.py` 每次建立新的系統臨時 DATA，只接受埠參數，不接受既有資料或引擎位置。真實 FastAPI、SQLite、圖片與下載在該資料運作；上游 HTTP 使用 MockTransport，網址固定為不可解析的 `.invalid` 網域，沒有真實推論。測試端點只存在 fixture。

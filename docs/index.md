@@ -47,6 +47,8 @@
 
 - [T02 資料契約、Schema 與本機 CLI](training/dataset-contract.md)、[固定官方工具介面評估](training/tool-interface-research.md)、[22 檔盤點與出口驗收](validation/training-dataset-20261023.md)：真實資料仍待審查，沒有訓練
 
+- [T03 獨立訓練環境與明確 run](training/runtime.md)、[RTX 3060 技術與資源驗收](validation/training-runtime-20261025.md)：只用自製幾何資料，作者圖未訓練；網頁訓練介面未提供
+
 ## 模型與執行環境
 
 - [Animagine 來源與預設](models/animagine-xl-4.0-opt.md)

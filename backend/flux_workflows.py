@@ -1,4 +1,5 @@
 """FLUX.1 schnell split-loader workflow; no checkpoint-template fallback."""
+
 import asyncio
 import json
 import math
@@ -9,11 +10,25 @@ import httpx
 from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from backend import capabilities, cancellation, drafts, failures, flux_catalog, gallery, jobs, runtime_metadata
+from backend import (
+    capabilities,
+    cancellation,
+    compute_lease,
+    drafts,
+    failures,
+    flux_catalog,
+    gallery,
+    jobs,
+    runtime_metadata,
+)
 
 WORKFLOW_ID = 'flux1-schnell-text2image-v1'
-ROLES = [('diffusion_model', 'diffusion_models'), ('clip_l', 'text_encoders'),
-         ('t5xxl', 'text_encoders'), ('vae', 'vae')]
+ROLES = [
+    ('diffusion_model', 'diffusion_models'),
+    ('clip_l', 'text_encoders'),
+    ('t5xxl', 'text_encoders'),
+    ('vae', 'vae'),
+]
 WARNING = 'FLUX.1 [schnell] 專用流程尚未 GPU 驗證；元件角色與變體由使用者確認，清單與登記資料不代表實際權重驗證。'
 
 
@@ -39,6 +54,7 @@ class Input(BaseModel):
     def valid_engine(cls, value):
         # Local import avoids a circular import while main installs routes.
         from backend.main import Settings
+
         return Settings.validate_url(value)
 
     @field_validator('title', 'diffusion_model', 'clip_l', 't5xxl', 'vae')
@@ -63,28 +79,68 @@ class Input(BaseModel):
 
 
 def descriptor():
-    return dict(id=WORKFLOW_ID, name='FLUX.1 [schnell] 分離元件文生圖',
-                fields=list(Input.model_fields), steps=dict(min=1, max=4),
-                size=dict(min=64, max=8192, multiple=16), batch_size=1,
-                cfg=1.0, sampler_name='euler', scheduler='simple', denoise=1.0,
-                negative_prompt=False, lora=False, reference_images=False,
-                gpu_verified=False, warning=WARNING)
+    return dict(
+        id=WORKFLOW_ID,
+        name='FLUX.1 [schnell] 分離元件文生圖',
+        fields=list(Input.model_fields),
+        steps=dict(min=1, max=4),
+        size=dict(min=64, max=8192, multiple=16),
+        batch_size=1,
+        cfg=1.0,
+        sampler_name='euler',
+        scheduler='simple',
+        denoise=1.0,
+        negative_prompt=False,
+        lora=False,
+        reference_images=False,
+        gpu_verified=False,
+        warning=WARNING,
+    )
 
 
 def build(value):
     v = value.model_dump() if isinstance(value, Input) else value
     return {
-        '1': dict(class_type='UNETLoader', inputs=dict(unet_name=v['diffusion_model'], weight_dtype=v['weight_dtype'])),
-        '2': dict(class_type='DualCLIPLoader', inputs=dict(clip_name1=v['clip_l'], clip_name2=v['t5xxl'], type='flux', device=v['encoder_device'])),
+        '1': dict(
+            class_type='UNETLoader',
+            inputs=dict(unet_name=v['diffusion_model'], weight_dtype=v['weight_dtype']),
+        ),
+        '2': dict(
+            class_type='DualCLIPLoader',
+            inputs=dict(
+                clip_name1=v['clip_l'],
+                clip_name2=v['t5xxl'],
+                type='flux',
+                device=v['encoder_device'],
+            ),
+        ),
         '3': dict(class_type='VAELoader', inputs=dict(vae_name=v['vae'])),
         '4': dict(class_type='CLIPTextEncode', inputs=dict(text=v['prompt'], clip=['2', 0])),
         '5': dict(class_type='CLIPTextEncode', inputs=dict(text='', clip=['2', 0])),
-        '6': dict(class_type='EmptySD3LatentImage', inputs=dict(width=v['width'], height=v['height'], batch_size=1)),
-        '7': dict(class_type='KSampler', inputs=dict(model=['1', 0], positive=['4', 0], negative=['5', 0],
-            latent_image=['6', 0], seed=int(v['seed']), steps=v['steps'], cfg=1.0,
-            sampler_name='euler', scheduler='simple', denoise=1.0)),
+        '6': dict(
+            class_type='EmptySD3LatentImage',
+            inputs=dict(width=v['width'], height=v['height'], batch_size=1),
+        ),
+        '7': dict(
+            class_type='KSampler',
+            inputs=dict(
+                model=['1', 0],
+                positive=['4', 0],
+                negative=['5', 0],
+                latent_image=['6', 0],
+                seed=int(v['seed']),
+                steps=v['steps'],
+                cfg=1.0,
+                sampler_name='euler',
+                scheduler='simple',
+                denoise=1.0,
+            ),
+        ),
         '8': dict(class_type='VAEDecode', inputs=dict(samples=['7', 0], vae=['3', 0])),
-        '9': dict(class_type='SaveImage', inputs=dict(images=['8', 0], filename_prefix='ModelAtelier'))}
+        '9': dict(
+            class_type='SaveImage', inputs=dict(images=['8', 0], filename_prefix='ModelAtelier')
+        ),
+    }
 
 
 def extract(job):
@@ -95,12 +151,20 @@ def extract(job):
         seed = g['7']['inputs']['seed']
         if type(seed) is not int:
             raise ValueError()
-        value = Input(engine_url=job['engine_url'], diffusion_model=g['1']['inputs']['unet_name'],
-                      clip_l=g['2']['inputs']['clip_name1'], t5xxl=g['2']['inputs']['clip_name2'],
-                      vae=g['3']['inputs']['vae_name'], prompt=g['4']['inputs']['text'], seed=str(seed),
-                      width=g['6']['inputs']['width'], height=g['6']['inputs']['height'],
-                      steps=g['7']['inputs']['steps'], weight_dtype=g['1']['inputs']['weight_dtype'],
-                      encoder_device=g['2']['inputs']['device'])
+        value = Input(
+            engine_url=job['engine_url'],
+            diffusion_model=g['1']['inputs']['unet_name'],
+            clip_l=g['2']['inputs']['clip_name1'],
+            t5xxl=g['2']['inputs']['clip_name2'],
+            vae=g['3']['inputs']['vae_name'],
+            prompt=g['4']['inputs']['text'],
+            seed=str(seed),
+            width=g['6']['inputs']['width'],
+            height=g['6']['inputs']['height'],
+            steps=g['7']['inputs']['steps'],
+            weight_dtype=g['1']['inputs']['weight_dtype'],
+            encoder_device=g['2']['inputs']['device'],
+        )
         if build(value) != g:
             raise ValueError()
         return value.model_dump()
@@ -108,11 +172,26 @@ def extract(job):
         raise ValueError('無法完整還原此 FLUX 流程；請下載原 JSON，未載入部分參數。') from exc
 
 
-OUTPUTS = {'UNETLoader': ['MODEL'], 'DualCLIPLoader': ['CLIP'], 'VAELoader': ['VAE'],
-           'CLIPTextEncode': ['CONDITIONING'], 'EmptySD3LatentImage': ['LATENT'],
-           'KSampler': ['LATENT'], 'VAEDecode': ['IMAGE'], 'SaveImage': []}
-LINK_TYPES = {'model': 'MODEL', 'clip': 'CLIP', 'positive': 'CONDITIONING', 'negative': 'CONDITIONING',
-              'latent_image': 'LATENT', 'samples': 'LATENT', 'vae': 'VAE', 'images': 'IMAGE'}
+OUTPUTS = {
+    'UNETLoader': ['MODEL'],
+    'DualCLIPLoader': ['CLIP'],
+    'VAELoader': ['VAE'],
+    'CLIPTextEncode': ['CONDITIONING'],
+    'EmptySD3LatentImage': ['LATENT'],
+    'KSampler': ['LATENT'],
+    'VAEDecode': ['IMAGE'],
+    'SaveImage': [],
+}
+LINK_TYPES = {
+    'model': 'MODEL',
+    'clip': 'CLIP',
+    'positive': 'CONDITIONING',
+    'negative': 'CONDITIONING',
+    'latent_image': 'LATENT',
+    'samples': 'LATENT',
+    'vae': 'VAE',
+    'images': 'IMAGE',
+}
 
 
 async def preflight(client, engine_url, graph):
@@ -125,6 +204,7 @@ async def preflight(client, engine_url, graph):
         if not isinstance(payload, dict) or not isinstance(payload.get(kind), dict):
             raise ValueError('ComfyUI 缺少 FLUX 必要節點：' + kind)
         return kind, payload[kind]
+
     results = await asyncio.gather(*(load(kind) for kind in OUTPUTS), return_exceptions=True)
     for result in results:
         if isinstance(result, BaseException):
@@ -138,10 +218,17 @@ async def preflight(client, engine_url, graph):
         output_valid = definition.get('output') == OUTPUTS[kind]
         if kind == 'SaveImage':
             # New native SaveImage returns its IMAGE; older versions return ().
-            output_valid = definition.get('output') in ([], ['IMAGE']) and definition.get('output_node') is True
-        if (not isinstance(required, dict) or not isinstance(optional, dict) or
-                not set(required) <= set(inputs) or not set(inputs) <= set(required) | set(optional) or
-                not output_valid):
+            output_valid = (
+                definition.get('output') in ([], ['IMAGE'])
+                and definition.get('output_node') is True
+            )
+        if (
+            not isinstance(required, dict)
+            or not isinstance(optional, dict)
+            or not set(required) <= set(inputs)
+            or not set(inputs) <= set(required) | set(optional)
+            or not output_valid
+        ):
             raise ValueError('FLUX 節點介面不相容：' + kind)
         for field, value in inputs.items():
             spec = (required | optional)[field]
@@ -161,7 +248,11 @@ async def preflight(client, engine_url, graph):
                 else:
                     low, high = spec[1].get('min'), spec[1].get('max')
                     valid = valid and type(low) in (int, float) and type(high) in (int, float)
-                    valid = valid and all(math.isfinite(n) for n in (low, high, value)) and low <= value <= high
+                    valid = (
+                        valid
+                        and all(math.isfinite(n) for n in (low, high, value))
+                        and low <= value <= high
+                    )
             else:
                 valid = False
             if not valid:
@@ -177,6 +268,7 @@ def architecture_guard(metadata):
 
 async def submit(host, value):
     from backend import diagnostics
+
     diagnostics.bind_submission(value.request_id, WORKFLOW_ID)
     graph, job_id = build(value), str(value.request_id)
     try:
@@ -184,18 +276,35 @@ async def submit(host, value):
     except KeyError:
         pass
     else:
-        if (existing.get('workflow_id') != WORKFLOW_ID or existing['workflow'] != graph or
-                existing['engine_url'] != value.engine_url):
+        if (
+            existing.get('workflow_id') != WORKFLOW_ID
+            or existing['workflow'] != graph
+            or existing['engine_url'] != value.engine_url
+        ):
             raise HTTPException(409, '此請求 ID 已用於其他工作流程')
         diagnostics.record_job('submission_recovered', existing)
         return existing
     if value.engine_url != host.engine_url():
         raise HTTPException(409, '引擎設定已變更，請重新載入 FLUX 元件。')
+    try:
+        compute_lease.check_training(host.ROOT, value.engine_url)
+    except compute_lease.ComputeBusy as exc:
+        raise HTTPException(409, str(exc)) from exc
     selections = [(role, group, getattr(value, role)) for role, group in ROLES]
     metadata = flux_catalog.capture(host.DB, value.engine_url, selections)
     try:
-        job, fresh = jobs.reserve(host.DB, job_id, value.engine_url, graph, value.diffusion_model,
-            metadata[0]['version'], metadata[0], [], workflow_id=WORKFLOW_ID, component_metadata=metadata)
+        job, fresh = jobs.reserve(
+            host.DB,
+            job_id,
+            value.engine_url,
+            graph,
+            value.diffusion_model,
+            metadata[0]['version'],
+            metadata[0],
+            [],
+            workflow_id=WORKFLOW_ID,
+            component_metadata=metadata,
+        )
     except ValueError as exc:
         raise HTTPException(409, str(exc))
     if not fresh:
@@ -205,7 +314,9 @@ async def submit(host, value):
         diagnostic = failures.info(reason)
         if reason == 'preflight_invalid':
             diagnostic['message'] = message[:400]
-        _, changed = jobs.compare_update(host.DB, job, status='failed', error=message, failure_info=diagnostic, **extra)
+        _, changed = jobs.compare_update(
+            host.DB, job, status='failed', error=message, failure_info=diagnostic, **extra
+        )
         if not changed:
             raise HTTPException(409, '任務狀態已更新；請查詢原任務，未覆蓋新狀態。')
         raise HTTPException(code, dict(message=message, job_id=job_id, failure_info=diagnostic))
@@ -218,7 +329,11 @@ async def submit(host, value):
         try:
             await preflight(client, value.engine_url, graph)
         except httpx.HTTPError:
-            fail(503, '無法讀取原 ComfyUI 的 FLUX 節點；引擎離線或服務失敗，尚未提交。', 'engine_offline')
+            fail(
+                503,
+                '無法讀取原 ComfyUI 的 FLUX 節點；引擎離線或服務失敗，尚未提交。',
+                'engine_offline',
+            )
         except ValueError as exc:
             fail(422, str(exc))
         observation = await runtime_metadata.capture(client, job)
@@ -228,28 +343,50 @@ async def submit(host, value):
         if value.engine_url != host.engine_url():
             fail(409, '驗證期間引擎設定已變更，尚未提交。', 'engine_changed')
         if observation['execution_device']['status'] == 'unavailable':
-            fail(409, '原 ComfyUI 引擎明確回報目前設定的執行裝置不可用；FLUX 尚未提交', 'execution_device_unavailable')
+            fail(
+                409,
+                '原 ComfyUI 引擎明確回報目前設定的執行裝置不可用；FLUX 尚未提交',
+                'execution_device_unavailable',
+            )
         try:
             architecture_guard(flux_catalog.capture(host.DB, value.engine_url, selections))
         except ValueError as exc:
             fail(422, '驗證期間 ' + str(exc))
         job = cancellation.persist(host, job, status='submitting', preflight_warnings=[WARNING])
         try:
-            response = await client.post(value.engine_url + '/prompt', json=dict(
-                prompt=graph, prompt_id=job_id, client_id=job_id, extra_data=dict(model_atelier_job_id=job_id)))
+            async with compute_lease.dispatch(host.ROOT, value.engine_url):
+                response = await client.post(
+                    value.engine_url + '/prompt',
+                    json=dict(
+                        prompt=graph,
+                        prompt_id=job_id,
+                        client_id=job_id,
+                        extra_data=dict(model_atelier_job_id=job_id),
+                    ),
+                )
             if response.status_code == 400:
                 try:
                     rejected = response.json()
                 except ValueError:
                     rejected = dict(http_status=400, body=response.text)
-                fail(422, 'ComfyUI 拒絕 FLUX 工作流程；完整錯誤保存在原任務。',
-                     'workflow_rejected', upstream_error=rejected)
+                fail(
+                    422,
+                    'ComfyUI 拒絕 FLUX 工作流程；完整錯誤保存在原任務。',
+                    'workflow_rejected',
+                    upstream_error=rejected,
+                )
             response.raise_for_status()
             result = response.json()
             prompt_id = str(UUID(result['prompt_id']))
+        except compute_lease.ComputeBusy as exc:
+            fail(409, str(exc), 'training_busy')
         except (httpx.HTTPError, ValueError, KeyError, TypeError):
-            return jobs.compare_update(host.DB, job, status='unknown', error='提交結果待確認；請查詢原任務，不要重新生成。')[0]
-        return jobs.compare_update(host.DB, job, status='queued', prompt_id=prompt_id, submission=result)[0]
+            return jobs.compare_update(
+                host.DB, job, status='unknown', error='提交結果待確認；請查詢原任務，不要重新生成。'
+            )[0]
+        return jobs.compare_update(
+            host.DB, job, status='queued', prompt_id=prompt_id, submission=result
+        )[0]
 
 
 def install(app, host, job_lock):
@@ -265,8 +402,13 @@ def install(app, host, job_lock):
 
     def save_draft(value, draft_id=None):
         try:
-            return drafts.save(host.DB, value.model_dump(exclude={'revision'}),
-                str(draft_id) if draft_id else None, value.revision, prefix='flux_draft:')
+            return drafts.save(
+                host.DB,
+                value.model_dump(exclude={'revision'}),
+                str(draft_id) if draft_id else None,
+                value.revision,
+                prefix='flux_draft:',
+            )
         except KeyError:
             raise HTTPException(404, '找不到 FLUX 草稿')
         except ValueError as exc:
@@ -288,8 +430,12 @@ def install(app, host, job_lock):
     def preview(value: Input):
         graph = build(value)
         # Browsers must export this string, never stringify parsed uint64 numbers.
-        return dict(workflow_id=WORKFLOW_ID, workflow=graph,
-                    workflow_json=json.dumps(graph, ensure_ascii=False, indent=2), warnings=[WARNING])
+        return dict(
+            workflow_id=WORKFLOW_ID,
+            workflow=graph,
+            workflow_json=json.dumps(graph, ensure_ascii=False, indent=2),
+            warnings=[WARNING],
+        )
 
     @app.post('/api/flux/generate')
     async def generate(value: Generate):
@@ -308,8 +454,14 @@ def install(app, host, job_lock):
             value = extract(job)
         except ValueError as exc:
             raise HTTPException(422, str(exc))
-        return dict(job_id=str(job_id), settings=value, component_metadata=job.get('component_metadata'), runtime_metadata=job.get('runtime_metadata'),
-                    engine_matches=job['engine_url'] == host.engine_url(), warnings=[WARNING, '已保留原引擎與設定；未建立任務。'])
+        return dict(
+            job_id=str(job_id),
+            settings=value,
+            component_metadata=job.get('component_metadata'),
+            runtime_metadata=job.get('runtime_metadata'),
+            engine_matches=job['engine_url'] == host.engine_url(),
+            warnings=[WARNING, '已保留原引擎與設定；未建立任務。'],
+        )
 
     @app.get('/api/flux/artworks/{artwork_id}/creation-settings')
     def artwork_settings(artwork_id: UUID):
@@ -321,5 +473,11 @@ def install(app, host, job_lock):
             value = extract(item)
         except ValueError as exc:
             raise HTTPException(422, str(exc))
-        return dict(artwork_id=str(artwork_id), settings=value, component_metadata=item.get('component_metadata'), runtime_metadata=item.get('runtime_metadata'),
-                    engine_matches=item['engine_url'] == host.engine_url(), warnings=[WARNING, '已完整載入原作品設定；未建立任務。'])
+        return dict(
+            artwork_id=str(artwork_id),
+            settings=value,
+            component_metadata=item.get('component_metadata'),
+            runtime_metadata=item.get('runtime_metadata'),
+            engine_matches=item['engine_url'] == host.engine_url(),
+            warnings=[WARNING, '已完整載入原作品設定；未建立任務。'],
+        )

@@ -30,7 +30,7 @@ Set-Location ..
 4. 明確按生成並查看任務；提交回應遺失時恢復原 UUID，避免重送。完成後到作品庫明確匯入／補齊圖片。
 5. 已匯入作品可離線預覽、下載原圖／workflow、載入支援流程的原設定；載入不會自動生成。
 
-首次硬體與模型配置需自行驗證。RTX 3060 的 Pony／Animagine 固定案例見 [驗收索引](docs/index.md#實機與歷史證據)；RTX 4080、FLUX GPU 生成與訓練仍有待辦。
+首次硬體與模型配置需自行驗證。RTX 3060 的 Pony／Animagine 固定案例見 [驗收索引](docs/index.md#實機與歷史證據)；RTX 4080、FLUX GPU 生成及真實畫風／角色訓練品質仍有待辦。
 
 Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完整授權適用關係仍未核實；來源、完整參考條文及依賴缺口見 [M01 查核](docs/models/pony-v6-xl-license.md)。
 
@@ -47,7 +47,7 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 | 實驗 | 通用／動漫案例、模型／提示詞／取樣參數有限比較、保存／匯入、任務關聯與原始 JSON 報告 | 各組手動生成，無自動重試或品質評分；[方案](docs/experiment-plans.md)、[結果](docs/experiment-runs.md) |
 | 執行 | 進度、取消／條件化停止、失敗保存、環境快照、原引擎連續資源取樣、E01 裝置回報 | 觀察最高值不等於任務專用峰值；[量測範圍](docs/job-measurements.md)、[裝置回報](docs/execution-device.md) |
 
-尚未提供訓練、多租戶／付費、自訂節點編輯器或官方付費 API。設定還原不保證跨環境逐像素一致；實測的來源條件與品質偏差均保留。
+訓練目前提供 Windows 獨立環境及 SDXL UNet LoRA 本機 CLI，可凍結設定、停止、續訓並阻擋衝突生成；操作見 [T03](docs/training/runtime.md)。尚未提供訓練網頁、多租戶／付費、自訂節點編輯器或官方付費 API。設定還原不保證跨環境逐像素一致；實測的來源條件與品質偏差均保留。
 
 ## 動漫畫風的下一步
 
@@ -57,11 +57,11 @@ R05 已完成兩模型、三題材、兩 seed、提示標籤及新素材 denoise
 
 L01 另完成像素畫 LoRA 的固定來源／獨立相容副本及 14 組順序、強度、seed、題材比較，保留原格式未套用與 LCM 模糊等失敗；新增六筆歷史條件不代表當前品質通過。見[安裝與使用](docs/models/pixel-art-lora-sdxl.md)、[L01 驗收](docs/validation/style-matrix-20261023.md)。
 
-第一輪可從三位作者／畫風各十張開始，每組七張候選參考、三張保留評估；只測一種畫風也可先準備一組。確定試訓時，每組可先用 20–50 張訓練圖，另留 5–10 張評估圖。這些是起始配額，不是硬性門檻或品質保證。R02 已接入單張參考圖 adapter；訓練仍未實作，素材用途標籤不會啟用畫風條件。
+第一輪可從三位作者／畫風各十張開始，每組七張候選參考、三張保留評估；只測一種畫風也可先準備一組。確定試訓時，每組可先用 20–50 張訓練圖，另留 5–10 張評估圖。這些是起始配額，不是硬性門檻或品質保證。R02 已接入單張參考圖 adapter；T03 技術驗收僅用自製幾何圖片，現有作者圖片仍待審核，素材用途標籤不會啟用畫風條件。
 
 2026-10-23 已收到 `artist_ref/ハシスタジオ_pixiv` 的 22 個檔案，去重後為 20 個不同檔案內容，並已確認棕髮綠眼、綠色髮飾的角色目標。**本輪 R02 沒有訓練模型：每次只用一張參考圖，實際選用 1 張畫風圖及 1 張角色圖分別測試，另留 6 張評估，不把 20 張全送入生成或訓練。** 檔名、差分分組、用途與之後 T01／T02 的補圖時點見 [R02 圖片用途紀錄](docs/validation/reference-inputs-20261023.md)。
 
-T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色分開的 SDXL LoRA 候選、固定基底、未來比較與圖片提醒；沒有開始訓練。T02 已完成 [資料契約／本機工具](docs/training/dataset-contract.md)與[官方介面評估](docs/training/tool-interface-research.md)：22 檔各建兩條路徑，10 張訓練候選、6 張開發評估、6 張排除；標註／來源及角色身分仍待審查，真實資料包尚不能匯出。R01 已完成 pose／depth 流程與固定案例驗收，R03 亦已完成有限修補比較，但 Fooocus 未優於一般修補；T03／T04 另排。
+T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色分開的 SDXL LoRA 候選、固定基底、未來比較與圖片提醒；沒有開始訓練。T02 已完成 [資料契約／本機工具](docs/training/dataset-contract.md)與[官方介面評估](docs/training/tool-interface-research.md)：22 檔各建兩條路徑，10 張訓練候選、6 張開發評估、6 張排除；標註／來源及角色身分仍待審查，真實資料包尚不能匯出。R01 已完成 pose／depth 流程與固定案例驗收，R03 亦已完成有限修補比較，但 Fooocus 未優於一般修補；T03 已有獨立環境與技術試訓，T04 接續產物回登與比較。
 
 完整的圖片選擇、資料分割／版本、有限任務數、模組擴充及驗收方式見 [動漫畫風驗證與開發計畫](docs/anime-style-development.md)。
 
@@ -100,6 +100,7 @@ model-atelier/
 ├── models/                     # 固定模型來源、版本與驗證資訊的 JSON manifest
 ├── experiments/                # 固定實驗案例與比較用 JSON 定義
 ├── schemas/                    # 訓練資料契約 v1 JSON Schema（不是生成 API）
+├── training/                   # 獨立 trainer／tokenizer 固定來源與 Windows 依賴鎖
 ├── scripts/                    # 環境檢查、模型安裝與實機驗證工具
 ├── docs/                       # 操作、架構、功能契約與驗收文件
 │   ├── index.md                # 完整文件索引，按操作目的分類
@@ -109,7 +110,7 @@ model-atelier/
 │   ├── frontend-api.md         # 前端 HTTP 契約、取消與原請求恢復
 │   ├── ui-guidelines.md        # 介面與互動規範
 │   ├── models/                # 模型來源、LoRA、FLUX 與參考流程說明
-│   ├── training/              # 訓練需求、資料契約／CLI 與候選工具介面
+│   ├── training/              # 訓練需求、資料契約、獨立環境／run CLI 與工具介面
 │   ├── validation/            # 限定環境與案例的驗收紀錄
 │   └── history/               # 歷史文件快照，僅供追溯
 ├── requirements.txt           # 後端直接依賴
@@ -135,6 +136,7 @@ model-atelier/
 | 尋找功能說明 | [文件索引](docs/index.md)：按創作、作品、實驗與模型流程查閱完整文件 |
 | 畫風／角色參考 | [R02 操作與契約](docs/models/ipadapter-reference.md)：單張推論、元件登記、精確還原；[圖片用途](docs/validation/reference-inputs-20261023.md)明確區分參考與訓練 |
 | 準備訓練資料 | [T02 契約與 CLI](docs/training/dataset-contract.md)：唯讀盤點、逐張審查、固定分割、不可覆寫出口；[本批缺項](docs/validation/training-dataset-20261023.md)，沒有啟動訓練 |
+| 本機 SDXL 訓練 | [T03 環境與操作](docs/training/runtime.md)：獨立安裝、凍結 run、停止／續訓與生成互斥；[資源與限制](docs/validation/training-runtime-20261025.md)，技術測試不代表作者品質 |
 | 專用流程保存與交換 | [R07 格式評估](docs/specialized-workflow-formats.md)：局部編輯／Canny 的版本別能力、明確拒絕及完整原流程下載 |
 | 理解或修改程式 | [架構與資料流](docs/architecture.md)、[應用程式工廠](docs/application-factory.md)、[前端 API](docs/frontend-api.md)：模組責任、配置隔離、通訊與任務生命週期 |
 | 驗證變更與清單效能 | [品質檢查與 CI](docs/quality-checks.md)、[分頁與量測](docs/list-pagination.md)：重跑命令、相容策略與驗收證據 |

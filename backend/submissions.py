@@ -38,7 +38,7 @@ from backend import (
     adapter_catalog,
 )
 from backend.reference_workflows import IMG2IMG_ID
-from backend import diagnostics
+from backend import compute_lease, diagnostics
 
 
 def _matches_recorded_submission(existing, value, reference, experiment, generation_settings):
@@ -154,6 +154,10 @@ def install(app, host):
             return existing
         if value.engine_url != host.engine_url():
             raise HTTPException(409, '引擎設定已變更，請重新載入模型庫')
+        try:
+            compute_lease.check_training(host.ROOT, value.engine_url)
+        except compute_lease.ComputeBusy as exc:
+            raise HTTPException(409, str(exc)) from exc
         loaders = [
             n['inputs'].get('ckpt_name')
             for n in value.workflow.values()
@@ -475,15 +479,16 @@ def install(app, host):
                     fail(409, str(exc))
             job = cancellation.persist(host, job, status='submitting')
             try:
-                response = await client.post(
-                    value.engine_url + '/prompt',
-                    json={
-                        'prompt': value.workflow,
-                        'prompt_id': job_id,
-                        'client_id': job_id,
-                        'extra_data': {'model_atelier_job_id': job_id},
-                    },
-                )
+                async with compute_lease.dispatch(host.ROOT, value.engine_url):
+                    response = await client.post(
+                        value.engine_url + '/prompt',
+                        json={
+                            'prompt': value.workflow,
+                            'prompt_id': job_id,
+                            'client_id': job_id,
+                            'extra_data': {'model_atelier_job_id': job_id},
+                        },
+                    )
                 if response.status_code == 400:
                     try:
                         rejected = response.json()
@@ -498,6 +503,8 @@ def install(app, host):
                 response.raise_for_status()
                 result = response.json()
                 prompt_id = str(UUID(result['prompt_id']))
+            except compute_lease.ComputeBusy as exc:
+                fail(409, str(exc), 'training_busy')
             except (httpx.RequestError, httpx.HTTPStatusError, ValueError, KeyError, TypeError):
                 return jobs.compare_update(
                     host.DB, job, status='unknown', error='提交結果待確認；請查詢狀態，不要重新生成'
