@@ -1,5 +1,7 @@
 # Pony V6 XL 授權與依賴核對
 
+2026-10-26 追加：[第一手來源補查](pony-v6-xl-license-followup-20261026.md)找到作者官網 V6 的修改版 Fair AI 聲明；[本機內容與來源指紋](../validation/pony-license-audit-20261026.json)核對完整權重及四組內含元件。來源間適用關係與元件精確 revision 仍缺失，`terms_verified`／M01 完整驗收維持未通過。以下保留 2026-10-23 查核原紀錄。
+
 核對日期：2026-10-23（Asia/Taipei）。範圍為本專案 manifest 指定的 `AstraliteHeart/pony-diffusion-v6`、修訂 `5ec9c05863255568f1b59753e3838107befaa712`、`v6.safetensors`。本次完成公開證據查核，**M01 驗收維持未結案，`terms_verified: false`**：固定來源只有授權標記；另一發布頁對相同 SHA256 的模型列出不同授權及商業推論限制，兩者的適用關係與完整依賴鏈尚未核實。
 
 ## 固定權重與來源證據

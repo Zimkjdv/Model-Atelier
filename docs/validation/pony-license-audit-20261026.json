@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "checked_date": "2026-10-26",
+  "audit_status": "requires_publisher_clarification",
+  "acceptance_complete": false,
+  "terms_verified": false,
+  "source_receipts": {
+    "hf-readme": {
+      "url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/raw/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+      "status": 200,
+      "bytes": 39,
+      "sha256": "5e19452d23c8d763b95aee6643804d5787b0852a993bcc6886afdcaec1227241"
+    },
+    "hf-tree": {
+      "url": "https://huggingface.co/api/models/AstraliteHeart/pony-diffusion-v6/tree/5ec9c05863255568f1b59753e3838107befaa712",
+      "status": 200,
+      "bytes": 497,
+      "sha256": "dc82bbf01a464e886028474aa36342b30f72690d6d98e2318edbb0dfa90b0fa6"
+    },
+    "hf-commits": {
+      "url": "https://huggingface.co/api/models/AstraliteHeart/pony-diffusion-v6/commits/main",
+      "status": 200,
+      "bytes": 471,
+      "sha256": "89e775050e6801c52ca6968b30d630f4091ed86a160c0faeaccbdda37e470abf"
+    },
+    "civitai-model": {
+      "url": "https://civitai.com/api/v1/models/257749",
+      "status": 200,
+      "bytes": 19381,
+      "sha256": "264d9f60c8dbc382e4e215af84f4b8094b28c58772b811f81ab6d21e14ed215b",
+      "license_fragment_sha256": "0f7a84a57c91437e080b25daea4840767c26c2bc5e834d338154bc3802396e10"
+    },
+    "civitai-version": {
+      "url": "https://civitai.com/api/v1/model-versions/290640",
+      "status": 200,
+      "bytes": 11360,
+      "sha256": "35dc20d72507fa81bd0461d3704c514d583ed5ca3914aa14965978a8906ced27"
+    },
+    "publisher-v6": {
+      "url": "https://purplesmart.ai/pony/content6x",
+      "status": 200,
+      "bytes": 42587,
+      "sha256": "47ec05ff9fdb134aafa6a115d9d0c59f97b3e6de2702afb7f1a8721bbd3ba0ba",
+      "normalized_license_fragment_sha256": "45e91efc1065b444b12fefe8e10004c4b9aba1399b379b05d6e307ab7f887cc2",
+      "normalized_license_fragment_bytes": 493
+    },
+    "publisher-license": {
+      "url": "https://purplesmart.ai/license",
+      "status": 200,
+      "bytes": 55344,
+      "sha256": "3078fa3d7e15c8315a334006b5143645a51a9871d73e5f56cada794871d5e35e"
+    },
+    "fair-ai-fulltext": {
+      "url": "https://freedevproject.org/faipl-1.0-sd/",
+      "status": 200,
+      "bytes": 14576,
+      "sha256": "430e926fd41937bb6ec02716534ceadc0386f54efec48e77b2ee4e1aaa0f53c0"
+    }
+  },
+  "local_weight_inspection": {
+    "schema_version": 1,
+    "checked_at": "2026-10-25T21:34:25.767099+00:00",
+    "filename": "pony-v6-xl.safetensors",
+    "size_bytes": 6938041050,
+    "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+    "header_bytes": 365152,
+    "header_sha256": "00dadb522a876c80c4ed797cc1bac44bf0bda182775fbcbd7f354393b1df0d14",
+    "metadata": {
+      "modelspec.prediction_type": "epsilon",
+      "modelspec.date": "2023-12-20T18:54:25",
+      "modelspec.implementation": "https://github.com/Stability-AI/generative-models",
+      "modelspec.sai_model_spec": "1.0.0",
+      "modelspec.resolution": "1024x1024",
+      "modelspec.timestep_range": "0,1000",
+      "modelspec.architecture": "stable-diffusion-xl-v1-base",
+      "modelspec.title": "v6-full-te"
+    },
+    "components": {
+      "clip_l": {
+        "tensor_count": 197,
+        "payload_bytes": 246121114,
+        "dtypes": {
+          "F16": 197
+        },
+        "fingerprint_sha256": "b0efa8af81f9ae6445f5b58943269401ab4fc72becef4fe30e2c1084e9cd6362",
+        "upstream_revision": null,
+        "upstream_license_verified": false
+      },
+      "clip_g": {
+        "tensor_count": 390,
+        "payload_bytes": 1389319682,
+        "dtypes": {
+          "F16": 390
+        },
+        "fingerprint_sha256": "706b6ddbf09d195bb2caf5a3864ef499ecc45179e5b6b54a6df808a597322868",
+        "upstream_revision": null,
+        "upstream_license_verified": false
+      },
+      "vae": {
+        "tensor_count": 248,
+        "payload_bytes": 167307726,
+        "dtypes": {
+          "F16": 248
+        },
+        "fingerprint_sha256": "3343a02b287985943e80dfed362540541d1a40d1fe84728f4db44787985d5727",
+        "upstream_revision": null,
+        "upstream_license_verified": false
+      },
+      "diffusion_model": {
+        "tensor_count": 1680,
+        "payload_bytes": 5134927368,
+        "dtypes": {
+          "F16": 1680
+        },
+        "fingerprint_sha256": "dd8b7014438da501502218047e962f28388142c4ebeaa58e5e24e3cace84c5d9",
+        "upstream_revision": null,
+        "upstream_license_verified": false
+      }
+    },
+    "tensor_count": 2515,
+    "terms_verified": false,
+    "conversion_lineage_verified": false,
+    "scope": "Exact local file/tensor fingerprints only; metadata is an unverified embedded declaration, and no upstream revision or legal applicability is inferred.",
+    "model_id": "pony-v6-xl",
+    "source": {
+      "provider": "Hugging Face",
+      "repository": "AstraliteHeart/pony-diffusion-v6",
+      "revision": "5ec9c05863255568f1b59753e3838107befaa712",
+      "filename": "v6.safetensors",
+      "page_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
+      "download_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/resolve/5ec9c05863255568f1b59753e3838107befaa712/v6.safetensors"
+    }
+  },
+  "blockers": [
+    "Applicability of fixed HF Open RAIL-M label versus publisher V6 modified Fair AI statement remains unexplained",
+    "Exact training base and embedded CLIP-L/CLIP-G/VAE source revisions and notices are not supplied"
+  ],
+  "research_report": "docs/models/pony-v6-xl-license-followup-20261026.md",
+  "fingerprint_definition": "SHA256 of canonical sorted tensor records (name, dtype, shape, byte length, SHA256 of tensor bytes); identifies local components without assigning upstream origin"
+}

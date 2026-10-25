@@ -20,7 +20,7 @@
     "url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/blob/5ec9c05863255568f1b59753e3838107befaa712/README.md",
     "source": "pinned Hugging Face card metadata; same-hash Civitai publication declares different terms",
     "terms_verified": false,
-    "note": "2026-10-23 查核：固定 Hugging Face 修訂只附標記；相同 SHA256 的 Civitai V6 XL 發布頁列出修改版 Fair AI Public License 1.0-SD 及網站／app 變現推論限制。兩來源條款及依賴授權的適用關係未核實，不以標準全文已閱讀或 GPU 成功代替授權確認。",
+    "note": "2026-10-23 查核：固定 Hugging Face 修訂只附標記；相同 SHA256 的 Civitai V6 XL 發布頁列出修改版 Fair AI Public License 1.0-SD 及網站／app 變現推論限制。兩來源條款及依賴授權的適用關係未核實，不以標準全文已閱讀或 GPU 成功代替授權確認。 2026-10-26 補查找到作者官網 V6 修改版 Fair AI 聲明；本機四組元件已建立內容指紋，但來源間適用關係及內含元件精確 revision 仍未知，terms_verified 保持 false。",
     "review": {
       "checked_at": "2026-10-23",
       "status": "conflicting_upstream_sources",
@@ -62,13 +62,28 @@
           "sha256": "19b6998b569b53ac1fc2158a8a3202c8699a9a4605b47075715d9c96be7fb6d0"
         }
       ],
-      "report": "docs/models/pony-v6-xl-license.md"
+      "report": "docs/models/pony-v6-xl-license.md",
+      "last_rechecked_at": "2026-10-26",
+      "followup_report": "docs/models/pony-v6-xl-license-followup-20261026.md",
+      "evidence_report": "docs/validation/pony-license-audit-20261026.json",
+      "publisher_v6_declaration": {
+        "url": "https://purplesmart.ai/pony/content6x",
+        "normalized_license_fragment_sha256": "45e91efc1065b444b12fefe8e10004c4b9aba1399b379b05d6e307ab7f887cc2",
+        "mutable_source": true,
+        "applies_to_fixed_hf_release_clarified": false
+      },
+      "embedded_components_fingerprinted": true,
+      "acceptance_complete": false
     }
   },
   "dependencies": {
     "workflow": "checkpoint-text2image-v1",
     "loader": "CheckpointLoaderSimple",
-    "required_outputs": ["MODEL", "CLIP", "VAE"],
+    "required_outputs": [
+      "MODEL",
+      "CLIP",
+      "VAE"
+    ],
     "extra_custom_nodes": [],
     "runtime": "ComfyUI in its separate venv with that engine revision's requirements and installed PyTorch; platform dependencies are in requirements.lock.txt. See the saved execution environment and GPU validation.",
     "embedded_component_source_revisions": null,

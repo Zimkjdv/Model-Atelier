@@ -1,5 +1,13 @@
 # Model Atelier — Changelog
 
+## 2026-10-26 · M01 作者 V6 聲明補查與元件指紋（完整驗收仍待來源）
+
+新增作者官網真正 V6 專頁的修改版 Fair AI 聲明，與固定 HF 的 Open RAIL-M 標記、相同 SHA256 的 Civitai 發布、官網 V7／Pony License 及六筆未被 owner 採納的 discussion／PR 分開核對。官網 V6 與 Civitai 的具名特許句不完全相同，不推定優先序或特許取消。可變 HTML 的 Cloudflare email 編碼不當成授權變更，另保存有定義的 License 片段指紋。
+
+新增無 GPU／模型載入的本機 safetensors 串流核對器：完整 Pony SHA256 通過，2,515 個 F16 張量分為 diffusion 1,680、CLIP-L 197、CLIP-G 390、VAE 248，保存排序後內容指紋。檔內 metadata 沒有精確上游／授權，不能依 `v6-full-te` 名稱推導來源。模型 manifest 追加本次來源及證據連結，未改固定下載、權重、原 provenance 或正式 DATA。
+
+77 項相關測試（1 既有跳過）、格式／靜態／Vue 型別通過。見 [第一手補查與重跑](docs/models/pony-v6-xl-license-followup-20261026.md)、[JSON](docs/validation/pony-license-audit-20261026.json)。**本次工具與公開資料補查完成，但固定 HF／作者聲明的適用關係、內含元件精確 revision 仍需發布者證據，M01 與 `terms_verified` 不勾選／不改 true**。未完成總數維持 10 主項／11 子項；先提交並推送本批結果後，再接續 M02，不以程式測試替代授權驗收。
+
 ## 2026-10-26 · E04 推論／訓練資源分開登記與 CP950 修復
 
 E03 已先以 `3cce745` commit／push。新增唯讀訓練資源匯出器，核對原 manifest、最終完整步數、產物 receipt／hash 及程序／租約釋放，保留環境／資料／基底／完整 trainer arguments、實際 bucket、程式／日誌 hash；allocator、程序 RSS／Windows peak working set 與整卡取樣分開，未知保持 null。九筆 RTX 4080 推論獨立登記，不拿推論結果替代訓練。
