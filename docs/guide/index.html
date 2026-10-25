@@ -487,6 +487,30 @@
           ></figure
         >
         <p class="done">確認完成：run 已完成或已停止，程序與租約均釋放，且保留日誌與完整保存點。</p>
+        <h3>保存可追查的訓練報告（T08）</h3>
+        <p
+          >在「訓練紀錄與診斷報告」選原 run，按「預覽訓練報告」，檢查後再下載 JSON。紀錄暫不可讀的
+          run 也可選取；損壞／缺失欄位保留未知，不需要重新開始訓練。</p
+        >
+        <p
+          >預設排除原圖、caption、本機路徑、GPU UUID 與日誌；仍含資料集識別及 run
+          UUID。需要追查錯誤才勾選附上日誌，重新預覽並檢查其中的路徑／文字後再自行分享。下載與本次預覽
+          bytes 相同，活動 run
+          不會自動刷新這份快照。報告只讀紀錄，不代替完整備份、權重校驗或品質驗收。</p
+        >
+        <figure
+          ><a class="zoom" href="images/training-report.png"
+            ><img
+              src="images/training-report.png"
+              width="1064"
+              height="857"
+              alt="訓練報告介面提供已登記 run 選單、選擇性日誌、JSON 預覽與下載按鈕，預覽標示唯讀及未驗證 payload"
+              loading="lazy" /></a
+          ><figcaption
+            >圖 6｜T08 原生平台只讀既有幾何圖 run，報告狀態
+            completed。沒有重新訓練、沒有使用作者圖，下載內容與預覽一致。</figcaption
+          ></figure
+        >
       </section>
 
       <section id="evaluate">

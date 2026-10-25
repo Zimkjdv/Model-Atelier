@@ -95,7 +95,9 @@
     "backend/test_training_review.py",
     "backend/training_control.py",
     "backend/training_control_api.py",
-    "backend/test_training_control.py"
+    "backend/test_training_control.py",
+    "backend/training_report.py",
+    "backend/test_training_report.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -154,7 +156,9 @@
     "frontend/src/TrainingWorkspace.vue",
     "frontend/tests/training-control.spec.ts",
     "frontend/src/TrainingReviewNavigator.vue",
-    "frontend/tests/training-review-navigation.spec.ts"
+    "frontend/tests/training-review-navigation.spec.ts",
+    "frontend/src/TrainingReport.vue",
+    "frontend/tests/training-report.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

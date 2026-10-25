@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { api } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { useUnsavedChanges } from './unsavedChanges'
+import TrainingReport from './TrainingReport.vue'
 
 type RequestRecord = {
   request_id: string
@@ -453,6 +454,7 @@ onUnmounted(() => {
             {{ label(item.status) }}</button
           ></div
         >
+        <TrainingReport :runs="listing.runs" :current-id="current?.run_id || ''" />
         <template v-if="current"
           ><h3>{{ current.configuration.label }}</h3
           ><p>Run UUID：{{ current.run_id }}</p

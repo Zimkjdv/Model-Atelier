@@ -2,7 +2,7 @@
 
 現行入口是 [README](../README.md)，待辦與驗收條件以 [ROADMAP](../ROADMAP.MD) 為準；歷史測試數不表示目前所有功能已驗收。
 
-初次操作先讀 [HTML 圖文使用教學](guide/index.html)：用瀏覽器開啟本機檔案，包含五張介面截圖、操作步驟、資料審查與訓練流程、常見問題及備份提醒，可離線閱讀／列印。深入契約與開發細節再依下列索引閱讀。
+初次操作先讀 [HTML 圖文使用教學](guide/index.html)：用瀏覽器開啟本機檔案，包含六張介面截圖、操作步驟、資料審查與訓練流程、常見問題及備份提醒，可離線閱讀／列印。深入契約與開發細節再依下列索引閱讀。
 
 ## 上游參考與開發策略
 
@@ -48,6 +48,7 @@
 - [T05 訓練圖片與標註審查介面](training/workspace.md)：沿用 T02，原圖預覽、版本保存、來源重驗與明確資料出口，不自動批准作者圖
 - [T07 缺項搜尋、篩選與圖片定位](training/workspace.md#t07-缺項導覽)、[桌面／窄版驗收](validation/training-review-navigation-20261025.md)：依已保存檢查完整分頁，保留未保存標註及 final test 不預覽規則
 - [T06 本機訓練控制與產物銜接](training/workspace.md#t06-本機訓練與產物)、[停止／續訓與模型回登驗收](validation/training-control-20261025.md)：原 UUID 查回、單次啟動與資源釋放，建比較方案不生成
+- [T08 訓練報告預覽與原始 JSON 下載](training/workspace.md#t08-訓練報告)、[唯讀驗收](validation/training-report-20261025.md)：來源／狀態／資源與回執觀察，日誌另選，不代替 payload 驗證或備份
 
 - [T01 訓練需求與驗收範圍 v1](training/requirements.md)、[需求確認證據](validation/training-requirements-20261023.md)：畫風／角色分開、僅 SDXL 候選，沒有啟動訓練
 
@@ -58,6 +59,8 @@
 - [T04 產物回登與固定比較](training/artifacts.md)、[技術載入／保存／離線還原證據](validation/training-artifacts-20261025.md)：原生模型庫與六份比較方案，品質未認列
 
 ## 模型與執行環境
+
+- [FLUX／RTX 3060 實作前置判斷](models/flux-rtx3060-planning.md)：官方量化／卸載依據、GGUF 流程差異、4080 提醒規則及未驗收範圍
 
 - [部署決策與本機存取](deployment.md)、[D01 HTTP／UI 驗收](validation/local-deployment-20261025.md)：同一台電腦、角色來源與連線邊界
 - [選用 Docker 本機部署](docker.md)、[D02 GPU／出圖／資料持久化與還原驗收](validation/docker-deployment-20261025.md)：容器平台接原生 ComfyUI，保留原生操作與訓練限制

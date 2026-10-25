@@ -2,7 +2,7 @@
 
 from typing import Literal
 from uuid import UUID
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, Response
 import httpx
 from pydantic import Field
 from backend import training_data as data, training_runs as runs, training_control
@@ -122,6 +122,19 @@ def install(app, host):
     @app.get('/api/training/runs/{uid}')
     def detail(uid: UUID):
         return call(service.detail, uid)
+
+    @app.get('/api/training/runs/{uid}/report')
+    def report(uid: UUID, include_logs: bool = False):
+        raw = call(service.report, uid, include_logs)
+        return Response(
+            raw,
+            media_type='application/json',
+            headers={
+                'Content-Disposition': f'attachment; filename="training-report-{uid}.json"',
+                'Cache-Control': 'no-store',
+                'X-Content-Type-Options': 'nosniff',
+            },
+        )
 
     @app.post('/api/training/runs/{uid}/start', status_code=202)
     def start(uid: UUID):

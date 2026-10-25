@@ -55,6 +55,8 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 
 ## 動漫畫風的下一步
 
+訓練操作另有 [T07 缺項導覽](docs/training/workspace.md#t07-缺項導覽)及 [T08 訓練報告](docs/training/workspace.md#t08-訓練報告)：篩選並定位待審查圖片，或預覽／下載原 run 的有界紀錄；導覽不批准圖片，報告不重跑訓練。FLUX 下一階段的官方資料、3060／4080 提醒與 GGUF 接入差異見 [實作前置判斷](docs/models/flux-rtx3060-planning.md)，目前仍待來源存取與 GPU 驗收。
+
 以動漫畫風為目標時，建議依 **R05 品質基準 → L01 畫風 LoRA → R02 參考圖 adapter；使用者指定後續為 T01 → T02 → R01 → R03** 推進。先沿用現有生成與比較功能，再依結果決定是否訓練；整體 Vue／FastAPI／SQLite／ComfyUI 架構保留。
 
 R05 已完成兩模型、三題材、兩 seed、提示標籤及新素材 denoise 的 18 件有限比較，保存逐圖失敗觀察與離線核對。可在比較方案選動漫測試集或正／反向提示詞軸；R05 當時未使用作者圖，指定目標的後續比較另見 R02；見 [R05 基準與限制](docs/validation/anime-baseline-20261023.md)。

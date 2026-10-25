@@ -55,6 +55,18 @@ T05 將 T02 的清單審查與資料出口接到 `#/training`。原生平台側�
 
 既有 CLI run 可輸入 UUID「登記既有 run」，只讀受管理 runtime 的紀錄，不啟動或自動掃描其他 checkout。1024、長時間／多圖訓練及其他 GPU 工作負載仍需 E04 實測，不沿用 512 技術容量數字。
 
+## T08 訓練報告
+
+「訓練執行」的「訓練紀錄與診斷報告」可選擇已登記 run（含紀錄不可讀的項目），按「預覽訓練報告」，確認內容後再「下載此訓練報告 JSON」。它不需開始／停止訓練，也不連接引擎；下載保存剛才預覽的原始 bytes，不重新取樣。改選 run 或日誌範圍會清空預覽，須明確重新讀取；不接受舊回應覆蓋新選擇。
+
+預設包含凍結參數、資料／基底／環境 hash、resume 關係、最後保存狀態、當時的程序／租約觀察、資源取樣及產物／checkpoint 回執摘要。排除 label、本機來源／Python 路徑、GPU UUID、原圖、caption、完整 study、任意 metadata 及日誌。預覽仍含資料集識別與可關聯 run 的 UUID；不是匿名報告，請閱讀後自行決定是否分享。
+
+需要查看錯誤時，另勾「附上 worker 日誌尾段與狀態訊息」，再預覽。日誌尾段最多 64 KiB，狀態訊息最多 4000 字元；可能含本機路徑與使用者文字，未自動去識別。UTF-8 邊界若被截斷以替代字元顯示，回傳 truncation 與 captured_bytes。預設完全不讀 worker.log。
+
+API 為唯讀 `GET /api/training/runs/<UUID>/report?include_logs=false`，僅限同一 DATA 已登記的 run；未知 UUID 回 404，容器／非 Windows 回 409。單個 JSON 最多讀 4 MiB、checkpoint 回執最多 256 KiB；報告最多 1 MiB，只保留最近 100 份 checkpoint 回執與最近 100 筆資源取樣，總筆數另列。壞 JSON、重複 key、缺檔或連結保留 missing／unreadable 與問題代碼，狀態無法可靠觀察時維持 unknown、resources_released=null。
+
+報告分次讀取，不是原子快照；活動 run 可能繼續改變。`manifest.matches_state` 只核對兩份 metadata 的關係，`artifact.matches_run`／checkpoint matches_run 只核對回執來源，**沒有重新讀取／驗證原圖、work、權重或 optimizer**。安裝／續訓前仍由 T03／T04 完整驗證；metadata 報告不能代替備份、可續訓證明、模型品質或 GPU 相容性驗收。見 [T08 有限實機與回歸](../validation/training-report-20261025.md)。
+
 ## 中斷與資料位置
 
 SQLite 的 `training_request:*` 保存準備／續訓／比較請求，`training_run_link:*` 保存明確登記的 run，`training_start:*` 保存單次啟動要求。平台在準備中退出後顯示 interrupted，不自動重做；啟動標記已保存但 worker 未確認時顯示 start_unknown，保留原 run／日誌，先核對再明確建立新嘗試。

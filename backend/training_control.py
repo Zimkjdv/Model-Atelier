@@ -304,3 +304,19 @@ class Control:
         except Exception as exc:
             value = self.read('training_start:' + uid)
             self.put('training_start:' + uid, value | dict(error=str(exc)[:2000]))
+
+    def report(self, uid, include_logs=False):
+        from backend import training_report
+
+        uid = identifier(uid)
+        link = self.read('training_run_link:' + uid)
+        value = training_report.collect(self.host.ROOT, uid, include_logs=include_logs)
+        value['request_id'] = link.get('request_id')
+        try:
+            start = self.read('training_start:' + uid)
+        except KeyError:
+            start = None
+        value['start_requested'] = start is not None
+        if start and value['observation']['status'] == 'prepared':
+            value['observation']['status'] = 'start_unknown'
+        return training_report.encode(value)

@@ -26,6 +26,8 @@
 
 ## 驗證範圍
 
+使用者已要求先核對 RTX 3060 的官方需求與實測範圍，需要量化／卸載或 4080 時預先說明。來源、官方文件與 GGUF 接入差異見 [實作前置判斷](flux-rtx3060-planning.md)，該文件不代表 GPU 或權重安裝通過。
+
 11 項新增流程測試涵蓋精確 seed、缺少節點／元件、額外 required 輸入、數值範圍、離線、回應遺失、UUID 恢復、引擎／架構變更、不可變快照、完整還原及草稿修訂。
 
 2026-10-05 本機 ComfyUI 0.34.0 已唯讀取得八種真實節點介面，schema 檢查通過；SaveImage 新版 IMAGE 輸出與舊版空輸出均支援。目前 diffusion_models、text_encoders 皆空；VAE 僅有原生 pixel_space，沒有所需 ae 權重。僅在記憶體中替換元件名稱以檢查介面，未寫入假模型、未送 /prompt、未載入權重。證據保存於忽略目錄 `runtime/flux-live-nodes-20261005.json`。
