@@ -132,7 +132,11 @@ class StartupScriptTests(unittest.TestCase):
                     '  [IO.File]::AppendAllText($env:ATELIER_OPEN_MARKER, $FilePath + "`n")\n'
                     "  if ($env:ATELIER_OPEN_MODE -eq 'browser-error') { throw 'No browser' }\n"
                     '}\n'
-                    '& $env:ATELIER_OPEN_SCRIPT -TimeoutSeconds 1\n'
+                    # Success cases must allow Windows PowerShell cold-start/JIT
+                    # overhead on hosted runners; failure cases still exercise
+                    # the short real readiness deadline.
+                    "$probeTimeout = if ($env:ATELIER_OPEN_MODE -in @('delayed', 'browser-error')) { 5 } else { 1 }\n"
+                    '& $env:ATELIER_OPEN_SCRIPT -TimeoutSeconds $probeTimeout\n'
                     'exit $LASTEXITCODE\n',
                     encoding='ascii',
                 )
@@ -149,7 +153,7 @@ class StartupScriptTests(unittest.TestCase):
                     timeout=15,
                     creationflags=subprocess.CREATE_NO_WINDOW,
                 )
-                self.assertEqual(result.returncode, 0 if mode == 'delayed' else 1, result.stderr)
+                self.assertEqual(result.returncode, 0 if mode == 'delayed' else 1, result.stdout + result.stderr)
                 if mode in ('delayed', 'browser-error'):
                     self.assertEqual(marker.read_text().splitlines(), ['http://127.0.0.1:8000/'])
                 else:
