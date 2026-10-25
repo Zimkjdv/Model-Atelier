@@ -1,6 +1,14 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 
-export const pages = ['創作工作台', '模型庫', '作品庫', '系統資訊', '設定', '參考素材'] as const
+export const pages = [
+  '創作工作台',
+  '模型庫',
+  '作品庫',
+  '系統資訊',
+  '設定',
+  '參考素材',
+  '訓練工作區',
+] as const
 export type Page = (typeof pages)[number]
 export type Mode = 'checkpoint' | 'flux' | 'inpaint' | 'control' | 'reference'
 type Route = { page: Page; mode: Mode; job: string }
@@ -11,6 +19,7 @@ const paths: Record<Page, string> = {
   系統資訊: 'system',
   設定: 'settings',
   參考素材: 'assets',
+  訓練工作區: 'training',
 }
 const modes: Mode[] = ['checkpoint', 'flux', 'inpaint', 'control', 'reference']
 const fallback: Route = { page: '系統資訊', mode: 'checkpoint', job: '' }

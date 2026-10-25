@@ -110,7 +110,7 @@ def stopped(data, database, *, exclusive):
 def inspect_records(db, files, database_key):
     counts, problems = {}, []
     assets, job_ids = {}, set()
-    kinds = ('asset', 'artwork', 'job', 'draft', 'flux_draft', 'experiment', 'control_edge', 'structure_output')
+    kinds = ('asset', 'artwork', 'job', 'draft', 'flux_draft', 'experiment', 'control_edge', 'structure_output', 'training_review', 'training_export')
     def problem(code, key):
         if len(problems) < 1000:
             problems.append(dict(code=code, record=str(key)[:256]))
@@ -130,7 +130,7 @@ def inspect_records(db, files, database_key):
         counts[prefix] = counts.get(prefix, 0) + 1
         if value is None:
             problem('invalid_record_json', key); continue
-        identifier = value.get('id', value.get('job_id', ''))
+        identifier = value.get('id', value.get('job_id', value.get('request_id', '')))
         if not isinstance(identifier, str) or not identifier:
             problem('invalid_identifier', key); continue
         if prefix == 'asset':
@@ -152,10 +152,21 @@ def inspect_records(db, files, database_key):
     for kind, key, value in records():
         if value is None:
             continue
-        identifier = value.get('id', value.get('job_id', ''))
+        identifier = value.get('id', value.get('job_id', value.get('request_id', '')))
         if not isinstance(identifier, str):
             problem('invalid_identifier', key); continue
-        if kind == 'asset':
+        if kind == 'training_review':
+            from backend import training_data
+            try:
+                document = training_data.Dataset.model_validate(value.get('dataset'))
+                if training_data.digest(training_data.manifest_bytes(document)) != value.get('manifest_sha256'):
+                    problem('training_review_manifest_changed', key)
+            except (ValueError, TypeError):
+                problem('invalid_training_review', key)
+        elif kind == 'training_export' and value.get('status') == 'completed':
+            expected(f'data/training_bundles/{identifier}/dataset.json', value.get('manifest_sha256'), owner=key)
+            expected(f'data/training_bundles/{identifier}/bundle.json', owner=key)
+        elif kind == 'asset':
             expected(f'data/assets/{identifier}.png', value.get('sha256'), value.get('size'), owner=key)
         elif kind == 'artwork':
             extension = value.get('extension', '')

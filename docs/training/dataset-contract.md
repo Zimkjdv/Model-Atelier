@@ -1,6 +1,6 @@
 # T02 · 本機訓練資料契約 v1
 
-這是 [T01 需求](requirements.md) 的 CPU 資料準備工具：建立清單、檢查原圖、審查標註、匯出獨立資料包。**不安裝 trainer、不載入權重、不啟動訓練或生成**。目前沒有訓練 UI／API；一般素材用途、R02 單張推論與本契約分開。
+這是 [T01 需求](requirements.md) 的 CPU 資料準備工具：建立清單、檢查原圖、審查標註、匯出獨立資料包。**不安裝 trainer、不載入權重、不啟動訓練或生成**。T05 已提供沿用此契約的[資料審查網頁](workspace.md)；一般素材用途、R02 單張推論與本契約分開。
 
 版本為 `schema_version: 1`，機器格式見 [JSON Schema](../../schemas/training-dataset-v1.schema.json)，跨圖片條件由 [資料檢查器](../../backend/training_data.py) 驗證。工具介面選定固定 SHA 的 sd-scripts 候選，來源與未實測限制見 [官方介面評估](tool-interface-research.md)。
 

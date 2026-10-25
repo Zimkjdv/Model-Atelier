@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-25",
+  "status": "passed",
+  "scope": "native CPU review and train-only export; isolated DATA; no training",
+  "artist_original_files_unchanged": 22,
+  "artist_training_started": false,
+  "author_datasets": [
+    {
+      "kind": "style",
+      "manifest_sha256": "684a5df0ba174b13ef9a396bbcb7b7f0f2f7a3a0647f129328c220cf24134bdd",
+      "counts": {
+        "train": 10,
+        "validation": 6,
+        "test": 0,
+        "excluded": 6
+      },
+      "issues": 20,
+      "data_ready": false,
+      "preview_available": true
+    },
+    {
+      "kind": "character",
+      "manifest_sha256": "96a3cfe59202c3ae77dace7744ce3ef538db7e8d2325c0bf88eab90992bc63f2",
+      "counts": {
+        "train": 10,
+        "validation": 6,
+        "test": 0,
+        "excluded": 6
+      },
+      "issues": 30,
+      "data_ready": false,
+      "preview_available": true
+    }
+  ],
+  "synthetic_live_browser_viewports": [
+    1440,
+    390
+  ],
+  "immutable_version_conflict_checks_passed": true,
+  "source_and_holdout_guards_passed": true,
+  "lost_export_response_only_get_recovery": true,
+  "backup_missing_export_detection_passed": true,
+  "backend_full_tests_run": 730,
+  "backend_existing_skips": 1,
+  "final_review_and_backup_tests_passed": 18,
+  "full_browser_passed": 113,
+  "full_browser_artifact_collision": 1,
+  "final_targeted_browser_passed": 3,
+  "final_test_preview_blocked": true
+}

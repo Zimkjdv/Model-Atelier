@@ -212,6 +212,7 @@ def fixture(data, count=None, legacy_ui=False):
     context = app.state.context
     context.initialize()
     context.gpu_info = lambda: ([], None)
+
     with closing(sqlite3.connect(context.DB)) as db, db:
         db.execute('INSERT OR REPLACE INTO settings VALUES (?, ?)', ('comfy_url', ENGINE))
     catalog.merge(context.DB, ENGINE, ['demo.safetensors'])
@@ -273,6 +274,28 @@ def fixture(data, count=None, legacy_ui=False):
         return await call_next(request)
 
     wrapper = FastAPI(lifespan=app.router.lifespan_context)
+
+    @wrapper.post('/qa/training-review')
+    def training_review_fixture():
+        from scripts.training_dataset import initialize
+
+        source = data / ('review-source-' + str(uuid4()))
+        source.mkdir()
+        for name, color in [('a.png', 'red'), ('b.png', 'green'), ('c.png', 'blue')]:
+            Image.new('RGB', (48, 64), color).save(source / name)
+        dataset = initialize(
+            source,
+            dataset_id='qa-human-review',
+            version='v1',
+            kind='style',
+            subject_id='qa-style',
+            trigger='ma_qa_style',
+        )
+        dataset.images[1].split = 'validation'
+        dataset.images[2].split = 'excluded'
+        dataset.images[2].exclusion_reason = 'Synthetic excluded case'
+        return dict(source_root=str(source), manifest_json=dataset.model_dump_json())
+
     fooocus_fixture.install(wrapper, context, state, ENGINE)
 
     @wrapper.get('/qa/state')

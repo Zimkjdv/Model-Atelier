@@ -21,6 +21,7 @@ import LocalEnvironmentCheck from './LocalEnvironmentCheck.vue'
 import StorageOverview from './StorageOverview.vue'
 import DeploymentStatus from './DeploymentStatus.vue'
 import DiagnosticsPanel from './DiagnosticsPanel.vue'
+import TrainingDatasets from './TrainingDatasets.vue'
 import type { EngineReport } from './environmentTypes'
 type Memory = { total: number | null; used: number | null; free: number | null }
 type System = {
@@ -37,6 +38,7 @@ type System = {
 const system = ref<System | null>(null),
   engine = ref<EngineReport | null>(null)
 const artworkNotesDirty = ref(false)
+const trainingDirty = ref(false)
 const {
   page,
   studioMode,
@@ -46,9 +48,12 @@ const {
   focusMain,
 } = useNavigation(
   () =>
-    page.value !== '作品庫' ||
-    !artworkNotesDirty.value ||
-    window.confirm('作品筆記或評分尚未保存或正在保存，確定離開作品庫？'),
+    (page.value !== '訓練工作區' ||
+      !trainingDirty.value ||
+      window.confirm('訓練標註尚未保存或正在處理，確定離開訓練工作區？')) &&
+    (page.value !== '作品庫' ||
+      !artworkNotesDirty.value ||
+      window.confirm('作品筆記或評分尚未保存或正在保存，確定離開作品庫？')),
 )
 const systemStale = ref(false),
   savedUrl = ref('')
@@ -202,7 +207,9 @@ onUnmounted(() => {
           :aria-current="page === item ? 'page' : undefined"
           :title="item"
           @click="navigate(item)"
-          ><span class="nav-icon" aria-hidden="true">{{ ['◈', '▦', '▧', '◉', '⚙', '▨'][i] }}</span
+          ><span class="nav-icon" aria-hidden="true">{{
+            ['◈', '▦', '▧', '◉', '⚙', '▨', '◇'][i]
+          }}</span
           >{{ item }}</button
         ></nav
       >
@@ -406,6 +413,7 @@ onUnmounted(() => {
         <DiagnosticsPanel v-if="page === '設定'" />
         <ModelLibrary v-if="page === '模型庫'" @settings="navigate('設定')" />
         <AssetLibrary v-else-if="page === '參考素材'" />
+        <TrainingDatasets v-else-if="page === '訓練工作區'" @dirty="trainingDirty = $event" />
         <ArtworkLibrary
           v-else-if="page === '作品庫'"
           :job-id="galleryJob"

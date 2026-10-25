@@ -168,6 +168,9 @@ def create_app(
     settings_transfer.install(app, context)
     stack_validation.install(app, context)
     experiment_plans.install(app, context)
+    from backend import training_review_api
+
+    training_review_api.install(app, context)
     from backend import local_access
 
     local_access.install(app, context)

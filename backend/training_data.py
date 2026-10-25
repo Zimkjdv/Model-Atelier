@@ -179,6 +179,11 @@ def manifest_bytes(dataset):
 def read_json(path):
     with Path(path).open('rb') as file:
         raw = file.read(MAX_MANIFEST_BYTES + 1)
+    return parse_json(raw)
+
+
+def parse_json(raw):
+    """Use the same bounded UTF-8/duplicate-key rules for files and web imports."""
     if len(raw) > MAX_MANIFEST_BYTES:
         raise ValueError('資料清單超過 8 MiB')
 

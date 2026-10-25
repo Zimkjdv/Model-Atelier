@@ -49,6 +49,7 @@ flowchart LR
 | data/control_edges | 明確匯入的原條件圖，與作品分開 |
 | data/structure_outputs | pose／depth v3 同次實際條件圖；與 SQLite structure_output:* 一起備份 |
 | runtime/ComfyUI | 獨立引擎、權重、input／output，不納入 Git |
+| data/training_bundles | T05 明確匯出的 train PNG／caption、清單與封存；原圖不搬入，審查修訂及出口 UUID 在 SQLite |
 | runtime 下隔離 DATA／報告 | 驗收原始證據，保存範圍依各紀錄 |
 | models/*.json、experiments/*.json、docs/validation | 固定 manifest、案例集及可追溯驗收文字，納入 Git |
 
