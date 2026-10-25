@@ -65,6 +65,7 @@
 - [ ] **M02 · FLUX 編碼器轉檔來源與授權鏈補驗**
   - [ ] 驗收 M02-01：取得固定 CLIP-L／T5 FP8 scaled 的可追溯原始權重 revision、轉換方式及適用條款；只有整合來源標記及 BFL 推薦上游時，`terms_verified`／`conversion_lineage_verified` 維持 false。
   - F02 已逐一讀取來源與全文，記錄 BFL 主模型／VAE、整合來源與上游參考的差別；本項只保留尚缺的確切轉檔來源證明，見 [條款查核](docs/models/flux-component-licenses.md)。
+  - 2026-10-26：已補[兩檔發布提交與公開轉換來源追查](docs/models/flux-encoder-lineage-followup-20261026.md)，新增[完整本機指紋／CLIP 候選全張量比對](docs/validation/flux-encoder-audit-20261026.json)。CLIP 的 196 個 F16 張量與候選 OpenAI 固定修訂 F32 轉型後逐位元一致；T5 確認 389 張量及 168 個 scale。發布者實際輸入 revision／腳本／參數、T5 recipe 與逐元件條款仍缺，`acceptance_complete=false`，兩個原驗證旗標維持 false，主項／子項不勾選。
 
 ## P5：FLUX.1 [schnell] 實機接入
 

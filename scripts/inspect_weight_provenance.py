@@ -6,15 +6,13 @@ license applicability or a model's exact upstream revision/conversion history.
 
 import argparse
 from collections import Counter
+from datetime import datetime, timezone
 import hashlib
 import json
 import math
 import os
 from pathlib import Path
 import struct
-
-from scripts import install_model, install_pony
-from scripts import verify_local_generation as reports
 
 MAX_HEADER = 16 * 1024**2
 CHUNK = 1024**2
@@ -104,7 +102,9 @@ def component(name):
     return next((group for group, prefix in GROUPS if name.startswith(prefix)), 'other')
 
 
-def inspect_file(path, expected_size, expected_sha256):
+def inspect_file(path, expected_size, expected_sha256, *, standalone_component=None):
+    if standalone_component not in (None, 'clip_l', 't5xxl'):
+        raise ValueError('Unsupported standalone component')
     path = Path(path)
     if path.is_symlink() or not path.is_file():
         raise ValueError('A regular local safetensors file is required')
@@ -124,7 +124,7 @@ def inspect_file(path, expected_size, expected_sha256):
                 full.update(data)
                 tensor.update(data)
                 remaining -= len(data)
-            group = groups.setdefault(component(name), [])
+            group = groups.setdefault(standalone_component or component(name), [])
             group.append(
                 dict(
                     name=name,
@@ -156,7 +156,7 @@ def inspect_file(path, expected_size, expected_sha256):
         )
     return dict(
         schema_version=1,
-        checked_at=reports.utc_now(),
+        checked_at=datetime.now(timezone.utc).isoformat(),
         filename=path.name,
         size_bytes=expected_size,
         sha256=full.hexdigest(),
@@ -165,6 +165,18 @@ def inspect_file(path, expected_size, expected_sha256):
         metadata=metadata,
         components=components,
         tensor_count=len(entries),
+        format_observations=dict(
+            scalar_f32_scale_weight_count=sum(
+                name.endswith('.scale_weight') and dtype == 'F32' and shape == []
+                for _, _, name, dtype, shape in entries
+            ),
+            scaled_fp8_marker=[
+                dict(dtype=dtype, shape=shape, size_bytes=end - start)
+                for start, end, name, dtype, shape in entries
+                if name == 'scaled_fp8'
+            ],
+            conversion_algorithm_inferred=False,
+        ),
         terms_verified=False,
         conversion_lineage_verified=False,
         scope='Exact local file/tensor fingerprints only; metadata is an unverified embedded '
@@ -173,16 +185,31 @@ def inspect_file(path, expected_size, expected_sha256):
 
 
 def main(argv=None):
+    # Keep the inspection core importable in the CPU-only NumPy environment.
+    from scripts import install_flux, install_model, install_pony
+    from scripts import verify_local_generation as reports
+
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--model', choices=['pony-v6-xl'], required=True)
+    parser.add_argument(
+        '--model',
+        choices=['pony-v6-xl', 'flux1-schnell-clip_l', 'flux1-schnell-t5xxl'],
+        required=True,
+    )
     parser.add_argument('--report', required=True)
     args = parser.parse_args(argv)
     target = reports.report_path(args.report)
     reports.reserve_report(target)
     try:
-        manifest = install_model.manifest(args.model)
+        role = None
+        if args.model == 'pony-v6-xl':
+            manifest = install_model.manifest(args.model)
+        else:
+            manifest = next(m for m in install_flux.component_manifests() if m['id'] == args.model)
+            role = args.model.removeprefix('flux1-schnell-')
         weight = install_pony._paths(install_pony.WORKSPACE, manifest['filename'], create=False)[0]
-        result = inspect_file(weight, manifest['size_bytes'], manifest['sha256'])
+        result = inspect_file(
+            weight, manifest['size_bytes'], manifest['sha256'], standalone_component=role
+        )
         result['model_id'] = manifest['id']
         result['source'] = manifest['source']
         reports.write_report(target, result)

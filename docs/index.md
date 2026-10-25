@@ -95,3 +95,4 @@
 - [E04 推論／訓練資源分開登記、4080 512／1024 真實技術訓練](validation/hardware-resources-20261026.md)、[可解析證據](validation/hardware-resources-20261026.json)
 
 - [M01 作者 V6 聲明補查與本機元件指紋](models/pony-v6-xl-license-followup-20261026.md)、[可解析缺口與證據](validation/pony-license-audit-20261026.json)：完整授權驗收仍需發布者澄清
+- [M02 編碼器發布歷史與 CLIP 候選全張量比對](models/flux-encoder-lineage-followup-20261026.md)、[可解析缺口與證據](validation/flux-encoder-audit-20261026.json)：數值吻合已驗證，發布者來源／轉換與條款仍待補足

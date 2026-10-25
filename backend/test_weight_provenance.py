@@ -103,6 +103,21 @@ class WeightProvenanceTests(unittest.TestCase):
         )
         self.assertEqual(value['tensor_count'], 2)
 
+    def test_standalone_scaled_format_does_not_imply_conversion_recipe(self):
+        header = {
+            'encoder.block.0.scale_weight': dict(dtype='F32', shape=[], data_offsets=[0, 4]),
+            'scaled_fp8': dict(dtype='F8_E4M3', shape=[0], data_offsets=[4, 4]),
+        }
+        value = audit.inspect_file(
+            self.path, *self.file(header, b'\0' * 4), standalone_component='t5xxl'
+        )
+        self.assertEqual(value['components']['t5xxl']['tensor_count'], 2)
+        observations = value['format_observations']
+        self.assertEqual(observations['scalar_f32_scale_weight_count'], 1)
+        self.assertEqual(observations['scaled_fp8_marker'][0]['size_bytes'], 0)
+        self.assertFalse(observations['conversion_algorithm_inferred'])
+        self.assertFalse(value['conversion_lineage_verified'])
+
     def test_import_does_not_load_gpu_libraries(self):
         result = subprocess.run(
             [
@@ -111,7 +126,7 @@ class WeightProvenanceTests(unittest.TestCase):
                 'import sys;from scripts import inspect_weight_provenance;'
                 'assert not any(n in sys.modules for n in ("torch","transformers","safetensors"))',
             ],
-            cwd=audit.install_pony.WORKSPACE,
+            cwd=Path(__file__).resolve().parents[1],
             capture_output=True,
             timeout=20,
         )

@@ -122,7 +122,9 @@
     "backend/test_hardware_resources.py",
     "backend/test_training_worker_encoding.py",
     "scripts/inspect_weight_provenance.py",
-    "backend/test_weight_provenance.py"
+    "backend/test_weight_provenance.py",
+    "scripts/compare_clip_provenance.py",
+    "backend/test_clip_provenance.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",

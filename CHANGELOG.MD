@@ -1,5 +1,13 @@
 # Model Atelier — Changelog
 
+## 2026-10-26 · M02 編碼器發布追溯與 CLIP 全張量對應（完整驗收仍待來源）
+
+M01 已先以 `bab29c6` 提交並推送，再開始本批。補齊 CLIP-L／scaled T5 首次發布提交及固定 LFS hash，確認整合卡 Apache-2.0 標記在後續 README 提交加入。查過五個祖先提交、相關討論、BFL 固定呼叫及 Comfy-Org 公開轉換工具，仍缺發布者把兩份固定輸出綁至實際上游 revision／腳本／完整參數與適用條款的紀錄。
+
+本機核對器擴充兩個獨立編碼器，完整 SHA256 通過；保存 CLIP 196 個 F16 張量及 T5 389 張量的內容指紋、168 個 F32 scalar scale 與空 FP8 marker。新增 CPU／NumPy 候選比對器，以嚴格 HTTPS Range 串流讀取 OpenAI 固定修訂的 492,241,920 bytes 文字權重，全部 196 張量 F32 → F16 後與本機逐位元一致；只主張候選數值對應，不冒稱讀完官方全檔或找到發布者實際 recipe。沒有保存另一份模型、啟動 GPU 任務或回寫歷史 provenance。
+
+137 項相關測試（1 既有跳過）、格式／靜態／Vue 型別通過。見 [公開來源、數值對應與重跑](docs/models/flux-encoder-lineage-followup-20261026.md)、[完整 JSON 證據](docs/validation/flux-encoder-audit-20261026.json)。清冊追加發布提交／指紋／證據，CLIP 的候選數值驗證為 true、歷史輸入確認為 false；兩個編碼器的 `terms_verified`、`conversion_lineage_verified` 均維持 false。**M02 的補查與工具完成，完整驗收仍受外部來源證據限制，主項／子項不勾選**；未完成總數仍為 10 主項／11 子項。
+
 ## 2026-10-26 · M01 作者 V6 聲明補查與元件指紋（完整驗收仍待來源）
 
 新增作者官網真正 V6 專頁的修改版 Fair AI 聲明，與固定 HF 的 Open RAIL-M 標記、相同 SHA256 的 Civitai 發布、官網 V7／Pony License 及六筆未被 owner 採納的 discussion／PR 分開核對。官網 V6 與 Civitai 的具名特許句不完全相同，不推定優先序或特許取消。可變 HTML 的 Cloudflare email 編碼不當成授權變更，另保存有定義的 License 片段指紋。

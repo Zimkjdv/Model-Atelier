@@ -103,7 +103,20 @@
       "terms_verified": false,
       "conversion_lineage_verified": false,
       "document": "docs/models/flux-component-licenses.md",
-      "note": "整合來源只有 Apache-2.0 模型卡標記；CLIP 上游專案 MIT，確切轉檔鏈仍未證明。"
+      "note": "已追到發布提交；候選 OpenAI 固定修訂全部 196 個文字張量轉 F16 後逐位元相同，但發布者實際來源／轉換履歷與逐元件條款仍未證明。",
+      "last_rechecked_at": "2026-10-26",
+      "followup_document": "docs/models/flux-encoder-lineage-followup-20261026.md",
+      "followup_evidence": "docs/validation/flux-encoder-audit-20261026.json",
+      "publication_commit": "168aff54c7de740a8946f19cf87b2eda743c6342",
+      "local_tensor_fingerprint_sha256": "5ec23ddcd21c0e42777415eb2af61d06512bef8d7b7844ef2f2a40b9bd14f19d",
+      "candidate_numerical_comparison": {
+        "repository": "openai/clip-vit-large-patch14",
+        "revision": "32bd64288804d66eefd0ccbe215aa642df71cc41",
+        "conversion": "F32 to F16",
+        "tensor_count": 196,
+        "all_tensors_bitwise_equal": true,
+        "historical_publisher_input_confirmed": false
+      }
     },
     {
       "role": "t5xxl",
@@ -118,7 +131,16 @@
       "terms_verified": false,
       "conversion_lineage_verified": false,
       "document": "docs/models/flux-component-licenses.md",
-      "note": "整合來源只有 Apache-2.0 模型卡標記；T5 上游 Apache-2.0，FP8 scaled 轉換履歷仍未證明。"
+      "note": "已追到發布提交並核對 389 張量／168 個 F32 scale_weight 與空 scaled_fp8 marker；原始權重 revision、FP8 scaled recipe 與逐元件條款仍未證明。",
+      "last_rechecked_at": "2026-10-26",
+      "followup_document": "docs/models/flux-encoder-lineage-followup-20261026.md",
+      "followup_evidence": "docs/validation/flux-encoder-audit-20261026.json",
+      "publication_commit": "3bcfe977a9a2617a0b9025076030e217795fe028",
+      "local_tensor_fingerprint_sha256": "c48da1cbdcb1183a22ae4e87a4b0df8c18a167b9c39be93854b9bd672a7f2108"
     }
-  ]
+  ],
+  "last_rechecked_at": "2026-10-26",
+  "followup_document": "docs/models/flux-encoder-lineage-followup-20261026.md",
+  "followup_evidence": "docs/validation/flux-encoder-audit-20261026.json",
+  "acceptance_complete": false
 }

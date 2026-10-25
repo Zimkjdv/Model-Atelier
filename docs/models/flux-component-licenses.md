@@ -2,6 +2,8 @@
 
 查核日期：2026-10-25。對象限 [固定四份權重](../../models/flux1-schnell-plan.json)；逐一來源、修訂、全文／模型卡的 bytes 與 SHA256 見 [查核清冊](../../models/flux1-schnell-terms.json)。權重本體的完整 hash 驗證見 [F01](../validation/flux-installation-20261025.md)，不能以文件 hash 代替。
 
+2026-10-26 的 [M02 補查](flux-encoder-lineage-followup-20261026.md)另補發布提交、本機指紋及 CLIP 全部 196 張量與候選 OpenAI 固定修訂的 F32 → F16 數值吻合；這是新增證據，沒有回寫本頁 2026-10-25 的歷史判斷，也沒有確認發布者實際上游／recipe 或適用條款。完整來源鏈旗標仍為 false。
+
 | 元件 | 已核對的來源與條款 | 保留的條件／缺口 |
 | --- | --- | --- |
 | schnell 主模型 | BFL 固定 HF 模型卡、檔內 Apache-2.0 標記、BFL 的完整 Apache-2.0 條文 | HF 來源有帳號／存取條件；模型卡另列用途要求，須一併保留 |
