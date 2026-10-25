@@ -97,7 +97,10 @@
     "backend/training_control_api.py",
     "backend/test_training_control.py",
     "backend/training_report.py",
-    "backend/test_training_report.py"
+    "backend/test_training_report.py",
+    "scripts/install_model.py",
+    "scripts/install_flux.py",
+    "backend/test_flux_install.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",

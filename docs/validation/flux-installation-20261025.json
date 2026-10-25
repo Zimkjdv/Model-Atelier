@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "acceptance": "F01",
+  "scope": "fixed_managed_local_weights_only_no_gpu_generation",
+  "access_checked_at": "2026-10-25T04:27:32.466632+00:00",
+  "source_access": [
+    {
+      "role": "diffusion_model",
+      "http_status": 200,
+      "state": "accessible"
+    },
+    {
+      "role": "vae",
+      "http_status": 200,
+      "state": "accessible"
+    },
+    {
+      "role": "clip_l",
+      "http_status": 200,
+      "state": "accessible"
+    },
+    {
+      "role": "t5xxl",
+      "http_status": 200,
+      "state": "accessible"
+    }
+  ],
+  "credential_available": true,
+  "install_completed_at": "2026-10-25T04:37:26.642021+00:00",
+  "offline_verify_checked_at": "2026-10-25T04:38:41.088735+00:00",
+  "total_size_bytes": 29521303916,
+  "components": [
+    {
+      "role": "diffusion_model",
+      "relative_path": "runtime/ComfyUI/models/diffusion_models/flux1-schnell.safetensors",
+      "repository": "black-forest-labs/FLUX.1-schnell",
+      "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "actual_size_bytes": 23782506688,
+      "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+      "full_sha256_verified": true
+    },
+    {
+      "role": "vae",
+      "relative_path": "runtime/ComfyUI/models/vae/ae.safetensors",
+      "repository": "black-forest-labs/FLUX.1-schnell",
+      "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "actual_size_bytes": 335304388,
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "full_sha256_verified": true
+    },
+    {
+      "role": "clip_l",
+      "relative_path": "runtime/ComfyUI/models/text_encoders/clip_l.safetensors",
+      "repository": "comfyanonymous/flux_text_encoders",
+      "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "actual_size_bytes": 246144152,
+      "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+      "full_sha256_verified": true
+    },
+    {
+      "role": "t5xxl",
+      "relative_path": "runtime/ComfyUI/models/text_encoders/t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "repository": "comfyanonymous/flux_text_encoders",
+      "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "actual_size_bytes": 5157348688,
+      "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+      "full_sha256_verified": true
+    }
+  ],
+  "volumes_before_install": [
+    {
+      "free_bytes": 423397679104,
+      "download_remaining_bytes": 29521303916,
+      "reclaimable_partial_bytes": 0,
+      "reserve_bytes": 2147483648,
+      "required_bytes": 31668787564,
+      "space_status": "sufficient"
+    }
+  ],
+  "generation_verified": false,
+  "terms_verified": false,
+  "minimum_vram_bytes": null,
+  "minimum_ram_bytes": null,
+  "runtime_report_sha256": {
+    "flux-access-20261025.json": "63461437670dd9344d466713d89e4a8435d9235e102e2d755de91269192ce893",
+    "flux-install-20261025.json": "b397b3908c8117fbb86babdf0fa551ee8931e8e6df74ad4a0ff50dd655db3ed5",
+    "flux-verify-20261025.json": "76fb19640281d618b43d6011b5e3ac5f5563595ae761968ac813ebf1c9132ffb"
+  },
+  "validation": {
+    "backend_tests": 761,
+    "backend_skipped": 1,
+    "final_install_regression_tests": 48,
+    "final_install_regression_skipped": 1,
+    "model_library_browser_tests": 3,
+    "style_types_build_contracts": "passed",
+    "whole_site_browser_suite": "not_run_this_change"
+  }
+}

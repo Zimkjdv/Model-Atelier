@@ -61,6 +61,7 @@
 ## 模型與執行環境
 
 - [FLUX／RTX 3060 實作前置判斷](models/flux-rtx3060-planning.md)：官方量化／卸載依據、GGUF 流程差異、4080 提醒規則及未驗收範圍
+- [F01 固定 FLUX 安裝與完整驗檔](models/flux-installation.md)：官方 CLI 登入、四元件整體來源／磁碟檢查、續傳及離線 SHA256；[固定四份安裝證據](validation/flux-installation-20261025.md)
 
 - [部署決策與本機存取](deployment.md)、[D01 HTTP／UI 驗收](validation/local-deployment-20261025.md)：同一台電腦、角色來源與連線邊界
 - [選用 Docker 本機部署](docker.md)、[D02 GPU／出圖／資料持久化與還原驗收](validation/docker-deployment-20261025.md)：容器平台接原生 ComfyUI，保留原生操作與訓練限制

@@ -1,5 +1,17 @@
 # Model Atelier — Changelog
 
+## 2026-10-25 · F01 固定 FLUX 四元件來源與安裝
+
+使用者完成官方 Hugging Face 存取及本機 CLI 登入後，固定 BFL 主模型／VAE、ComfyUI 範例編碼器四個來源 HEAD 均為 200。新增 `scripts.install_flux` 的整體來源／容量 check、有限續傳 install 與離線完整 verify；沿用共用下載器，固定 revision／bytes／SHA256、每磁碟區 2 GiB 預留、安裝鎖及不覆寫正式檔。憑證只從官方本機位置讀取，不寫進報告，CDN 與公開編碼器不收到 token。
+
+本機實際下載四份共 29,521,303,916 bytes，各自完整 SHA256 通過並保存來源側錄。761 項後端（1 既有跳過）、格式／型別／建置／契約、三項模型庫桌面／窄版含 axe 檢查通過；最終 48 項安裝／預檢回歸（1 既有跳過）亦通過。本項沒有載入 GPU，不認列 F02／F03；授權待核對欄位保留。操作見 [F01](docs/models/flux-installation.md)、[實際證據](docs/validation/flux-installation-20261025.md)。另補上 [另一台 Windows 主機部署](docs/setup-and-operations.md#部署至另一台-windows主機)的資料搬移與環境重建步驟。
+
+<a id="f01"></a>
+
+- [x] **F01 · 固定 FLUX 權重的來源存取與本地安裝**
+  - [x] 驗收 F01-01：先取得固定 BFL 主模型／VAE 的合法來源存取，再重新檢查動態磁碟容量及完整元件。
+  - [x] 驗收 F01-02：依固定來源／修訂驗證大小與 SHA256；來源選型、預檢與專用表單完成不等於權重已安裝。
+
 ## 2026-10-25 · T08 訓練紀錄與診斷報告
 
 T07 已先以 `e09fa3b` commit／push，才新增已登記原 run 的唯讀報告：固定參數／來源 hash、狀態／資源、resume 與產物回執，最多 1 MiB；預設排除圖片、caption、路徑、GPU UUID 與日誌，另選才附日誌尾段。下載保存預覽的原始 bytes，改選 run／資料範圍清除舊預覽，未知／損壞紀錄保留，不重送或重跑。

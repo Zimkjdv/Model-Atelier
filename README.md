@@ -46,7 +46,7 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 | 局部編輯 | 遮罩筆刷／擦除／反相／PNG、v1／v2 羽化修補、Fooocus v3 實驗選項、原設定還原 | [Fooocus 限制與比較](docs/fooocus-inpainting.md)；一般草稿／交換／比較尚未支援；[一般修補](docs/inpainting.md)、[羽化](docs/inpaint-feather.md) |
 | 結構參考 | Canny v2／CPU 預覽；SDXL pose／depth v3、實際條件圖保存與完整還原 | [pose／depth 操作與實測限制](docs/structure-reference.md)、[Canny](docs/controlnet.md)；動漫骨架可能缺漏，不保證姿勢一致 |
 | 畫風／角色參考 | SDXL Plus ViT-H 單張推論、兩種模式、元件登記、原設定與來源快照 | 沒有訓練；可能帶入服裝／髮色／背景，無身份鎖定；[操作](docs/models/ipadapter-reference.md)、[12 組實測](docs/validation/reference-adapter-20261023.md) |
-| FLUX.1 [schnell] | 元件庫、固定來源預檢、獨立表單／草稿／交換、提交與還原 | 固定來源存取／安裝及 GPU 生成驗收未完成；[FLUX](docs/models/flux-workflow.md) |
+| FLUX.1 [schnell] | 固定四元件安裝／完整驗檔 CLI、元件庫、獨立表單／草稿／交換、提交與還原 | [F01 安裝](docs/models/flux-installation.md)已實測；精度／卸載及 GPU 生成仍待驗收；[FLUX](docs/models/flux-workflow.md) |
 | 作品與素材 | 原圖／縮圖、搜尋、收藏、筆記、人工評分、封存／還原、素材用途與引用保護 | 封存不釋放檔案，無一般作品永久刪除；[整理](docs/artwork-library.md)、[比較](docs/artwork-comparison.md) |
 | 實驗 | 通用／動漫案例、模型／提示詞／取樣參數有限比較、保存／匯入、任務關聯與原始 JSON 報告 | 各組手動生成，無自動重試或品質評分；[方案](docs/experiment-plans.md)、[結果](docs/experiment-runs.md) |
 | 執行 | 進度、取消／條件化停止、失敗保存、環境快照、原引擎連續資源取樣、E01 裝置回報 | 觀察最高值不等於任務專用峰值；[量測範圍](docs/job-measurements.md)、[裝置回報](docs/execution-device.md) |
@@ -55,7 +55,7 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 
 ## 動漫畫風的下一步
 
-訓練操作另有 [T07 缺項導覽](docs/training/workspace.md#t07-缺項導覽)及 [T08 訓練報告](docs/training/workspace.md#t08-訓練報告)：篩選並定位待審查圖片，或預覽／下載原 run 的有界紀錄；導覽不批准圖片，報告不重跑訓練。FLUX 下一階段的官方資料、3060／4080 提醒與 GGUF 接入差異見 [實作前置判斷](docs/models/flux-rtx3060-planning.md)，目前仍待來源存取與 GPU 驗收。
+訓練操作另有 [T07 缺項導覽](docs/training/workspace.md#t07-缺項導覽)及 [T08 訓練報告](docs/training/workspace.md#t08-訓練報告)：篩選並定位待審查圖片，或預覽／下載原 run 的有界紀錄；導覽不批准圖片，報告不重跑訓練。FLUX 的官方資料、3060／4080 提醒與 GGUF 接入差異見 [實作前置判斷](docs/models/flux-rtx3060-planning.md)；F01 固定來源安裝已完成，精度／卸載及 GPU 驗收仍待後續實測。
 
 以動漫畫風為目標時，建議依 **R05 品質基準 → L01 畫風 LoRA → R02 參考圖 adapter；使用者指定後續為 T01 → T02 → R01 → R03** 推進。先沿用現有生成與比較功能，再依結果決定是否訓練；整體 Vue／FastAPI／SQLite／ComfyUI 架構保留。
 
@@ -76,6 +76,8 @@ T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色
 實作進入需要真實動漫圖片的品質驗收或訓練時，會先核對已提供資料，缺少時主動提醒使用者；提醒時點與所需內容見 [圖片提供提醒](docs/anime-style-development.md#image-input-reminders)。
 
 ## 日常操作
+
+另台 Windows／RTX 4080 部署建議 Git clone 程式、搬移已下載權重及停機備份的資料，再重建各自的 Python 環境；不要依賴整包虛擬環境直接搬移。步驟與絕對路徑提醒見 [跨機部署](docs/setup-and-operations.md#部署至另一台-windows主機)。FLUX 有獨立 [固定安裝／驗檔 CLI](docs/models/flux-installation.md)，官方來源存取與 GPU 驗收分開確認。
 
 - 停止：平台與引擎各自在所屬終端按 Ctrl+C；停止平台不會中斷引擎工作。不要結束所有 Python 程序。
 - 備份：停平台後保存完整 data，含 SQLite、素材、作品、job_inputs、control_edges、structure_outputs。權重、外部目錄與需要的 runtime 證據另備份，見 [備份還原](docs/setup-and-operations.md#備份與還原)。

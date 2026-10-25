@@ -65,6 +65,20 @@ GET／PUT `/api/local-model-paths` 使用修訂號保護。data 備份保存路�
 
 停機 check／backup／verify／restore 命令、hash manifest、外置 DB 及新目錄切換見 [完整備份工具](data-backup.md)。目的地必須為新目錄，不自動排程、覆寫、修復或清理。沒有一般作品永久刪除，封存不釋放檔案空間。設定還原不保證跨環境相同像素。
 
+## 部署至另一台 Windows主機
+
+例如從 RTX 3060 搬到 RTX 4080，建議「Git clone 程式＋搬移已下載的權重／資料＋重建執行環境」。大檔不在 Git，毋須重新從網路下載全部權重；但整包複製不等於可直接啟動。[Python 官方 venv 說明](https://docs.python.org/3/library/venv.html#how-venvs-work)指出虛擬環境包含絕對路徑，搬移後應重建。
+
+1. 舊機先完成生成／訓練、停止平台及相關寫入者，依 [完整備份工具](data-backup.md)備份與驗證整份 DATA。需要 ComfyUI input／output、完整訓練 run／bundle 或外部作者圖片時另存；不要只複製 SQLite。
+2. 新機安裝 Git、Python 3.12、Node.js 與合適的 NVIDIA 驅動，clone 本專案並確認所需 commit。日後更新程式使用 `git pull`；Git 不會取得舊機的 data、模型或 runtime。
+3. 依 README 快速開始重新建立平台 `.venv`、安裝 lock 與 `npm.cmd ci`／build；依本頁固定 ComfyUI 來源重建引擎環境。訓練有需要時再依 [T03](training/runtime.md)重建獨立環境。PyTorch／CUDA 與驅動相容性要在新機實測，舊機安裝成功不能替代。
+4. 從可信舊機複製 `runtime/ComfyUI/models/` 權重及需要的 `.provenance.json`，外部權重另搬；依各流程文件重建固定自訂節點與依賴。不要沿用舊機的 `.venv/`、ComfyUI／training 的 `.venv/` 或 `frontend/node_modules/`。FLUX 可用 [離線 verify](models/flux-installation.md)重新核對四份完整檔案；其他模型依個別固定來源工具核對。
+5. 新機保持平台停止，驗證備份、restore 到新目錄後用 `scripts/serve_local.py --data <還原的data目錄> --port 8001` 試讀；不要覆寫既有 DATA。預設 `start-all.bat` 仍讀專案 `data/`，自訂還原位置須按備份文件明確切換。核對作品／原圖／素材與數量後才開始新工作。
+6. 逐項核對額外 checkpoint 目錄、來源圖片、訓練 run／bundle 與其他絕對路徑。Windows 帳號、磁碟代號或資料夾不同時，不保證舊紀錄能直接續訓；保留舊 run，不批次改寫歷史 manifest。新工作應以新主機驗證過的來源及環境準備。
+7. 確認本機引擎網址與節點、同步模型庫，以小型固定案例生成並在裝置回報核對實際 RTX 4080；保存 GPU／VRAM／RAM、驅動／Torch／CUDA／引擎版本及結果，才作為 E02／E03 的新機證據。新機的 FLUX 精度與卸載仍須另測，不能只憑顯卡型號保證原始 BF16 全部常駐顯存。
+
+兩台同時保留時，各用獨立 DATA／SQLite；不要把運作中的資料庫放共用資料夾讓兩台共同寫入。目前兩台可各自本機使用；從 3060 瀏覽器操作 4080 平台則是另外的遠端部署需求，仍須按 [部署與存取](deployment.md)設計連線／認證，單純複製資料夾不會啟用。
+
 ## 埠與開發
 
 故障時可先到設定頁「故障診斷」唯讀檢查平台／資料／引擎狀態，再以原任務 UUID 或請求 ID 預覽、下載診斷；操作與隱私／保留限制見 [診斷說明](diagnostics.md)。引擎離線仍可開啟已保存作品；診斷不會重送生成。

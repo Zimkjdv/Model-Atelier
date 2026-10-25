@@ -1,5 +1,7 @@
 # FLUX.1 [schnell]：固定來源與安裝預檢
 
+2026-10-25：新增獨立 [F01 安裝／驗檔 CLI](flux-installation.md)，使用官方本機登入與固定四元件來源，[四份實際安裝與完整 hash](../validation/flux-installation-20261025.md)已通過。以下是早期來源選型紀錄，快速預檢仍保持不連網／不驗 hash；CLI 工具測試通過不等於另一台主機已取得權重。
+
 2026-10-05 更新：分離元件庫及專用提交／草稿／JSON API 已完成，見 [流程說明](flux-workflow.md)。以下保留來源選型階段紀錄；預檢的 generation_supported=false 表示尚未確認本機權重可生成，不表示不存在專用 API。安裝與 GPU 出圖仍未驗證。
 
 2026-10-04 選定第一個 FLUX 接入目標為 BFL 的原始 BF16 `FLUX.1 [schnell]`，配套採獨立 VAE、CLIP-L 及較省記憶體的 T5-XXL FP8 scaled。此為接入選型，不是已安裝或已支援生成。

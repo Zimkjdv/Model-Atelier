@@ -18,6 +18,8 @@ from typing import Callable
 
 import httpx
 
+from backend import flux_plan
+
 
 WORKSPACE = Path(__file__).resolve().parents[1]
 MANIFEST = WORKSPACE / 'models' / 'pony-v6-xl.json'
@@ -95,6 +97,10 @@ SOURCES = {
         '5440ac9c42ab16fea0d65e25bd149fc0f21b1271',
     ),
 }
+FLUX_IDS = {f'flux1-schnell-{role}': role for role in flux_plan.PINNED}
+for _model_id, _role in FLUX_IDS.items():
+    _category, _filename, _repository, _revision, _, _ = flux_plan.PINNED[_role]
+    SOURCES[_model_id] = (_repository, _filename, _filename, _revision)
 INPAINT_IDS = frozenset({'fooocus-inpaint-head', 'fooocus-inpaint-v26'})
 CONTROL_IDS = frozenset(
     {
@@ -153,6 +159,10 @@ def validate_manifest(value: dict) -> dict:
         raise InstallationError('manifest 名稱、版本或架構無效。')
     if not isinstance(value.get('license'), dict):
         raise InstallationError('manifest 缺少來源授權資訊。')
+    if value['id'] in FLUX_IDS:
+        pinned = flux_plan.PINNED[FLUX_IDS[value['id']]]
+        if (value['size_bytes'], value['sha256']) != pinned[4:]:
+            raise InstallationError('FLUX 元件大小或 SHA256 不是固定來源版本。')
     return value
 
 
@@ -171,6 +181,9 @@ def _paths(workspace: Path, filename: str, *, create=True) -> tuple[Path, Path, 
         if filename in {SOURCES[key][2] for key in LORA_IDS} | LOCAL_LORA_FILENAMES
         else 'checkpoints'
     )
+    for role in FLUX_IDS.values():
+        if filename == flux_plan.PINNED[role][1]:
+            category = flux_plan.PINNED[role][0]
     directory = (root / 'runtime' / 'ComfyUI' / 'models' / category).resolve()
     if not directory.is_relative_to(root / 'runtime'):
         raise InstallationError('模型目錄解析至 workspace/runtime 外，拒絕寫入。')

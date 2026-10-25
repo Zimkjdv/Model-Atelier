@@ -1,4 +1,5 @@
 """Install an explicitly selected, reviewed model weight; --check performs no writes."""
+
 import argparse
 import json
 import sys
@@ -8,6 +9,10 @@ from scripts import install_pony as downloader
 
 
 def manifest(model_id):
+    if model_id in downloader.FLUX_IDS:
+        raise downloader.InstallationError(
+            'FLUX 請使用 python -m scripts.install_flux，先檢查完整元件與來源存取。'
+        )
     if model_id not in downloader.SOURCES:
         raise downloader.InstallationError('不支援的模型 ID。')
     return downloader.load_manifest(downloader.WORKSPACE / 'models' / (model_id + '.json'))
@@ -31,22 +36,42 @@ def plan(value, *, workspace=downloader.WORKSPACE, restart=False):
     reclaimable = offset if restart and not target.exists() else 0
     required = remaining + downloader.RESERVE_BYTES
     ready = not lock.exists() and (target.exists() or free + reclaimable >= required)
-    return dict(model_id=value['id'], filename=value['filename'], target=str(target), size_bytes=value['size_bytes'],
-                sha256=value['sha256'], partial_bytes=offset, download_remaining_bytes=remaining,
-                free_bytes=free, reclaimable_partial_bytes=reclaimable, reserve_bytes=downloader.RESERVE_BYTES,
-                required_bytes=required, ready=ready, installation_locked=lock.exists(),
-                existing_requires_hash_verification=target.exists(),
-                message='已有安裝鎖，請先確認安裝程序。' if lock.exists()
-                else '已有正式檔案；安裝時仍核對完整大小及 SHA256，不保證目前檔案正確。' if target.exists()
-                else '可開始下載；尚未安裝或驗證 GPU。' if ready
-                else '可用磁碟空間不足，含 2 GiB 預留；未下載、刪除或改寫任何檔案。')
+    return dict(
+        model_id=value['id'],
+        filename=value['filename'],
+        target=str(target),
+        size_bytes=value['size_bytes'],
+        sha256=value['sha256'],
+        partial_bytes=offset,
+        download_remaining_bytes=remaining,
+        free_bytes=free,
+        reclaimable_partial_bytes=reclaimable,
+        reserve_bytes=downloader.RESERVE_BYTES,
+        required_bytes=required,
+        ready=ready,
+        installation_locked=lock.exists(),
+        existing_requires_hash_verification=target.exists(),
+        message='已有安裝鎖，請先確認安裝程序。'
+        if lock.exists()
+        else '已有正式檔案；安裝時仍核對完整大小及 SHA256，不保證目前檔案正確。'
+        if target.exists()
+        else '可開始下載；尚未安裝或驗證 GPU。'
+        if ready
+        else '可用磁碟空間不足，含 2 GiB 預留；未下載、刪除或改寫任何檔案。',
+    )
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('model_id', choices=sorted(downloader.SOURCES))
-    parser.add_argument('--check', action='store_true', help='唯讀檢查來源、partial、安裝鎖及磁碟；不下載或寫入')
-    parser.add_argument('--restart', action='store_true', help='明確重置所選模型的 partial，不覆蓋正式檔案')
+    parser.add_argument(
+        'model_id', choices=sorted(set(downloader.SOURCES) - set(downloader.FLUX_IDS))
+    )
+    parser.add_argument(
+        '--check', action='store_true', help='唯讀檢查來源、partial、安裝鎖及磁碟；不下載或寫入'
+    )
+    parser.add_argument(
+        '--restart', action='store_true', help='明確重置所選模型的 partial，不覆蓋正式檔案'
+    )
     parser.add_argument('--attempts', type=int, choices=range(1, 6), default=3)
     args = parser.parse_args(argv)
     try:
