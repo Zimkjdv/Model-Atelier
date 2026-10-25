@@ -624,6 +624,7 @@ def install(app, host):
             adapter_workflows.ID,
             structure_workflows.ID,
             fooocus_workflows.ID,
+            'flux1-schnell-image2image-v1',
         ):
             raise HTTPException(404, '此任務沒有圖生圖輸入')
         path = host.DATA / 'job_inputs' / (str(job_id) + '.png')

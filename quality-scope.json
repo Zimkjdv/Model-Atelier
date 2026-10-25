@@ -108,7 +108,12 @@
     "scripts/verify_flux_generation.py",
     "scripts/flux_acceptance_fixture.py",
     "scripts/flux_failure_node.py",
-    "backend/test_flux_acceptance.py"
+    "backend/test_flux_acceptance.py",
+    "backend/flux_extensions.py",
+    "backend/test_flux_extensions.py",
+    "scripts/flux_fixture.py",
+    "scripts/verify_flux_extensions.py",
+    "scripts/flux_lora_observer.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -170,7 +175,11 @@
     "frontend/tests/training-review-navigation.spec.ts",
     "frontend/src/TrainingReport.vue",
     "frontend/playwright.config.ts",
-    "frontend/tests/training-report.spec.ts"
+    "frontend/tests/training-report.spec.ts",
+    "frontend/src/fluxExtensions.ts",
+    "frontend/src/FluxExtensionStudio.vue",
+    "frontend/src/FluxStudio.vue",
+    "frontend/tests/flux-extensions.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

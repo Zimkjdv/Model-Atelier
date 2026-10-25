@@ -1,0 +1,26 @@
+{
+  "id": "flux-schnell-pvc-style-lora",
+  "name": "FLUX.1 schnell PVC figure style LoRA",
+  "architecture": "flux",
+  "version": "revision 183e446eaf99fe2954db8810aa2cf440db325f5d",
+  "filename": "flux-schnell-pvc-style.safetensors",
+  "size_bytes": 171969920,
+  "sha256": "0864bb5162a05a69e26362450d6e35834ca1b674beb49bdc9c45509073f7e4ed",
+  "source": {
+    "provider": "Hugging Face",
+    "repository": "p1atdev/flux.1-schnell-pvc-style-lora",
+    "revision": "183e446eaf99fe2954db8810aa2cf440db325f5d",
+    "filename": "pvc-shnell-7250+7500.safetensors",
+    "page_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+    "download_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/resolve/183e446eaf99fe2954db8810aa2cf440db325f5d/pvc-shnell-7250+7500.safetensors"
+  },
+  "license": {
+    "name": "Apache-2.0 (author model-card declaration)",
+    "url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+    "terms_verified": false,
+    "note": "已閱讀固定作者模型卡及其訓練設定；模型卡宣告 Apache-2.0，未提供獨立完整條款／全部訓練資料權利鏈。技術相容性不代表商用授權審查完成。"
+  },
+  "trigger_words": ["pvc figure", "nendoroid", "figma"],
+  "base_model": "black-forest-labs/FLUX.1-schnell",
+  "workflow_id": "flux1-schnell-lora-v1"
+}

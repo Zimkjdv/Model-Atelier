@@ -146,6 +146,7 @@ class Pager:
                 ],
                 reference=['checkpoint-ipadapter-reference-v1'],
             )
+            families['flux-addon'] = ['flux1-schnell-lora-v1', 'flux1-schnell-image2image-v1']
             if workflow == 'checkpoint':
                 clauses.append(
                     "COALESCE(json_extract(value,'$.workflow_id'),'') IN ('','checkpoint-image2image-v1')"

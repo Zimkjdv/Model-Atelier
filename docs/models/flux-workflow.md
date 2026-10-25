@@ -1,10 +1,10 @@
 # FLUX.1 [schnell] 專用工作流程
 
-2026-10-25：[F01 固定安裝](flux-installation.md)與 [F02 原生節點 512 配置量測](flux-runtime-observation.md)已有實際證據；F02 使用獨立程序及明確載入順序；[F03](flux-generation-acceptance.md)另完成相同固定 512 配置的平台 HTTP、作品保存、離線還原與受控 CUDA OOM。下方 2026-10-05 的缺權重描述保留為歷史。
+2026-10-25：[F01 固定安裝](flux-installation.md)與 [F02 原生節點 512 配置量測](flux-runtime-observation.md)已有實際證據；F02 使用獨立程序及明確載入順序；[F03](flux-generation-acceptance.md)另完成相同固定 512 配置的平台 HTTP、作品保存、離線還原與受控 CUDA OOM。[F04 LoRA／原生圖生圖](flux-extensions.md)另立版本與子頁，不混入本檔的純文生圖格式。下方 2026-10-05 的缺權重描述保留為歷史。
 
 2026-10-05：`flux1-schnell-text2image-v1` 使用 9 個原生節點：UNETLoader、DualCLIPLoader（type=flux）、VAELoader、正／空負提示詞 CLIPTextEncode、EmptySD3LatentImage、KSampler、VAEDecode、SaveImage。
 
-採 16 通道 latent；batch 1、CFG 1、Euler／simple、denoise 1，steps 限定 1–4。尺寸 64–8192 且為 16 倍數。負提示詞、LoRA、參考圖及其他變體均不接受，不默默忽略額外欄位。CFG 1 不使用負提示詞；參數依 [ComfyUI 官方範例](https://comfyanonymous.github.io/ComfyUI_examples/flux/) 及 [官方 Schnell workflow](https://github.com/Comfy-Org/workflow_templates/blob/main/templates/flux_schnell.json) 的取樣設定實作，分離載入器介面另核對本機原生源碼與即時節點定義。
+採 16 通道 latent；batch 1、CFG 1、Euler／simple、denoise 1，steps 限定 1–4。尺寸 64–8192 且為 16 倍數。本純文生圖格式不接受負提示詞、LoRA、參考圖及其他變體，不默默忽略額外欄位。CFG 1 不使用負提示詞；參數依 [ComfyUI 官方範例](https://comfyanonymous.github.io/ComfyUI_examples/flux/) 及 [官方 Schnell workflow](https://github.com/Comfy-Org/workflow_templates/blob/main/templates/flux_schnell.json) 的取樣設定實作，分離載入器介面另核對本機原生源碼與即時節點定義。
 
 主模型 weight_dtype 可選 default、fp8_e4m3fn、fp8_e5m2；編碼器 device 可選 default、cpu。選項必須在原引擎即時定義中，這些精度／裝置組合尚未 GPU 驗證，不承諾效能或記憶體需求。模型檔案名稱與角色由使用者選擇，FLUX 變體不能僅憑名稱判定；主模型登記為已知其他架構時拒絕，未知架構保持未驗證提醒。文字編碼器及 VAE 不依主模型架構標籤推定相容。
 

@@ -80,7 +80,7 @@ for (const width of [1440, 390]) test(`${width}px: first connection, model, expl
     await page.getByRole('button', { name: 'FLUX.1 [schnell]', exact: true }).click()
     await expect(page.getByLabel('提交能力狀態')).toContainText('尚缺必要條件')
     await page.getByText('能力與實機驗證範圍', { exact: true }).click()
-    await expect(page.getByText(/FLUX 已接入專用工作流程，實機 GPU 尚未驗證/)).toBeVisible()
+    await expect(page.getByText(/FLUX 已完成文件所列固定 512 配置實測/)).toBeVisible()
     await page.getByRole('button', { name: 'Checkpoint／SDXL', exact: true }).click()
     await page.locator('#draft-prompt').fill('explicit fixture generation ' + width)
     await expect(page.getByLabel('提交能力狀態')).toContainText('表單預檢可提交')

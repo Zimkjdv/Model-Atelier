@@ -38,11 +38,12 @@ import {
 } from './inpaintSettings'
 import { imageWorkflowId } from './referenceSettings'
 import { fluxWorkflowId, type FluxForm } from './fluxSettings'
+import { fluxExtensionSubmission, type FluxExtensionForm } from './fluxExtensions'
 import { mergeJob, terminal, useJobEvents, type Job } from './jobEvents'
 const props = defineProps<{
-  form: CreationForm | FluxForm | InpaintForm | ControlForm | ReferenceForm
+  form: CreationForm | FluxForm | FluxExtensionForm | InpaintForm | ControlForm | ReferenceForm
   experiment?: ExperimentLoad | null
-  workflow?: 'flux' | 'inpaint' | 'control' | 'reference'
+  workflow?: 'flux' | 'flux-addon' | 'inpaint' | 'control' | 'reference'
   blockedReason?: string
   disabled?: boolean
 }>()
@@ -50,6 +51,7 @@ const checkpointForm = computed(() => ('checkpoint' in props.form ? props.form :
 const pendingKey = {
   checkpoint: 'atelier-pending-submission',
   flux: 'atelier-pending-flux-submission',
+  'flux-addon': 'atelier-pending-flux-addon-submission',
   inpaint: 'atelier-pending-inpaint-submission',
   control: 'atelier-pending-control-submission',
   reference: 'atelier-pending-reference-submission',
@@ -169,7 +171,10 @@ const connectionLabels = {
 }
 function freezeCurrentSubmission(): Record<string, unknown> {
   const experiment =
-    props.workflow === 'inpaint' || props.workflow === 'control' || props.workflow === 'reference'
+    props.workflow === 'inpaint' ||
+    props.workflow === 'control' ||
+    props.workflow === 'reference' ||
+    props.workflow === 'flux-addon'
       ? null
       : experimentForSubmission(props.experiment, props.form)
   const candidate = {
@@ -200,6 +205,7 @@ function freezeCurrentSubmission(): Record<string, unknown> {
   return candidate
 }
 function frozenSubmissionDescriptor(frozen: Record<string, unknown>) {
+  if (props.workflow === 'flux-addon') return fluxExtensionSubmission(frozen)
   // Versioned adapters choose the original endpoint from the frozen marker.
   if (props.workflow === 'control') return controlSubmission(frozen)
   if (props.workflow === 'reference') return referenceSubmission(frozen)
@@ -306,7 +312,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
       ><p
         >{{
           workflow === 'flux'
-            ? 'FLUX 已接入專用工作流程，實機 GPU 尚未驗證。'
+            ? 'FLUX 已完成文件所列固定 512 配置實測。'
             : '此流程已有程式接入；既有實測限文件記錄的硬體、模型與參數。'
         }}目前表單與清單預檢不驗證實際權重
         hash、可用記憶體或生成品質；未知資訊不當作已通過。模型來源／版本可在模型庫查看，任務保存當次快照。</p
@@ -331,7 +337,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
     >
     <p v-else class="footnote"
       >FLUX.1 [schnell] · {{ form.steps }} steps · Euler / simple · CFG 1 · 每次 1
-      張。完整流程與四元件快照會保存到本機；GPU 尚未驗證。</p
+      張。完整流程與四元件快照會保存到本機；目前表單、元件檔案與引擎未自動驗證。</p
     >
     <p v-if="!imageMode && checkpointForm?.reference_ids.length" class="notice warning"
       >文生圖不使用參考素材，請先取消選取，或切換圖生圖流程。</p
@@ -415,7 +421,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
         >舊版 v1 沒有保存同次邊緣輸出，不會重新計算歷史圖。</p
       >
       <ExperimentSnapshot :item="job.experiment_context" />
-      <LoraSnapshot v-if="checkpointForm" :items="job.lora_metadata" />
+      <LoraSnapshot v-if="checkpointForm || workflow === 'flux-addon'" :items="job.lora_metadata" />
       <ControlSnapshot
         v-if="isControlWorkflow(job.workflow_id)"
         :items="job.component_metadata"
@@ -558,6 +564,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
         v-if="
           job.status === 'failed' ||
           ((workflow === 'flux' ||
+            workflow === 'flux-addon' ||
             job.workflow_id === imageWorkflowId ||
             isInpaintWorkflow(job.workflow_id) ||
             isControlWorkflow(job.workflow_id) ||

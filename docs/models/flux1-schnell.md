@@ -1,5 +1,7 @@
 # FLUX.1 [schnell]：固定來源與安裝預檢
 
+目前狀態（2026-10-25）：已另完成 [F02 精度／資源觀察](flux-runtime-observation.md)、[F03 平台保存／受控 OOM](flux-generation-acceptance.md)及 [F04 固定 PVC LoRA／VAE 圖生圖](flux-extensions.md)。通過範圍限文件列出的 RTX 3060／64 GiB RAM、512 配置。此頁下方是來源選型歷史；快速預檢 API 的 false 欄位只表示該端點不下載、不驗檔、不生成，不否定專用工具的歷史實測。
+
 2026-10-25：新增獨立 [F01 安裝／驗檔 CLI](flux-installation.md)，使用官方本機登入與固定四元件來源，[四份實際安裝與完整 hash](../validation/flux-installation-20261025.md)已通過。以下是早期來源選型紀錄，快速預檢仍保持不連網／不驗 hash；CLI 工具測試通過不等於另一台主機已取得權重。
 
 2026-10-05 更新：分離元件庫及專用提交／草稿／JSON API 已完成，見 [流程說明](flux-workflow.md)。以下保留來源選型階段紀錄；預檢的 generation_supported=false 表示尚未確認本機權重可生成，不表示不存在專用 API。安裝與 GPU 出圖仍未驗證。

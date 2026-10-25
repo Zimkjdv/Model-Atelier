@@ -2,11 +2,11 @@
 
 個人 AI 圖像創作與實驗工作台。更新日期：2026-10-25。
 
-本檔只追蹤 **14 個未完成主項、19 個待驗收子項**（共 33 個未勾選框）。已完成條目的原驗收敘述、圖片提醒與證據移至 [CHANGELOG 已完成條目](CHANGELOG.MD#roadmap-completed-20261025)；原 39 框去向與補回驗收也保留於 [歷史索引](CHANGELOG.MD#unchecked-index)。移動不改變完成狀態，也不新增實測結論。
+本檔只追蹤 **13 個未完成主項、17 個待驗收子項**（共 30 個未勾選框）。已完成條目的原驗收敘述、圖片提醒與證據移至 [CHANGELOG 已完成條目](CHANGELOG.MD#roadmap-completed-20261025)；原 39 框去向與補回驗收也保留於 [歷史索引](CHANGELOG.MD#unchecked-index)。移動不改變完成狀態，也不新增實測結論。
 
 ## 接下來的順序與條件
 
-已依序完成 [T07 缺項導覽](CHANGELOG.MD#t07) → [T08 訓練報告](CHANGELOG.MD#t08)。本輪 [F01](CHANGELOG.MD#f01) 先安裝、完整驗證四份權重並 commit／push，再完成 [F02](CHANGELOG.MD#f02) 的條款記錄與 3060／64 GiB RAM、512 原生配置觀察。[F03 平台 HTTP／保存／還原與受控 OOM](CHANGELOG.MD#f03)已另行實測；編碼器轉檔來源缺口另列 M02，沒有當成全部條款已完整驗證。
+已依序完成 [T07 缺項導覽](CHANGELOG.MD#t07) → [T08 訓練報告](CHANGELOG.MD#t08)，以及 [F01 固定安裝](CHANGELOG.MD#f01) → [F02 精度／資源](CHANGELOG.MD#f02) → [F03 平台保存／受控 OOM](CHANGELOG.MD#f03) → [F04 固定 LoRA／原生圖生圖](CHANGELOG.MD#f04)，各項先 commit／push 才開始下一項。固定實測限 3060／64 GiB RAM 的所列 512 配置；編碼器轉檔來源缺口仍列 M02，沒有當成全部條款或動漫品質已驗證。
 
 使用者已確認維持同一台電腦使用，上一輪依序完成 [D01](CHANGELOG.MD#d01) → [D02](CHANGELOG.MD#d02)，每項完成後先 commit、push，才做下一項。其餘項目依下列設備、來源及資料審查條件推進；Docker 保持選用，不新增日常前置需求。
 
@@ -14,7 +14,7 @@
 
 - E02／E03 需要 RTX 4080；V01-02 需要實體觸控設備，目前不可用。
 - E04 已有 RTX 3060 推論及 T03 技術訓練量測，其他工作負載／RTX 4080 分開補驗。
-- M01 的發布條款差異及依賴來源未釐清；M02 保留 FLUX 編碼器確切上游／轉檔來源的追溯缺口。FLUX F01／F02 已完成所列安裝、條款記錄及原生配置觀察，接續 F03 → F04。
+- M01 的發布條款差異及依賴來源未釐清；M02 保留 FLUX 編碼器確切上游／轉檔來源的追溯缺口。FLUX F01／F02 已完成所列安裝、條款記錄及原生配置觀察，F03 → F04 已各自完成所列固定配置，完整條目與限制移至 CHANGELOG。
 - 作者畫風／角色真實訓練前，仍需完成 [T02 本批圖片審查](docs/validation/training-dataset-20261023.md)；最終品質比較前提醒確認未參與調參的獨立保留圖。T03／T04 技術驗收不代表作者品質通過。
 - 官方 API 仍最後實作；A02 先確認確切模型與提供者。已完成項只針對可重現問題局部改善，參考 [GitHub 借用決策](docs/github-reuse-assessment-20261023.md)。
 
@@ -25,7 +25,6 @@
 | P0：硬體、相容性與量測 | 3 | 6 |
 | P1／P6：實機觸控 | 1 | 1 |
 | P2／P4：模型來源 | 2 | 2 |
-| P5：FLUX.1 [schnell] | 1 | 2 |
 | P8：官方 API（最後實作） | 7 | 8 |
 
 ## P0：硬體、相容性與量測
@@ -83,7 +82,7 @@
 
 <a id="f02"></a>
 
-F02 的逐元件條款記錄與所列 3060 原生配置觀察已移至 [CHANGELOG](CHANGELOG.MD#f02)。主模型 FP8／CUDA BF16 cast、CPU 編碼器與 RAM／VRAM 已有 [實際證據](docs/validation/flux-runtime-20261025.md)，最低需求及未觀察的 kernel 精度仍未知；M02 來源缺口保留。後續 **F03 → F04**，32 GiB RAM、較大尺寸及 RTX 4080 不能直接認列通過。
+F02 的逐元件條款記錄與所列 3060 原生配置觀察已移至 [CHANGELOG](CHANGELOG.MD#f02)。主模型 FP8／CUDA BF16 cast、CPU 編碼器與 RAM／VRAM 已有 [實際證據](docs/validation/flux-runtime-20261025.md)，最低需求及未觀察的 kernel 精度仍未知；M02 來源缺口保留。F03 → F04 已分別完成 [平台保存與受控 OOM](CHANGELOG.MD#f03)、[固定 LoRA 與 VAE 圖生圖](CHANGELOG.MD#f04)；32 GiB RAM、較大尺寸、Redux／身份參考及 RTX 4080 不能直接認列通過。
 
 <a id="f03"></a>
 
@@ -91,9 +90,7 @@ F02 的逐元件條款記錄與所列 3060 原生配置觀察已移至 [CHANGELO
 
 <a id="f04"></a>
 
-- [ ] **F04 · FLUX LoRA 與參考圖能力逐項接入**
-  - [ ] 驗收 F04-01：以此架構可用的 LoRA 獨立驗證相容性、版本與工作流程。
-  - [ ] 驗收 F04-02：參考圖能力另立流程與實測；未知或未驗證能力保持停用，不沿用 SDXL 驗收。
+已完成，完整驗收敘述移至 [CHANGELOG](CHANGELOG.MD#f04)。[實際證據](docs/validation/flux-extensions-20261025.md)只涵蓋固定 PVC LoRA、原生 VAE 圖生圖與所列 512 配置；未知 LoRA、Redux／IP-Adapter、身份保證及混合流程保持停用。後續需要指定作者／角色圖片時，提醒依 [圖片備註](docs/models/flux-extensions.md#下一輪圖片提醒)完成審查與保留圖確認。
 
 ## P8：官方 API 服務（最後實作）
 

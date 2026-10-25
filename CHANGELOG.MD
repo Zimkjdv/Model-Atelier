@@ -1,5 +1,21 @@
 # Model Atelier — Changelog
 
+## 2026-10-25 · F04 獨立 Schnell LoRA 與原生圖生圖
+
+F03 已先以 `6ac8bae` commit／push，才接續本項；其 [GitHub Actions](https://github.com/Zimkjdv/Model-Atelier/actions/runs/40166211208)亦已確認通過。新增兩個明確版本的 FLUX 流程、獨立草稿格式／revision、UUID 端點復原、元件與 LoRA 快照、原圖正規化／一次上傳／本機保存、完整作品還原及唯讀匯出；Vue 介面提供 LoRA／圖生圖子頁，保留舊純文生圖與未保存內容。
+
+固定 PVC LoRA 全檔 SHA256 通過，RTX 3060／約 64 GiB RAM、512×512／4 步／主模型 FP8／CPU 編碼器完成四個 HTTP 實機案例：強度 0／0.7，及兩張自製幾何原圖。原生 LoRA 觀察到 304 個參數 patch，RGB 像素差異、四份作品／來源快照與引擎離線後 GET 核對通過，各只提交一次。未知／SDXL／Dev LoRA、Redux／IP-Adapter、LoRA＋原圖混用及未驗收配置不啟用；幾何圖重繪不認列動漫畫風或角色品質。作者圖片後續需先審查及確認獨立保留圖。
+
+沿用原生節點與既有下載器，新增約 164 MiB 權重，未導入額外推論框架或開始訓練。模型卡宣告 Apache-2.0，但沒有獨立完整條款及全部資料權利鏈證明，manifest `terms_verified` 保持 false；M02 也保留。操作見 [F04](docs/models/flux-extensions.md)，[實機／介面證據](docs/validation/flux-extensions-20261025.md)。
+
+本機完整 780 項後端測試（1 既有跳過）通過，另新增清理後資料庫保護回歸，含此項的 38 項相關測試（1 既有跳過）通過；格式／型別／建置／契約及 122 項 Chromium 通過，1,062 個 Markdown 本機連結有效。完成項移至本檔，ROADMAP 保留 13 主項／17 子項未完成。
+
+<a id="f04"></a>
+
+- [x] **F04 · FLUX LoRA 與參考圖能力逐項接入**
+  - [x] 驗收 F04-01：以此架構可用的 LoRA 獨立驗證相容性、版本與工作流程。
+  - [x] 驗收 F04-02：參考圖能力另立流程與實測；未知或未驗證能力保持停用，不沿用 SDXL 驗收。
+
 ## 2026-10-25 · F03 平台 FLUX 生成、保存、離線與失敗復原
 
 固定四份權重完整 SHA256 通過後，使用獨立 loopback HTTP 引擎與全新 DATA／SQLite，RTX 3060／約 64 GiB RAM 完成 512×512／4 步／主模型 FP8 e4m3fn／CPU 編碼器的單次提交、作品保存、完整設定還原與停止引擎後的唯讀驗證。另實測損壞模型載入失敗、極小程序配額下實際 CUDA OOM、明確新 UUID 的快取重試，以及故意遺失回覆後查回原 UUID；五個案例各僅一次 `/prompt`。保留完整錯誤、工作流程、四元件及環境快照，未認列自然顯存門檻、其他配置或動漫品質。

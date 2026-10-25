@@ -134,9 +134,11 @@ for (const [route, title] of routes)
           .getByRole('navigation', { name: '主要導覽' })
           .getByRole('button', { name: title, exact: true }),
       ).toHaveAttribute('aria-current', 'page')
-      await expect(
-        page.getByRole('link', { name: 'Model Atelier · 系統資訊', exact: true }),
-      ).toBeVisible()
+      const brand = page.locator('a.brand')
+      await expect(brand).toBeVisible()
+      await expect(brand).toHaveAccessibleName(
+        width === 1440 ? /Model Atelier.*個人 AI 創作工作台/ : '系統資訊',
+      )
       await enter(page.getByRole('link', { name: '跳至主要內容' }))
       await expect(page.locator('main')).toBeFocused()
       await expect(page).toHaveURL(new RegExp('#/' + route + '$'))

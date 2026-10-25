@@ -16,6 +16,7 @@ KNOWN_NODES = {
     'EmptySD3LatentImage',
     'LoadImage',
     'VAEEncode',
+    'LoraLoaderModelOnly',
 }
 OOM_TYPES = {
     'torch.OutOfMemoryError',
@@ -122,7 +123,7 @@ TEXT = {
         '模型載入節點失敗',
         '原工作流程的模型載入節點執行失敗；目前沒有足夠資訊判定為顯存不足。',
         [
-            '確認原 checkpoint 檔案存在、完整且架構與流程相符。',
+            '確認原模型／LoRA 檔案存在、完整且架構與流程相符。',
             '查看原任務 JSON 與引擎日誌，再選擇可用模型或修復檔案後建立新任務。',
         ],
     ),
@@ -220,6 +221,7 @@ def from_history(job, entry):
             'UNETLoader',
             'DualCLIPLoader',
             'VAELoader',
+            'LoraLoaderModelOnly',
         ):
             return info('model_load_failed', context)
         return info('execution_failed', context)

@@ -88,7 +88,44 @@ def serve(directory):
     uvicorn.run(app, host='127.0.0.1', port=config['platform_port'])
 
 
-def run():
+def f03_cases(directory, runner, report, engine):
+    for name, changes, failure in (
+        ('baseline', {}, None),
+        (
+            'load_failure',
+            {'diffusion_model': 'f03-corrupt.safetensors'},
+            'model_load_failed',
+        ),
+        (
+            'cuda_oom',
+            {'diffusion_model': 'f03-quota-oom.safetensors'},
+            'cuda_oom',
+        ),
+        ('explicit_retry', {}, None),
+        (
+            'lost_receipt',
+            {'prompt': 'F03 lost receipt: a small red house on a green hill'},
+            None,
+        ),
+    ):
+        print('F03 case: ' + name, flush=True)
+        runner.emit = lambda value, name=name: write_report(directory / (name + '.json'), value)
+        report['cases'][name] = runner.run(changes=changes, expected_failure=failure)
+    if report['cases']['lost_receipt']['initial_status'] != 'unknown':
+        raise ValueError('Lost receipt was not preserved as unknown')
+    dispatches = [
+        json.loads(line)['id'] for line in (directory / 'dispatch.jsonl').read_text().splitlines()
+    ]
+    if len(dispatches) != 5 or len(set(dispatches)) != 5:
+        raise ValueError('Each case must dispatch exactly once')
+    report['dispatches'] = dispatches
+    stop(engine)
+    report['offline_verification'] = runner.verify(report['cases']['baseline'])
+    if len((directory / 'dispatch.jsonl').read_text().splitlines()) != 5:
+        raise ValueError('Offline reads dispatched work')
+
+
+def run(*, case_runner=None):
     ensure_engine_stopped()
     run_id = str(uuid4())
     directory = ROOT / 'runtime/flux-acceptance' / run_id
@@ -136,6 +173,20 @@ def run():
             extension = base / 'custom_nodes/f03_fixture'
             extension.mkdir(parents=True)
             shutil.copyfile(ROOT / 'scripts/flux_failure_node.py', extension / '__init__.py')
+            whitelist = ['f03_fixture']
+            if case_runner is not None:
+                device_extension = base / 'custom_nodes/model_atelier_execution_device'
+                device_extension.mkdir()
+                for filename in ('__init__.py', 'probe.py'):
+                    shutil.copyfile(
+                        ROOT / 'comfyui_extensions/model_atelier_execution_device' / filename,
+                        device_extension / filename,
+                    )
+                observer = base / 'custom_nodes/f04_observer'
+                observer.mkdir()
+                shutil.copyfile(ROOT / 'scripts/flux_lora_observer.py', observer / '__init__.py')
+                environment['ATELIER_F04_OBSERVATIONS'] = str(directory / 'lora-observation.jsonl')
+                whitelist.extend(['model_atelier_execution_device', 'f04_observer'])
             faults = directory / 'fault-models'
             faults.mkdir()
             for name in ('f03-corrupt.safetensors', 'f03-quota-oom.safetensors'):
@@ -167,7 +218,7 @@ def run():
                         '--disable-api-nodes',
                         '--disable-all-custom-nodes',
                         '--whitelist-custom-nodes',
-                        'f03_fixture',
+                        *whitelist,
                     ]
                     engine = subprocess.Popen(
                         command,
@@ -224,45 +275,7 @@ def run():
                                     source_url=manifest['source']['page_url'],
                                 ),
                             )
-                        for name, changes, failure in (
-                            ('baseline', {}, None),
-                            (
-                                'load_failure',
-                                {'diffusion_model': 'f03-corrupt.safetensors'},
-                                'model_load_failed',
-                            ),
-                            (
-                                'cuda_oom',
-                                {'diffusion_model': 'f03-quota-oom.safetensors'},
-                                'cuda_oom',
-                            ),
-                            ('explicit_retry', {}, None),
-                            (
-                                'lost_receipt',
-                                {'prompt': 'F03 lost receipt: a small red house on a green hill'},
-                                None,
-                            ),
-                        ):
-                            print('F03 case: ' + name, flush=True)
-                            runner.emit = lambda value, name=name: write_report(
-                                directory / (name + '.json'), value
-                            )
-                            report['cases'][name] = runner.run(
-                                changes=changes, expected_failure=failure
-                            )
-                        if report['cases']['lost_receipt']['initial_status'] != 'unknown':
-                            raise ValueError('Lost receipt was not preserved as unknown')
-                        dispatches = [
-                            json.loads(line)['id']
-                            for line in (directory / 'dispatch.jsonl').read_text().splitlines()
-                        ]
-                        if len(dispatches) != 5 or len(set(dispatches)) != 5:
-                            raise ValueError('Each case must dispatch exactly once')
-                        report['dispatches'] = dispatches
-                        stop(engine)
-                        report['offline_verification'] = runner.verify(report['cases']['baseline'])
-                        if len((directory / 'dispatch.jsonl').read_text().splitlines()) != 5:
-                            raise ValueError('Offline reads dispatched work')
+                        (case_runner or f03_cases)(directory, runner, report, engine)
                         report['status'] = 'passed'
                 finally:
                     stop(platform)

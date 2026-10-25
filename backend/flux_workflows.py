@@ -146,6 +146,10 @@ def build(value):
 
 
 def extract(job):
+    from backend import flux_extensions
+
+    if job.get('workflow_id') in flux_extensions.IDS:
+        return flux_extensions.extract(job)
     try:
         if job.get('workflow_id') != WORKFLOW_ID:
             raise ValueError()
@@ -183,6 +187,9 @@ OUTPUTS = {
     'KSampler': ['LATENT'],
     'VAEDecode': ['IMAGE'],
     'SaveImage': [],
+    'LoraLoaderModelOnly': ['MODEL'],
+    'LoadImage': ['IMAGE', 'MASK'],
+    'VAEEncode': ['LATENT'],
 }
 LINK_TYPES = {
     'model': 'MODEL',
@@ -193,6 +200,7 @@ LINK_TYPES = {
     'samples': 'LATENT',
     'vae': 'VAE',
     'images': 'IMAGE',
+    'pixels': 'IMAGE',
 }
 
 
@@ -207,7 +215,8 @@ async def preflight(client, engine_url, graph):
             raise ValueError('ComfyUI 缺少 FLUX 必要節點：' + kind)
         return kind, payload[kind]
 
-    results = await asyncio.gather(*(load(kind) for kind in OUTPUTS), return_exceptions=True)
+    kinds = dict.fromkeys(node['class_type'] for node in graph.values())
+    results = await asyncio.gather(*(load(kind) for kind in kinds), return_exceptions=True)
     for result in results:
         if isinstance(result, BaseException):
             raise result
@@ -240,7 +249,12 @@ async def preflight(client, engine_url, graph):
             if isinstance(value, list):
                 valid = expected == LINK_TYPES[field]
             elif isinstance(expected, list):
-                valid = value in expected
+                # Platform-owned image paths are uploaded only after preflight.
+                valid = (
+                    (type(value) is str and bool(value))
+                    if kind == 'LoadImage' and field == 'image'
+                    else value in expected
+                )
             elif type(value) is str:
                 valid = expected == 'STRING'
             elif type(value) in (int, float):
@@ -269,19 +283,23 @@ def architecture_guard(metadata):
 
 
 async def submit(host, value):
-    from backend import diagnostics
+    from backend import diagnostics, flux_extensions
 
-    diagnostics.bind_submission(value.request_id, WORKFLOW_ID)
-    graph, job_id = build(value), str(value.request_id)
+    extension = value.workflow_id in flux_extensions.IDS
+    workflow_id, job_id = value.workflow_id, str(value.request_id)
+    diagnostics.bind_submission(value.request_id, workflow_id)
+    graph = flux_extensions.build(value, job_id) if extension else build(value)
     try:
         existing = jobs.get(host.DB, job_id)
     except KeyError:
         pass
     else:
         if (
-            existing.get('workflow_id') != WORKFLOW_ID
+            existing.get('workflow_id') != workflow_id
             or existing['workflow'] != graph
             or existing['engine_url'] != value.engine_url
+            or extension
+            and existing.get('reference_settings') != flux_extensions.settings(value)
         ):
             raise HTTPException(409, '此請求 ID 已用於其他工作流程')
         diagnostics.record_job('submission_recovered', existing)
@@ -294,6 +312,12 @@ async def submit(host, value):
         raise HTTPException(409, str(exc)) from exc
     selections = [(role, group, getattr(value, role)) for role, group in ROLES]
     metadata = flux_catalog.capture(host.DB, value.engine_url, selections)
+    extra = None
+    if extension:
+        try:
+            extra = await flux_extensions.prepare(host, value, metadata)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
     try:
         job, fresh = jobs.reserve(
             host.DB,
@@ -303,9 +327,11 @@ async def submit(host, value):
             value.diffusion_model,
             metadata[0]['version'],
             metadata[0],
-            [],
-            workflow_id=WORKFLOW_ID,
+            extra['loras'] if extra else [],
+            workflow_id=workflow_id,
             component_metadata=metadata,
+            reference_metadata=extra['references'] if extra else None,
+            reference_settings=extra['settings'] if extra else None,
         )
     except ValueError as exc:
         raise HTTPException(409, str(exc))
@@ -352,8 +378,27 @@ async def submit(host, value):
             )
         try:
             architecture_guard(flux_catalog.capture(host.DB, value.engine_url, selections))
+            if extra:
+                flux_extensions.recheck(host, value, extra)
         except ValueError as exc:
             fail(422, '驗證期間 ' + str(exc))
+        if extra and extra['encoded'] is not None:
+            job = cancellation.persist(host, job, status='uploading_input')
+            try:
+                receipt = await flux_extensions.upload(host, client, value, job, extra)
+            except (httpx.HTTPError, ValueError, OSError):
+                fail(
+                    502,
+                    'FLUX 輸入保存或上傳失敗；原設定及錯誤保留，不自動重試',
+                    'reference_input_failed',
+                )
+            job = cancellation.persist(host, job, input_upload=receipt)
+            if value.engine_url != host.engine_url():
+                fail(409, '圖片上傳期間引擎已變更，尚未提交', 'engine_changed')
+            try:
+                flux_extensions.recheck(host, value, extra)
+            except ValueError as exc:
+                fail(422, str(exc))
         job = cancellation.persist(host, job, status='submitting', preflight_warnings=[WARNING])
         try:
             async with compute_lease.dispatch(host.ROOT, value.engine_url):
@@ -392,6 +437,10 @@ async def submit(host, value):
 
 
 def install(app, host, job_lock):
+    from backend import flux_extensions
+
+    flux_extensions.install(app, host, job_lock)
+
     class Generate(Input):
         request_id: UUID
 
@@ -460,6 +509,8 @@ def install(app, host, job_lock):
             job_id=str(job_id),
             settings=value,
             component_metadata=job.get('component_metadata'),
+            lora_metadata=job.get('lora_metadata'),
+            reference_metadata=job.get('reference_metadata'),
             runtime_metadata=job.get('runtime_metadata'),
             engine_matches=job['engine_url'] == host.engine_url(),
             warnings=[WARNING, '已保留原引擎與設定；未建立任務。'],
@@ -479,6 +530,8 @@ def install(app, host, job_lock):
             artwork_id=str(artwork_id),
             settings=value,
             component_metadata=item.get('component_metadata'),
+            lora_metadata=item.get('lora_metadata'),
+            reference_metadata=item.get('reference_metadata'),
             runtime_metadata=item.get('runtime_metadata'),
             engine_matches=item['engine_url'] == host.engine_url(),
             warnings=[WARNING, '已完整載入原作品設定；未建立任務。'],

@@ -16,7 +16,9 @@ def install(app, host):
         favorites_only: bool = False,
         model: str = Query('', max_length=2048),
         status: str = Query('', max_length=30),
-        workflow: Literal['all', 'checkpoint', 'flux', 'inpaint', 'control', 'reference'] = 'all',
+        workflow: Literal[
+            'all', 'checkpoint', 'flux', 'flux-addon', 'inpaint', 'control', 'reference'
+        ] = 'all',
         purpose: Literal['', 'unspecified', 'style', 'character', 'composition'] = '',
     ):
         try:

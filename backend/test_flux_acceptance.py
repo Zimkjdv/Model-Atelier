@@ -3,13 +3,16 @@
 import copy
 import hashlib
 import io
+import json
 import os
 from pathlib import Path
 import runpy
 import sys
+import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
+from contextlib import redirect_stdout
 from uuid import uuid4
 
 import httpx
@@ -169,3 +172,52 @@ class FluxAcceptanceTests(unittest.TestCase):
         with patch.dict(os.environ, ATELIER_F03_FIXTURE='0'):
             with self.assertRaisesRegex(RuntimeError, 'isolated fixture'):
                 runpy.run_path(str(source))
+
+    def test_callback_success_still_checks_managed_database_after_cleanup(self):
+        from scripts import flux_acceptance_fixture as fixture
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            for name in (
+                'scripts/flux_acceptance_fixture.py',
+                'scripts/flux_failure_node.py',
+                'scripts/verify_flux_generation.py',
+                'scripts/flux_lora_observer.py',
+                'comfyui_extensions/model_atelier_execution_device/__init__.py',
+                'comfyui_extensions/model_atelier_execution_device/probe.py',
+            ):
+                file = root / name
+                file.parent.mkdir(parents=True, exist_ok=True)
+                file.write_bytes(b'fixture only; never executed')
+            managed = root / 'runtime/ComfyUI/user/comfyui.db'
+            managed.parent.mkdir(parents=True)
+            managed.write_bytes(b'original')
+            process = Mock()
+            process.poll.return_value = 0
+            runner = Mock()
+            runner.api.return_value = {'sync_error': None}
+
+            def callback(*args):
+                managed.write_bytes(b'changed by synthetic callback')
+
+            with (
+                patch.object(fixture, 'ROOT', root),
+                patch('scripts.verify_local_generation.ROOT', root),
+                patch.object(fixture, 'ensure_engine_stopped'),
+                patch.object(
+                    fixture,
+                    'preparation',
+                    return_value={'current_files_verified': True, 'components': []},
+                ),
+                patch.object(fixture, 'source_snapshot', return_value={}),
+                patch.object(fixture, 'wait_ready'),
+                patch.object(fixture, 'Acceptance', return_value=runner),
+                patch.object(fixture.subprocess, 'Popen', return_value=process),
+                redirect_stdout(io.StringIO()),
+            ):
+                self.assertEqual(fixture.run(case_runner=callback), 1)
+            report = json.loads(
+                next((root / 'runtime/flux-acceptance').glob('*/report.json')).read_text()
+            )
+            self.assertEqual(report['status'], 'failed')
+            self.assertTrue(report['owned_processes_stopped'])

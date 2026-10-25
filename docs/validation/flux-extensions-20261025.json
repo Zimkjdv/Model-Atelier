@@ -1,0 +1,1933 @@
+{
+  "schema_version": 1,
+  "run_id": "32279896-4238-47d1-8bf4-988f8dade41f",
+  "status": "passed",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 3060",
+    "vram_mib": 12288,
+    "host_ram_gib": 63.939
+  },
+  "comfy_commit": "15eb748b3ec5f8a0a2d470b7fb280e2d7579f916",
+  "extension_sources": {
+    "scripts/verify_flux_extensions.py": "8dcd4ea0dd4984b2c5efecf6850c21e4df3937ea3a475981f8fc9ac36621f0b0",
+    "scripts/flux_lora_observer.py": "683ed5afc844cb36c1bcf9b07d14871ebc2a05f657fe862dbb3944a4ddad3fbe",
+    "backend/flux_extensions.py": "d60085c3656848cee9d12b43d89262c9cb116b02ab65712857d3d6c92648844d"
+  },
+  "verified_weights": [
+    {
+      "role": "diffusion_model",
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "black-forest-labs/FLUX.1-schnell",
+        "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+        "filename": "flux1-schnell.safetensors",
+        "page_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+        "download_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/741f7c3ce8b383c54771c7003378a50191e9efe9/flux1-schnell.safetensors"
+      },
+      "size_bytes": 23782506688,
+      "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+      "sha256_verified": true
+    },
+    {
+      "role": "vae",
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "black-forest-labs/FLUX.1-schnell",
+        "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+        "filename": "ae.safetensors",
+        "page_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+        "download_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/741f7c3ce8b383c54771c7003378a50191e9efe9/ae.safetensors"
+      },
+      "size_bytes": 335304388,
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "sha256_verified": true
+    },
+    {
+      "role": "clip_l",
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "comfyanonymous/flux_text_encoders",
+        "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+        "filename": "clip_l.safetensors",
+        "page_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+        "download_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/clip_l.safetensors"
+      },
+      "size_bytes": 246144152,
+      "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+      "sha256_verified": true
+    },
+    {
+      "role": "t5xxl",
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "comfyanonymous/flux_text_encoders",
+        "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+        "filename": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "page_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+        "download_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/t5xxl_fp8_e4m3fn_scaled.safetensors"
+      },
+      "size_bytes": 5157348688,
+      "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+      "sha256_verified": true
+    }
+  ],
+  "lora_manifest": {
+    "id": "flux-schnell-pvc-style-lora",
+    "name": "FLUX.1 schnell PVC figure style LoRA",
+    "architecture": "flux",
+    "version": "revision 183e446eaf99fe2954db8810aa2cf440db325f5d",
+    "filename": "flux-schnell-pvc-style.safetensors",
+    "size_bytes": 171969920,
+    "sha256": "0864bb5162a05a69e26362450d6e35834ca1b674beb49bdc9c45509073f7e4ed",
+    "source": {
+      "provider": "Hugging Face",
+      "repository": "p1atdev/flux.1-schnell-pvc-style-lora",
+      "revision": "183e446eaf99fe2954db8810aa2cf440db325f5d",
+      "filename": "pvc-shnell-7250+7500.safetensors",
+      "page_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+      "download_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/resolve/183e446eaf99fe2954db8810aa2cf440db325f5d/pvc-shnell-7250+7500.safetensors"
+    },
+    "license": {
+      "name": "Apache-2.0 (author model-card declaration)",
+      "url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+      "terms_verified": false,
+      "note": "已閱讀固定作者模型卡及其訓練設定；模型卡宣告 Apache-2.0，未提供獨立完整條款／全部訓練資料權利鏈。技術相容性不代表商用授權審查完成。"
+    },
+    "trigger_words": [
+      "pvc figure",
+      "nendoroid",
+      "figma"
+    ],
+    "base_model": "black-forest-labs/FLUX.1-schnell",
+    "workflow_id": "flux1-schnell-lora-v1",
+    "current_file_verified": true
+  },
+  "lora_observations": [
+    {
+      "name": "flux-schnell-pvc-style.safetensors",
+      "strength": 0.0,
+      "patched_parameter_count": 0,
+      "patched_parameter_sample": [],
+      "tensor_keys": 0
+    },
+    {
+      "name": "flux-schnell-pvc-style.safetensors",
+      "strength": 0.7,
+      "patched_parameter_count": 304,
+      "patched_parameter_sample": [
+        "diffusion_model.double_blocks.0.img_attn.proj.weight",
+        "diffusion_model.double_blocks.0.img_attn.qkv.weight",
+        "diffusion_model.double_blocks.0.img_mlp.0.weight",
+        "diffusion_model.double_blocks.0.img_mlp.2.weight",
+        "diffusion_model.double_blocks.0.img_mod.lin.weight",
+        "diffusion_model.double_blocks.0.txt_attn.proj.weight",
+        "diffusion_model.double_blocks.0.txt_attn.qkv.weight",
+        "diffusion_model.double_blocks.0.txt_mlp.0.weight"
+      ],
+      "tensor_keys": 988
+    }
+  ],
+  "source_review": {
+    "readme_bytes": 7727,
+    "readme_sha256": "e62a6145da2653b430f2145ac2074d498f1a57f328b79be012c197062e88b0eb",
+    "standalone_license_present": false,
+    "terms_verified": false
+  },
+  "cases": {
+    "lora_zero": {
+      "status": "passed",
+      "job_id": "e03e17b7-3b0b-4567-b6b7-a12b82f94c17",
+      "settings": {
+        "workflow_id": "flux1-schnell-lora-v1",
+        "engine_url": "http://127.0.0.1:14658",
+        "title": "F04 independent extensions",
+        "diffusion_model": "flux1-schnell.safetensors",
+        "clip_l": "clip_l.safetensors",
+        "t5xxl": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "vae": "ae.safetensors",
+        "prompt": "pvc figure, an adult woman with brown hair and green eyes wearing a long green coat, holding a book, white background, anime figurine",
+        "seed": "9007199254740993",
+        "width": 512,
+        "height": 512,
+        "steps": 4,
+        "weight_dtype": "fp8_e4m3fn",
+        "encoder_device": "cpu",
+        "lora_name": "flux-schnell-pvc-style.safetensors",
+        "lora_strength": 0.0
+      },
+      "workflow": {
+        "1": {
+          "class_type": "UNETLoader",
+          "inputs": {
+            "unet_name": "flux1-schnell.safetensors",
+            "weight_dtype": "fp8_e4m3fn"
+          }
+        },
+        "2": {
+          "class_type": "DualCLIPLoader",
+          "inputs": {
+            "clip_name1": "clip_l.safetensors",
+            "clip_name2": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+            "type": "flux",
+            "device": "cpu"
+          }
+        },
+        "3": {
+          "class_type": "VAELoader",
+          "inputs": {
+            "vae_name": "ae.safetensors"
+          }
+        },
+        "4": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "pvc figure, an adult woman with brown hair and green eyes wearing a long green coat, holding a book, white background, anime figurine",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "5": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "6": {
+          "class_type": "EmptySD3LatentImage",
+          "inputs": {
+            "width": 512,
+            "height": 512,
+            "batch_size": 1
+          }
+        },
+        "7": {
+          "class_type": "KSampler",
+          "inputs": {
+            "model": [
+              "10",
+              0
+            ],
+            "positive": [
+              "4",
+              0
+            ],
+            "negative": [
+              "5",
+              0
+            ],
+            "latent_image": [
+              "6",
+              0
+            ],
+            "seed": 9007199254740993,
+            "steps": 4,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 1.0
+          }
+        },
+        "8": {
+          "class_type": "VAEDecode",
+          "inputs": {
+            "samples": [
+              "7",
+              0
+            ],
+            "vae": [
+              "3",
+              0
+            ]
+          }
+        },
+        "9": {
+          "class_type": "SaveImage",
+          "inputs": {
+            "images": [
+              "8",
+              0
+            ],
+            "filename_prefix": "ModelAtelier"
+          }
+        },
+        "10": {
+          "class_type": "LoraLoaderModelOnly",
+          "inputs": {
+            "model": [
+              "1",
+              0
+            ],
+            "lora_name": "flux-schnell-pvc-style.safetensors",
+            "strength_model": 0.0
+          }
+        }
+      },
+      "elapsed_seconds": 51.375,
+      "artworks": [
+        {
+          "id": "76a0cdf2-5dee-51ce-8084-53cc2afdfb49",
+          "sha256": "f4327d319dd230307b6a5a98181215a985b4e5d806789942b8a94f4952e291e7",
+          "pixel_sha256": "f846d8d84ce7d75582fe92ebe7c6dafbf0d7e6dc1d81ecc950c20207f1f8e189",
+          "bytes": 179479
+        }
+      ],
+      "component_metadata": [
+        {
+          "role": "diffusion_model",
+          "category": "diffusion_models",
+          "name": "flux1-schnell.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+          "architecture": "flux",
+          "size_bytes": null,
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.394256+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:46:24.291920+00:00"
+        },
+        {
+          "role": "clip_l",
+          "category": "text_encoders",
+          "name": "clip_l.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.402254+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:46:24.291920+00:00"
+        },
+        {
+          "role": "t5xxl",
+          "category": "text_encoders",
+          "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.406773+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:46:24.291920+00:00"
+        },
+        {
+          "role": "vae",
+          "category": "vae",
+          "name": "ae.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.398255+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:46:24.291920+00:00"
+        }
+      ],
+      "lora_metadata": [
+        {
+          "name": "flux-schnell-pvc-style.safetensors",
+          "version": "revision 183e446eaf99fe2954db8810aa2cf440db325f5d",
+          "source_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+          "architecture": "flux",
+          "size_bytes": 171969920,
+          "sha256": "0864bb5162a05a69e26362450d6e35834ca1b674beb49bdc9c45509073f7e4ed",
+          "license_name": "Apache-2.0 (author model-card declaration)",
+          "license_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+          "metadata_updated_at": "2026-10-25T05:46:23.976362+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:46:24.291920+00:00",
+          "strength_model": 0.0,
+          "strength_clip": 0
+        }
+      ],
+      "reference_metadata": [],
+      "runtime_metadata": {
+        "schema_version": 1,
+        "captured_at": "2026-10-25T05:46:24.506806+00:00",
+        "workflow": {
+          "id": "flux1-schnell-lora-v1",
+          "sha256": "389da928be3a6409b387cfa3087f9041888e19542f6e9bc25a751d968867033f",
+          "nodes": [
+            "CLIPTextEncode",
+            "DualCLIPLoader",
+            "EmptySD3LatentImage",
+            "KSampler",
+            "LoraLoaderModelOnly",
+            "SaveImage",
+            "UNETLoader",
+            "VAEDecode",
+            "VAELoader"
+          ],
+          "node_versions": null,
+          "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+        },
+        "platform": {
+          "source": "platform Python process",
+          "python": "3.12.10",
+          "packages": [
+            {
+              "name": "fastapi",
+              "version": "0.141.1"
+            },
+            {
+              "name": "starlette",
+              "version": "1.6.0"
+            },
+            {
+              "name": "pydantic",
+              "version": "2.13.5"
+            },
+            {
+              "name": "httpx",
+              "version": "0.28.1"
+            },
+            {
+              "name": "Pillow",
+              "version": "12.3.0"
+            },
+            {
+              "name": "uvicorn",
+              "version": "0.52.4"
+            },
+            {
+              "name": "websockets",
+              "version": "17.1"
+            }
+          ]
+        },
+        "engine": {
+          "status": "reported",
+          "source": "http://127.0.0.1:14658/system_stats",
+          "comfyui": "0.34.0",
+          "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+          "pytorch": "2.14.0+cu130",
+          "packages": [
+            {
+              "name": "comfyui-frontend-package",
+              "installed": "1.51.9",
+              "required": "1.51.9"
+            },
+            {
+              "name": "comfyui-workflow-templates",
+              "installed": "0.11.55",
+              "required": "0.11.55"
+            },
+            {
+              "name": "comfyui-embedded-docs",
+              "installed": "0.5.11",
+              "required": "0.5.11"
+            },
+            {
+              "name": "comfy-kitchen",
+              "installed": "0.2.33",
+              "required": "0.2.33"
+            },
+            {
+              "name": "comfy-aimdo",
+              "installed": "0.5.2",
+              "required": "0.5.2"
+            }
+          ],
+          "cuda": null,
+          "driver": null,
+          "git_revision": null,
+          "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+        },
+        "execution_context": {
+          "schema_version": 1,
+          "workload": "inference",
+          "workflow_id": "flux1-schnell-lora-v1",
+          "geometry": {
+            "width": 512,
+            "height": 512,
+            "batch_size": 1,
+            "source": "workflow node 6"
+          },
+          "parameters": [
+            {
+              "node_id": "1",
+              "class_type": "UNETLoader",
+              "settings": {
+                "weight_dtype": "fp8_e4m3fn"
+              }
+            },
+            {
+              "node_id": "2",
+              "class_type": "DualCLIPLoader",
+              "settings": {
+                "device": "cpu"
+              }
+            },
+            {
+              "node_id": "7",
+              "class_type": "KSampler",
+              "settings": {
+                "steps": 4,
+                "cfg": 1.0,
+                "sampler_name": "euler",
+                "scheduler": "simple",
+                "denoise": 1.0,
+                "seed": "9007199254740993"
+              }
+            }
+          ],
+          "models": [
+            {
+              "role": "checkpoint",
+              "name": "flux1-schnell.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "flux",
+              "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+            },
+            {
+              "role": "diffusion_model",
+              "name": "flux1-schnell.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "flux",
+              "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+            },
+            {
+              "role": "clip_l",
+              "name": "clip_l.safetensors",
+              "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+              "architecture": "unknown",
+              "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
+            },
+            {
+              "role": "t5xxl",
+              "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+              "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+              "architecture": "unknown",
+              "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a"
+            },
+            {
+              "role": "vae",
+              "name": "ae.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "unknown",
+              "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
+            }
+          ],
+          "loras": [
+            {
+              "name": "flux-schnell-pvc-style.safetensors",
+              "version": "revision 183e446eaf99fe2954db8810aa2cf440db325f5d",
+              "source_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+              "architecture": "flux",
+              "size_bytes": 171969920,
+              "sha256": "0864bb5162a05a69e26362450d6e35834ca1b674beb49bdc9c45509073f7e4ed",
+              "license_name": "Apache-2.0 (author model-card declaration)",
+              "license_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+              "metadata_updated_at": "2026-10-25T05:46:23.976362+00:00",
+              "origin": "user_registered",
+              "captured_at": "2026-10-25T05:46:24.291920+00:00",
+              "strength_model": 0.0,
+              "strength_clip": 0
+            }
+          ],
+          "launch_policy": {
+            "source": "http://127.0.0.1:14658/system_stats.system.argv",
+            "reported": true,
+            "precision_flags": [],
+            "memory_flags": []
+          },
+          "actual_precision": null,
+          "actual_offload": null,
+          "cache_state": "unknown",
+          "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+        },
+        "execution_device": {
+          "schema_version": 1,
+          "engine_url": "http://127.0.0.1:14658",
+          "source": "http://127.0.0.1:14658/model_atelier/execution-device",
+          "checked_at": "2026-10-25T05:46:24.533909+00:00",
+          "probe_id": "f8d17b13-08d4-4afe-af3d-06fb715a8dc6",
+          "status": "available",
+          "reason": "device_selected",
+          "device": {
+            "type": "cuda",
+            "index": 0
+          },
+          "backend_available": true
+        }
+      }
+    },
+    "lora_enabled": {
+      "status": "passed",
+      "job_id": "3fd83398-1804-4ba7-a596-1d6245c39194",
+      "settings": {
+        "workflow_id": "flux1-schnell-lora-v1",
+        "engine_url": "http://127.0.0.1:14658",
+        "title": "F04 independent extensions",
+        "diffusion_model": "flux1-schnell.safetensors",
+        "clip_l": "clip_l.safetensors",
+        "t5xxl": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "vae": "ae.safetensors",
+        "prompt": "pvc figure, an adult woman with brown hair and green eyes wearing a long green coat, holding a book, white background, anime figurine",
+        "seed": "9007199254740993",
+        "width": 512,
+        "height": 512,
+        "steps": 4,
+        "weight_dtype": "fp8_e4m3fn",
+        "encoder_device": "cpu",
+        "lora_name": "flux-schnell-pvc-style.safetensors",
+        "lora_strength": 0.7
+      },
+      "workflow": {
+        "1": {
+          "class_type": "UNETLoader",
+          "inputs": {
+            "unet_name": "flux1-schnell.safetensors",
+            "weight_dtype": "fp8_e4m3fn"
+          }
+        },
+        "2": {
+          "class_type": "DualCLIPLoader",
+          "inputs": {
+            "clip_name1": "clip_l.safetensors",
+            "clip_name2": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+            "type": "flux",
+            "device": "cpu"
+          }
+        },
+        "3": {
+          "class_type": "VAELoader",
+          "inputs": {
+            "vae_name": "ae.safetensors"
+          }
+        },
+        "4": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "pvc figure, an adult woman with brown hair and green eyes wearing a long green coat, holding a book, white background, anime figurine",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "5": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "6": {
+          "class_type": "EmptySD3LatentImage",
+          "inputs": {
+            "width": 512,
+            "height": 512,
+            "batch_size": 1
+          }
+        },
+        "7": {
+          "class_type": "KSampler",
+          "inputs": {
+            "model": [
+              "10",
+              0
+            ],
+            "positive": [
+              "4",
+              0
+            ],
+            "negative": [
+              "5",
+              0
+            ],
+            "latent_image": [
+              "6",
+              0
+            ],
+            "seed": 9007199254740993,
+            "steps": 4,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 1.0
+          }
+        },
+        "8": {
+          "class_type": "VAEDecode",
+          "inputs": {
+            "samples": [
+              "7",
+              0
+            ],
+            "vae": [
+              "3",
+              0
+            ]
+          }
+        },
+        "9": {
+          "class_type": "SaveImage",
+          "inputs": {
+            "images": [
+              "8",
+              0
+            ],
+            "filename_prefix": "ModelAtelier"
+          }
+        },
+        "10": {
+          "class_type": "LoraLoaderModelOnly",
+          "inputs": {
+            "model": [
+              "1",
+              0
+            ],
+            "lora_name": "flux-schnell-pvc-style.safetensors",
+            "strength_model": 0.7
+          }
+        }
+      },
+      "elapsed_seconds": 11.577999999979511,
+      "artworks": [
+        {
+          "id": "d1514570-467b-5024-903d-372b84716aa2",
+          "sha256": "ff15ad09e54dc26224b7ac2f6e85cb685646e8803dbc448cb8b7a79554d96253",
+          "pixel_sha256": "41dd7edbf01a22ee9c175681e1175dd1cfef65bb945cfdd67dbe7b3ef86e85a0",
+          "bytes": 186743
+        }
+      ],
+      "component_metadata": [
+        {
+          "role": "diffusion_model",
+          "category": "diffusion_models",
+          "name": "flux1-schnell.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+          "architecture": "flux",
+          "size_bytes": null,
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.394256+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:15.935214+00:00"
+        },
+        {
+          "role": "clip_l",
+          "category": "text_encoders",
+          "name": "clip_l.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.402254+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:15.935214+00:00"
+        },
+        {
+          "role": "t5xxl",
+          "category": "text_encoders",
+          "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.406773+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:15.935214+00:00"
+        },
+        {
+          "role": "vae",
+          "category": "vae",
+          "name": "ae.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.398255+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:15.935214+00:00"
+        }
+      ],
+      "lora_metadata": [
+        {
+          "name": "flux-schnell-pvc-style.safetensors",
+          "version": "revision 183e446eaf99fe2954db8810aa2cf440db325f5d",
+          "source_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+          "architecture": "flux",
+          "size_bytes": 171969920,
+          "sha256": "0864bb5162a05a69e26362450d6e35834ca1b674beb49bdc9c45509073f7e4ed",
+          "license_name": "Apache-2.0 (author model-card declaration)",
+          "license_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+          "metadata_updated_at": "2026-10-25T05:46:23.976362+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:15.936213+00:00",
+          "strength_model": 0.7,
+          "strength_clip": 0
+        }
+      ],
+      "reference_metadata": [],
+      "runtime_metadata": {
+        "schema_version": 1,
+        "captured_at": "2026-10-25T05:47:16.159128+00:00",
+        "workflow": {
+          "id": "flux1-schnell-lora-v1",
+          "sha256": "e8490ad15ac707c744a6aa0b5b8a4f4464aa4271c3bed619711aac4bb8cc6c2e",
+          "nodes": [
+            "CLIPTextEncode",
+            "DualCLIPLoader",
+            "EmptySD3LatentImage",
+            "KSampler",
+            "LoraLoaderModelOnly",
+            "SaveImage",
+            "UNETLoader",
+            "VAEDecode",
+            "VAELoader"
+          ],
+          "node_versions": null,
+          "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+        },
+        "platform": {
+          "source": "platform Python process",
+          "python": "3.12.10",
+          "packages": [
+            {
+              "name": "fastapi",
+              "version": "0.141.1"
+            },
+            {
+              "name": "starlette",
+              "version": "1.6.0"
+            },
+            {
+              "name": "pydantic",
+              "version": "2.13.5"
+            },
+            {
+              "name": "httpx",
+              "version": "0.28.1"
+            },
+            {
+              "name": "Pillow",
+              "version": "12.3.0"
+            },
+            {
+              "name": "uvicorn",
+              "version": "0.52.4"
+            },
+            {
+              "name": "websockets",
+              "version": "17.1"
+            }
+          ]
+        },
+        "engine": {
+          "status": "reported",
+          "source": "http://127.0.0.1:14658/system_stats",
+          "comfyui": "0.34.0",
+          "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+          "pytorch": "2.14.0+cu130",
+          "packages": [
+            {
+              "name": "comfyui-frontend-package",
+              "installed": "1.51.9",
+              "required": "1.51.9"
+            },
+            {
+              "name": "comfyui-workflow-templates",
+              "installed": "0.11.55",
+              "required": "0.11.55"
+            },
+            {
+              "name": "comfyui-embedded-docs",
+              "installed": "0.5.11",
+              "required": "0.5.11"
+            },
+            {
+              "name": "comfy-kitchen",
+              "installed": "0.2.33",
+              "required": "0.2.33"
+            },
+            {
+              "name": "comfy-aimdo",
+              "installed": "0.5.2",
+              "required": "0.5.2"
+            }
+          ],
+          "cuda": null,
+          "driver": null,
+          "git_revision": null,
+          "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+        },
+        "execution_context": {
+          "schema_version": 1,
+          "workload": "inference",
+          "workflow_id": "flux1-schnell-lora-v1",
+          "geometry": {
+            "width": 512,
+            "height": 512,
+            "batch_size": 1,
+            "source": "workflow node 6"
+          },
+          "parameters": [
+            {
+              "node_id": "1",
+              "class_type": "UNETLoader",
+              "settings": {
+                "weight_dtype": "fp8_e4m3fn"
+              }
+            },
+            {
+              "node_id": "2",
+              "class_type": "DualCLIPLoader",
+              "settings": {
+                "device": "cpu"
+              }
+            },
+            {
+              "node_id": "7",
+              "class_type": "KSampler",
+              "settings": {
+                "steps": 4,
+                "cfg": 1.0,
+                "sampler_name": "euler",
+                "scheduler": "simple",
+                "denoise": 1.0,
+                "seed": "9007199254740993"
+              }
+            }
+          ],
+          "models": [
+            {
+              "role": "checkpoint",
+              "name": "flux1-schnell.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "flux",
+              "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+            },
+            {
+              "role": "diffusion_model",
+              "name": "flux1-schnell.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "flux",
+              "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+            },
+            {
+              "role": "clip_l",
+              "name": "clip_l.safetensors",
+              "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+              "architecture": "unknown",
+              "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
+            },
+            {
+              "role": "t5xxl",
+              "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+              "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+              "architecture": "unknown",
+              "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a"
+            },
+            {
+              "role": "vae",
+              "name": "ae.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "unknown",
+              "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
+            }
+          ],
+          "loras": [
+            {
+              "name": "flux-schnell-pvc-style.safetensors",
+              "version": "revision 183e446eaf99fe2954db8810aa2cf440db325f5d",
+              "source_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+              "architecture": "flux",
+              "size_bytes": 171969920,
+              "sha256": "0864bb5162a05a69e26362450d6e35834ca1b674beb49bdc9c45509073f7e4ed",
+              "license_name": "Apache-2.0 (author model-card declaration)",
+              "license_url": "https://huggingface.co/p1atdev/flux.1-schnell-pvc-style-lora/blob/183e446eaf99fe2954db8810aa2cf440db325f5d/README.md",
+              "metadata_updated_at": "2026-10-25T05:46:23.976362+00:00",
+              "origin": "user_registered",
+              "captured_at": "2026-10-25T05:47:15.936213+00:00",
+              "strength_model": 0.7,
+              "strength_clip": 0
+            }
+          ],
+          "launch_policy": {
+            "source": "http://127.0.0.1:14658/system_stats.system.argv",
+            "reported": true,
+            "precision_flags": [],
+            "memory_flags": []
+          },
+          "actual_precision": null,
+          "actual_offload": null,
+          "cache_state": "unknown",
+          "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+        },
+        "execution_device": {
+          "schema_version": 1,
+          "engine_url": "http://127.0.0.1:14658",
+          "source": "http://127.0.0.1:14658/model_atelier/execution-device",
+          "checked_at": "2026-10-25T05:47:16.190129+00:00",
+          "probe_id": "c3935756-d5e7-4388-ae18-d861da1f964b",
+          "status": "available",
+          "reason": "device_selected",
+          "device": {
+            "type": "cuda",
+            "index": 0
+          },
+          "backend_available": true
+        }
+      }
+    },
+    "image_0": {
+      "status": "passed",
+      "job_id": "d8752b6b-682e-49e3-bb37-394b6078b36d",
+      "settings": {
+        "workflow_id": "flux1-schnell-image2image-v1",
+        "engine_url": "http://127.0.0.1:14658",
+        "title": "F04 independent extensions",
+        "diffusion_model": "flux1-schnell.safetensors",
+        "clip_l": "clip_l.safetensors",
+        "t5xxl": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "vae": "ae.safetensors",
+        "prompt": "an anime illustration of a red house on a green hill under a blue sky",
+        "seed": "9007199254740993",
+        "width": 512,
+        "height": 512,
+        "steps": 4,
+        "weight_dtype": "fp8_e4m3fn",
+        "encoder_device": "cpu",
+        "image_asset_id": "bcc6e93a-b8c8-4ee5-b844-d090b0f650fc",
+        "denoise": 0.6,
+        "reference_resize": "fit"
+      },
+      "workflow": {
+        "1": {
+          "class_type": "UNETLoader",
+          "inputs": {
+            "unet_name": "flux1-schnell.safetensors",
+            "weight_dtype": "fp8_e4m3fn"
+          }
+        },
+        "2": {
+          "class_type": "DualCLIPLoader",
+          "inputs": {
+            "clip_name1": "clip_l.safetensors",
+            "clip_name2": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+            "type": "flux",
+            "device": "cpu"
+          }
+        },
+        "3": {
+          "class_type": "VAELoader",
+          "inputs": {
+            "vae_name": "ae.safetensors"
+          }
+        },
+        "4": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "an anime illustration of a red house on a green hill under a blue sky",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "5": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "6": {
+          "class_type": "VAEEncode",
+          "inputs": {
+            "pixels": [
+              "10",
+              0
+            ],
+            "vae": [
+              "3",
+              0
+            ]
+          }
+        },
+        "7": {
+          "class_type": "KSampler",
+          "inputs": {
+            "model": [
+              "1",
+              0
+            ],
+            "positive": [
+              "4",
+              0
+            ],
+            "negative": [
+              "5",
+              0
+            ],
+            "latent_image": [
+              "6",
+              0
+            ],
+            "seed": 9007199254740993,
+            "steps": 4,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 0.6
+          }
+        },
+        "8": {
+          "class_type": "VAEDecode",
+          "inputs": {
+            "samples": [
+              "7",
+              0
+            ],
+            "vae": [
+              "3",
+              0
+            ]
+          }
+        },
+        "9": {
+          "class_type": "SaveImage",
+          "inputs": {
+            "images": [
+              "8",
+              0
+            ],
+            "filename_prefix": "ModelAtelier"
+          }
+        },
+        "10": {
+          "class_type": "LoadImage",
+          "inputs": {
+            "image": "model_atelier/d8752b6b-682e-49e3-bb37-394b6078b36d/reference.png"
+          }
+        }
+      },
+      "elapsed_seconds": 23.094000000040978,
+      "artworks": [
+        {
+          "id": "66d17614-2905-5ce3-8405-3e5b00875992",
+          "sha256": "9c40083596fc37dfa142873488b146bb5fe691f2e0e8e7d8cdc735e4920252d9",
+          "pixel_sha256": "a1e136062cd13065497a8d755da4fb6d407c649fefe4c32486964894aead35fb",
+          "bytes": 109558
+        }
+      ],
+      "component_metadata": [
+        {
+          "role": "diffusion_model",
+          "category": "diffusion_models",
+          "name": "flux1-schnell.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+          "architecture": "flux",
+          "size_bytes": null,
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.394256+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:27.773041+00:00"
+        },
+        {
+          "role": "clip_l",
+          "category": "text_encoders",
+          "name": "clip_l.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.402254+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:27.774041+00:00"
+        },
+        {
+          "role": "t5xxl",
+          "category": "text_encoders",
+          "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.406773+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:27.774041+00:00"
+        },
+        {
+          "role": "vae",
+          "category": "vae",
+          "name": "ae.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.398255+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:27.774041+00:00"
+        }
+      ],
+      "lora_metadata": [],
+      "reference_metadata": [
+        {
+          "id": "bcc6e93a-b8c8-4ee5-b844-d090b0f650fc",
+          "title": "F04 synthetic house 0.png",
+          "width": 512,
+          "height": 512,
+          "size": 2781,
+          "sha256": "d942aa8a03154c60fb0777737453f9d897ef6945d1e340d87833363662a18345",
+          "archived": false,
+          "purpose": "unspecified",
+          "revision": 1,
+          "preprocessing": {
+            "id": "asset-normalize",
+            "version": 1,
+            "library": "Pillow",
+            "library_version": "12.3.0",
+            "source_format": "PNG",
+            "source_size": [
+              512,
+              512
+            ],
+            "source_sha256": "a51a86862f5bda4bf53ef1228f03cd5cfac438e0afe86ab6e3971b0fa6bd1fdd",
+            "operations": [
+              "exif_transpose",
+              "convert_rgba",
+              "remove_metadata",
+              "encode_png"
+            ]
+          },
+          "created_at": "2026-10-25T05:46:24.268401+00:00",
+          "generation_preprocessing": {
+            "id": "flux1-image-input",
+            "version": 1,
+            "library": "Pillow",
+            "library_version": "12.3.0",
+            "resize": "fit",
+            "resampling": "LANCZOS",
+            "background": "#ffffff",
+            "output_mode": "RGB",
+            "output_format": "PNG",
+            "width": 512,
+            "height": 512,
+            "sha256": "a51a86862f5bda4bf53ef1228f03cd5cfac438e0afe86ab6e3971b0fa6bd1fdd",
+            "size": 2432
+          }
+        }
+      ],
+      "runtime_metadata": {
+        "schema_version": 1,
+        "captured_at": "2026-10-25T05:47:28.004164+00:00",
+        "workflow": {
+          "id": "flux1-schnell-image2image-v1",
+          "sha256": "5155448d79d0a564c965fa7cd2e2a10b13ccf730343b6aa3b3f76e4d1a21f4ec",
+          "nodes": [
+            "CLIPTextEncode",
+            "DualCLIPLoader",
+            "KSampler",
+            "LoadImage",
+            "SaveImage",
+            "UNETLoader",
+            "VAEDecode",
+            "VAEEncode",
+            "VAELoader"
+          ],
+          "node_versions": null,
+          "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+        },
+        "platform": {
+          "source": "platform Python process",
+          "python": "3.12.10",
+          "packages": [
+            {
+              "name": "fastapi",
+              "version": "0.141.1"
+            },
+            {
+              "name": "starlette",
+              "version": "1.6.0"
+            },
+            {
+              "name": "pydantic",
+              "version": "2.13.5"
+            },
+            {
+              "name": "httpx",
+              "version": "0.28.1"
+            },
+            {
+              "name": "Pillow",
+              "version": "12.3.0"
+            },
+            {
+              "name": "uvicorn",
+              "version": "0.52.4"
+            },
+            {
+              "name": "websockets",
+              "version": "17.1"
+            }
+          ]
+        },
+        "engine": {
+          "status": "reported",
+          "source": "http://127.0.0.1:14658/system_stats",
+          "comfyui": "0.34.0",
+          "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+          "pytorch": "2.14.0+cu130",
+          "packages": [
+            {
+              "name": "comfyui-frontend-package",
+              "installed": "1.51.9",
+              "required": "1.51.9"
+            },
+            {
+              "name": "comfyui-workflow-templates",
+              "installed": "0.11.55",
+              "required": "0.11.55"
+            },
+            {
+              "name": "comfyui-embedded-docs",
+              "installed": "0.5.11",
+              "required": "0.5.11"
+            },
+            {
+              "name": "comfy-kitchen",
+              "installed": "0.2.33",
+              "required": "0.2.33"
+            },
+            {
+              "name": "comfy-aimdo",
+              "installed": "0.5.2",
+              "required": "0.5.2"
+            }
+          ],
+          "cuda": null,
+          "driver": null,
+          "git_revision": null,
+          "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+        },
+        "execution_context": {
+          "schema_version": 1,
+          "workload": "inference",
+          "workflow_id": "flux1-schnell-image2image-v1",
+          "geometry": {
+            "width": null,
+            "height": null,
+            "batch_size": null,
+            "source": "unknown"
+          },
+          "parameters": [
+            {
+              "node_id": "1",
+              "class_type": "UNETLoader",
+              "settings": {
+                "weight_dtype": "fp8_e4m3fn"
+              }
+            },
+            {
+              "node_id": "2",
+              "class_type": "DualCLIPLoader",
+              "settings": {
+                "device": "cpu"
+              }
+            },
+            {
+              "node_id": "7",
+              "class_type": "KSampler",
+              "settings": {
+                "steps": 4,
+                "cfg": 1.0,
+                "sampler_name": "euler",
+                "scheduler": "simple",
+                "denoise": 0.6,
+                "seed": "9007199254740993"
+              }
+            }
+          ],
+          "models": [
+            {
+              "role": "checkpoint",
+              "name": "flux1-schnell.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "flux",
+              "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+            },
+            {
+              "role": "diffusion_model",
+              "name": "flux1-schnell.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "flux",
+              "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+            },
+            {
+              "role": "clip_l",
+              "name": "clip_l.safetensors",
+              "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+              "architecture": "unknown",
+              "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
+            },
+            {
+              "role": "t5xxl",
+              "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+              "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+              "architecture": "unknown",
+              "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a"
+            },
+            {
+              "role": "vae",
+              "name": "ae.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "unknown",
+              "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
+            }
+          ],
+          "loras": [],
+          "launch_policy": {
+            "source": "http://127.0.0.1:14658/system_stats.system.argv",
+            "reported": true,
+            "precision_flags": [],
+            "memory_flags": []
+          },
+          "actual_precision": null,
+          "actual_offload": null,
+          "cache_state": "unknown",
+          "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+        },
+        "execution_device": {
+          "schema_version": 1,
+          "engine_url": "http://127.0.0.1:14658",
+          "source": "http://127.0.0.1:14658/model_atelier/execution-device",
+          "checked_at": "2026-10-25T05:47:28.036869+00:00",
+          "probe_id": "d7292ce9-787f-4f6a-afe1-484643ff1e57",
+          "status": "available",
+          "reason": "device_selected",
+          "device": {
+            "type": "cuda",
+            "index": 0
+          },
+          "backend_available": true
+        }
+      }
+    },
+    "image_1": {
+      "status": "passed",
+      "job_id": "b3956697-b840-4499-99aa-13064b268284",
+      "settings": {
+        "workflow_id": "flux1-schnell-image2image-v1",
+        "engine_url": "http://127.0.0.1:14658",
+        "title": "F04 independent extensions",
+        "diffusion_model": "flux1-schnell.safetensors",
+        "clip_l": "clip_l.safetensors",
+        "t5xxl": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "vae": "ae.safetensors",
+        "prompt": "an anime illustration of a red house on a green hill under a blue sky",
+        "seed": "9007199254740993",
+        "width": 512,
+        "height": 512,
+        "steps": 4,
+        "weight_dtype": "fp8_e4m3fn",
+        "encoder_device": "cpu",
+        "image_asset_id": "83a83d32-730b-4d98-b6ca-22341ab7c7d9",
+        "denoise": 0.6,
+        "reference_resize": "fit"
+      },
+      "workflow": {
+        "1": {
+          "class_type": "UNETLoader",
+          "inputs": {
+            "unet_name": "flux1-schnell.safetensors",
+            "weight_dtype": "fp8_e4m3fn"
+          }
+        },
+        "2": {
+          "class_type": "DualCLIPLoader",
+          "inputs": {
+            "clip_name1": "clip_l.safetensors",
+            "clip_name2": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+            "type": "flux",
+            "device": "cpu"
+          }
+        },
+        "3": {
+          "class_type": "VAELoader",
+          "inputs": {
+            "vae_name": "ae.safetensors"
+          }
+        },
+        "4": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "an anime illustration of a red house on a green hill under a blue sky",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "5": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "6": {
+          "class_type": "VAEEncode",
+          "inputs": {
+            "pixels": [
+              "10",
+              0
+            ],
+            "vae": [
+              "3",
+              0
+            ]
+          }
+        },
+        "7": {
+          "class_type": "KSampler",
+          "inputs": {
+            "model": [
+              "1",
+              0
+            ],
+            "positive": [
+              "4",
+              0
+            ],
+            "negative": [
+              "5",
+              0
+            ],
+            "latent_image": [
+              "6",
+              0
+            ],
+            "seed": 9007199254740993,
+            "steps": 4,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 0.6
+          }
+        },
+        "8": {
+          "class_type": "VAEDecode",
+          "inputs": {
+            "samples": [
+              "7",
+              0
+            ],
+            "vae": [
+              "3",
+              0
+            ]
+          }
+        },
+        "9": {
+          "class_type": "SaveImage",
+          "inputs": {
+            "images": [
+              "8",
+              0
+            ],
+            "filename_prefix": "ModelAtelier"
+          }
+        },
+        "10": {
+          "class_type": "LoadImage",
+          "inputs": {
+            "image": "model_atelier/b3956697-b840-4499-99aa-13064b268284/reference.png"
+          }
+        }
+      },
+      "elapsed_seconds": 7.10899999999674,
+      "artworks": [
+        {
+          "id": "cb997089-7d10-53ef-94eb-29d934f7b2e5",
+          "sha256": "9322423bdc8b53606c276869d8b06cc7d476a2322b486ce13e79112be6f11486",
+          "pixel_sha256": "d64c87ff463eed2be4e9b70a8530c20898ccaf14e623dde2569b0ca49491646b",
+          "bytes": 113716
+        }
+      ],
+      "component_metadata": [
+        {
+          "role": "diffusion_model",
+          "category": "diffusion_models",
+          "name": "flux1-schnell.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+          "architecture": "flux",
+          "size_bytes": null,
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.394256+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:51.108148+00:00"
+        },
+        {
+          "role": "clip_l",
+          "category": "text_encoders",
+          "name": "clip_l.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.402254+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:51.108148+00:00"
+        },
+        {
+          "role": "t5xxl",
+          "category": "text_encoders",
+          "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.406773+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:51.108148+00:00"
+        },
+        {
+          "role": "vae",
+          "category": "vae",
+          "name": "ae.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+          "architecture": "unknown",
+          "size_bytes": null,
+          "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+          "license_name": "",
+          "license_url": "",
+          "metadata_updated_at": "2026-10-25T05:46:23.398255+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-25T05:47:51.108148+00:00"
+        }
+      ],
+      "lora_metadata": [],
+      "reference_metadata": [
+        {
+          "id": "83a83d32-730b-4d98-b6ca-22341ab7c7d9",
+          "title": "F04 synthetic house 1.png",
+          "width": 512,
+          "height": 512,
+          "size": 2778,
+          "sha256": "09d4e5fae70321daeb9c3e09ad686d4678ddb571428de2d9ea13ee584058678b",
+          "archived": false,
+          "purpose": "unspecified",
+          "revision": 1,
+          "preprocessing": {
+            "id": "asset-normalize",
+            "version": 1,
+            "library": "Pillow",
+            "library_version": "12.3.0",
+            "source_format": "PNG",
+            "source_size": [
+              512,
+              512
+            ],
+            "source_sha256": "3170351872ba84fdab1270c82e53e2bdf948121054da2756520bbd5be093f3a9",
+            "operations": [
+              "exif_transpose",
+              "convert_rgba",
+              "remove_metadata",
+              "encode_png"
+            ]
+          },
+          "created_at": "2026-10-25T05:46:24.280402+00:00",
+          "generation_preprocessing": {
+            "id": "flux1-image-input",
+            "version": 1,
+            "library": "Pillow",
+            "library_version": "12.3.0",
+            "resize": "fit",
+            "resampling": "LANCZOS",
+            "background": "#ffffff",
+            "output_mode": "RGB",
+            "output_format": "PNG",
+            "width": 512,
+            "height": 512,
+            "sha256": "3170351872ba84fdab1270c82e53e2bdf948121054da2756520bbd5be093f3a9",
+            "size": 2467
+          }
+        }
+      ],
+      "runtime_metadata": {
+        "schema_version": 1,
+        "captured_at": "2026-10-25T05:47:51.346647+00:00",
+        "workflow": {
+          "id": "flux1-schnell-image2image-v1",
+          "sha256": "d228ca02ed482253cfebf09d72f5babdb5d882c7fecaa0cfafc64cce36e2ddb7",
+          "nodes": [
+            "CLIPTextEncode",
+            "DualCLIPLoader",
+            "KSampler",
+            "LoadImage",
+            "SaveImage",
+            "UNETLoader",
+            "VAEDecode",
+            "VAEEncode",
+            "VAELoader"
+          ],
+          "node_versions": null,
+          "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+        },
+        "platform": {
+          "source": "platform Python process",
+          "python": "3.12.10",
+          "packages": [
+            {
+              "name": "fastapi",
+              "version": "0.141.1"
+            },
+            {
+              "name": "starlette",
+              "version": "1.6.0"
+            },
+            {
+              "name": "pydantic",
+              "version": "2.13.5"
+            },
+            {
+              "name": "httpx",
+              "version": "0.28.1"
+            },
+            {
+              "name": "Pillow",
+              "version": "12.3.0"
+            },
+            {
+              "name": "uvicorn",
+              "version": "0.52.4"
+            },
+            {
+              "name": "websockets",
+              "version": "17.1"
+            }
+          ]
+        },
+        "engine": {
+          "status": "reported",
+          "source": "http://127.0.0.1:14658/system_stats",
+          "comfyui": "0.34.0",
+          "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+          "pytorch": "2.14.0+cu130",
+          "packages": [
+            {
+              "name": "comfyui-frontend-package",
+              "installed": "1.51.9",
+              "required": "1.51.9"
+            },
+            {
+              "name": "comfyui-workflow-templates",
+              "installed": "0.11.55",
+              "required": "0.11.55"
+            },
+            {
+              "name": "comfyui-embedded-docs",
+              "installed": "0.5.11",
+              "required": "0.5.11"
+            },
+            {
+              "name": "comfy-kitchen",
+              "installed": "0.2.33",
+              "required": "0.2.33"
+            },
+            {
+              "name": "comfy-aimdo",
+              "installed": "0.5.2",
+              "required": "0.5.2"
+            }
+          ],
+          "cuda": null,
+          "driver": null,
+          "git_revision": null,
+          "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+        },
+        "execution_context": {
+          "schema_version": 1,
+          "workload": "inference",
+          "workflow_id": "flux1-schnell-image2image-v1",
+          "geometry": {
+            "width": null,
+            "height": null,
+            "batch_size": null,
+            "source": "unknown"
+          },
+          "parameters": [
+            {
+              "node_id": "1",
+              "class_type": "UNETLoader",
+              "settings": {
+                "weight_dtype": "fp8_e4m3fn"
+              }
+            },
+            {
+              "node_id": "2",
+              "class_type": "DualCLIPLoader",
+              "settings": {
+                "device": "cpu"
+              }
+            },
+            {
+              "node_id": "7",
+              "class_type": "KSampler",
+              "settings": {
+                "steps": 4,
+                "cfg": 1.0,
+                "sampler_name": "euler",
+                "scheduler": "simple",
+                "denoise": 0.6,
+                "seed": "9007199254740993"
+              }
+            }
+          ],
+          "models": [
+            {
+              "role": "checkpoint",
+              "name": "flux1-schnell.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "flux",
+              "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+            },
+            {
+              "role": "diffusion_model",
+              "name": "flux1-schnell.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "flux",
+              "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+            },
+            {
+              "role": "clip_l",
+              "name": "clip_l.safetensors",
+              "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+              "architecture": "unknown",
+              "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
+            },
+            {
+              "role": "t5xxl",
+              "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+              "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+              "architecture": "unknown",
+              "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a"
+            },
+            {
+              "role": "vae",
+              "name": "ae.safetensors",
+              "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+              "architecture": "unknown",
+              "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
+            }
+          ],
+          "loras": [],
+          "launch_policy": {
+            "source": "http://127.0.0.1:14658/system_stats.system.argv",
+            "reported": true,
+            "precision_flags": [],
+            "memory_flags": []
+          },
+          "actual_precision": null,
+          "actual_offload": null,
+          "cache_state": "unknown",
+          "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+        },
+        "execution_device": {
+          "schema_version": 1,
+          "engine_url": "http://127.0.0.1:14658",
+          "source": "http://127.0.0.1:14658/model_atelier/execution-device",
+          "checked_at": "2026-10-25T05:47:51.372646+00:00",
+          "probe_id": "fa98acb4-03aa-45df-aa60-7863dc07d46d",
+          "status": "available",
+          "reason": "device_selected",
+          "device": {
+            "type": "cuda",
+            "index": 0
+          },
+          "backend_available": true
+        }
+      }
+    }
+  },
+  "offline_verification": {
+    "lora_zero": {
+      "status": "passed",
+      "requests": "GET only"
+    },
+    "lora_enabled": {
+      "status": "passed",
+      "requests": "GET only"
+    },
+    "image_0": {
+      "status": "passed",
+      "requests": "GET only"
+    },
+    "image_1": {
+      "status": "passed",
+      "requests": "GET only"
+    }
+  },
+  "dispatch_count": 4,
+  "managed_database_unchanged": true,
+  "owned_processes_stopped": true,
+  "limitations": [
+    "Only fixed 512px Schnell profile",
+    "LoRA 0 versus 0.7 is a technical comparison, not author/character quality acceptance",
+    "Geometric image inputs mainly retained their original appearance; pixel differences do not prove style transfer",
+    "No new peak RAM/VRAM measurement, 4080 or larger-image acceptance",
+    "Redux, IPAdapter and combined LoRA/image workflows disabled",
+    "No user artist images were used or trained"
+  ]
+}

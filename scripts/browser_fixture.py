@@ -141,7 +141,11 @@ def fixture(data, count=None, legacy_ui=False):
             generated[identifier] = {
                 'status': {'completed': True, 'status_str': 'success'},
                 'outputs': {
-                    '7': {
+                    next(
+                        key
+                        for key, node in payload['prompt'].items()
+                        if node['class_type'] == 'SaveImage'
+                    ): {
                         'images': [
                             {'filename': identifier + '.png', 'subfolder': '', 'type': 'output'}
                         ]
@@ -162,6 +166,11 @@ def fixture(data, count=None, legacy_ui=False):
             return httpx.Response(
                 200, content=raw.getvalue(), headers={'content-type': 'image/png'}
             )
+        if state.get('flux_extensions') and request.url.path.startswith('/object_info/'):
+            from scripts.flux_fixture import definitions
+
+            if name in definitions():
+                return httpx.Response(200, json={name: definitions()[name]})
         if name == 'CheckpointLoaderSimple':
             value = {name: {'input': {'required': {'ckpt_name': [['demo.safetensors']]}}}}
             if state.get('fooocus'):
@@ -309,6 +318,17 @@ def fixture(data, count=None, legacy_ui=False):
         return dict(
             state, artwork_id=artwork['id'], asset_id=asset['id'], mask_asset_id=mask_asset['id']
         )
+
+    @wrapper.post('/qa/flux-extensions')
+    def prepare_flux_extensions(enabled: bool = True):
+        from scripts.flux_fixture import register
+
+        if not enabled:
+            state.update(flux_extensions=False, mode='uncertain')
+            return {'synthetic_only': True}
+        register(context, ENGINE)
+        state.update(flux_extensions=True, mode='success')
+        return {'synthetic_only': True, 'asset_id': asset['id']}
 
     @wrapper.get('/qa/engine-audit')
     def engine_audit(after: int = 0):

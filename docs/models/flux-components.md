@@ -1,5 +1,7 @@
 # FLUX 分離元件庫
 
+2026-10-25：[F04 LoRA／原圖重繪](flux-extensions.md)另立流程與子頁；四元件仍使用本庫，PVC LoRA 從通用 LoRA 模型庫同步／登記。版本登記與即時清單不會替代完整檔案 hash 或目前引擎的實測。
+
 2026-10-05：元件庫由選定 ComfyUI 的 `UNETLoader`、`DualCLIPLoader`、`VAELoader` 列舉 diffusion model、text encoder、VAE。四個生成依賴分別是主模型、CLIP-L、T5、VAE；兩個 encoder 共用同一類模型庫。模型庫已提供搜尋、同步與版本／來源／授權／大小／雜湊登記介面。
 
 - `GET /api/flux/components`：只讀目前引擎快照。

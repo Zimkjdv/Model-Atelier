@@ -35,6 +35,7 @@ import { referenceWorkflowId } from './adapterSettings'
 import ReferenceComponentsSnapshot from './ReferenceComponentsSnapshot.vue'
 import { imageWorkflowId, type ReferenceSnapshot as ReferenceMetadata } from './referenceSettings'
 import { fluxWorkflowId, type ComponentSnapshot as ComponentMetadata } from './fluxSettings'
+import { isFluxExtension } from './fluxExtensions'
 const props = defineProps<{ jobId?: string }>()
 const emit = defineEmits<{
   studio: []
@@ -780,6 +781,7 @@ onBeforeUnmount(() => {
           <LoraSnapshot
             v-if="
               !selected.workflow_id ||
+              isFluxExtension(selected.workflow_id) ||
               selected.workflow_id === imageWorkflowId ||
               isInpaintWorkflow(selected.workflow_id) ||
               isControlWorkflow(selected.workflow_id)

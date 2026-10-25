@@ -24,6 +24,12 @@ from backend import flux_plan
 WORKSPACE = Path(__file__).resolve().parents[1]
 MANIFEST = WORKSPACE / 'models' / 'pony-v6-xl.json'
 SOURCES = {
+    'flux-schnell-pvc-style-lora': (
+        'p1atdev/flux.1-schnell-pvc-style-lora',
+        'pvc-shnell-7250+7500.safetensors',
+        'flux-schnell-pvc-style.safetensors',
+        '183e446eaf99fe2954db8810aa2cf440db325f5d',
+    ),
     'fooocus-inpaint-v26': (
         'lllyasviel/fooocus_inpaint',
         'inpaint_v26.fooocus.patch',
@@ -109,7 +115,14 @@ CONTROL_IDS = frozenset(
         'controlnet-depth-sdxl-1.0-fp16',
     }
 )
-LORA_IDS = frozenset({'lcm-lora-sdxl', 'ikea-instructions-lora-sdxl', 'pixel-art-lora-sdxl'})
+LORA_IDS = frozenset(
+    {
+        'lcm-lora-sdxl',
+        'ikea-instructions-lora-sdxl',
+        'pixel-art-lora-sdxl',
+        'flux-schnell-pvc-style-lora',
+    }
+)
 LOCAL_LORA_FILENAMES = frozenset({'pixel_art_lora_sdxl_comfy_v1.safetensors'})
 RESERVE_BYTES = 2 * 1024**3
 CHUNK_BYTES = 1024 * 1024

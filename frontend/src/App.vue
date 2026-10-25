@@ -13,6 +13,7 @@ import { referenceWorkflowId } from './adapterSettings'
 import { isControlWorkflow } from './controlSettings'
 import { isInpaintWorkflow } from './inpaintSettings'
 import { fluxWorkflowId } from './fluxSettings'
+import { isFluxExtension } from './fluxExtensions'
 import AssetLibrary from './AssetLibrary.vue'
 import ArtworkLibrary from './ArtworkLibrary.vue'
 import LocalModelPaths from './LocalModelPaths.vue'
@@ -67,7 +68,7 @@ function restoreArtwork(artworkId: string, workflowId?: string | null) {
   const mode =
     workflowId === referenceWorkflowId
       ? 'reference'
-      : workflowId === fluxWorkflowId
+      : workflowId === fluxWorkflowId || isFluxExtension(workflowId)
         ? 'flux'
         : isControlWorkflow(workflowId)
           ? 'control'
@@ -189,12 +190,8 @@ onUnmounted(() => {
   <div class="layout">
     <a class="skip-link" href="#main-content" @click.prevent="focusMain">跳至主要內容</a>
     <aside>
-      <a
-        class="brand"
-        aria-label="Model Atelier · 系統資訊"
-        href="#/system"
-        @click.prevent="navigate('系統資訊')"
-        ><span class="brand-icon">M</span
+      <a class="brand" title="系統資訊" href="#/system" @click.prevent="navigate('系統資訊')"
+        ><span class="brand-icon" aria-hidden="true">M</span
         ><span>Model Atelier<small>個人 AI 創作工作台</small></span></a
       >
       <div class="nav-label">WORKSPACE</div>
@@ -289,6 +286,7 @@ onUnmounted(() => {
             v-else-if="page === '創作工作台' && studioMode === 'flux'"
             :restore-request="fluxRestoreRequest"
             @models="navigate('模型庫')"
+            @assets="navigate('參考素材')"
             @gallery="navigate('作品庫', studioMode, $event)" /><InpaintStudio
             v-else-if="page === '創作工作台' && studioMode === 'inpaint'"
             :restore-request="inpaintRestoreRequest"
