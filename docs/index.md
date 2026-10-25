@@ -89,3 +89,5 @@
 - [停止](validation/running-stop-rtx3060.md)、[E01](validation/execution-device-20261022.md)、[FLUX 範圍](validation/flux-integration.md)
 - [全部驗收目錄](validation)、[CHANGELOG](../CHANGELOG.MD)、[2026-10-03 檢查](review-2026-10-03.md)
 - [整理前 README 全文](history/readme-before-q01-20261022.md)：舊限制與命令僅供追溯。
+
+- [E02 RTX 4080 八個基本流程與離線驗收](validation/rtx4080-workflows-20261026.md)、[可解析證據](validation/rtx4080-workflows-20261026.json)

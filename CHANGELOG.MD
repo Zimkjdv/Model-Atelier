@@ -1,5 +1,19 @@
 # Model Atelier — Changelog
 
+## 2026-10-26 · E02 RTX 4080 搬移與基本流程驗收
+
+修復搬移後平台／ComfyUI Python 3.12 環境的舊使用者路徑，前端重新安裝及建置。實機記錄 Windows 11、RTX 4080／16 GiB、約 64 GiB RAM、磁碟、617.42 驅動、Torch 2.14.0+cu130／CUDA 13.0 與固定 ComfyUI commit；新增可重跑的硬體快照及既有驗收器入口。
+
+八個固定案例通過：Pony／Animagine 文生圖、有序雙 LoRA、圖生圖、一般／羽化修補、Canny、單張 adapter。每例確認原 UUID／成功 history、原圖 hash／完整 workflow／版本與精確 seed 還原；引擎離線後八份原報告全部 GET-only 核對通過。Chromium 1440px／390px 核對系統 GPU、原圖預覽及載入表單，沒有生成請求。Canny 因搬移後元件登記缺漏的預檢失敗保留，補登固定身分後新報告通過。
+
+完整品質入口：784 項後端（1 既有跳過）、格式／靜態／型別／建置／契約及 122 項 Chromium 通過。幾何參考圖不代表作者品質，整卡觀察值不代表任務峰值；未測變體、較高負載及訓練另行登記。見 [實機紀錄](docs/validation/rtx4080-workflows-20261026.md)、[可解析證據](docs/validation/rtx4080-workflows-20261026.json)。ROADMAP 保留 12 主項／15 子項，E03 待本項 commit／push 後開始。
+
+<a id="e02"></a>
+
+- [x] **E02 · RTX 4080 主機基本功能與工作流程實測**
+  - [x] 驗收 E02-01：在該機器記錄實際 GPU／VRAM／RAM／磁碟、驅動、PyTorch／CUDA／ComfyUI 版本。
+  - [x] 驗收 E02-02：重跑 RTX 3060 已驗收的基本操作與相同工作流程，保存模型版本、設定、結果及失敗原因。
+
 ## 2026-10-25 · F04 獨立 Schnell LoRA 與原生圖生圖
 
 F03 已先以 `6ac8bae` commit／push，才接續本項；其 [GitHub Actions](https://github.com/Zimkjdv/Model-Atelier/actions/runs/40166211208)亦已確認通過。新增兩個明確版本的 FLUX 流程、獨立草稿格式／revision、UUID 端點復原、元件與 LoRA 快照、原圖正規化／一次上傳／本機保存、完整作品還原及唯讀匯出；Vue 介面提供 LoRA／圖生圖子頁，保留舊純文生圖與未保存內容。

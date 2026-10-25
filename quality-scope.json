@@ -113,7 +113,9 @@
     "backend/test_flux_extensions.py",
     "scripts/flux_fixture.py",
     "scripts/verify_flux_extensions.py",
-    "scripts/flux_lora_observer.py"
+    "scripts/flux_lora_observer.py",
+    "scripts/verify_hardware.py",
+    "backend/test_hardware_acceptance.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
