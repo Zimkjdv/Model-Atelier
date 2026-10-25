@@ -1,6 +1,6 @@
 # FLUX.1 [schnell] 專用工作流程
 
-2026-10-25：[F01 固定安裝](flux-installation.md)與 [F02 原生節點 512 配置量測](flux-runtime-observation.md)已有實際證據；F02 使用獨立程序及明確載入順序，尚未認列本平台 HTTP／作品保存／離線還原與 OOM 的 F03。下方 2026-10-05 的缺權重描述保留為歷史。
+2026-10-25：[F01 固定安裝](flux-installation.md)與 [F02 原生節點 512 配置量測](flux-runtime-observation.md)已有實際證據；F02 使用獨立程序及明確載入順序；[F03](flux-generation-acceptance.md)另完成相同固定 512 配置的平台 HTTP、作品保存、離線還原與受控 CUDA OOM。下方 2026-10-05 的缺權重描述保留為歷史。
 
 2026-10-05：`flux1-schnell-text2image-v1` 使用 9 個原生節點：UNETLoader、DualCLIPLoader（type=flux）、VAELoader、正／空負提示詞 CLIPTextEncode、EmptySD3LatentImage、KSampler、VAEDecode、SaveImage。
 

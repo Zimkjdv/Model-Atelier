@@ -29,7 +29,7 @@ ROLES = [
     ('t5xxl', 'text_encoders'),
     ('vae', 'vae'),
 ]
-WARNING = 'FLUX.1 [schnell] 專用流程尚未 GPU 驗證；元件角色與變體由使用者確認，清單與登記資料不代表實際權重驗證。'
+WARNING = 'FLUX.1 [schnell] 已驗收固定四元件、512×512／4 步／主模型 FP8 e4m3fn／CPU 編碼器的 RTX 3060 配置；其他配置與目前引擎未自動驗證，清單及登記資料不代表權重驗證。'
 
 
 class Input(BaseModel):
@@ -94,6 +94,8 @@ def descriptor():
         lora=False,
         reference_images=False,
         gpu_verified=False,
+        gpu_verification_scope='current_engine_not_automatically_verified',
+        verified_profiles=['flux-schnell-fp8-cpu-512-v1'],
         warning=WARNING,
     )
 

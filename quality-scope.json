@@ -104,7 +104,11 @@
     "backend/flux_observation.py",
     "backend/test_flux_observation.py",
     "scripts/flux_runtime_worker.py",
-    "scripts/verify_flux_runtime.py"
+    "scripts/verify_flux_runtime.py",
+    "scripts/verify_flux_generation.py",
+    "scripts/flux_acceptance_fixture.py",
+    "scripts/flux_failure_node.py",
+    "backend/test_flux_acceptance.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",

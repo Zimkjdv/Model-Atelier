@@ -1,0 +1,547 @@
+{
+  "schema_version": 1,
+  "run_id": "f7fbc72f-5ecd-4482-8734-ecf1dca8ca42",
+  "status": "passed",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 3060",
+    "vram_mib": 12288,
+    "host_ram_gib": 63.939
+  },
+  "settings": {
+    "workflow_id": "flux1-schnell-text2image-v1",
+    "engine_url": "http://127.0.0.1:8094",
+    "title": "F02 runtime observation",
+    "diffusion_model": "flux1-schnell.safetensors",
+    "clip_l": "clip_l.safetensors",
+    "t5xxl": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+    "vae": "ae.safetensors",
+    "prompt": "anime illustration, one adult woman reading a book in a quiet sunlit library, fully clothed, soft colors",
+    "seed": "9007199254740993",
+    "width": 512,
+    "height": 512,
+    "steps": 4,
+    "weight_dtype": "fp8_e4m3fn",
+    "encoder_device": "cpu"
+  },
+  "workflow": {
+    "1": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "flux1-schnell.safetensors",
+        "weight_dtype": "fp8_e4m3fn"
+      }
+    },
+    "2": {
+      "class_type": "DualCLIPLoader",
+      "inputs": {
+        "clip_name1": "clip_l.safetensors",
+        "clip_name2": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "type": "flux",
+        "device": "cpu"
+      }
+    },
+    "3": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "ae.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "anime illustration, one adult woman reading a book in a quiet sunlit library, fully clothed, soft colors",
+        "clip": [
+          "2",
+          0
+        ]
+      }
+    },
+    "5": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "",
+        "clip": [
+          "2",
+          0
+        ]
+      }
+    },
+    "6": {
+      "class_type": "EmptySD3LatentImage",
+      "inputs": {
+        "width": 512,
+        "height": 512,
+        "batch_size": 1
+      }
+    },
+    "7": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 9007199254740993,
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1.0
+      }
+    },
+    "8": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "7",
+          0
+        ],
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    },
+    "9": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "8",
+          0
+        ],
+        "filename_prefix": "ModelAtelier"
+      }
+    }
+  },
+  "component_metadata": [
+    {
+      "role": "diffusion_model",
+      "category": "diffusion_models",
+      "name": "flux1-schnell.safetensors",
+      "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+      "architecture": "flux",
+      "size_bytes": null,
+      "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-25T05:27:10.003223+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-25T05:27:10.286398+00:00"
+    },
+    {
+      "role": "clip_l",
+      "category": "text_encoders",
+      "name": "clip_l.safetensors",
+      "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+      "architecture": "unknown",
+      "size_bytes": null,
+      "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-25T05:27:10.012224+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-25T05:27:10.286398+00:00"
+    },
+    {
+      "role": "t5xxl",
+      "category": "text_encoders",
+      "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "source_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+      "architecture": "unknown",
+      "size_bytes": null,
+      "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-25T05:27:10.016221+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-25T05:27:10.286398+00:00"
+    },
+    {
+      "role": "vae",
+      "category": "vae",
+      "name": "ae.safetensors",
+      "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+      "architecture": "unknown",
+      "size_bytes": null,
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-25T05:27:10.007222+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-25T05:27:10.286398+00:00"
+    }
+  ],
+  "runtime_metadata": {
+    "schema_version": 1,
+    "captured_at": "2026-10-25T05:27:10.491963+00:00",
+    "workflow": {
+      "id": "flux1-schnell-text2image-v1",
+      "sha256": "0a21ee72fa357ac6d50780ebf5d28ae508a3b22d221bbf95df25bbec9759da10",
+      "nodes": [
+        "CLIPTextEncode",
+        "DualCLIPLoader",
+        "EmptySD3LatentImage",
+        "KSampler",
+        "SaveImage",
+        "UNETLoader",
+        "VAEDecode",
+        "VAELoader"
+      ],
+      "node_versions": null,
+      "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+    },
+    "platform": {
+      "source": "platform Python process",
+      "python": "3.12.10",
+      "packages": [
+        {
+          "name": "fastapi",
+          "version": "0.141.1"
+        },
+        {
+          "name": "starlette",
+          "version": "1.6.0"
+        },
+        {
+          "name": "pydantic",
+          "version": "2.13.5"
+        },
+        {
+          "name": "httpx",
+          "version": "0.28.1"
+        },
+        {
+          "name": "Pillow",
+          "version": "12.3.0"
+        },
+        {
+          "name": "uvicorn",
+          "version": "0.52.4"
+        },
+        {
+          "name": "websockets",
+          "version": "17.1"
+        }
+      ]
+    },
+    "engine": {
+      "status": "reported",
+      "source": "http://127.0.0.1:8094/system_stats",
+      "comfyui": "0.34.0",
+      "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+      "pytorch": "2.14.0+cu130",
+      "packages": [
+        {
+          "name": "comfyui-frontend-package",
+          "installed": "1.51.9",
+          "required": "1.51.9"
+        },
+        {
+          "name": "comfyui-workflow-templates",
+          "installed": "0.11.55",
+          "required": "0.11.55"
+        },
+        {
+          "name": "comfyui-embedded-docs",
+          "installed": "0.5.11",
+          "required": "0.5.11"
+        },
+        {
+          "name": "comfy-kitchen",
+          "installed": "0.2.33",
+          "required": "0.2.33"
+        },
+        {
+          "name": "comfy-aimdo",
+          "installed": "0.5.2",
+          "required": "0.5.2"
+        }
+      ],
+      "cuda": null,
+      "driver": null,
+      "git_revision": null,
+      "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+    },
+    "execution_context": {
+      "schema_version": 1,
+      "workload": "inference",
+      "workflow_id": "flux1-schnell-text2image-v1",
+      "geometry": {
+        "width": 512,
+        "height": 512,
+        "batch_size": 1,
+        "source": "workflow node 6"
+      },
+      "parameters": [
+        {
+          "node_id": "1",
+          "class_type": "UNETLoader",
+          "settings": {
+            "weight_dtype": "fp8_e4m3fn"
+          }
+        },
+        {
+          "node_id": "2",
+          "class_type": "DualCLIPLoader",
+          "settings": {
+            "device": "cpu"
+          }
+        },
+        {
+          "node_id": "7",
+          "class_type": "KSampler",
+          "settings": {
+            "steps": 4,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 1.0,
+            "seed": "9007199254740993"
+          }
+        }
+      ],
+      "models": [
+        {
+          "role": "checkpoint",
+          "name": "flux1-schnell.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "architecture": "flux",
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+        },
+        {
+          "role": "diffusion_model",
+          "name": "flux1-schnell.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "architecture": "flux",
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+        },
+        {
+          "role": "clip_l",
+          "name": "clip_l.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "architecture": "unknown",
+          "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
+        },
+        {
+          "role": "t5xxl",
+          "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "architecture": "unknown",
+          "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a"
+        },
+        {
+          "role": "vae",
+          "name": "ae.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "architecture": "unknown",
+          "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
+        }
+      ],
+      "loras": [],
+      "launch_policy": {
+        "source": "http://127.0.0.1:8094/system_stats.system.argv",
+        "reported": true,
+        "precision_flags": [],
+        "memory_flags": []
+      },
+      "actual_precision": null,
+      "actual_offload": null,
+      "cache_state": "unknown",
+      "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+    },
+    "execution_device": {
+      "schema_version": 1,
+      "engine_url": "http://127.0.0.1:8094",
+      "source": "http://127.0.0.1:8094/model_atelier/execution-device",
+      "checked_at": "2026-10-25T05:27:10.516475+00:00",
+      "probe_id": "41f475af-cab7-41a8-9c50-c51dce36f2a2",
+      "status": "unknown",
+      "reason": "not_reported",
+      "device": null,
+      "backend_available": null
+    }
+  },
+  "tools": {
+    "scripts/flux_acceptance_fixture.py": "bdc8d74853f4a430f4ed5fd6fb42928f7be2e575e4a4253930368246385efe86",
+    "scripts/flux_failure_node.py": "73c9bd59c2bfe4f360a2c05b27b159c0358cececdab29a48fe830f8c045a58f5",
+    "scripts/verify_flux_generation.py": "5aa1b9fc42d61d8db1f0dbd15e18715af121cd790f9acbaf7567498647b0c465"
+  },
+  "comfy_commit": "15eb748b3ec5f8a0a2d470b7fb280e2d7579f916",
+  "verified_weights": [
+    {
+      "role": "diffusion_model",
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "black-forest-labs/FLUX.1-schnell",
+        "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+        "filename": "flux1-schnell.safetensors",
+        "page_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+        "download_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/741f7c3ce8b383c54771c7003378a50191e9efe9/flux1-schnell.safetensors"
+      },
+      "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+      "size_bytes": 23782506688,
+      "sha256_verified": true
+    },
+    {
+      "role": "vae",
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "black-forest-labs/FLUX.1-schnell",
+        "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+        "filename": "ae.safetensors",
+        "page_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+        "download_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/741f7c3ce8b383c54771c7003378a50191e9efe9/ae.safetensors"
+      },
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "size_bytes": 335304388,
+      "sha256_verified": true
+    },
+    {
+      "role": "clip_l",
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "comfyanonymous/flux_text_encoders",
+        "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+        "filename": "clip_l.safetensors",
+        "page_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+        "download_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/clip_l.safetensors"
+      },
+      "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+      "size_bytes": 246144152,
+      "sha256_verified": true
+    },
+    {
+      "role": "t5xxl",
+      "source": {
+        "provider": "Hugging Face",
+        "repository": "comfyanonymous/flux_text_encoders",
+        "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+        "filename": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "page_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+        "download_url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/t5xxl_fp8_e4m3fn_scaled.safetensors"
+      },
+      "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+      "size_bytes": 5157348688,
+      "sha256_verified": true
+    }
+  ],
+  "cases": {
+    "baseline": {
+      "status": "passed",
+      "job_id": "3480a52f-baaa-4f88-b066-88cd17eb5601",
+      "initial_status": "queued",
+      "elapsed_seconds": 50.20299999997951,
+      "artworks": [
+        {
+          "id": "228392d3-52e5-5e9d-9ac1-ed19bf6d469d",
+          "bytes": 324328,
+          "sha256": "89138d6d245cb47502386d8d805cf1346527f48bd5bd2bc2f3e2e519fe66e4e5"
+        }
+      ],
+      "terminal_status": "completed",
+      "failure_info": null
+    },
+    "load_failure": {
+      "status": "passed",
+      "job_id": "d5d1df72-3cea-4735-86f2-2070c6ed1029",
+      "initial_status": "queued",
+      "elapsed_seconds": 0.6719999999622814,
+      "artworks": null,
+      "terminal_status": "failed",
+      "failure_info": {
+        "code": "model_load_failed",
+        "title": "模型載入節點失敗",
+        "message": "原工作流程的模型載入節點執行失敗；目前沒有足夠資訊判定為顯存不足。",
+        "suggestions": [
+          "確認原 checkpoint 檔案存在、完整且架構與流程相符。",
+          "查看原任務 JSON 與引擎日誌，再選擇可用模型或修復檔案後建立新任務。"
+        ],
+        "node_id": "1",
+        "node_type": "UNETLoader",
+        "exception_type": "ValueError"
+      }
+    },
+    "cuda_oom": {
+      "status": "passed",
+      "job_id": "4e845349-74db-488d-9cfc-66b9cfecf013",
+      "initial_status": "queued",
+      "elapsed_seconds": 2.687000000034459,
+      "artworks": null,
+      "terminal_status": "failed",
+      "failure_info": {
+        "code": "cuda_oom",
+        "title": "CUDA 顯存不足",
+        "message": "原引擎的已確認執行錯誤明確指出 CUDA 顯存不足。",
+        "suggestions": [
+          "載入原設定並降低圖片寬度或高度，再建立新任務。",
+          "關閉其他占用顯存的程式；必要時使用符合該模型的省顯存流程。"
+        ],
+        "node_id": "1",
+        "node_type": "UNETLoader",
+        "exception_type": "torch.OutOfMemoryError"
+      }
+    },
+    "explicit_retry": {
+      "status": "passed",
+      "job_id": "ee135077-2b6f-4005-b5b1-17819de7f2a3",
+      "initial_status": "queued",
+      "elapsed_seconds": 0.48399999999674037,
+      "artworks": [
+        {
+          "id": "db507e0a-8d7a-541d-8942-dc6f2edc3740",
+          "bytes": 324328,
+          "sha256": "89138d6d245cb47502386d8d805cf1346527f48bd5bd2bc2f3e2e519fe66e4e5"
+        }
+      ],
+      "terminal_status": "completed",
+      "failure_info": null
+    },
+    "lost_receipt": {
+      "status": "passed",
+      "job_id": "5e2524ef-40d6-4801-9956-4acea95e9245",
+      "initial_status": "unknown",
+      "elapsed_seconds": 36.51600000000326,
+      "artworks": [
+        {
+          "id": "35f6d1d2-881e-56b0-8626-9f7c338d3ad0",
+          "bytes": 389391,
+          "sha256": "22e753a041a89055f357aa0f47fa7ec2129edf0cdbc97aba7b4f78883250211c"
+        }
+      ],
+      "terminal_status": "completed",
+      "failure_info": null
+    }
+  },
+  "dispatch_count": 5,
+  "offline_verification": {
+    "status": "passed",
+    "verified_at": "2026-10-25T05:28:41.765590+00:00",
+    "job_id": "3480a52f-baaa-4f88-b066-88cd17eb5601",
+    "requests": "GET only"
+  },
+  "owned_processes_stopped": true,
+  "managed_database_unchanged": true,
+  "limitations": [
+    "OOM is a real 4 MiB CUDA allocation under an injected tiny process quota, not natural VRAM exhaustion",
+    "Explicit retry used the native engine cache; it is a distinct user-requested UUID",
+    "Only this fixed 512px configuration; no 4080, larger dimensions or quality acceptance",
+    "No peak resource sampling in F03; F02 native resource measurements are separate",
+    "First tool attempts failed and are retained in ignored runtime; only this full run passed"
+  ]
+}

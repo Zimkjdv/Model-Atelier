@@ -95,7 +95,7 @@ def run():
             )
         ensure_engine_stopped()
         output = ROOT / 'runtime/flux-runtime-checks' / run_id
-        if output.parent.resolve() != ROOT / 'runtime/flux-runtime-checks':
+        if output.parent.resolve() != ROOT.resolve() / 'runtime/flux-runtime-checks':
             raise RuntimeError('Unsafe runtime path')
         output.mkdir(parents=True, exist_ok=False)
         settings = copy.deepcopy(flux_observation.SETTINGS)

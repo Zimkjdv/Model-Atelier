@@ -94,7 +94,10 @@ class FluxObservationTests(unittest.TestCase):
 
     def test_timed_out_worker_is_terminated_before_lease_release_and_failure_receipt_is_saved(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            # Windows CI can return an 8.3 TEMP alias. Both sides must use the
+            # canonical workspace; this lexical alias exercises the same bug.
+            (Path(directory) / 'alias').mkdir()
+            root = Path(directory) / 'alias/..'
             python = root / 'runtime/ComfyUI/.venv/Scripts/python.exe'
             python.parent.mkdir(parents=True)
             python.write_bytes(b'fixture')

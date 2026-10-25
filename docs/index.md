@@ -62,7 +62,8 @@
 
 - [FLUX／RTX 3060 實作前置判斷](models/flux-rtx3060-planning.md)：官方量化／卸載依據、GGUF 流程差異、4080 提醒規則及未驗收範圍
 - [F01 固定 FLUX 安裝與完整驗檔](models/flux-installation.md)：官方 CLI 登入、四元件整體來源／磁碟檢查、續傳及離線 SHA256；[固定四份安裝證據](validation/flux-installation-20261025.md)
-- [F02 實際精度／卸載工具](models/flux-runtime-observation.md)、[RTX 3060 實測](validation/flux-runtime-20261025.md)：512 原生配置、CPU／CUDA 張量與有界資源取樣，平台 HTTP／保存／OOM 仍待 F03
+- [F02 實際精度／卸載工具](models/flux-runtime-observation.md)、[RTX 3060 實測](validation/flux-runtime-20261025.md)：512 原生配置、CPU／CUDA 張量與有界資源取樣，平台 HTTP／保存／OOM 另見下列 F03
+- [F03 平台生成、作品保存與失敗復原](models/flux-generation-acceptance.md)：獨立 HTTP 引擎／DATA、原 UUID、離線 GET 與受控真實 CUDA OOM；[驗收](validation/flux-generation-20261025.md)
 - [F02 元件條款與來源查核](models/flux-component-licenses.md)：BFL 全文與模型卡、CLIP／T5 上游參考；編碼器轉檔鏈仍待追溯
 
 - [部署決策與本機存取](deployment.md)、[D01 HTTP／UI 驗收](validation/local-deployment-20261025.md)：同一台電腦、角色來源與連線邊界

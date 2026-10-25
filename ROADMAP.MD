@@ -2,11 +2,11 @@
 
 個人 AI 圖像創作與實驗工作台。更新日期：2026-10-25。
 
-本檔只追蹤 **15 個未完成主項、21 個待驗收子項**（共 36 個未勾選框）。已完成條目的原驗收敘述、圖片提醒與證據移至 [CHANGELOG 已完成條目](CHANGELOG.MD#roadmap-completed-20261025)；原 39 框去向與補回驗收也保留於 [歷史索引](CHANGELOG.MD#unchecked-index)。移動不改變完成狀態，也不新增實測結論。
+本檔只追蹤 **14 個未完成主項、19 個待驗收子項**（共 33 個未勾選框）。已完成條目的原驗收敘述、圖片提醒與證據移至 [CHANGELOG 已完成條目](CHANGELOG.MD#roadmap-completed-20261025)；原 39 框去向與補回驗收也保留於 [歷史索引](CHANGELOG.MD#unchecked-index)。移動不改變完成狀態，也不新增實測結論。
 
 ## 接下來的順序與條件
 
-已依序完成 [T07 缺項導覽](CHANGELOG.MD#t07) → [T08 訓練報告](CHANGELOG.MD#t08)。本輪 [F01](CHANGELOG.MD#f01) 先安裝、完整驗證四份權重並 commit／push，再完成 [F02](CHANGELOG.MD#f02) 的條款記錄與 3060／64 GiB RAM、512 原生配置觀察。平台 HTTP／作品保存／OOM 仍待 F03；編碼器轉檔來源缺口另列 M02，沒有當成全部條款已完整驗證。
+已依序完成 [T07 缺項導覽](CHANGELOG.MD#t07) → [T08 訓練報告](CHANGELOG.MD#t08)。本輪 [F01](CHANGELOG.MD#f01) 先安裝、完整驗證四份權重並 commit／push，再完成 [F02](CHANGELOG.MD#f02) 的條款記錄與 3060／64 GiB RAM、512 原生配置觀察。[F03 平台 HTTP／保存／還原與受控 OOM](CHANGELOG.MD#f03)已另行實測；編碼器轉檔來源缺口另列 M02，沒有當成全部條款已完整驗證。
 
 使用者已確認維持同一台電腦使用，上一輪依序完成 [D01](CHANGELOG.MD#d01) → [D02](CHANGELOG.MD#d02)，每項完成後先 commit、push，才做下一項。其餘項目依下列設備、來源及資料審查條件推進；Docker 保持選用，不新增日常前置需求。
 
@@ -25,7 +25,7 @@
 | P0：硬體、相容性與量測 | 3 | 6 |
 | P1／P6：實機觸控 | 1 | 1 |
 | P2／P4：模型來源 | 2 | 2 |
-| P5：FLUX.1 [schnell] | 2 | 4 |
+| P5：FLUX.1 [schnell] | 1 | 2 |
 | P8：官方 API（最後實作） | 7 | 8 |
 
 ## P0：硬體、相容性與量測
@@ -87,9 +87,7 @@ F02 的逐元件條款記錄與所列 3060 原生配置觀察已移至 [CHANGELO
 
 <a id="f03"></a>
 
-- [ ] **F03 · FLUX 載入、生成、結果保存及 OOM 實機驗收**
-  - [ ] 驗收 F03-01：固定模型／元件與完整參數，驗證載入、單次提交、作品保存、設定還原及離線讀取。
-  - [ ] 驗收 F03-02：驗證載入失敗與記憶體不足的原設定／錯誤保存及明確重試，未知回應不重送。
+已完成，原驗收敘述移至 [CHANGELOG](CHANGELOG.MD#f03)。[實際證據](docs/validation/flux-generation-20261025.md)只涵蓋固定 512 FP8／CPU 配置；OOM 為實際 CUDA allocator 的受控配額故障注入，不代表自然顯存門檻或更大尺寸通過。
 
 <a id="f04"></a>
 

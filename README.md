@@ -34,7 +34,7 @@ Set-Location ..
 4. 明確按生成並查看任務；提交回應遺失時恢復原 UUID，避免重送。完成後到作品庫明確匯入／補齊圖片。
 5. 已匯入作品可離線預覽、下載原圖／workflow、載入支援流程的原設定；載入不會自動生成。
 
-首次硬體與模型配置需自行驗證。RTX 3060 的 Pony／Animagine 固定案例見 [驗收索引](docs/index.md#實機與歷史證據)；RTX 4080、FLUX GPU 生成及真實畫風／角色訓練品質仍有待辦。
+首次硬體與模型配置需自行驗證。RTX 3060 的 Pony／Animagine 固定案例見 [驗收索引](docs/index.md#實機與歷史證據)；RTX 4080、更多 FLUX 配置及真實畫風／角色訓練品質仍有待辦。
 
 Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完整授權適用關係仍未核實；來源、完整參考條文及依賴缺口見 [M01 查核](docs/models/pony-v6-xl-license.md)。
 
@@ -46,7 +46,7 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 | 局部編輯 | 遮罩筆刷／擦除／反相／PNG、v1／v2 羽化修補、Fooocus v3 實驗選項、原設定還原 | [Fooocus 限制與比較](docs/fooocus-inpainting.md)；一般草稿／交換／比較尚未支援；[一般修補](docs/inpainting.md)、[羽化](docs/inpaint-feather.md) |
 | 結構參考 | Canny v2／CPU 預覽；SDXL pose／depth v3、實際條件圖保存與完整還原 | [pose／depth 操作與實測限制](docs/structure-reference.md)、[Canny](docs/controlnet.md)；動漫骨架可能缺漏，不保證姿勢一致 |
 | 畫風／角色參考 | SDXL Plus ViT-H 單張推論、兩種模式、元件登記、原設定與來源快照 | 沒有訓練；可能帶入服裝／髮色／背景，無身份鎖定；[操作](docs/models/ipadapter-reference.md)、[12 組實測](docs/validation/reference-adapter-20261023.md) |
-| FLUX.1 [schnell] | 固定四元件安裝／驗檔、實際精度／卸載觀察、元件庫與專用創作流程 | [F01 安裝](docs/models/flux-installation.md)、[F02 原生 512 配置](docs/models/flux-runtime-observation.md)已實測；平台生成保存／OOM 仍待 F03，編碼器轉檔鏈保留缺口 |
+| FLUX.1 [schnell] | 固定四元件安裝／驗檔、實際精度／卸載觀察、元件庫與專用創作流程 | [F01 安裝](docs/models/flux-installation.md)、[F02 原生 512 配置](docs/models/flux-runtime-observation.md)、[F03 平台保存／還原與受控 OOM](docs/models/flux-generation-acceptance.md)已實測；其他配置及編碼器轉檔鏈保留缺口 |
 | 作品與素材 | 原圖／縮圖、搜尋、收藏、筆記、人工評分、封存／還原、素材用途與引用保護 | 封存不釋放檔案，無一般作品永久刪除；[整理](docs/artwork-library.md)、[比較](docs/artwork-comparison.md) |
 | 實驗 | 通用／動漫案例、模型／提示詞／取樣參數有限比較、保存／匯入、任務關聯與原始 JSON 報告 | 各組手動生成，無自動重試或品質評分；[方案](docs/experiment-plans.md)、[結果](docs/experiment-runs.md) |
 | 執行 | 進度、取消／條件化停止、失敗保存、環境快照、原引擎連續資源取樣、E01 裝置回報 | 觀察最高值不等於任務專用峰值；[量測範圍](docs/job-measurements.md)、[裝置回報](docs/execution-device.md) |
@@ -55,7 +55,7 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 
 ## 動漫畫風的下一步
 
-訓練操作另有 [T07 缺項導覽](docs/training/workspace.md#t07-缺項導覽)及 [T08 訓練報告](docs/training/workspace.md#t08-訓練報告)：篩選並定位待審查圖片，或預覽／下載原 run 的有界紀錄；導覽不批准圖片，報告不重跑訓練。FLUX 的官方資料、3060／4080 提醒與 GGUF 接入差異見 [實作前置判斷](docs/models/flux-rtx3060-planning.md)；F01 安裝與 F02 的 3060／64 GiB RAM、512×512 原生案例已完成。該案例程序 RSS 超過 36 GiB，不能承諾 32 GiB RAM、較大尺寸或整個平台流程已驗收。
+訓練操作另有 [T07 缺項導覽](docs/training/workspace.md#t07-缺項導覽)及 [T08 訓練報告](docs/training/workspace.md#t08-訓練報告)：篩選並定位待審查圖片，或預覽／下載原 run 的有界紀錄；導覽不批准圖片，報告不重跑訓練。FLUX 的官方資料、3060／4080 提醒與 GGUF 接入差異見 [實作前置判斷](docs/models/flux-rtx3060-planning.md)；F01 安裝與 F02 的 3060／64 GiB RAM、512×512 原生案例已完成。該案例程序 RSS 超過 36 GiB，不能承諾 32 GiB RAM 或較大尺寸。F03 另完成相同固定配置的平台 HTTP／作品保存／離線還原與受控 CUDA OOM 驗收；見 [實測證據](docs/validation/flux-generation-20261025.md)。
 
 以動漫畫風為目標時，建議依 **R05 品質基準 → L01 畫風 LoRA → R02 參考圖 adapter；使用者指定後續為 T01 → T02 → R01 → R03** 推進。先沿用現有生成與比較功能，再依結果決定是否訓練；整體 Vue／FastAPI／SQLite／ComfyUI 架構保留。
 
