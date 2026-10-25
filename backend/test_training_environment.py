@@ -3,6 +3,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
+from PIL import Image
 
 from backend import training_environment as environment
 from scripts import training_fixture
@@ -53,3 +54,22 @@ class EnvironmentTests(unittest.TestCase):
             self.assertEqual(len(list((target / 'bundle/train').glob('*.png'))), 1)
             with self.assertRaises(ValueError):
                 training_fixture.create(target)
+
+    def test_1024_fixture_really_contains_1024_inputs_and_configuration(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            target = training_fixture.create(Path(temporary) / 'technical', resolution=1024)
+            config = json.loads((target / 'config.json').read_text(encoding='utf-8'))
+            self.assertEqual(config['resolution'], 1024)
+            self.assertEqual(config['purpose'], 'technical-smoke')
+            self.assertEqual(len(list((target / 'bundle/train').glob('*.png'))), 1)
+            for path in (target / 'source').glob('*.png'):
+                with Image.open(path) as image:
+                    self.assertEqual(image.size, (1024, 1024))
+
+    def test_unsupported_fixture_resolution_creates_no_files(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            target = Path(temporary) / 'technical'
+            for resolution in (768, True, 512.0):
+                with self.assertRaises(ValueError):
+                    training_fixture.create(target, resolution=resolution)
+            self.assertFalse(target.exists())

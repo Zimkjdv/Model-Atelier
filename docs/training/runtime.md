@@ -2,6 +2,8 @@
 
 T06 已提供[網頁操作](workspace.md#t06-本機訓練與產物)：T05 封存出口、明確準備／開始／停止／新 run 續訓、狀態及 T04 產物回登。環境安裝仍使用下列 CLI，容器不提供訓練；網頁不自動開始或停止其他服務。
 
+2026-10-26：新增 [E04 RTX 4080 512／1024 合成訓練資源驗收](../validation/hardware-resources-20261026.md)，各完成 3 更新、產物／完整狀態及資源釋放。worker 明確使用 UTF-8 日誌，修復隔離 `-I` 忽略環境編碼而在 CP950 主機列印日文失敗的問題；沒有作者圖品質認列。
+
 2026-10-25：獨立環境、明確 run／停止／續訓及生成互斥介面已建立；技術驗收見 [RTX 3060 紀錄](../validation/training-runtime-20261025.md)。T03 已先 commit／push，再完成 [T04 回登與評估流程](artifacts.md)；作者品質仍未認列。
 
 沿用 T02 的 sd-scripts `11d8cedd0c67b93a10f8b2d75f43554f6f12c794`，在 `runtime/training/sd-scripts` 與 `runtime/training/.venv` 安裝，平台與 ComfyUI 的 Python 不安裝 trainer 依賴。Windows x64／Python 3.12／CUDA 13.0 的精確版本位於 `training/requirements-win-py312.lock.txt`；來源及兩份 tokenizer 的固定修訂、大小與 hash 位於 `training/environment.json`。訓練使用離線 tokenizer，不於執行期間下載檔案。

@@ -1,5 +1,21 @@
 # Model Atelier — Changelog
 
+## 2026-10-26 · E04 推論／訓練資源分開登記與 CP950 修復
+
+E03 已先以 `3cce745` commit／push。新增唯讀訓練資源匯出器，核對原 manifest、最終完整步數、產物 receipt／hash 及程序／租約釋放，保留環境／資料／基底／完整 trainer arguments、實際 bucket、程式／日誌 hash；allocator、程序 RSS／Windows peak working set 與整卡取樣分開，未知保持 null。九筆 RTX 4080 推論獨立登記，不拿推論結果替代訓練。
+
+修復搬移後獨立 trainer Python／editable 路徑並核對 lock、乾淨 sd-scripts 及離線 tokenizer。只用自製幾何 train／validation／test，各一張且只有 train 進 trainer；新增真正 1024 PNG fixture。RTX 4080 的 512／1024、UNet LoRA rank 4／batch 1／fp16 各完成 3 更新、最終完整狀態與 LoRA hash；worker elapsed 53.797／52.219 秒，Torch allocated 峰值約 5.21／5.81 GiB。兩次不同快取、僅三步，不能認列尺寸效能排行、最低容量或作者品質。
+
+首次 512 run 因隔離 `-I` 忽略 `PYTHONIOENCODING`、CP950 無法列印 trainer 日文而失敗，保留原紀錄並確認釋放資源。最小回歸先重現同一字元失敗，再於 worker 起點明確將 stdout／stderr 設為 UTF-8；回歸及新 UUID 真實訓練成功。沒有修改固定上游、覆寫歷史 run 或批准作者圖；結束後恢復本機 ComfyUI，平台確認 CUDA 連線。
+
+最終空閒狀態下 798 項後端（1 既有跳過）、格式／靜態／型別、前端建置與契約全部通過；本項明確使用 --skip-browser，E02 的 122 項 Chromium 基線沿用，本項沒有前端變更。先前與真實訓練並行的回歸因運算互斥拒絕模擬提交而失敗，保留該輸出並於租約釋放後重新完整驗證，未移除互斥機制。見 [資源與失敗紀錄](docs/validation/hardware-resources-20261026.md)、[JSON](docs/validation/hardware-resources-20261026.json)。ROADMAP 保留 10 主項／11 子項（21 框），E02 → E03 → E04 各自 commit／push。
+
+<a id="e04"></a>
+
+- [x] **E04 · 補齊推論與訓練各自的資源實測**
+  - [x] 驗收 E04-01：保留硬體、環境、流程、模型與測量定義；新增工作負載及 RTX 4080 結果各自登記。
+  - [x] 驗收 E04-02：訓練實測依 T01／T03 決策另建紀錄，不以推論量測替代；不可得欄位保持未知。
+
 ## 2026-10-26 · E03 相同條件比較與獨立較高負載
 
 E02 已先以 `a74dfbe` commit／push。讀取 RTX 3060 原始 Pony 報告／成功 history，與 RTX 4080 新引擎程序第一次相同配置生成比較；固定權重完整 SHA256、模型／CLIP／VAE dtype、768²／20 步／精確 seed／batch 1／無附加元件及完整七節點圖均匹配。原 history 耗時 22.551／9.380 秒，單次比例 2.4042，保留 OS／驅動及背景負載差異；未回填舊任務量測、未把整卡取樣視為任務峰值。

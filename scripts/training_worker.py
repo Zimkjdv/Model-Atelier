@@ -19,6 +19,10 @@ class Stopped(RuntimeError):
 
 
 def main(argv=None):
+    # -I ignores PYTHONIOENCODING. Set the owned log streams before importing
+    # trainer dependencies, whose multilingual progress messages can exceed CP950.
+    for stream in (sys.stdout, sys.stderr):
+        stream.reconfigure(encoding='utf-8', errors='backslashreplace')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', required=True)
     parser.add_argument('--run-id', required=True)

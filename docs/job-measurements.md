@@ -31,3 +31,5 @@ RAM 是引擎所在主機的 total−free。裝置數值是引擎回報的 total
 2026-10-23 · V04：1440px／390px 在任務詳情與作品預覽實際展開量測，核對上述原任務的 27.311／26.029 秒與來源／提交前資源；另以隔離案例驗證不同於目前引擎的原 URL、GPU／CPU 標籤、零秒／零可用容量與未知值。舊紀錄保持未知、讀取不改原任務，作品沿用同一快照。原資料庫前後 hash 相同，未重測 GPU 或估算任務峰值，見 [V04 證據](validation/comparison-measurements-20261023.md)。
 
 2026-10-26：新增 [E03 相同設定的兩機觀察與獨立較高負載](validation/hardware-comparison-20261026.md)。比較器對缺來源、未知精度／快取或不同完整設定拒絕產生時間比；歷史任務的耗時只在新報告從原 history 計算，不回填舊紀錄。
+
+2026-10-26：[E04 資源登記](validation/hardware-resources-20261026.md)分開列出九筆推論與兩筆 RTX 4080 合成訓練。訓練 allocator、worker RSS／Windows peak working set、整卡取樣各有來源，不以推論 RAM／裝置觀察替代。

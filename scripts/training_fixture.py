@@ -9,20 +9,23 @@ from backend import compute_lease, training_bundle, training_data, training_runs
 from scripts.training_dataset import expected_base, initialize
 
 
-def create(output):
+def create(output, *, resolution=512):
+    if type(resolution) is not int or resolution not in (512, 1024):
+        raise ValueError('Technical fixture resolution must be 512 or 1024')
     target = training_bundle.safe_output(output)
     source = target / 'source'
     source.mkdir(parents=True)
     for index, color in enumerate(('#d86045', '#408bb0', '#70a04f')):
-        image = Image.new('RGB', (512, 512), '#e9e4d9')
+        image = Image.new('RGB', (resolution, resolution), '#e9e4d9')
         draw = ImageDraw.Draw(image)
-        draw.rectangle((80 + index * 16, 96, 320, 352), fill=color)
-        draw.ellipse((240, 272, 432, 464), fill='#544662')
+        scale = resolution // 512
+        draw.rectangle(tuple(v * scale for v in (80 + index * 16, 96, 320, 352)), fill=color)
+        draw.ellipse(tuple(v * scale for v in (240, 272, 432, 464)), fill='#544662')
         image.save(source / f'geometry-{index}.png')
     dataset = initialize(
         source,
         dataset_id='technical-geometry',
-        version='v1',
+        version='v1' if resolution == 512 else 'v1-1024',
         kind='style',
         subject_id='synthetic-geometry',
         trigger='ma_geometry_fixture',
@@ -42,14 +45,14 @@ def create(output):
     compute_lease.atomic_json(target / 'dataset.json', dataset.model_dump(mode='json'))
     training_bundle.export(dataset, source, target / 'bundle', expected_base())
     config = training_runs.Configuration(
-        label='512 geometry technical smoke; no style quality claim',
+        label=f'{resolution} geometry technical smoke; no style quality claim',
         purpose='technical-smoke',
         bundle=str((target / 'bundle').resolve()),
         checkpoint=str(
             training_runs.ROOT
             / 'runtime/ComfyUI/models/checkpoints/animagine-xl-4.0-opt.safetensors'
         ),
-        resolution=512,
+        resolution=resolution,
         rank=4,
         max_steps=3,
         save_every_steps=1,
@@ -61,4 +64,6 @@ def create(output):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', required=True)
-    print(create(Path(parser.parse_args().output)))
+    parser.add_argument('--resolution', type=int, choices=(512, 1024), default=512)
+    args = parser.parse_args()
+    print(create(Path(args.output), resolution=args.resolution))

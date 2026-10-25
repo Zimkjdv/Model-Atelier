@@ -117,7 +117,10 @@
     "scripts/verify_hardware.py",
     "backend/test_hardware_acceptance.py",
     "scripts/compare_hardware.py",
-    "backend/test_hardware_comparison.py"
+    "backend/test_hardware_comparison.py",
+    "scripts/hardware_resources.py",
+    "backend/test_hardware_resources.py",
+    "backend/test_training_worker_encoding.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
