@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Model Atelier 圖文使用教學：啟動、生成、參考圖片、訓練資料審查、LoRA 訓練、評估與備份。"
+    />
+    <title>Model Atelier · 圖文使用教學</title>
+    <link rel="stylesheet" href="guide.css" />
+    <script src="guide.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">跳至教學內容</a>
+    <aside class="sidebar">
+      <a class="brand" href="#top"
+        ><span class="logo" aria-hidden="true">M</span
+        ><span>Model Atelier<small>圖文使用教學</small></span></a
+      >
+      <nav aria-label="教學章節">
+        <a href="#choose">01 選擇你的操作路線</a><a href="#start">02 啟動與環境確認</a>
+        <a href="#generate">03 完成第一張圖片</a><a href="#reference">04 用圖片參考畫風／角色</a>
+        <a href="#review">05 審查訓練圖片與標註</a><a href="#train">06 執行與恢復訓練</a>
+        <a href="#evaluate">07 安裝 LoRA 與比較結果</a><a href="#backup">08 整理、備份與關閉</a>
+        <a href="#help">09 常見問題與名詞</a>
+      </nav>
+      <p class="side-note">2026-10-25 更新<br />以 Windows 原生平台為主<br />無網路也能閱讀本文</p>
+      <button class="print" type="button" hidden>列印／另存 PDF</button>
+    </aside>
+    <main id="main" tabindex="-1">
+      <header id="top" class="hero">
+        <p class="eyebrow">LOCAL CREATIVE WORKSPACE / USER GUIDE</p>
+        <h1>從第一張圖片，<br />到自己的訓練流程。</h1>
+        <p class="lead"
+          >跟著畫面與步驟，學會啟動平台、使用參考圖，以及審查資料、訓練和比較
+          LoRA。先完成一條路線，再逐步加入其他功能。</p
+        >
+        <div class="hero-links"
+          ><a class="pill" href="#start">從啟動開始 →</a><a href="#review">直接看訓練教學 ↓</a></div
+        >
+        <p class="meta"
+          >適用版本：T05／T06 完成後的介面。截圖內數字與檔名是示例，以你的實際畫面為準。</p
+        >
+      </header>
+
+      <section id="choose">
+        <p class="eyebrow">01 / CHOOSE A PATH</p><h2>先決定：你想做什麼？</h2>
+        <div class="cards three">
+          <article
+            ><span class="tag">最快開始</span><h3>用文字生成圖片</h3
+            ><p>選 checkpoint、填提示詞，建立一張作品。不需要訓練資料集。</p
+            ><a href="#generate">前往第一次生成 →</a></article
+          >
+          <article
+            ><span class="tag">已有喜歡的圖片</span><h3>參考畫風或角色</h3
+            ><p>每次用一張圖片作為推論條件，觀察風格或外觀的影響。</p
+            ><a href="#reference">前往參考圖流程 →</a></article
+          >
+          <article
+            ><span class="tag">需要可重複使用的 LoRA</span><h3>準備資料並訓練</h3
+            ><p>先分割與逐張審查，再明確建立訓練。畫風與角色分開進行。</p
+            ><a href="#review">前往資料審查 →</a></article
+          >
+        </div>
+        <div class="callout"
+          ><strong>參考圖 ≠ 訓練素材</strong
+          ><p
+            >上傳圖片或標上「畫風參考」，不會訓練模型。R02 每次只使用一張參考圖；T05
+            匯出只複製通過審查的 train 圖片；T06 還需按「開始此 run 的訓練」，才會啟動訓練。</p
+          ></div
+        >
+        <div
+          class="flow"
+          role="img"
+          aria-label="一般生成流程為啟動、模型庫、工作台、作品庫；訓練流程為分割資料、審查、匯出、準備、明確開始、安裝與比較。"
+        >
+          <p
+            ><b>創作</b><span>啟動</span><i>→</i><span>模型庫</span><i>→</i><span>創作工作台</span
+            ><i>→</i><span>作品庫</span></p
+          >
+          <p
+            ><b>訓練</b><span>分割與審查</span><i>→</i><span>匯出資料包</span><i>→</i
+            ><span>準備 run</span><i>→</i><span>明確開始</span><i>→</i><span>安裝與比較</span></p
+          >
+        </div>
+      </section>
+
+      <section id="start">
+        <p class="eyebrow">02 / START</p><h2>啟動與環境確認</h2>
+        <p
+          >以下假設依賴、ComfyUI 與模型已安裝。如果是第一次 clone，先完成
+          <a href="../setup-and-operations.md">安裝與操作文件</a>；啟動捷徑不會替你安裝環境。</p
+        >
+        <ol class="steps">
+          <li
+            ><h3>雙擊專案根目錄的 <code>start-all.bat</code></h3
+            ><p
+              >它開啟平台與 ComfyUI 的服務視窗，平台就緒後自動開啟
+              <a href="http://127.0.0.1:8000/" target="_blank" rel="noopener"
+                >http://127.0.0.1:8000/</a
+              >。使用期間保留服務視窗。</p
+            ></li
+          >
+          <li
+            ><h3>在「設定」核對引擎網址</h3
+            ><p
+              >原生預設為
+              <code>http://127.0.0.1:8188</code
+              >。平台是操作介面，引擎才實際生成圖片；平台開得了，不代表引擎已連線。</p
+            ></li
+          >
+          <li
+            ><h3>在「系統資訊」確認裝置與目錄</h3
+            ><p
+              >查看 GPU、環境及磁碟可用空間。目錄列右側的資料夾 icon
+              可要求檔案總管開啟受管理的本機目錄；不存在的目錄不可開啟。容量表示整個磁碟區，不是資料夾大小。</p
+            ></li
+          >
+          <li
+            ><h3>在「模型庫」同步並核對模型</h3
+            ><p
+              >按「同步模型清單」，確認 checkpoint
+              檔名、架構與版本。同步只讀取引擎清單，不下載權重；清單空白時先安裝模型。SDXL
+              表單需選已登記為 SDXL 的相容模型。</p
+            ></li
+          >
+        </ol>
+        <figure
+          ><a class="zoom" href="images/models.png"
+            ><img
+              src="images/models.png"
+              width="1440"
+              height="1000"
+              alt="模型庫頁面，頂部有同步模型清單按鈕，下方列出 checkpoint 與登記架構"
+              loading="lazy" /></a
+          ><figcaption
+            >圖 1｜目前介面的隔離示範畫面。demo.safetensors 與 mock-engine
+            是測試資料；請使用你的實際模型與本機 8188 網址。點圖可放大。</figcaption
+          ></figure
+        >
+        <p class="done">確認完成：平台可開啟、引擎連線、清單中有正確登記的模型。</p>
+        <details
+          ><summary>只是整理素材，或準備開始訓練？</summary
+          ><p
+            >可只執行
+            <code>.\start-local.ps1</code> 開啟平台。引擎離線仍能整理已保存資料。訓練前須等待其他
+            GPU 任務完成，停止受管理的 ComfyUI；不要為了訓練再用 start-all 同時啟動引擎。Docker
+            是選用部署，並非日常必要條件，且不提供此 Windows 訓練操作。</p
+          ></details
+        >
+      </section>
+
+      <section id="generate">
+        <p class="eyebrow">03 / FIRST IMAGE</p><h2>完成第一張圖片</h2>
+        <figure
+          ><a class="zoom" href="images/studio.png"
+            ><img
+              src="images/studio.png"
+              width="1440"
+              height="1000"
+              alt="創作工作台頂部列出 Checkpoint、FLUX、局部編輯、結構參考與畫風角色參考等流程"
+              loading="lazy" /></a
+          ><figcaption
+            >圖 2｜從「Checkpoint / SDXL」開始，往下捲動填寫創作設定。這是隔離示範介面，未執行 GPU
+            生成。</figcaption
+          ></figure
+        >
+        <ol class="steps">
+          <li
+            ><h3>開啟「創作工作台」→「Checkpoint / SDXL」</h3
+            ><p>選擇已核對的 checkpoint。先不加 LoRA 或其他參考條件，建立方便比較的基準。</p></li
+          >
+          <li
+            ><h3>填提示詞與輸出設定</h3
+            ><p
+              >用明確的主體、動作、場景描述；模型若有專用提示格式，依它的文件設定。seed
+              固定為同一個十進位整數，方便比較。尺寸、steps、CFG 與 sampler
+              依模型及硬體設定，不套用訓練參數。</p
+            ><div class="example"
+              ><strong>內容提示詞示例</strong
+              ><code
+                >1girl, long brown hair, green eyes, reading a book, quiet library, soft
+                lighting</code
+              ><p>這只描述內容；不會自動指定作者畫風，也不保證角色身分一致。</p></div
+            ></li
+          >
+          <li
+            ><h3>保存草稿，再明確按「生成圖片」</h3
+            ><p
+              >保存草稿不會生成。按下生成後追蹤原任務的進度、狀態與錯誤；回應遺失時使用原請求恢復操作，不連按生成建立重複任務。</p
+            ></li
+          >
+          <li
+            ><h3>完成後到「作品庫」匯入作品</h3
+            ><p
+              >明確匯入／補齊生成圖片，確認能預覽、下載原圖及
+              workflow。補上名稱、筆記與收藏，方便後續比較。</p
+            ></li
+          >
+        </ol>
+        <p class="done">確認完成：作品庫能看到輸出與原設定，並且可下載原圖。</p>
+        <details
+          ><summary>接著要改構圖、姿勢或局部內容？</summary
+          ><ul
+            ><li><strong>圖生圖：</strong>使用相容流程的來源圖與 denoise，觀察保留內容程度。</li
+            ><li
+              ><strong>Canny／結構參考：</strong>先檢查條件圖；pose／depth
+              需要對應元件，動漫姿勢偵測可能缺漏。見
+              <a href="../structure-reference.md">結構參考教學</a>。</li
+            ><li
+              ><strong>局部編輯：</strong>選來源圖、畫遮罩、檢查修補範圍，再明確生成。見
+              <a href="../inpainting.md">遮罩修補</a>。Fooocus 是實驗選項，不能假定一定更好。</li
+            ><li
+              ><strong>FLUX：</strong>固定來源存取與 GPU
+              驗收仍有待辦，不作為第一次生成的預設路線。</li
+            ></ul
+          ></details
+        >
+      </section>
+
+      <section id="reference">
+        <p class="eyebrow">04 / IMAGE REFERENCE</p><h2>用一張圖片參考畫風或角色</h2>
+        <ol class="steps">
+          <li
+            ><h3>到「參考素材」上傳圖片</h3
+            ><p
+              >支援 PNG／JPEG／WebP，單張不超過 20 MiB、1,600
+              萬像素。填用途與備註以便整理；用途標籤本身不會影響生成。</p
+            ></li
+          >
+          <li
+            ><h3>選「畫風／角色參考」，準備專用元件</h3
+            ><p
+              >使用 SDXL checkpoint；在「同步與登記參考元件」確認 IP-Adapter Plus SDXL ViT-H 與 CLIP
+              Vision ViT-H 的架構、版本及來源。缺檔案／節點時先依
+              <a href="../models/ipadapter-reference.md">R02 安裝與登記步驟</a
+              >完成，不能只靠更改檔名。</p
+            ></li
+          >
+          <li
+            ><h3>選模式、單張素材與作用參數</h3
+            ><p
+              >「畫風參考」觀察線條、上色等影響；「角色外觀參考」觀察外觀特徵。權重 0.6
+              是介面起始值，不是品質最佳值；起訖須在 0–1 且起點小於終點。先固定
+              prompt／seed，只改一個條件。</p
+            ></li
+          >
+          <li
+            ><h3>生成並保存比較</h3
+            ><p
+              >可用同流程權重 0
+              作為對照，分別觀察服裝、髮色、背景是否也被帶入。提高權重不一定更準確；角色模式沒有身分鎖定保證。</p
+            ></li
+          >
+        </ol>
+        <div class="callout"
+          ><strong>你先前提供的作者圖片，目前怎麼用？</strong
+          ><p
+            >22 個檔案去重後是 20 個不同內容。R02 實際挑 1 張畫風圖與 1
+            張角色圖，分別作單張參考；沒有把 20 張一起訓練。T02 的兩條清單各為 10 張 train 候選、6
+            張開發評估、6 張排除，候選還需審查。這些數字按用途計，不表示已有 20 張訓練資料。</p
+          ></div
+        >
+        <p class="done"
+          >確認完成：你能分辨「參考造成的內容變化」與「想要的畫風／角色特徵」，且保留對照結果。</p
+        >
+      </section>
+
+      <section id="review">
+        <p class="eyebrow">05 / REVIEW THE DATA</p><h2>審查訓練圖片與標註</h2>
+        <p
+          >此階段只用 CPU
+          整理資料。畫風與角色應建立不同清單，避免把「同一作者」誤當「同一角色」。原圖留在外部資料夾，不要直接修改已登記的檔案。</p
+        >
+        <div class="table-wrap"
+          ><table
+            ><caption>進入訓練工作區前，先備齊三項輸入</caption
+            ><thead
+              ><tr><th>輸入</th><th>這台電腦的既有位置／用途</th></tr></thead
+            ><tbody>
+              <tr
+                ><th>原圖來源目錄</th
+                ><td><code>C:\Users\Ryanisop\Desktop\artist_ref\ハシスタジオ_pixiv</code></td></tr
+              >
+              <tr
+                ><th>資料清單 JSON</th
+                ><td
+                  ><code>runtime/t02-dataset-study-20261023/style-v1.json</code>；角色清單為同目錄的
+                  <code>character-v1.json</code>。</td
+                ></tr
+              >
+              <tr
+                ><th>原 R02 study JSON</th
+                ><td
+                  ><code>runtime/r02-reference-study/study-manifest.json</code>。有 parent_study
+                  的清單需提供原檔，請勿重新格式化或改換行。</td
+                ></tr
+              >
+            </tbody></table
+          ></div
+        >
+        <p class="meta"
+          >runtime 與原圖不在 Git；換電腦要另還原。沒有清單時先依
+          <a href="../training/dataset-contract.md">T02 的 init 指令與資料分割說明</a
+          >建立；網頁不能從任意資料夾自動推定分組與角色。</p
+        >
+        <ol class="steps">
+          <li
+            ><h3>訓練工作區 →「資料審查」→ 匯入清單</h3
+            ><p
+              >填完整原圖目錄、選清單 JSON；需要時選原 R02 study，按「匯入待審查清單」。原圖
+              hash、大小、尺寸有差異時先處理來源問題，不要為了通過而修改校驗值。</p
+            ></li
+          >
+          <li
+            ><h3>逐張檢查圖片與內容標註</h3
+            ><p
+              >caption 寫實際看見的主體、服裝、動作與背景。將畫風觀察放在獨立欄位，它不會自動附加到
+              trainer caption。核對後才把標註狀態改為「已審查」，填實際審查人。</p
+            ></li
+          >
+          <li
+            ><h3>核對來源、角色與分組</h3
+            ><p
+              >填來源用途依據與審查人，不確定就保留待核對。角色資料逐張確認為目標角色，並填同一個
+              subject ID；不要只因棕髮綠眼就全部標為
+              target。同原作裁切與差分保持同組，避免跨訓練與評估。</p
+            ></li
+          >
+          <li
+            ><h3>「保存新版本」→「重新檢查原圖與標註」</h3
+            ><p
+              >輸入版本名稱並保存。檢查與匯出使用已保存版本；未保存的表單不會混進去。依缺項逐一修正，保留舊修訂供追溯。</p
+            ></li
+          >
+          <li
+            ><h3>通過後「匯出已審查訓練資料包」</h3
+            ><p
+              >只匯出 train 圖片與 caption；validation／test／excluded 不進 trainer
+              目錄。匯出結果須為 completed，才可切到訓練執行選取資料包。這一步仍未開始訓練。</p
+            ></li
+          >
+        </ol>
+        <figure
+          ><a class="zoom" href="images/training-review.png"
+            ><img
+              src="images/training-review.png"
+              width="1440"
+              height="3087"
+              alt="資料審查全頁：頂部匯入路徑與清單，中間逐張圖片及標註來源欄位，底部列出未完成項目與匯出按鈕"
+              loading="lazy" /></a
+          ><figcaption
+            >圖
+            3｜隔離環境中的自製紅色色塊示例，標註與來源刻意保留待審查，示範未通過時禁止匯出。沒有使用作者圖片；點圖放大查看欄位。</figcaption
+          ></figure
+        >
+        <div class="callout warning"
+          ><strong>先分割，再審查</strong
+          ><p
+            >train 是訓練候選；validation 是開發時反覆比較；test 是未曝光最終評估。final test
+            必須在第一次匯入前獨立分割，不能把已看過、參考或調參的圖改稱盲測。介面不預覽 final
+            test，既有保留／排除圖不可轉成訓練圖。</p
+          ></div
+        >
+        <details
+          ><summary>什麼時候需要我再提供動漫圖片？</summary
+          ><p
+            ><strong>準備作者試訓時：</strong>先核對既有 10
+            張候選的內容、來源用途及角色身分；若服裝、視角、姿勢與背景涵蓋不足，再補對應圖片。新試訓可從每組
+            20–50 張訓練圖、另留 5–10 張評估圖考慮，這只是起始配額，不是工具門檻或品質保證。</p
+          ><p
+            ><strong>最終品質驗證前：</strong
+            >另準備未參與訓練、選參考圖、調參或聯絡表檢視的不同原作評估圖。目前 6
+            張開發圖不能改稱未曝光最終測試。缺資料時保持待驗收，不靠複製圖片湊數。</p
+          ></details
+        >
+        <p class="done"
+          >確認完成：資料出口檢查通過，匯出狀態 completed，並且知道哪些圖不會進 trainer。</p
+        >
+      </section>
+
+      <section id="train">
+        <p class="eyebrow">06 / TRAIN &amp; RESUME</p><h2>執行、停止與恢復訓練</h2>
+        <div class="callout warning"
+          ><strong>先確認獨立訓練環境</strong
+          ><p
+            >網頁不安裝 trainer。先在專案根目錄用平台 venv 執行下列唯讀檢查；需要安裝才依
+            <a href="../training/runtime.md">T03 完整指引</a>明確加
+            <code>--install</code>。基底固定為 Animagine XL 4.0 Opt，並非任意 checkpoint。</p
+          >><pre><code>.\.venv\Scripts\python.exe -m scripts.training_environment</code></pre>
+        </div>
+        <ol class="steps">
+          <li
+            ><h3>切到「訓練執行」，按「檢查獨立訓練環境」</h3
+            ><p
+              >確認固定 trainer、離線 tokenizer、依賴與基底均符合，再選 T05 已封存資料包。Docker／非
+              Windows 平台不提供此操作。</p
+            ></li
+          >
+          <li
+            ><h3>填名稱、用途與參數，按「準備新 run」</h3
+            ><p
+              >準備會凍結來源、設定與
+              hash，<strong>不開始訓練</strong>。先核對資料包和用途；不要把技術測試的 6
+              步當成作者訓練配方。</p
+            ></li
+          >
+          <li
+            ><h3>開啟新 run，確認狀態 prepared 與凍結設定</h3
+            ><p
+              >記下請求 UUID 與 run
+              UUID。回應不明時查回原訓練請求，避免重建。若需改參數，建立新請求，不改已凍結 run。</p
+            ></li
+          >
+          <li
+            ><h3>讓 GPU 空閒，再明確開始</h3
+            ><p
+              >等待其他生成完成；在你管理的 ComfyUI 服務視窗按 Ctrl+C，停止受管理的 8188
+              引擎與本專案容器平台，保留原生平台。再按「開始此 run
+              的訓練」。平台不會替你關閉其他程式。</p
+            ></li
+          >
+          <li
+            ><h3>追蹤步數、日誌與「程序／租約釋放」</h3
+            ><p
+              >離開頁面不會停止
+              worker。要停時按「要求停止」，等步驟邊界完成且資源釋放，才切回生成。停止要求送出不等於已停止。</p
+            ></li
+          >
+          <li
+            ><h3>需要續訓：從完整 checkpoint 準備新 UUID</h3
+            ><p
+              >先按「準備另一個請求」，選未達總步數的完整 checkpoint，再按「以新 UUID 準備續訓」。新
+              run 仍是 prepared，需再次明確開始；總步數與原設定沿用，不會額外加一份總步數。</p
+            ></li
+          >
+        </ol>
+        <div class="table-wrap"
+          ><table
+            ><caption>訓練參數怎麼讀</caption
+            ><thead
+              ><tr><th>欄位</th><th>意義與起步方式</th></tr></thead
+            ><tbody>
+              <tr
+                ><th>尺寸 512／1024</th
+                ><td
+                  >訓練解析度。512 有本機 RTX 3060 技術紀錄；1024
+                  與多圖長時間容量需另測，不能套用相同記憶體結論。</td
+                ></tr
+              >
+              <tr
+                ><th>LoRA rank 4／8／16</th
+                ><td>可訓練模組的容量設定；不是越高越好，也會影響資源。先固定一個值作比較。</td></tr
+              >
+              <tr
+                ><th>總更新步數／保存間隔</th
+                ><td
+                  >總更新目標與完整保存點頻率。間隔太大可能在停止時沒有可續訓的 checkpoint。</td
+                ></tr
+              >
+              <tr
+                ><th>Learning rate／seed</th
+                ><td>控制更新幅度及訓練隨機性。記錄兩者，不以頻繁改 seed 代替檢查資料。</td></tr
+              >
+              <tr
+                ><th>NVIDIA 裝置 index</th
+                ><td>trainer 所用的裝置編號；單卡通常為 0，多卡需核對實際環境。</td></tr
+              >
+            </tbody></table
+          ></div
+        >
+        <figure
+          ><a class="zoom" href="images/training-control.png"
+            ><img
+              src="images/training-control.png"
+              width="1440"
+              height="2391"
+              alt="本機訓練執行全頁，上方是凍結參數，中段是原請求與 run，底部有開始停止續訓和 LoRA 產物操作"
+              loading="lazy" /></a
+          ><figcaption
+            >圖 4｜實際 RTX 3060 技術驗收後的畫面：自製幾何圖停止與新 UUID 續訓完成。表單 1024／100
+            是新請求預設，並非這次實測參數；實測為 512、rank 4、全程 step
+            6，沒有作者圖。</figcaption
+          ></figure
+        >
+        <p class="done">確認完成：run 已完成或已停止，程序與租約均釋放，且保留日誌與完整保存點。</p>
+      </section>
+
+      <section id="evaluate">
+        <p class="eyebrow">07 / INSTALL &amp; COMPARE</p
+        ><h2>把訓練產物接回生成，確認是否真的有幫助</h2>
+        <ol class="steps">
+          <li
+            ><h3>完成的 run →「驗證並安裝 LoRA」</h3
+            ><p
+              >沿用 T04 核對來源與完整 hash，安裝到受管理的 loras
+              目錄。安裝成功只證明產物一致性，不等於品質通過。</p
+            ></li
+          >
+          <li
+            ><h3>恢復 ComfyUI →「同步模型庫與來源登記」</h3
+            ><p
+              >所有訓練釋放資源後，執行 <code>.\start-comfyui.ps1</code>。確認平台引擎為
+              <code>http://127.0.0.1:8188</code
+              >，再同步登記；技術用途或條款未審查標記不會自動消失。</p
+            ></li
+          >
+          <li
+            ><h3>按「建立固定比較方案（不生成）」</h3
+            ><p
+              >保存六份方案與人工模板。方案不會自動出圖，十二件比較輸出仍需在工作台的比較／實驗區依方案明確執行。詳細條件見
+              <a href="../training/artifacts.md">T04 產物與評估流程</a>。</p
+            ></li
+          >
+          <li
+            ><h3>固定條件，逐組比較並填人工觀察</h3
+            ><p
+              >比較基底與 LoRA
+              的線條、色彩、構圖泛化；角色另外檢查臉部、髮飾與不同服裝／姿勢。記錄失敗與內容污染，不只挑最好看的一張。開發圖用來調整，最終保留圖等設定凍結後再評估。</p
+            ></li
+          >
+        </ol>
+        <p class="done">確認完成：有成對結果、相同條件與人工紀錄，能說明哪些改善、哪些仍失敗。</p>
+      </section>
+
+      <section id="backup">
+        <p class="eyebrow">08 / KEEP YOUR WORK</p><h2>整理、備份與關閉</h2>
+        <figure
+          ><a class="zoom" href="images/storage.png"
+            ><img
+              src="images/storage.png"
+              width="1112"
+              height="828"
+              alt="系統資訊中的磁碟容量與目錄卡片，各目錄右側提供資料夾按鈕，不存在的目錄按鈕停用"
+              loading="lazy" /></a
+          ><figcaption
+            >圖 5｜目錄卡片的隔離示例。右側資料夾 icon 用來開啟本機目錄；圖中 400 GiB
+            與路徑是測試值。</figcaption
+          ></figure
+        >
+        <ul class="checklist"
+          ><li
+            ><strong>作品：</strong>補筆記、收藏與人工評分；封存僅隱藏／整理，不會釋放檔案容量。</li
+          ><li
+            ><strong>關閉：</strong>先處理或停止工作，確認訓練資源釋放，再在所屬服務視窗按
+            Ctrl+C。關閉網頁或平台本身不會替你停止引擎與訓練 worker。</li
+          ><li
+            ><strong>平台資料：</strong>停平台後備份完整 <code>data/</code>，包含
+            SQLite、素材、作品、固定任務輸入與訓練資料包。</li
+          ><li
+            ><strong>另外備份：</strong>外部作者原圖、原始
+            study／資料清單、<code>runtime/training/runs/</code>、<code>runtime/training/evaluations/</code>、訓練環境版本及所需模型／LoRA。它們不會全部包含在
+            DATA 備份內。</li
+          ><li
+            ><strong>搬移位置：</strong
+            >資料包含絕對路徑，換目錄要由原圖與固定清單重新匯出，不直接把舊 TOML 當成已遷移。</li
+          ></ul
+        >
+        <p
+          >正式備份與還原步驟見 <a href="../data-backup.md">備份還原指引</a>；Docker
+          使用獨立資料卷，見 <a href="../docker.md">Docker 文件</a>。</p
+        >
+      </section>
+
+      <section id="help">
+        <p class="eyebrow">09 / WHEN YOU GET STUCK</p><h2>常見問題與名詞</h2>
+        <details
+          ><summary>start-all 開了視窗，但網頁沒有開？</summary
+          ><p
+            >先手動開
+            <code>http://127.0.0.1:8000/</code>。若無法連線，查看平台服務視窗的第一個錯誤，檢查
+            .venv、已建置前端及 8000 是否被占用；不要一直重開多份服務。依
+            <a href="../setup-and-operations.md">安裝與操作</a>檢查依賴，若調整原始前端，須重新
+            build 才反映到原生平台。</p
+          ></details
+        >
+        <details
+          ><summary>模型庫空白／生成被停用？</summary
+          ><p
+            >確認 8188
+            引擎有啟動且網址正確，先同步模型清單。權重須實際安裝，模型架構／專用元件也要登記；同步與登記不是下載，也不保證任意模型相容。</p
+          ></details
+        >
+        <details
+          ><summary>按了準備卻沒有訓練？</summary
+          ><p
+            >這是正常的。準備只凍結資料與設定；開啟新 run、確認 prepared
+            後，需另外明確開始。若引擎在線，先等待其他工作完成並停止你管理的引擎，再開始。</p
+          ></details
+        >
+        <details
+          ><summary>資料審查無法匯出？</summary
+          ><p
+            >先保存新版本，再重新檢查。逐項確認非空白內容
+            caption、已審查狀態／審查人、來源用途紀錄／依據／審查人，角色路徑另需 target 與正確角色
+            ID。還需至少一張 train 與一張開發評估，以及合法分組；不要把未知資料填成已核對。</p
+          ></details
+        >
+        <details
+          ><summary>斷線、回應遺失或平台中途關閉？</summary
+          ><p
+            >保留原 UUID，使用「查回原匯入資料集」「查回原匯出結果」「查回原訓練請求」或原 run
+            狀態，不直接重送。interrupted／start_unknown／exporting 不能當成功；保留檔案與日誌，依
+            <a href="../training/workspace.md">中斷恢復規則</a
+            >核對。比較方案中斷也可能已保存部分方案。</p
+          ></details
+        >
+        <details
+          ><summary>GPU 記憶體不足或訓練失敗？</summary
+          ><p
+            >保存原 run 與日誌，先等程序及租約釋放。核對其他 GPU 程式、尺寸與
+            rank；若要調整，建立新設定與新 run，不改凍結檔。1024／多圖長時間工作負載需另驗，不用 512
+            技術成功推定容量。</p
+          ></details
+        >
+        <details
+          ><summary>看起來不像作者或角色，應該增加圖片還是重訓？</summary
+          ><p
+            >先確認選對流程、模型、參考元件／LoRA
+            與固定對照，再檢查標註、同角色身分、原作分組與題材涵蓋。缺哪種視角／服裝／場景就補哪種，而非只增加相似差分。現有作者圖尚待資料審查，技術驗收不代表作者品質通過。</p
+          ></details
+        >
+        <dl class="glossary"
+          ><dt>Checkpoint</dt><dd>生成的基底模型。</dd><dt>LoRA</dt
+          ><dd>搭配相容基底使用的附加權重；不取代基底。</dd><dt>Caption／trigger</dt
+          ><dd
+            >圖片內容標註／資料集的觸發詞。匯出 caption 為 trigger
+            加內容，畫風觀察欄位另外保存。</dd
+          ><dt>Bundle</dt><dd>通過出口檢查、封存來源與 hash 的訓練資料包。</dd><dt>Run／UUID</dt
+          ><dd>一次凍結的訓練紀錄／其唯一識別。續訓建立新 run，保留原 run。</dd
+          ><dt>Checkpoint 保存點</dt
+          ><dd>訓練中的完整恢復資料，包含狀態；與模型庫的基底 checkpoint 是不同用途。</dd></dl
+        >
+      </section>
+      <footer
+        ><p>Model Atelier 使用教學 · 2026-10-25</p
+        ><p
+          ><a href="../../README.md">README</a> · <a href="../index.md">完整文件索引</a> ·
+          <a href="../training/workspace.md">訓練操作細節</a> ·
+          <a href="../../ROADMAP.MD">待辦與限制</a> · <a href="#top">回到頂部 ↑</a></p
+        ><p
+          >本教學可直接以瀏覽器開啟，不依賴 CDN、外部字型或線上腳本。深入文件為
+          Markdown，適合在專案編輯器或 GitHub 閱讀。</p
+        ></footer
+      >
+    </main>
+    <dialog id="image-dialog" aria-label="放大教學截圖"
+      ><form method="dialog"><button autofocus>關閉圖片 ×</button></form
+      ><img alt="" /><p></p
+    ></dialog>
+  </body>
+</html>

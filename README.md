@@ -4,6 +4,8 @@
 
 現行待辦與驗收以 [ROADMAP.MD](ROADMAP.MD) 為準；開發與歷史實測見 [CHANGELOG.MD](CHANGELOG.MD)。文件整理日期：2026-10-25。
 
+第一次使用可先開啟 [HTML 圖文使用教學](docs/guide/index.html)：依序介紹啟動、生成、單張參考、資料審查、訓練／續訓、LoRA 比較與備份。下載專案後直接用瀏覽器開啟 `docs/guide/index.html`，支援離線閱讀、點圖放大與列印／另存 PDF；圖片與樣式需保留在同一個 guide 目錄。GitHub 檔案頁只顯示 HTML 原碼，不是教學預覽。
+
 ## 快速開始
 
 Windows／PowerShell 使用者先準備 Git、Python 3.12 與 Node.js；本專案曾驗證 Python 3.12.10、Node.js 24.19.0。從專案根目錄執行：
