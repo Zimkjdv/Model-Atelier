@@ -19,8 +19,32 @@ from scripts.verify_animagine_generation import AnimagineAcceptance, MODEL
 from scripts.verify_control_generation import ControlAcceptance
 from scripts.verify_inpaint_generation import InpaintAcceptance
 from scripts.verify_multi_lora import StyleAcceptance
+from scripts.verify_lora_generation import CHECKPOINT, check_identity
+from scripts import install_pony as downloader
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+class PonyAcceptance(base.Acceptance):
+    def preflight(self):
+        target = downloader._paths(ROOT, CHECKPOINT['filename'], create=False)[0]
+        if not target.is_file() or not downloader._verified(target, CHECKPOINT):
+            raise ValueError('Fixed Pony complete weight checksum differs')
+        item = next(m for m in self.json('GET', 'models')['models'] if m['name'] == self.checkpoint)
+        check_identity(item, CHECKPOINT)
+        self.report['local_weights_verified'] = [
+            {k: CHECKPOINT[k] for k in ('filename', 'sha256', 'size_bytes')}
+        ]
+
+
+class HighLoadAcceptance(PonyAcceptance):
+    def expected_settings(self):
+        return super().expected_settings() | dict(
+            title='RTX 4080 separate 1536-square 30-step acceptance',
+            width=1536,
+            height=1536,
+            steps=30,
+        )
 
 
 def source_revision(path):
@@ -89,7 +113,9 @@ class ImageAcceptance(AnimagineAcceptance):
 
 def runner_class(case, source_id=None, mask_id=None):
     if case == 'pony':
-        return base.Acceptance, 'pony-v6-xl.safetensors'
+        return PonyAcceptance, 'pony-v6-xl.safetensors'
+    if case == 'pony-high':
+        return HighLoadAcceptance, 'pony-v6-xl.safetensors'
     if case == 'animagine':
         return AnimagineAcceptance, MODEL['filename']
     parent, options = {
@@ -144,7 +170,9 @@ def main(argv=None):
     environment.add_argument('--report', required=True)
     run = sub.add_parser('run')
     run.add_argument(
-        '--case', choices=['pony', 'animagine', 'multi', 'image', 'inpaint', 'canny'], required=True
+        '--case',
+        choices=['pony', 'pony-high', 'animagine', 'multi', 'image', 'inpaint', 'canny'],
+        required=True,
     )
     run.add_argument('--source-id')
     run.add_argument('--mask-id')

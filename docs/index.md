@@ -91,3 +91,4 @@
 - [整理前 README 全文](history/readme-before-q01-20261022.md)：舊限制與命令僅供追溯。
 
 - [E02 RTX 4080 八個基本流程與離線驗收](validation/rtx4080-workflows-20261026.md)、[可解析證據](validation/rtx4080-workflows-20261026.json)
+- [E03 同配置 3060／4080 比較與 1536² 獨立負載](validation/hardware-comparison-20261026.md)、[可解析證據](validation/hardware-comparison-20261026.json)

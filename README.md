@@ -34,7 +34,7 @@ Set-Location ..
 4. 明確按生成並查看任務；提交回應遺失時恢復原 UUID，避免重送。完成後到作品庫明確匯入／補齊圖片。
 5. 已匯入作品可離線預覽、下載原圖／workflow、載入支援流程的原設定；載入不會自動生成。
 
-首次硬體與模型配置需自行驗證。RTX 3060 的固定案例見 [驗收索引](docs/index.md#實機與歷史證據)；RTX 4080 已完成 [E02 八個基本流程、保存與離線還原](docs/validation/rtx4080-workflows-20261026.md)。較高負載、更多 FLUX 配置及真實畫風／角色訓練品質另行驗收。
+首次硬體與模型配置需自行驗證。RTX 3060 的固定案例見 [驗收索引](docs/index.md#實機與歷史證據)；RTX 4080 已完成 [E02 八個基本流程、保存與離線還原](docs/validation/rtx4080-workflows-20261026.md)。[E03](docs/validation/hardware-comparison-20261026.md)另保存兩機相同配置比較與 1536² 高負載；更多 FLUX 配置及真實畫風／角色訓練品質另行驗收。
 
 Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完整授權適用關係仍未核實；來源、完整參考條文及依賴缺口見 [M01 查核](docs/models/pony-v6-xl-license.md)。
 

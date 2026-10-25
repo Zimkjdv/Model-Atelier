@@ -1,0 +1,1029 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-26",
+  "comparison": {
+    "schema_version": 1,
+    "matched_conditions": true,
+    "issues": [],
+    "left_job_id": "e24da88f-3de2-4248-9693-abcc1272154e",
+    "right_job_id": "578dcc3b-5fef-4eb4-8879-ff2eb03c0fb7",
+    "engine_time_ratio_left_over_right": 2.4042,
+    "left_metrics": {
+      "engine_execution_seconds": 22.551,
+      "submission_to_history_wall_seconds": 22.875,
+      "nvidia_whole_device_sampled_max_bytes": 10451156992,
+      "nvidia_samples": 12,
+      "engine_continuous_resources": null,
+      "task_vram_peak_bytes": null
+    },
+    "right_metrics": {
+      "engine_execution_seconds": 9.38,
+      "submission_to_history_wall_seconds": 10.437,
+      "nvidia_whole_device_sampled_max_bytes": 9259974656,
+      "nvidia_samples": 6,
+      "engine_continuous_resources": {
+        "schema_version": 1,
+        "source": "http://127.0.0.1:8188/system_stats",
+        "engine_url": "http://127.0.0.1:8188",
+        "started_at": "2026-10-25T20:43:53.189123+00:00",
+        "ended_at": "2026-10-25T20:44:03.180411+00:00",
+        "end_reason": "job_terminal",
+        "interval_seconds": 2,
+        "max_attempts": 1800,
+        "retained_points": 120,
+        "attempts": 4,
+        "successes": 4,
+        "failures": 0,
+        "gaps": 0,
+        "last_attempt_at": "2026-10-25T20:44:01.322990+00:00",
+        "last_error": null,
+        "ram_max_used_bytes": 35204919296,
+        "devices": [
+          {
+            "name": "cuda:0 NVIDIA GeForce RTX 4080 : cudaMallocAsync",
+            "type": "cuda",
+            "index": 0,
+            "max_used_bytes": 8338678984
+          }
+        ],
+        "samples": [
+          {
+            "at": "2026-10-25T20:43:54.331264+00:00",
+            "ram_used_bytes": 27028361216,
+            "devices": [
+              {
+                "device": 0,
+                "used_bytes": 1614594836
+              }
+            ],
+            "error": null
+          },
+          {
+            "at": "2026-10-25T20:43:56.698655+00:00",
+            "ram_used_bytes": 30691377152,
+            "devices": [
+              {
+                "device": 0,
+                "used_bytes": 4559564980
+              }
+            ],
+            "error": null
+          },
+          {
+            "at": "2026-10-25T20:43:59.024602+00:00",
+            "ram_used_bytes": 35204919296,
+            "devices": [
+              {
+                "device": 0,
+                "used_bytes": 8338678984
+              }
+            ],
+            "error": null
+          },
+          {
+            "at": "2026-10-25T20:44:01.322990+00:00",
+            "ram_used_bytes": 35198500864,
+            "devices": [
+              {
+                "device": 0,
+                "used_bytes": 8338678984
+              }
+            ],
+            "error": null
+          }
+        ],
+        "note": "每次取樣是原引擎主機 RAM／共享裝置用量，可能包含其他程序、佇列等待與可回收快取。裝置用量依引擎的 total−free 計算；CUDA free 可能包含 allocator 可回收快取，與 nvidia-smi 整卡已用量不同。觀察最高值僅涵蓋成功取樣時刻，不是連續真實峰值、任務專用峰值或最低硬體需求；PyTorch allocator 的統計也無法可靠歸屬單一任務。",
+        "task_vram_peak_bytes": null
+      },
+      "task_vram_peak_bytes": null
+    },
+    "note": "Single observations, including model loading and cache. OS/driver/background loads may differ; this is not an isolated GPU benchmark or minimum-memory guarantee."
+  },
+  "observations": {
+    "rtx3060": {
+      "schema_version": 1,
+      "workload_kind": "inference",
+      "job_id": "e24da88f-3de2-4248-9693-abcc1272154e",
+      "report_sha256": "9211b22f50187ca9e028c24e4fb8034018abd8cf2c2c224a257081376c13bc80",
+      "job_evidence_sha256": "9d71c42f27cff1abbea9ff5f0b0c0a390e70396b1fc4a75830b839783456ecf7",
+      "workflow": {
+        "1": {
+          "class_type": "CheckpointLoaderSimple",
+          "inputs": {
+            "ckpt_name": "pony-v6-xl.safetensors"
+          }
+        },
+        "2": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "score_9,score_8_up,score_7_up,rating_safe,source_anime,landscape,mountain lake,pine forest,blue sky,peaceful daylight,scenery,no humans",
+            "clip": [
+              "1",
+              1
+            ]
+          }
+        },
+        "3": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "people,person,character,animal,text,watermark",
+            "clip": [
+              "1",
+              1
+            ]
+          }
+        },
+        "4": {
+          "class_type": "EmptyLatentImage",
+          "inputs": {
+            "width": 768,
+            "height": 768,
+            "batch_size": 1
+          }
+        },
+        "5": {
+          "class_type": "KSampler",
+          "inputs": {
+            "model": [
+              "1",
+              0
+            ],
+            "positive": [
+              "2",
+              0
+            ],
+            "negative": [
+              "3",
+              0
+            ],
+            "latent_image": [
+              "4",
+              0
+            ],
+            "seed": 9007199254740993,
+            "steps": 20,
+            "cfg": 5.5,
+            "sampler_name": "dpmpp_2m",
+            "scheduler": "karras",
+            "denoise": 1.0
+          }
+        },
+        "6": {
+          "class_type": "VAEDecode",
+          "inputs": {
+            "samples": [
+              "5",
+              0
+            ],
+            "vae": [
+              "1",
+              2
+            ]
+          }
+        },
+        "7": {
+          "class_type": "SaveImage",
+          "inputs": {
+            "images": [
+              "6",
+              0
+            ],
+            "filename_prefix": "ModelAtelier"
+          }
+        }
+      },
+      "settings": {
+        "title": "Pony V6 XL local GPU acceptance",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "pony-v6-xl.safetensors",
+        "prompt": "score_9,score_8_up,score_7_up,rating_safe,source_anime,landscape,mountain lake,pine forest,blue sky,peaceful daylight,scenery,no humans",
+        "negative_prompt": "people,person,character,animal,text,watermark",
+        "seed": "9007199254740993",
+        "width": 768,
+        "height": 768,
+        "steps": 20,
+        "cfg": 5.5,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 1.0,
+        "reference_ids": []
+      },
+      "conditions": {
+        "model_sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+        "model_dtype": "torch.float16",
+        "clip_dtype": "torch.float16",
+        "vae_dtype": "torch.bfloat16",
+        "cache_state": "fresh-process",
+        "offload_policy": "default dynamic VRAM, CPU offload, PyTorch attention",
+        "comfy_commit": "15eb748b3ec5f8a0a2d470b7fb280e2d7579f916",
+        "torch_version": "2.14.0+cu130",
+        "component_sha256": []
+      },
+      "condition_sources": {
+        "model_sha256": "docs/validation/pony-v6-xl-rtx3060.md; original first cold run and full weight hash",
+        "model_dtype": "docs/validation/pony-v6-xl-rtx3060.md; original first cold run and full weight hash",
+        "clip_dtype": "docs/validation/pony-v6-xl-rtx3060.md; original first cold run and full weight hash",
+        "vae_dtype": "docs/validation/pony-v6-xl-rtx3060.md; original first cold run and full weight hash",
+        "cache_state": "docs/validation/pony-v6-xl-rtx3060.md; original first cold run and full weight hash",
+        "offload_policy": "docs/validation/pony-v6-xl-rtx3060.md; original first cold run and full weight hash",
+        "comfy_commit": "docs/validation/pony-v6-xl-rtx3060.md; original first cold run and full weight hash",
+        "torch_version": "docs/validation/pony-v6-xl-rtx3060.md; original first cold run and full weight hash",
+        "component_sha256": "docs/validation/pony-v6-xl-rtx3060.md; original first cold run and full weight hash"
+      },
+      "hardware": {
+        "host": "DESKTOP-VQLH98L",
+        "role": "平台主機",
+        "os": "Windows-10-10.0.19045-SP0",
+        "python": "3.12.10",
+        "updated_at": "2026-10-02T14:07:09.873478+00:00",
+        "gpus": [
+          {
+            "index": "0",
+            "name": "NVIDIA GeForce RTX 3060",
+            "total": 12884901888,
+            "used": 2008023040,
+            "free": 10696523776,
+            "driver": "616.56"
+          }
+        ],
+        "gpu_error": null,
+        "ram": {
+          "total": 68654481408,
+          "used": 25622700032,
+          "free": 43031781376
+        },
+        "disk": {
+          "path": "C:\\Users\\Ryanisop\\Desktop\\model-atelier\\data",
+          "total": 999480487936,
+          "used": 995957809152,
+          "free": 3522678784
+        }
+      },
+      "engine_stats": {
+        "system": {
+          "os": "win32",
+          "ram_total": 68654481408,
+          "ram_free": 43031113728,
+          "comfyui_version": "0.34.0",
+          "required_frontend_version": "1.51.9",
+          "installed_templates_version": "0.11.55",
+          "required_templates_version": "0.11.55",
+          "comfy_package_versions": [
+            {
+              "name": "comfyui-frontend-package",
+              "installed": "1.51.9",
+              "required": "1.51.9"
+            },
+            {
+              "name": "comfyui-workflow-templates",
+              "installed": "0.11.55",
+              "required": "0.11.55"
+            },
+            {
+              "name": "comfyui-embedded-docs",
+              "installed": "0.5.11",
+              "required": "0.5.11"
+            },
+            {
+              "name": "comfy-kitchen",
+              "installed": "0.2.33",
+              "required": "0.2.33"
+            },
+            {
+              "name": "comfy-aimdo",
+              "installed": "0.5.2",
+              "required": "0.5.2"
+            }
+          ],
+          "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+          "pytorch_version": "2.14.0+cu130",
+          "embedded_python": false,
+          "deploy_environment": "local-git",
+          "argv": [
+            "main.py",
+            "--listen",
+            "127.0.0.1",
+            "--port",
+            "8188",
+            "--disable-auto-launch",
+            "--disable-api-nodes"
+          ]
+        },
+        "devices": [
+          {
+            "name": "cuda:0 NVIDIA GeForce RTX 3060 : cudaMallocAsync",
+            "type": "cuda",
+            "index": 0,
+            "vram_total": 12884377600,
+            "vram_free": 11801722880,
+            "torch_vram_total": 0,
+            "torch_vram_free": 0
+          }
+        ]
+      },
+      "metrics": {
+        "engine_execution_seconds": 22.551,
+        "submission_to_history_wall_seconds": 22.875,
+        "nvidia_whole_device_sampled_max_bytes": 10451156992,
+        "nvidia_samples": 12,
+        "engine_continuous_resources": null,
+        "task_vram_peak_bytes": null
+      },
+      "artwork_hashes": [
+        {
+          "id": "13bf2cc2-15b4-587f-a933-ef67559fe687",
+          "sha256": "eefef3877c7e8c1a60526492a0667ec93dac825b09bf66f5f0f82c3f90df993a"
+        }
+      ],
+      "raw_report_file_sha256": "0b0902c2ebae757722cf2dbae4e0f9ba8c2d0288857b590a0cb07a3b81d57309",
+      "cache_events": [
+        [
+          "execution_cached",
+          {
+            "nodes": [],
+            "prompt_id": "e24da88f-3de2-4248-9693-abcc1272154e",
+            "timestamp": 1790950030059
+          }
+        ]
+      ]
+    },
+    "rtx4080": {
+      "schema_version": 1,
+      "workload_kind": "inference",
+      "job_id": "578dcc3b-5fef-4eb4-8879-ff2eb03c0fb7",
+      "report_sha256": "53c161777651b73892bdb19cc75ac443ab07babc98a58a1f8b12b1b7a7ccd421",
+      "job_evidence_sha256": "52fe56ef577d3b460c40446720ab72b838cb7621b3543c17e8ffbf79a22a0851",
+      "workflow": {
+        "1": {
+          "class_type": "CheckpointLoaderSimple",
+          "inputs": {
+            "ckpt_name": "pony-v6-xl.safetensors"
+          }
+        },
+        "2": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "score_9,score_8_up,score_7_up,rating_safe,source_anime,landscape,mountain lake,pine forest,blue sky,peaceful daylight,scenery,no humans",
+            "clip": [
+              "1",
+              1
+            ]
+          }
+        },
+        "3": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "people,person,character,animal,text,watermark",
+            "clip": [
+              "1",
+              1
+            ]
+          }
+        },
+        "4": {
+          "class_type": "EmptyLatentImage",
+          "inputs": {
+            "width": 768,
+            "height": 768,
+            "batch_size": 1
+          }
+        },
+        "5": {
+          "class_type": "KSampler",
+          "inputs": {
+            "model": [
+              "1",
+              0
+            ],
+            "positive": [
+              "2",
+              0
+            ],
+            "negative": [
+              "3",
+              0
+            ],
+            "latent_image": [
+              "4",
+              0
+            ],
+            "seed": 9007199254740993,
+            "steps": 20,
+            "cfg": 5.5,
+            "sampler_name": "dpmpp_2m",
+            "scheduler": "karras",
+            "denoise": 1.0
+          }
+        },
+        "6": {
+          "class_type": "VAEDecode",
+          "inputs": {
+            "samples": [
+              "5",
+              0
+            ],
+            "vae": [
+              "1",
+              2
+            ]
+          }
+        },
+        "7": {
+          "class_type": "SaveImage",
+          "inputs": {
+            "images": [
+              "6",
+              0
+            ],
+            "filename_prefix": "ModelAtelier"
+          }
+        }
+      },
+      "settings": {
+        "title": "Pony V6 XL local GPU acceptance",
+        "engine_url": "http://127.0.0.1:8188",
+        "checkpoint": "pony-v6-xl.safetensors",
+        "prompt": "score_9,score_8_up,score_7_up,rating_safe,source_anime,landscape,mountain lake,pine forest,blue sky,peaceful daylight,scenery,no humans",
+        "negative_prompt": "people,person,character,animal,text,watermark",
+        "seed": "9007199254740993",
+        "width": 768,
+        "height": 768,
+        "steps": 20,
+        "cfg": 5.5,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 1.0,
+        "reference_ids": []
+      },
+      "conditions": {
+        "model_sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+        "model_dtype": "torch.float16",
+        "clip_dtype": "torch.float16",
+        "vae_dtype": "torch.bfloat16",
+        "cache_state": "fresh-process",
+        "offload_policy": "default dynamic VRAM, CPU offload, PyTorch attention",
+        "comfy_commit": "15eb748b3ec5f8a0a2d470b7fb280e2d7579f916",
+        "torch_version": "2.14.0+cu130",
+        "component_sha256": []
+      },
+      "condition_sources": {
+        "model_sha256": "runtime/e02-engine-restored.err.log; owned new engine process, first prompt, loaded dtype log",
+        "model_dtype": "runtime/e02-engine-restored.err.log; owned new engine process, first prompt, loaded dtype log",
+        "clip_dtype": "runtime/e02-engine-restored.err.log; owned new engine process, first prompt, loaded dtype log",
+        "vae_dtype": "runtime/e02-engine-restored.err.log; owned new engine process, first prompt, loaded dtype log",
+        "cache_state": "runtime/e02-engine-restored.err.log; owned new engine process, first prompt, loaded dtype log",
+        "offload_policy": "runtime/e02-engine-restored.err.log; owned new engine process, first prompt, loaded dtype log",
+        "comfy_commit": "runtime/e02-engine-restored.err.log; owned new engine process, first prompt, loaded dtype log",
+        "torch_version": "runtime/e02-engine-restored.err.log; owned new engine process, first prompt, loaded dtype log",
+        "component_sha256": "runtime/e02-engine-restored.err.log; owned new engine process, first prompt, loaded dtype log"
+      },
+      "hardware": {
+        "host": "Harper",
+        "role": "平台主機",
+        "runtime_kind": "native",
+        "hardware_scope": "native platform OS",
+        "os": "Windows-11-10.0.26200-SP0",
+        "python": "3.12.10",
+        "updated_at": "2026-10-25T20:43:52.751891+00:00",
+        "gpus": [
+          {
+            "index": "0",
+            "name": "NVIDIA GeForce RTX 4080",
+            "total": 17171480576,
+            "used": 1976565760,
+            "free": 14852030464,
+            "driver": "617.42"
+          }
+        ],
+        "gpu_error": null,
+        "ram": {
+          "total": 68388212736,
+          "used": 26610069504,
+          "free": 41778143232
+        },
+        "disk": {
+          "path": "C:\\Users\\a0725\\Desktop\\model-atelier\\data",
+          "total": 1022021857280,
+          "used": 333185589248,
+          "free": 688836268032
+        }
+      },
+      "engine_stats": {
+        "system": {
+          "os": "win32",
+          "ram_total": 68388212736,
+          "ram_free": 41781145600,
+          "comfyui_version": "0.34.0",
+          "required_frontend_version": "1.51.9",
+          "installed_templates_version": "0.11.55",
+          "required_templates_version": "0.11.55",
+          "comfy_package_versions": [
+            {
+              "name": "comfyui-frontend-package",
+              "installed": "1.51.9",
+              "required": "1.51.9"
+            },
+            {
+              "name": "comfyui-workflow-templates",
+              "installed": "0.11.55",
+              "required": "0.11.55"
+            },
+            {
+              "name": "comfyui-embedded-docs",
+              "installed": "0.5.11",
+              "required": "0.5.11"
+            },
+            {
+              "name": "comfy-kitchen",
+              "installed": "0.2.33",
+              "required": "0.2.33"
+            },
+            {
+              "name": "comfy-aimdo",
+              "installed": "0.5.2",
+              "required": "0.5.2"
+            }
+          ],
+          "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+          "pytorch_version": "2.14.0+cu130",
+          "embedded_python": false,
+          "deploy_environment": "local-git"
+        },
+        "devices": [
+          {
+            "name": "cuda:0 NVIDIA GeForce RTX 4080 : cudaMallocAsync",
+            "type": "cuda",
+            "index": 0,
+            "vram_total": 17170956288,
+            "vram_free": 15806234624,
+            "torch_vram_total": 0,
+            "torch_vram_free": 0
+          }
+        ]
+      },
+      "metrics": {
+        "engine_execution_seconds": 9.38,
+        "submission_to_history_wall_seconds": 10.437,
+        "nvidia_whole_device_sampled_max_bytes": 9259974656,
+        "nvidia_samples": 6,
+        "engine_continuous_resources": {
+          "schema_version": 1,
+          "source": "http://127.0.0.1:8188/system_stats",
+          "engine_url": "http://127.0.0.1:8188",
+          "started_at": "2026-10-25T20:43:53.189123+00:00",
+          "ended_at": "2026-10-25T20:44:03.180411+00:00",
+          "end_reason": "job_terminal",
+          "interval_seconds": 2,
+          "max_attempts": 1800,
+          "retained_points": 120,
+          "attempts": 4,
+          "successes": 4,
+          "failures": 0,
+          "gaps": 0,
+          "last_attempt_at": "2026-10-25T20:44:01.322990+00:00",
+          "last_error": null,
+          "ram_max_used_bytes": 35204919296,
+          "devices": [
+            {
+              "name": "cuda:0 NVIDIA GeForce RTX 4080 : cudaMallocAsync",
+              "type": "cuda",
+              "index": 0,
+              "max_used_bytes": 8338678984
+            }
+          ],
+          "samples": [
+            {
+              "at": "2026-10-25T20:43:54.331264+00:00",
+              "ram_used_bytes": 27028361216,
+              "devices": [
+                {
+                  "device": 0,
+                  "used_bytes": 1614594836
+                }
+              ],
+              "error": null
+            },
+            {
+              "at": "2026-10-25T20:43:56.698655+00:00",
+              "ram_used_bytes": 30691377152,
+              "devices": [
+                {
+                  "device": 0,
+                  "used_bytes": 4559564980
+                }
+              ],
+              "error": null
+            },
+            {
+              "at": "2026-10-25T20:43:59.024602+00:00",
+              "ram_used_bytes": 35204919296,
+              "devices": [
+                {
+                  "device": 0,
+                  "used_bytes": 8338678984
+                }
+              ],
+              "error": null
+            },
+            {
+              "at": "2026-10-25T20:44:01.322990+00:00",
+              "ram_used_bytes": 35198500864,
+              "devices": [
+                {
+                  "device": 0,
+                  "used_bytes": 8338678984
+                }
+              ],
+              "error": null
+            }
+          ],
+          "note": "每次取樣是原引擎主機 RAM／共享裝置用量，可能包含其他程序、佇列等待與可回收快取。裝置用量依引擎的 total−free 計算；CUDA free 可能包含 allocator 可回收快取，與 nvidia-smi 整卡已用量不同。觀察最高值僅涵蓋成功取樣時刻，不是連續真實峰值、任務專用峰值或最低硬體需求；PyTorch allocator 的統計也無法可靠歸屬單一任務。",
+          "task_vram_peak_bytes": null
+        },
+        "task_vram_peak_bytes": null
+      },
+      "artwork_hashes": [
+        {
+          "id": "2173a2f9-cead-5367-938d-dcf537e42a59",
+          "sha256": "53a2c8ccb5b13ece4ae8965131d288c30a4e44c08ab260f45939a2f3f81eb276"
+        }
+      ],
+      "raw_report_file_sha256": "ce55d10eb662bf331daa8daf36d226946d46babeb9b44ab0485b67a01950332a",
+      "cache_events": [
+        [
+          "execution_cached",
+          {
+            "nodes": [],
+            "prompt_id": "578dcc3b-5fef-4eb4-8879-ff2eb03c0fb7",
+            "timestamp": 1792961033206
+          }
+        ]
+      ]
+    }
+  },
+  "higher_load": {
+    "job_id": "d2302547-f65e-482a-b536-c4f17009ca70",
+    "artwork_ids": [
+      "1ec79fda-73e8-5105-a029-751a92e9b02b"
+    ],
+    "settings": {
+      "title": "RTX 4080 separate 1536-square 30-step acceptance",
+      "engine_url": "http://127.0.0.1:8188",
+      "checkpoint": "pony-v6-xl.safetensors",
+      "prompt": "score_9,score_8_up,score_7_up,rating_safe,source_anime,landscape,mountain lake,pine forest,blue sky,peaceful daylight,scenery,no humans",
+      "negative_prompt": "people,person,character,animal,text,watermark",
+      "seed": "9007199254740993",
+      "width": 1536,
+      "height": 1536,
+      "steps": 30,
+      "cfg": 5.5,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 1.0,
+      "reference_ids": []
+    },
+    "model_metadata": {
+      "name": "pony-v6-xl.safetensors",
+      "version": "V6 XL",
+      "source_url": "https://huggingface.co/AstraliteHeart/pony-diffusion-v6/tree/5ec9c05863255568f1b59753e3838107befaa712",
+      "architecture": "sdxl",
+      "size_bytes": 6938041050,
+      "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3",
+      "license_name": "creativeml-openrail-m",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-02T14:33:31.782029+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-25T20:44:12.155003+00:00"
+    },
+    "lora_metadata": [],
+    "component_metadata": null,
+    "reference_metadata": null,
+    "runtime_metadata": {
+      "schema_version": 1,
+      "captured_at": "2026-10-25T20:44:12.536157+00:00",
+      "workflow": {
+        "id": "checkpoint-text2image-v1",
+        "sha256": "c70dc1744abd767d39d9d434d5bba64995e7311567d38e208e7c517a0870d306",
+        "nodes": [
+          "CLIPTextEncode",
+          "CheckpointLoaderSimple",
+          "EmptyLatentImage",
+          "KSampler",
+          "SaveImage",
+          "VAEDecode"
+        ],
+        "node_versions": null,
+        "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+      },
+      "platform": {
+        "source": "platform Python process",
+        "python": "3.12.10",
+        "packages": [
+          {
+            "name": "fastapi",
+            "version": "0.141.1"
+          },
+          {
+            "name": "starlette",
+            "version": "1.6.0"
+          },
+          {
+            "name": "pydantic",
+            "version": "2.13.5"
+          },
+          {
+            "name": "httpx",
+            "version": "0.28.1"
+          },
+          {
+            "name": "Pillow",
+            "version": "12.3.0"
+          },
+          {
+            "name": "uvicorn",
+            "version": "0.52.4"
+          },
+          {
+            "name": "websockets",
+            "version": "17.1"
+          }
+        ]
+      },
+      "engine": {
+        "status": "reported",
+        "source": "http://127.0.0.1:8188/system_stats",
+        "comfyui": "0.34.0",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "pytorch": "2.14.0+cu130",
+        "packages": [
+          {
+            "name": "comfyui-frontend-package",
+            "installed": "1.51.9",
+            "required": "1.51.9"
+          },
+          {
+            "name": "comfyui-workflow-templates",
+            "installed": "0.11.55",
+            "required": "0.11.55"
+          },
+          {
+            "name": "comfyui-embedded-docs",
+            "installed": "0.5.11",
+            "required": "0.5.11"
+          },
+          {
+            "name": "comfy-kitchen",
+            "installed": "0.2.33",
+            "required": "0.2.33"
+          },
+          {
+            "name": "comfy-aimdo",
+            "installed": "0.5.2",
+            "required": "0.5.2"
+          }
+        ],
+        "cuda": null,
+        "driver": null,
+        "git_revision": null,
+        "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+      },
+      "execution_context": {
+        "schema_version": 1,
+        "workload": "inference",
+        "workflow_id": "checkpoint-text2image-v1",
+        "geometry": {
+          "width": 1536,
+          "height": 1536,
+          "batch_size": 1,
+          "source": "workflow node 4"
+        },
+        "parameters": [
+          {
+            "node_id": "5",
+            "class_type": "KSampler",
+            "settings": {
+              "steps": 30,
+              "cfg": 5.5,
+              "sampler_name": "dpmpp_2m",
+              "scheduler": "karras",
+              "denoise": 1.0,
+              "seed": "9007199254740993"
+            }
+          }
+        ],
+        "models": [
+          {
+            "role": "checkpoint",
+            "name": "pony-v6-xl.safetensors",
+            "version": "V6 XL",
+            "architecture": "sdxl",
+            "sha256": "67ab2fd8ec439a89b3fedb15cc65f54336af163c7eb5e4f2acc98f090a29b0b3"
+          }
+        ],
+        "loras": [],
+        "launch_policy": {
+          "source": "http://127.0.0.1:8188/system_stats.system.argv",
+          "reported": true,
+          "precision_flags": [],
+          "memory_flags": []
+        },
+        "actual_precision": null,
+        "actual_offload": null,
+        "cache_state": "unknown",
+        "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+      },
+      "execution_device": {
+        "schema_version": 1,
+        "engine_url": "http://127.0.0.1:8188",
+        "source": "http://127.0.0.1:8188/model_atelier/execution-device",
+        "checked_at": "2026-10-25T20:44:12.565498+00:00",
+        "probe_id": "ab5a2cb9-3fc1-4943-9941-ac2ef6473850",
+        "status": "available",
+        "reason": "device_selected",
+        "device": {
+          "type": "cuda",
+          "index": 0
+        },
+        "backend_available": true
+      }
+    },
+    "measurements": {
+      "schema_version": 1,
+      "engine_url": "http://127.0.0.1:8188",
+      "dispatch_started_at": "2026-10-25T20:44:12.575052+00:00",
+      "terminal_observed_at": "2026-10-25T20:44:28.190945+00:00",
+      "dispatch_to_observation_seconds": 15.616,
+      "engine_execution_seconds": 15.171,
+      "engine_timestamps_ms": {
+        "start": 1792961052589,
+        "end": 1792961067760
+      },
+      "resources_before_submission": {
+        "source": "http://127.0.0.1:8188/system_stats",
+        "engine_url": "http://127.0.0.1:8188",
+        "captured_at": "2026-10-25T20:44:12.536157+00:00",
+        "status": "available",
+        "ram": {
+          "total": 68388212736,
+          "free": 33240485888,
+          "used": 35147726848
+        },
+        "devices": [
+          {
+            "name": "cuda:0 NVIDIA GeForce RTX 4080 : cudaMallocAsync",
+            "type": "cuda",
+            "index": 0,
+            "vram": {
+              "total": 17170956288,
+              "free": 8770525946,
+              "used": 8400430342
+            },
+            "torch_vram": {
+              "total": 33554432,
+              "free": 23304954,
+              "used": 10249478
+            }
+          }
+        ],
+        "note": "提交前單次原引擎回報；非連續峰值、任務專用資源或最低需求，可能含可回收快取。"
+      },
+      "continuous_resources": {
+        "schema_version": 1,
+        "source": "http://127.0.0.1:8188/system_stats",
+        "engine_url": "http://127.0.0.1:8188",
+        "started_at": "2026-10-25T20:44:12.575052+00:00",
+        "ended_at": "2026-10-25T20:44:28.190945+00:00",
+        "end_reason": "job_terminal",
+        "interval_seconds": 2,
+        "max_attempts": 1800,
+        "retained_points": 120,
+        "attempts": 7,
+        "successes": 7,
+        "failures": 0,
+        "gaps": 0,
+        "last_attempt_at": "2026-10-25T20:44:28.172387+00:00",
+        "last_error": null,
+        "ram_max_used_bytes": 35189882880,
+        "devices": [
+          {
+            "name": "cuda:0 NVIDIA GeForce RTX 4080 : cudaMallocAsync",
+            "type": "cuda",
+            "index": 0,
+            "max_used_bytes": 8687143598
+          }
+        ],
+        "samples": [
+          {
+            "at": "2026-10-25T20:44:13.831714+00:00",
+            "ram_used_bytes": 35158794240,
+            "devices": [
+              {
+                "device": 0,
+                "used_bytes": 8403969427
+              }
+            ],
+            "error": null
+          },
+          {
+            "at": "2026-10-25T20:44:16.159718+00:00",
+            "ram_used_bytes": 35173105664,
+            "devices": [
+              {
+                "device": 0,
+                "used_bytes": 8404559259
+              }
+            ],
+            "error": null
+          },
+          {
+            "at": "2026-10-25T20:44:18.476280+00:00",
+            "ram_used_bytes": 35167608832,
+            "devices": [
+              {
+                "device": 0,
+                "used_bytes": 8404559259
+              }
+            ],
+            "error": null
+          },
+          {
+            "at": "2026-10-25T20:44:20.779951+00:00",
+            "ram_used_bytes": 35168165888,
+            "devices": [
+              {
+                "device": 0,
+                "used_bytes": 8404559259
+              }
+            ],
+            "error": null
+          },
+          {
+            "at": "2026-10-25T20:44:23.123995+00:00",
+            "ram_used_bytes": 35158708224,
+            "devices": [
+              {
+                "device": 0,
+                "used_bytes": 8404559259
+              }
+            ],
+            "error": null
+          },
+          {
+            "at": "2026-10-25T20:44:25.462396+00:00",
+            "ram_used_bytes": 35161370624,
+            "devices": [
+              {
+                "device": 0,
+                "used_bytes": 8687143598
+              }
+            ],
+            "error": null
+          },
+          {
+            "at": "2026-10-25T20:44:28.172387+00:00",
+            "ram_used_bytes": 35189882880,
+            "devices": [
+              {
+                "device": 0,
+                "used_bytes": 5548303622
+              }
+            ],
+            "error": null
+          }
+        ],
+        "note": "每次取樣是原引擎主機 RAM／共享裝置用量，可能包含其他程序、佇列等待與可回收快取。裝置用量依引擎的 total−free 計算；CUDA free 可能包含 allocator 可回收快取，與 nvidia-smi 整卡已用量不同。觀察最高值僅涵蓋成功取樣時刻，不是連續真實峰值、任務專用峰值或最低硬體需求；PyTorch allocator 的統計也無法可靠歸屬單一任務。",
+        "task_vram_peak_bytes": null
+      },
+      "task_vram_peak_bytes": null,
+      "timing_note": "平台時鐘從提交起始到首次確認終態，包含佇列、網路與查詢延遲；引擎起訖包含載入及快取，皆非純 GPU 取樣。"
+    },
+    "submission_to_history_wall_seconds": 16.047,
+    "vram_sampling": {
+      "requested_interval_seconds": 2.0,
+      "source": "platform /api/system NVIDIA aggregate device used memory; sampled peak, not continuous or process-exclusive",
+      "attempts": 8,
+      "samples_with_gpu_values": 8,
+      "sampled_max_used_bytes_by_gpu": {
+        "0": 9938403328
+      }
+    },
+    "verified_artworks": [
+      {
+        "id": "1ec79fda-73e8-5105-a029-751a92e9b02b",
+        "sha256": "7861c18b476408e3bf4f004ae254ada1846dbf9a423a086a85df84460ea9007b",
+        "bytes": 3623746,
+        "width": 1536,
+        "height": 1536
+      }
+    ],
+    "workflow_sha256": "c70dc1744abd767d39d9d434d5bba64995e7311567d38e208e7c517a0870d306",
+    "cache_condition": "same process, Pony weights retained after baseline; changed latent size and steps"
+  },
+  "environment_differences": [
+    "Windows 10 build 19045 vs Windows 11 build 26200",
+    "driver 616.56 vs 617.42",
+    "background software, display use, filesystem caches and operating system are not controlled",
+    "only one cold observation on each machine; original RTX 3060 is not currently connected"
+  ],
+  "task_vram_peak_bytes": null
+}

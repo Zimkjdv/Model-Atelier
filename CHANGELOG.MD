@@ -1,5 +1,19 @@
 # Model Atelier — Changelog
 
+## 2026-10-26 · E03 相同條件比較與獨立較高負載
+
+E02 已先以 `a74dfbe` commit／push。讀取 RTX 3060 原始 Pony 報告／成功 history，與 RTX 4080 新引擎程序第一次相同配置生成比較；固定權重完整 SHA256、模型／CLIP／VAE dtype、768²／20 步／精確 seed／batch 1／無附加元件及完整七節點圖均匹配。原 history 耗時 22.551／9.380 秒，單次比例 2.4042，保留 OS／驅動及背景負載差異；未回填舊任務量測、未把整卡取樣視為任務峰值。
+
+RTX 4080 另完成 1536²／30 步／batch 1，原圖、完整 workflow／設定與版本還原通過；15.171 秒引擎耗時使用 baseline 後的模型快取，獨立保存，不混入冷載入對照。新增唯讀比較器，精度／快取／來源／hash 未知、設定或 workflow 不同時不提供時間比，訓練不混用。見 [紀錄](docs/validation/hardware-comparison-20261026.md)、[JSON](docs/validation/hardware-comparison-20261026.json)。
+
+格式／靜態／Vue 型別與 38 項相關回歸通過；E02 完整 784 項後端及 122 項 Chromium 基線沿用。本項沒有修改前端或生成協調／背景取樣。ROADMAP 保留 11 主項／13 子項，E04 待本項 commit／push 後開始。
+
+<a id="e03"></a>
+
+- [x] **E03 · 兩台主機相同設定比較及 RTX 4080 較高負載驗收**
+  - [x] 驗收 E03-01：先以相同模型、精度、尺寸、seed、步數、batch、附加元件及載入條件比較耗時與資源。
+  - [x] 驗收 E03-02：另存 RTX 4080 較高負載結果，不把它當成 RTX 3060 門檻或宣稱所有 NVIDIA 顯卡皆相容。
+
 ## 2026-10-26 · E02 RTX 4080 搬移與基本流程驗收
 
 修復搬移後平台／ComfyUI Python 3.12 環境的舊使用者路徑，前端重新安裝及建置。實機記錄 Windows 11、RTX 4080／16 GiB、約 64 GiB RAM、磁碟、617.42 驅動、Torch 2.14.0+cu130／CUDA 13.0 與固定 ComfyUI commit；新增可重跑的硬體快照及既有驗收器入口。

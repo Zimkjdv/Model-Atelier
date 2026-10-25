@@ -115,7 +115,9 @@
     "scripts/verify_flux_extensions.py",
     "scripts/flux_lora_observer.py",
     "scripts/verify_hardware.py",
-    "backend/test_hardware_acceptance.py"
+    "backend/test_hardware_acceptance.py",
+    "scripts/compare_hardware.py",
+    "backend/test_hardware_comparison.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
