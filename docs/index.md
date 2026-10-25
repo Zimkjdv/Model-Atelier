@@ -44,6 +44,7 @@
 ## 訓練與資料
 
 - [T05 訓練圖片與標註審查介面](training/workspace.md)：沿用 T02，原圖預覽、版本保存、來源重驗與明確資料出口，不自動批准作者圖
+- [T06 本機訓練控制與產物銜接](training/workspace.md#t06-本機訓練與產物)、[停止／續訓與模型回登驗收](validation/training-control-20261025.md)：原 UUID 查回、單次啟動與資源釋放，建比較方案不生成
 
 - [T01 訓練需求與驗收範圍 v1](training/requirements.md)、[需求確認證據](validation/training-requirements-20261023.md)：畫風／角色分開、僅 SDXL 候選，沒有啟動訓練
 

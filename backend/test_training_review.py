@@ -100,6 +100,7 @@ class ReviewTests(DatasetFixture):
         for edit in (
             lambda v: v['images'][1].update(split='train'),
             lambda v: v['images'][0].update(exposure=[]),
+            lambda v: v['images'][0].update(split='test'),
             lambda v: v['images'][0].update(path='../secret.png'),
             lambda v: v['images'][0].update(id=v['images'][1]['id']),
         ):

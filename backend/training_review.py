@@ -143,6 +143,8 @@ class Reviews:
             edit = edits[row['id']]
             if not set(row['exposure']).issubset(edit['exposure']):
                 raise ValueError('不可移除既有圖片曝光紀錄')
+            if edit['split'] == 'test' and row['split'] != 'test':
+                raise ValueError('最終評估圖須在匯入前獨立分割；審查候選不可轉為未曝光 test')
             if row['split'] in ('validation', 'test', 'excluded') and edit['split'] not in (
                 row['split'],
                 'excluded',

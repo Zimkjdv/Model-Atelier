@@ -21,7 +21,7 @@ import LocalEnvironmentCheck from './LocalEnvironmentCheck.vue'
 import StorageOverview from './StorageOverview.vue'
 import DeploymentStatus from './DeploymentStatus.vue'
 import DiagnosticsPanel from './DiagnosticsPanel.vue'
-import TrainingDatasets from './TrainingDatasets.vue'
+import TrainingWorkspace from './TrainingWorkspace.vue'
 import type { EngineReport } from './environmentTypes'
 type Memory = { total: number | null; used: number | null; free: number | null }
 type System = {
@@ -413,7 +413,7 @@ onUnmounted(() => {
         <DiagnosticsPanel v-if="page === '設定'" />
         <ModelLibrary v-if="page === '模型庫'" @settings="navigate('設定')" />
         <AssetLibrary v-else-if="page === '參考素材'" />
-        <TrainingDatasets v-else-if="page === '訓練工作區'" @dirty="trainingDirty = $event" />
+        <TrainingWorkspace v-else-if="page === '訓練工作區'" @dirty="trainingDirty = $event" />
         <ArtworkLibrary
           v-else-if="page === '作品庫'"
           :job-id="galleryJob"

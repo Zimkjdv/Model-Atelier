@@ -65,7 +65,7 @@ def base(root=ROOT):
     )
 
 
-def prepare(configuration, *, root=ROOT, resume=None):
+def prepare(configuration, *, root=ROOT, resume=None, study=None):
     config = Configuration.model_validate(configuration)
     env = environment.check(root)
     if not env['ready']:
@@ -85,7 +85,9 @@ def prepare(configuration, *, root=ROOT, resume=None):
         or environment.digest(checkpoint) != model['sha256']
     ):
         raise ValueError('The base checkpoint differs from the pinned Animagine model.')
-    verified = bundle.verify(source, anchor)
+    # Web reviews retain the exact R02 study bytes. Older CLI bundles still
+    # require the caller to provide that original study when one is anchored.
+    verified = bundle.verify(source, anchor, study)
     dataset = data.load(source / 'dataset.json')
     identifier = str(uuid4())
     target = run_directory(identifier, root)
@@ -99,6 +101,10 @@ def prepare(configuration, *, root=ROOT, resume=None):
         f'resolution = [{config.resolution}, {config.resolution}]'.encode('ascii'),
     )
     (work / 'dataset.toml').write_bytes(configuration_bytes)
+    if study is not None:
+        (work / 'parent-study.json').write_bytes(
+            data.canonical(dict(document=study[0], sha256=study[1]))
+        )
     (target / 'output').mkdir()
     (target / 'checkpoints').mkdir()
     manifest = dict(
@@ -126,6 +132,7 @@ def prepare(configuration, *, root=ROOT, resume=None):
             path=str(checkpoint),
         ),
         frozen_files=file_manifest(work),
+        parent_study=dict(document=study[0], sha256=study[1]) if study is not None else None,
         resume=resume,
     )
     if resume is not None:
@@ -277,24 +284,35 @@ def launch(run_id, *, root=ROOT):
         PYTHONDONTWRITEBYTECODE='1',
     )
     with (target / 'worker.log').open('xb') as log:
-        process = subprocess.Popen(
-            [
-                str(paths['python']),
-                '-I',
-                str(Path(root).resolve() / 'scripts/training_worker.py'),
-                '--root',
-                str(Path(root).resolve()),
-                '--run-id',
-                str(run_id),
-                '--manifest-sha256',
-                current['manifest_sha256'],
-            ],
-            cwd=paths['source'],
-            env=worker_env,
-            stdout=log,
-            stderr=subprocess.STDOUT,
-            creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0,
-        )
+        try:
+            process = subprocess.Popen(
+                [
+                    str(paths['python']),
+                    '-I',
+                    str(Path(root).resolve() / 'scripts/training_worker.py'),
+                    '--root',
+                    str(Path(root).resolve()),
+                    '--run-id',
+                    str(run_id),
+                    '--manifest-sha256',
+                    current['manifest_sha256'],
+                ],
+                cwd=paths['source'],
+                env=worker_env,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0,
+            )
+        except OSError as exc:
+            launch_record = read_json(target / 'launch.json')
+            launch_record['controller'] = None
+            compute_lease.atomic_json(target / 'launch.json', launch_record)
+            state = read_json(target / 'state.json')
+            state.update(
+                status='failed', message='Worker could not start: ' + str(exc), updated_at=now()
+            )
+            compute_lease.atomic_json(target / 'state.json', state)
+            return inspect(run_id, root=root)
         launch_record = read_json(target / 'launch.json')
         try:
             created_at = psutil.Process(process.pid).create_time()

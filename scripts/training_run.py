@@ -11,6 +11,7 @@ def main(argv=None):
     commands = parser.add_subparsers(dest='command', required=True)
     prepare = commands.add_parser('prepare')
     prepare.add_argument('--config', required=True)
+    prepare.add_argument('--study', help='Original R02 study JSON when required by the bundle.')
     for name in ('run', 'status', 'stop', 'resume'):
         command = commands.add_parser(name)
         command.add_argument('--run-id', required=True)
@@ -19,13 +20,22 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == 'prepare':
-            result = runs.prepare(runs.read_json(args.config))
+            from backend import training_data
+
+            result = runs.prepare(
+                runs.read_json(args.config),
+                study=training_data.read_json(args.study) if args.study else None,
+            )
         elif args.command == 'resume':
             old = runs.run_directory(args.run_id)
             manifest = runs.read_json(old / 'manifest.json')
+            original_study = manifest.get('parent_study')
             result = runs.prepare(
                 manifest['configuration'],
                 resume=dict(run_id=args.run_id, checkpoint=args.checkpoint),
+                study=(original_study['document'], original_study['sha256'])
+                if original_study
+                else None,
             )
         else:
             method = {'run': runs.launch, 'status': runs.inspect, 'stop': runs.stop}[args.command]

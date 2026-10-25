@@ -92,7 +92,10 @@
     "scripts/verify_container_generation.py",
     "backend/training_review.py",
     "backend/training_review_api.py",
-    "backend/test_training_review.py"
+    "backend/test_training_review.py",
+    "backend/training_control.py",
+    "backend/training_control_api.py",
+    "backend/test_training_control.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -146,7 +149,10 @@
     "frontend/tests/container-deployment.spec.ts",
     "frontend/src/TrainingDatasets.vue",
     "frontend/src/trainingTypes.ts",
-    "frontend/tests/training-review.spec.ts"
+    "frontend/tests/training-review.spec.ts",
+    "frontend/src/TrainingControl.vue",
+    "frontend/src/TrainingWorkspace.vue",
+    "frontend/tests/training-control.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

@@ -262,8 +262,14 @@ onUnmounted(() => {
           </fieldset>
         </form>
         <div class="training-actions"
-          ><button type="button" :disabled="busy" @click="refresh">更新資料集清單</button
-          ><button v-if="importId" type="button" :disabled="busy" @click="load(importId)"
+          ><button class="secondary" type="button" :disabled="busy" @click="refresh"
+            >更新資料集清單</button
+          ><button
+            class="secondary"
+            v-if="importId"
+            type="button"
+            :disabled="busy"
+            @click="load(importId)"
             >查回原匯入資料集</button
           ><span>匯入 UUID：{{ importId || '尚未匯入' }}</span></div
         >
@@ -271,6 +277,7 @@ onUnmounted(() => {
         <ul class="dataset-list"
           ><li v-for="item in list" :key="item.id"
             ><button
+              class="secondary"
               type="button"
               :disabled="busy"
               :aria-pressed="current?.id === item.id"
@@ -296,7 +303,7 @@ onUnmounted(() => {
           ><label>新版本名稱<input v-model="nextVersion" :disabled="busy" maxlength="80" /></label
           ><button type="button" class="primary" :disabled="busy || !dirty" @click="save"
             >保存新版本</button
-          ><button type="button" :disabled="busy" @click="load(current.id)"
+          ><button class="secondary" type="button" :disabled="busy" @click="load(current.id)"
             >重新載入已保存版本</button
           ><strong role="status">{{
             dirty ? '尚未保存變更' : '已保存 · 修訂 ' + current.revision
@@ -315,9 +322,11 @@ onUnmounted(() => {
           ></details
         >
         <div class="training-actions"
-          ><button type="button" :disabled="page === 0 || busy" @click="page--">上一頁圖片</button
+          ><button class="secondary" type="button" :disabled="page === 0 || busy" @click="page--"
+            >上一頁圖片</button
           ><span>第 {{ page + 1 }} 頁 · 共 {{ edited.dataset.images.length }} 張</span
           ><button
+            class="secondary"
             type="button"
             :disabled="(page + 1) * 20 >= edited.dataset.images.length || busy"
             @click="page++"
@@ -326,6 +335,7 @@ onUnmounted(() => {
         >
         <div class="image-choices"
           ><button
+            class="secondary"
             v-for="row in visible"
             :key="row.id"
             type="button"
@@ -430,7 +440,9 @@ onUnmounted(() => {
           }}
           資料出口通過不代表品質通過。</p
         >
-        <button type="button" :disabled="busy || dirty" @click="check">重新檢查原圖與標註</button>
+        <button class="secondary" type="button" :disabled="busy || dirty" @click="check"
+          >重新檢查原圖與標註</button
+        >
         <template v-if="readiness"
           ><p
             >訓練候選 {{ readiness.counts.train }} · 開發評估 {{ readiness.counts.validation }} ·
@@ -456,7 +468,12 @@ onUnmounted(() => {
             :disabled="busy || dirty || !readiness?.data_ready || !!exportId"
             @click="exportBundle()"
             >匯出已審查訓練資料包</button
-          ><button v-if="exportId" type="button" :disabled="busy" @click="exportBundle(true)"
+          ><button
+            class="secondary"
+            v-if="exportId"
+            type="button"
+            :disabled="busy"
+            @click="exportBundle(true)"
             >查回原匯出結果</button
           ></div
         >

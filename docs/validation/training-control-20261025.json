@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-25",
+  "status": "passed",
+  "scope": "native Windows RTX 3060 UI; self-authored geometry only; no quality claim",
+  "environment": {
+    "gpu": "NVIDIA GeForce RTX 3060",
+    "vram_gib": 12,
+    "torch": "2.14.0+cu130",
+    "trainer_revision": "11d8cedd0c67b93a10f8b2d75f43554f6f12c794",
+    "profile_sha256": "97704299dbbff13fb2666a5f0bdabd0b9fd203d56688dca20cc0634bf79051ad",
+    "dependencies_sha256": "1908239131e18bfbe561893196bc39e87dfc0bd748dcba7b47af9ac43a0f8326"
+  },
+  "dataset": {
+    "train_images": 1,
+    "manifest_sha256": "f29b788ff1e9a366286a834c14e05b52641389b67903d207cf81ef274233db43",
+    "bundle_sha256": "a35dacd42431bc2ca8492c572d6e62a779d16a3c70dc37a3024714e11d602f60",
+    "artist_images_used": false
+  },
+  "configuration": {
+    "purpose": "technical-smoke",
+    "gpu_index": 0,
+    "resolution": 512,
+    "rank": 4,
+    "learning_rate": 0.0001,
+    "max_steps": 6,
+    "save_every_steps": 1,
+    "seed": 42
+  },
+  "original_attempt": {
+    "run_id": "ac9d1c0f-2c4a-46cc-acb9-91e4df7bf2db",
+    "manifest_sha256": "4b7ce852ea860c6d68c693369e6e7697651d773439a167c900d5407b8dca8d99",
+    "status": "stopped",
+    "saved_global_step": 2,
+    "resources_released": true
+  },
+  "resumed_attempt": {
+    "run_id": "8be1d928-2375-4ec8-b1b3-596d3929fc4f",
+    "manifest_sha256": "c6e1e89b75736cb0510840dbc1fb0185178bf6025d5f466d497a1a13436462fb",
+    "status": "completed",
+    "source_run": "ac9d1c0f-2c4a-46cc-acb9-91e4df7bf2db",
+    "source_checkpoint": "step-1",
+    "offset_step": 1,
+    "remaining_updates": 5,
+    "final_global_step": 6,
+    "resources_released": true,
+    "elapsed_seconds": 79.453,
+    "torch_peak_allocated_bytes": 5598790144,
+    "torch_peak_reserved_bytes": 5861539840
+  },
+  "artifact": {
+    "filename": "ma-trained-8be1d928-2375-4ec8-b1b3-596d3929fc4f.safetensors",
+    "weight": {
+      "sha256": "e24a9781f040d0c6fb957cfba52c60d149dfc0c705f6ab243cce5277cbe278c7",
+      "size_bytes": 21584828
+    },
+    "technical_only": true,
+    "catalog_publication_passed": true
+  },
+  "evaluation": {
+    "request_id": "257a089f-fc23-401f-9ded-402e0c9aad1e",
+    "status": "completed",
+    "plans": [
+      {
+        "case_id": "anime-portrait",
+        "branch": "baseline",
+        "plan_id": "5a61e125-c490-4f1e-ae27-9becdda50430",
+        "plan_sha256": "e2aa677324dd901dea31bd3824d7848f8361cb0f2f6b762548fedbe0445b4e21"
+      },
+      {
+        "case_id": "anime-portrait",
+        "branch": "candidate",
+        "plan_id": "154cdf11-d50d-4704-bed6-0134e9bafc1c",
+        "plan_sha256": "3a158b13ced7623f0158882aecf61bb60050ae7e0cf2cc05528b8b92839f5300"
+      },
+      {
+        "case_id": "anime-full-body",
+        "branch": "baseline",
+        "plan_id": "fde974ec-80f8-4760-9967-6e9dfaed00d2",
+        "plan_sha256": "2c2d8a302d5d9667068c7ff80345adab948faf4ec0591c77af38fa86552ce18a"
+      },
+      {
+        "case_id": "anime-full-body",
+        "branch": "candidate",
+        "plan_id": "8692d323-8caa-496f-8d9d-d1a202246ec3",
+        "plan_sha256": "a4ebaa6d9d60a89c7a11f075b779ed8a79c030661b1e4c6db49c5c0efe728ba2"
+      },
+      {
+        "case_id": "anime-station",
+        "branch": "baseline",
+        "plan_id": "2d8ad349-cae6-4b43-8bf8-3f078d79bb08",
+        "plan_sha256": "d6a53c52392012b55aa976ed8366efa08c355a56f3f521d26c3ab39473414492"
+      },
+      {
+        "case_id": "anime-station",
+        "branch": "candidate",
+        "plan_id": "4c4f18e5-320f-43cd-b1bc-3ef8b3c668d4",
+        "plan_sha256": "726741c73e55b84c9cb57611857fb9d9973a1f23c95623421ab51a15f008ee94"
+      }
+    ],
+    "generation_started": false
+  },
+  "checks": {
+    "online_engine_rejected_before_dispatch": true,
+    "prepare_never_started_worker": true,
+    "new_uuid_resume_prepared_before_explicit_start": true,
+    "frozen_r02_study_continuity_unit_test_passed": true,
+    "worker_spawn_failure_release_unit_test_passed": true,
+    "lost_prepare_and_start_response_ui_tests_passed": true,
+    "existing_attempts_recovered_after_qa_dom_timing_failure": true,
+    "platform_generation_jobs": 0,
+    "initial_engine_online": false,
+    "final_engine_online": false,
+    "only_own_qa_services_started_and_stopped": true,
+    "browser_viewports": [
+      1440,
+      390
+    ]
+  },
+  "validation": {
+    "full_backend_tests": 739,
+    "full_backend_existing_skips": 1,
+    "full_browser_passed": 116,
+    "final_targeted_backend_passed": 44,
+    "final_targeted_browser_passed": 4
+  },
+  "limits": [
+    "512 geometry technical case only",
+    "No author-style or character quality acceptance",
+    "No 1024/long-running/other GPU capacity acceptance",
+    "No container or cross-checkout GPU coordination",
+    "Source images, trainer, run and weights require their own backups"
+  ],
+  "docker_regression": {
+    "status": "passed",
+    "image_id": "sha256:3f649e4578a9fe915f4dcf2254aeeb5b8e1ef70ce2cfb34470d8084766a10ca3",
+    "container_platform_booted": true,
+    "dataset_review_available": false,
+    "training_control_available": false,
+    "native_runtime_check_rejected": 409
+  }
+}

@@ -153,7 +153,9 @@ class StartupScriptTests(unittest.TestCase):
                     timeout=15,
                     creationflags=subprocess.CREATE_NO_WINDOW,
                 )
-                self.assertEqual(result.returncode, 0 if mode == 'delayed' else 1, result.stdout + result.stderr)
+                self.assertEqual(
+                    result.returncode, 0 if mode == 'delayed' else 1, result.stdout + result.stderr
+                )
                 if mode in ('delayed', 'browser-error'):
                     self.assertEqual(marker.read_text().splitlines(), ['http://127.0.0.1:8000/'])
                 else:

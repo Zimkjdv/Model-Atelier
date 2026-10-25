@@ -171,6 +171,9 @@ def create_app(
     from backend import training_review_api
 
     training_review_api.install(app, context)
+    from backend import training_control_api
+
+    training_control_api.install(app, context)
     from backend import local_access
 
     local_access.install(app, context)

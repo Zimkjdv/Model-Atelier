@@ -49,7 +49,7 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 | 實驗 | 通用／動漫案例、模型／提示詞／取樣參數有限比較、保存／匯入、任務關聯與原始 JSON 報告 | 各組手動生成，無自動重試或品質評分；[方案](docs/experiment-plans.md)、[結果](docs/experiment-runs.md) |
 | 執行 | 進度、取消／條件化停止、失敗保存、環境快照、原引擎連續資源取樣、E01 裝置回報 | 觀察最高值不等於任務專用峰值；[量測範圍](docs/job-measurements.md)、[裝置回報](docs/execution-device.md) |
 
-訓練目前提供 Windows 獨立環境及 SDXL UNet LoRA 本機 CLI，可凍結設定、停止、續訓並阻擋衝突生成；操作見 [T03](docs/training/runtime.md)。T05 已提供[圖片與標註審查網頁](docs/training/workspace.md)，訓練執行仍使用 CLI；尚未提供多租戶／付費、自訂節點編輯器或官方付費 API。設定還原不保證跨環境逐像素一致；實測的來源條件與品質偏差均保留。
+訓練提供 Windows 獨立環境及 SDXL UNet LoRA CLI；[訓練工作區](docs/training/workspace.md)已接上 T05 圖片審查、T06 明確準備／開始／停止／續訓、產物安裝／模型回登與固定比較方案。環境首次安裝仍依 [T03](docs/training/runtime.md)，資料審查與建方案不自動訓練或生成；尚未提供多租戶／付費、自訂節點編輯器或官方付費 API。設定還原不保證跨環境逐像素一致；實測來源條件與品質限制均保留。
 
 ## 動漫畫風的下一步
 
@@ -146,6 +146,7 @@ model-atelier/
 | 畫風／角色參考 | [R02 操作與契約](docs/models/ipadapter-reference.md)：單張推論、元件登記、精確還原；[圖片用途](docs/validation/reference-inputs-20261023.md)明確區分參考與訓練 |
 | 準備訓練資料 | [T02 契約與 CLI](docs/training/dataset-contract.md)：唯讀盤點、逐張審查、固定分割、不可覆寫出口；[本批缺項](docs/validation/training-dataset-20261023.md)，沒有啟動訓練 |
 | 網頁審查圖片 | [T05 訓練工作區](docs/training/workspace.md)：逐張 caption／來源／角色審查、不可變版本與 train-only 出口；不自動訓練 |
+| 網頁控制訓練 | [T06 操作與恢復](docs/training/workspace.md#t06-本機訓練與產物)：單次開始、停止／新 run 續訓、資源／日誌／產物及固定比較；[有限驗收](docs/validation/training-control-20261025.md) |
 | 本機 SDXL 訓練 | [T03 環境與操作](docs/training/runtime.md)：獨立安裝、凍結 run、停止／續訓與生成互斥；[資源與限制](docs/validation/training-runtime-20261025.md)，技術測試不代表作者品質 |
 | 訓練產物與評估 | [T04 回登與固定比較](docs/training/artifacts.md)：來源／版本／hash／條件封存、模型庫登記、12 格計畫與人工審查模板；[技術驗收](docs/validation/training-artifacts-20261025.md)，作者圖仍未訓練 |
 | 專用流程保存與交換 | [R07 格式評估](docs/specialized-workflow-formats.md)：局部編輯／Canny 的版本別能力、明確拒絕及完整原流程下載 |
