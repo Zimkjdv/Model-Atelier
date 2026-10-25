@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import TrainingReviewNavigator from './TrainingReviewNavigator.vue'
 import { api } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { useUnsavedChanges } from './unsavedChanges'
 import {
-  trainingIssue,
   type DatasetReview,
   type DatasetSummary,
   type Readiness,
@@ -26,7 +26,6 @@ const source = ref(''),
   importId = ref(''),
   nextVersion = ref('')
 const selected = ref(''),
-  page = ref(0),
   imageFailed = ref(false),
   readiness = ref<Readiness | null>(null)
 const exported = ref<TrainingExport | null>(null),
@@ -42,9 +41,13 @@ const protectedState = computed(() => dirty.value || busy.value || readingFile.v
 useUnsavedChanges(protectedState)
 watch(protectedState, (v) => emit('dirty', v), { immediate: true })
 const image = computed(() => edited.value?.dataset.images.find((v) => v.id === selected.value))
-const visible = computed(
-  () => edited.value?.dataset.images.slice(page.value * 20, (page.value + 1) * 20) || [],
-)
+async function selectImage(id: string, focus: boolean) {
+  selected.value = id
+  if (focus) {
+    await nextTick()
+    if (alive) document.getElementById('training-image-editor')?.focus()
+  }
+}
 watch(
   () => [selected.value, current.value?.revision],
   () => {
@@ -57,7 +60,6 @@ function apply(value: DatasetReview) {
   readiness.value = value.readiness
   nextVersion.value = `review-${value.revision + 1}`
   selected.value = value.dataset.images[0]?.id || ''
-  page.value = 0
   exported.value = null
   exportId.value = ''
 }
@@ -321,30 +323,16 @@ onUnmounted(() => {
             ></ul
           ></details
         >
-        <div class="training-actions"
-          ><button class="secondary" type="button" :disabled="page === 0 || busy" @click="page--"
-            >上一頁圖片</button
-          ><span>第 {{ page + 1 }} 頁 · 共 {{ edited.dataset.images.length }} 張</span
-          ><button
-            class="secondary"
-            type="button"
-            :disabled="(page + 1) * 20 >= edited.dataset.images.length || busy"
-            @click="page++"
-            >下一頁圖片</button
-          ></div
-        >
-        <div class="image-choices"
-          ><button
-            class="secondary"
-            v-for="row in visible"
-            :key="row.id"
-            type="button"
-            :disabled="busy"
-            :aria-pressed="selected === row.id"
-            @click="selected = row.id"
-            >{{ row.id }} · {{ row.split }}</button
-          ></div
-        >
+        <TrainingReviewNavigator
+          :key="current.id"
+          :images="edited.dataset.images"
+          :report="readiness"
+          :selected="selected"
+          :busy="busy"
+          :dirty="dirty"
+          :revision="current.revision"
+          @select="selectImage"
+        />
         <div v-if="image" class="image-review">
           <div
             ><p v-if="image.split === 'test'">最終評估圖保留不預覽，避免在資料審查階段提前曝光。</p
@@ -358,7 +346,10 @@ onUnmounted(() => {
             ><p class="footnote">{{ image.path }} · {{ image.width }} × {{ image.height }}</p
             ><p class="footnote">SHA256 {{ image.sha256 }}</p></div
           >
-          <fieldset :disabled="busy || image.split === 'test'"
+          <fieldset
+            id="training-image-editor"
+            tabindex="-1"
+            :disabled="busy || image.split === 'test'"
             ><legend>{{ image.id }} 的審查欄位</legend>
             <label>內容標註<input v-model="image.caption.content" maxlength="4000" /></label>
             <label
@@ -453,13 +444,7 @@ onUnmounted(() => {
               readiness.checked_at || current.updated_at
             }}；來源變更後需重新檢查，匯出時也會重驗。</p
           >
-          <ul
-            ><li
-              v-for="(issue, i) in [...readiness.issues, ...readiness.warnings].slice(0, 200)"
-              :key="i"
-              >{{ issue.image_id || '資料集' }}：{{ trainingIssue[issue.code] || issue.code }}</li
-            ></ul
-          >
+          <p class="footnote">完整缺項與圖片定位請見上方「圖片與缺項導覽」。</p>
         </template>
         <div class="training-actions"
           ><button

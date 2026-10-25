@@ -152,7 +152,9 @@
     "frontend/tests/training-review.spec.ts",
     "frontend/src/TrainingControl.vue",
     "frontend/src/TrainingWorkspace.vue",
-    "frontend/tests/training-control.spec.ts"
+    "frontend/tests/training-control.spec.ts",
+    "frontend/src/TrainingReviewNavigator.vue",
+    "frontend/tests/training-review-navigation.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]
 }

@@ -24,7 +24,7 @@ sys.path.insert(0, str(ROOT))
 import httpx
 from PIL import Image
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from backend import assets, catalog, gallery, jobs, workflows
 from backend.main import create_app
 from scripts.structure_fixture import STRUCTURE_NODES
@@ -276,13 +276,17 @@ def fixture(data, count=None, legacy_ui=False):
     wrapper = FastAPI(lifespan=app.router.lifespan_context)
 
     @wrapper.post('/qa/training-review')
-    def training_review_fixture():
+    def training_review_fixture(count: int = Query(default=3, ge=3, le=125)):
         from scripts.training_dataset import initialize
 
         source = data / ('review-source-' + str(uuid4()))
         source.mkdir()
         for name, color in [('a.png', 'red'), ('b.png', 'green'), ('c.png', 'blue')]:
             Image.new('RGB', (48, 64), color).save(source / name)
+        for index in range(count - 3):
+            Image.new('RGB', (48, 64), (index + 1, index * 17 % 256, index * 37 % 256)).save(
+                source / f'z{index:04d}.png'
+            )
         dataset = initialize(
             source,
             dataset_id='qa-human-review',
@@ -294,6 +298,8 @@ def fixture(data, count=None, legacy_ui=False):
         dataset.images[1].split = 'validation'
         dataset.images[2].split = 'excluded'
         dataset.images[2].exclusion_reason = 'Synthetic excluded case'
+        if count > 3:
+            dataset.images[-1].split = 'test'
         return dict(source_root=str(source), manifest_json=dataset.model_dump_json())
 
     fooocus_fixture.install(wrapper, context, state, ENGINE)

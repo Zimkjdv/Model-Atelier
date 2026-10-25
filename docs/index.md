@@ -46,13 +46,14 @@
 ## 訓練與資料
 
 - [T05 訓練圖片與標註審查介面](training/workspace.md)：沿用 T02，原圖預覽、版本保存、來源重驗與明確資料出口，不自動批准作者圖
+- [T07 缺項搜尋、篩選與圖片定位](training/workspace.md#t07-缺項導覽)、[桌面／窄版驗收](validation/training-review-navigation-20261025.md)：依已保存檢查完整分頁，保留未保存標註及 final test 不預覽規則
 - [T06 本機訓練控制與產物銜接](training/workspace.md#t06-本機訓練與產物)、[停止／續訓與模型回登驗收](validation/training-control-20261025.md)：原 UUID 查回、單次啟動與資源釋放，建比較方案不生成
 
 - [T01 訓練需求與驗收範圍 v1](training/requirements.md)、[需求確認證據](validation/training-requirements-20261023.md)：畫風／角色分開、僅 SDXL 候選，沒有啟動訓練
 
 - [T02 資料契約、Schema 與本機 CLI](training/dataset-contract.md)、[固定官方工具介面評估](training/tool-interface-research.md)、[22 檔盤點與出口驗收](validation/training-dataset-20261023.md)：真實資料仍待審查，沒有訓練
 
-- [T03 獨立訓練環境與明確 run](training/runtime.md)、[RTX 3060 技術與資源驗收](validation/training-runtime-20261025.md)：只用自製幾何資料，作者圖未訓練；網頁訓練介面未提供
+- [T03 獨立訓練環境與明確 run](training/runtime.md)、[RTX 3060 技術與資源驗收](validation/training-runtime-20261025.md)：只用自製幾何資料，作者圖未訓練；後續 T06 已提供網頁操作
 
 - [T04 產物回登與固定比較](training/artifacts.md)、[技術載入／保存／離線還原證據](validation/training-artifacts-20261025.md)：原生模型庫與六份比較方案，品質未認列
 
