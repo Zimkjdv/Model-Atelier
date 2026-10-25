@@ -21,6 +21,9 @@ def component_manifests():
     rows = flux_plan.manifest()['components']
     result = []
     for row in rows:
+        review = row.get('license_review', {})
+        if not isinstance(review, dict):
+            raise downloader.InstallationError('FLUX 元件授權查核資料必須是 object。')
         repository, revision, filename = row['repository'], row['revision'], row['filename']
         value = dict(
             id=f'flux1-schnell-{row["role"]}',
@@ -41,8 +44,9 @@ def component_manifests():
             license=dict(
                 name=row['license_name'],
                 url=f'https://huggingface.co/{repository}/blob/{revision}/README.md',
-                terms_verified=False,
-                note='F01 固定來源安裝；完整元件授權與執行條件仍由 F02 另行核對。',
+                terms_verified=review.get('terms_verified') is True,
+                review=review,
+                note='依逐元件 F02 查核記錄；整合來源標記不代表編碼器轉檔／上游來源已全部核實。',
             ),
         )
         result.append(downloader.validate_manifest(value))

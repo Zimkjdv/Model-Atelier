@@ -2,11 +2,11 @@
 
 個人 AI 圖像創作與實驗工作台。更新日期：2026-10-25。
 
-本檔只追蹤 **15 個未完成主項、22 個待驗收子項**（共 37 個未勾選框）。已完成條目的原驗收敘述、圖片提醒與證據移至 [CHANGELOG 已完成條目](CHANGELOG.MD#roadmap-completed-20261025)；原 39 框去向與補回驗收也保留於 [歷史索引](CHANGELOG.MD#unchecked-index)。移動不改變完成狀態，也不新增實測結論。
+本檔只追蹤 **15 個未完成主項、21 個待驗收子項**（共 36 個未勾選框）。已完成條目的原驗收敘述、圖片提醒與證據移至 [CHANGELOG 已完成條目](CHANGELOG.MD#roadmap-completed-20261025)；原 39 框去向與補回驗收也保留於 [歷史索引](CHANGELOG.MD#unchecked-index)。移動不改變完成狀態，也不新增實測結論。
 
 ## 接下來的順序與條件
 
-已依序完成 [T07 缺項導覽](CHANGELOG.MD#t07) → [T08 訓練報告](CHANGELOG.MD#t08)。本輪接續 F01 → F02；[F01](CHANGELOG.MD#f01) 已取得固定來源並安裝、完整驗證四份權重，先 commit／push 後才進入 F02。硬體配置提醒與候選流程見下方 P5，尚未進行 FLUX GPU 生成。
+已依序完成 [T07 缺項導覽](CHANGELOG.MD#t07) → [T08 訓練報告](CHANGELOG.MD#t08)。本輪 [F01](CHANGELOG.MD#f01) 先安裝、完整驗證四份權重並 commit／push，再完成 [F02](CHANGELOG.MD#f02) 的條款記錄與 3060／64 GiB RAM、512 原生配置觀察。平台 HTTP／作品保存／OOM 仍待 F03；編碼器轉檔來源缺口另列 M02，沒有當成全部條款已完整驗證。
 
 使用者已確認維持同一台電腦使用，上一輪依序完成 [D01](CHANGELOG.MD#d01) → [D02](CHANGELOG.MD#d02)，每項完成後先 commit、push，才做下一項。其餘項目依下列設備、來源及資料審查條件推進；Docker 保持選用，不新增日常前置需求。
 
@@ -14,7 +14,7 @@
 
 - E02／E03 需要 RTX 4080；V01-02 需要實體觸控設備，目前不可用。
 - E04 已有 RTX 3060 推論及 T03 技術訓練量測，其他工作負載／RTX 4080 分開補驗。
-- M01 的發布條款差異及依賴來源未釐清；FLUX 已在 2026-10-25 取得固定來源存取並完成 F01，接續 F02 → F03 → F04；完整元件授權與實際精度／卸載仍待 F02。
+- M01 的發布條款差異及依賴來源未釐清；M02 保留 FLUX 編碼器確切上游／轉檔來源的追溯缺口。FLUX F01／F02 已完成所列安裝、條款記錄及原生配置觀察，接續 F03 → F04。
 - 作者畫風／角色真實訓練前，仍需完成 [T02 本批圖片審查](docs/validation/training-dataset-20261023.md)；最終品質比較前提醒確認未參與調參的獨立保留圖。T03／T04 技術驗收不代表作者品質通過。
 - 官方 API 仍最後實作；A02 先確認確切模型與提供者。已完成項只針對可重現問題局部改善，參考 [GitHub 借用決策](docs/github-reuse-assessment-20261023.md)。
 
@@ -24,8 +24,8 @@
 | --- | ---: | ---: |
 | P0：硬體、相容性與量測 | 3 | 6 |
 | P1／P6：實機觸控 | 1 | 1 |
-| P2／P4：模型來源 | 1 | 1 |
-| P5：FLUX.1 [schnell] | 3 | 6 |
+| P2／P4：模型來源 | 2 | 2 |
+| P5：FLUX.1 [schnell] | 2 | 4 |
 | P8：官方 API（最後實作） | 7 | 8 |
 
 ## P0：硬體、相容性與量測
@@ -67,19 +67,23 @@
   - [ ] 驗收 M01-01：核對固定來源修訂的完整條款與依賴，補上可追溯連結；只有模型卡標記時仍註明尚未核對全文。
   - 2026-10-23：已閱讀 Open RAIL-M、Fair AI Public License 1.0-SD、SDXL Open RAIL++-M 全文並查核依賴來源；固定 HF 修訂僅 39 bytes 標記，相同 SHA256 的 Civitai 發布頁另列修改版 Fair AI 與變現推論限制。manifest 保存來源／條文雜湊及差異，`terms_verified` 維持 false；條款適用關係、作者附文與內嵌元件版本仍待可追溯釐清，主項／子項不勾選。見 [M01 查核](docs/models/pony-v6-xl-license.md)。
 
+<a id="m02"></a>
+
+- [ ] **M02 · FLUX 編碼器轉檔來源與授權鏈補驗**
+  - [ ] 驗收 M02-01：取得固定 CLIP-L／T5 FP8 scaled 的可追溯原始權重 revision、轉換方式及適用條款；只有整合來源標記及 BFL 推薦上游時，`terms_verified`／`conversion_lineage_verified` 維持 false。
+  - F02 已逐一讀取來源與全文，記錄 BFL 主模型／VAE、整合來源與上游參考的差別；本項只保留尚缺的確切轉檔來源證明，見 [條款查核](docs/models/flux-component-licenses.md)。
+
 ## P5：FLUX.1 [schnell] 實機接入
 
 使用者要求：實作前先依官方資料對照 RTX 3060 12 GiB、實際 RAM 與磁碟；如需量化／卸載或改用 RTX 4080，先說明限制與依據，再安排下載／GPU 試跑。官方最低值未提供時保持未知，不能把另一份對話的 GGUF Q4／32GB RAM 建議當成已驗收。已核對來源與候選路線見 [3060 前置判斷](docs/models/flux-rtx3060-planning.md)；GGUF 另需節點／來源／流程驗證，尚未安裝。
 
 <a id="f01"></a>
 
-2026-10-25 已完成 [F01 固定四元件安裝與完整 SHA256](CHANGELOG.MD#f01)，完整條目已移至 CHANGELOG；此錨點保留既有連結。後續 **F02 → F03 → F04**。來源／安裝不必等待 RTX 4080；RTX 3060 的實際精度、卸載與容量須由 F02 實測，不能先承諾。未以其他來源或 GGUF 權重替換固定版本，來源安裝成功不等於 GPU 驗收。
+2026-10-25 已完成 [F01 固定四元件安裝與完整 SHA256](CHANGELOG.MD#f01)，完整條目已移至 CHANGELOG；此錨點保留既有連結。沒有以其他來源或 GGUF 替換固定版本。
 
 <a id="f02"></a>
 
-- [ ] **F02 · 實際精度、卸載、資源與元件授權核對**
-  - [ ] 驗收 F02-01：逐一記錄主模型、VAE、CLIP-L、T5 的來源、條款及使用條件。
-  - [ ] 驗收 F02-02：實測實際精度、卸載與 GPU／RAM 需求；引擎旗標不是實際執行證據，不可得值保持未知。
+F02 的逐元件條款記錄與所列 3060 原生配置觀察已移至 [CHANGELOG](CHANGELOG.MD#f02)。主模型 FP8／CUDA BF16 cast、CPU 編碼器與 RAM／VRAM 已有 [實際證據](docs/validation/flux-runtime-20261025.md)，最低需求及未觀察的 kernel 精度仍未知；M02 來源缺口保留。後續 **F03 → F04**，32 GiB RAM、較大尺寸及 RTX 4080 不能直接認列通過。
 
 <a id="f03"></a>
 

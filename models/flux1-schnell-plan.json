@@ -2,7 +2,7 @@
   "id": "flux1-schnell",
   "name": "FLUX.1 [schnell]",
   "architecture": "flux",
-  "verified_at": "2026-10-04",
+  "verified_at": "2026-10-25",
   "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell",
   "reference_url": "https://comfyanonymous.github.io/ComfyUI_examples/flux/",
   "license": {
@@ -20,10 +20,18 @@
       "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
       "size_bytes": 23782506688,
       "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
-      "precision": "BF16 source weights; runtime FP8 casting is an untested option",
-      "license_name": "Apache-2.0 (BFL model card)",
+      "precision": "BF16 source; F02 observed FP8 storage and CUDA BF16 cast calls at 512x512 batch 1",
+      "license_name": "Apache-2.0 (BFL full terms reviewed)",
       "access": "hf_gated_user_review",
-      "provenance": "BFL author weights"
+      "provenance": "BFL author weights",
+      "license_review": {
+        "reviewed_at": "2026-10-25",
+        "source_terms_reviewed": true,
+        "terms_verified": true,
+        "conversion_lineage_verified": true,
+        "document": "docs/models/flux-component-licenses.md",
+        "note": "BFL Apache-2.0 完整條文與作者聲明已核對；保留 HF 模型卡用途條件。"
+      }
     },
     {
       "role": "vae",
@@ -34,10 +42,18 @@
       "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
       "size_bytes": 335304388,
       "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
-      "precision": "runtime precision unverified",
-      "license_name": "Apache-2.0 (BFL repository)",
+      "precision": "F32 source; F02 observed BF16 parameters, CPU after load and CUDA after decode",
+      "license_name": "Apache-2.0 (BFL full terms reviewed)",
       "access": "hf_gated_user_review",
-      "provenance": "BFL author autoencoder"
+      "provenance": "BFL author autoencoder",
+      "license_review": {
+        "reviewed_at": "2026-10-25",
+        "source_terms_reviewed": true,
+        "terms_verified": true,
+        "conversion_lineage_verified": true,
+        "document": "docs/models/flux-component-licenses.md",
+        "note": "BFL Apache-2.0 完整條文與作者聲明已核對；保留 HF 模型卡用途條件。"
+      }
     },
     {
       "role": "clip_l",
@@ -48,10 +64,18 @@
       "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
       "size_bytes": 246144152,
       "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
-      "precision": "runtime precision unverified",
-      "license_name": "Apache-2.0 (packaging repository metadata); upstream component terms require review",
+      "precision": "F16 source; F02 observed CPU FP16 storage and CPU FP32 cast calls",
+      "license_name": "整合來源只有 Apache-2.0 模型卡標記；CLIP 上游專案 MIT，確切轉檔鏈仍未證明。",
       "access": "public_at_review",
-      "provenance": "ComfyUI examples-linked packaging; not a BFL-authored encoder"
+      "provenance": "ComfyUI examples-linked packaging; not a BFL-authored encoder",
+      "license_review": {
+        "reviewed_at": "2026-10-25",
+        "source_terms_reviewed": true,
+        "terms_verified": false,
+        "conversion_lineage_verified": false,
+        "document": "docs/models/flux-component-licenses.md",
+        "note": "整合來源只有 Apache-2.0 模型卡標記；CLIP 上游專案 MIT，確切轉檔鏈仍未證明。"
+      }
     },
     {
       "role": "t5xxl",
@@ -62,10 +86,18 @@
       "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
       "size_bytes": 5157348688,
       "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
-      "precision": "FP8 e4m3fn scaled source weights; GPU execution unverified",
-      "license_name": "Apache-2.0 (packaging repository metadata); upstream component terms require review",
+      "precision": "Mixed F8_E4M3/F16/F32 source; F02 observed mainly CPU FP16 loaded weights and CPU FP32 cast calls",
+      "license_name": "整合來源只有 Apache-2.0 模型卡標記；T5 上游 Apache-2.0，FP8 scaled 轉換履歷仍未證明。",
       "access": "public_at_review",
-      "provenance": "ComfyUI examples-linked reduced-memory encoder packaging"
+      "provenance": "ComfyUI examples-linked reduced-memory encoder packaging",
+      "license_review": {
+        "reviewed_at": "2026-10-25",
+        "source_terms_reviewed": true,
+        "terms_verified": false,
+        "conversion_lineage_verified": false,
+        "document": "docs/models/flux-component-licenses.md",
+        "note": "整合來源只有 Apache-2.0 模型卡標記；T5 上游 Apache-2.0，FP8 scaled 轉換履歷仍未證明。"
+      }
     }
   ]
 }

@@ -50,7 +50,7 @@ onBeforeUnmount(cancel)
       </tbody></table></div>
       <p v-for="volume in plan.volumes" :key="volume.id" class="footnote">{{volume.path}}：可用 {{gib(volume.free_bytes)}}／完整元件與預留預算 {{gib(volume.required_bytes)}}；同一磁碟區只預留一次。</p>
       <details><summary>元件識別、精度與取得條件</summary><article v-for="item in plan.components" :key="item.role"><h3>{{item.name}}</h3><p class="footnote">{{item.provenance}} · {{item.precision}}</p><p class="footnote">{{item.license_name}}</p><p class="footnote">{{item.access === 'hf_gated_user_review' ? '來源需要 Hugging Face 帳號及使用條件確認，需使用者自行處理。' : '核對當時可公開取得，之後仍需確認來源狀態。'}}</p><dl><dt>固定修訂</dt><dd>{{item.revision}}</dd><dt>預期 SHA256</dt><dd>{{item.sha256}}</dd><dt>本機位置</dt><dd>{{item.target}}</dd></dl><p v-if="item.actual_size_bytes != null" class="footnote">本機檔案大小：{{gib(item.actual_size_bytes)}}；未驗證 hash。</p><p v-if="item.error" class="footnote">{{item.error}}</p></article></details>
-      <p class="footnote">最低 VRAM／RAM：未知，需專用工作流程實測。未驗證 RTX 3060／4080，不以顯卡型號限制平台功能。</p>
+      <p class="footnote">最低 VRAM／RAM：未知。已有 RTX 3060／64 GiB RAM 的 512 原生配置觀察；當前引擎、平台完整流程及 RTX 4080 仍需各自驗收。</p>
       <ul class="footnote"><li v-for="warning in plan.warnings" :key="warning">{{warning}}</li></ul>
     </template>
   </section>

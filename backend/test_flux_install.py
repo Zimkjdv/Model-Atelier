@@ -86,7 +86,9 @@ class FluxInstallTests(unittest.TestCase):
             )
             self.assertEqual(receipt['source']['revision'], row['revision'])
             self.assertEqual(receipt['sha256'], row['sha256'])
-            self.assertFalse(receipt['license']['terms_verified'])
+            self.assertEqual(
+                receipt['license']['terms_verified'], row['role'] in ('diffusion_model', 'vae')
+            )
             self.assertNotIn('hf_fixture_secret', json.dumps(receipt))
         before = {str(p): p.read_bytes() for p in self.root.rglob('*') if p.is_file()}
         report = flux.local_report(self.root, verify=True)
@@ -255,6 +257,16 @@ class FluxInstallTests(unittest.TestCase):
             )
         with self.assertRaisesRegex(downloader.InstallationError, 'install_flux'):
             install_model.manifest(value['id'])
+
+    def test_terms_review_distinguishes_author_weights_from_untraced_packaging(self):
+        rows = flux.component_manifests()
+        self.assertEqual(
+            [row['license']['terms_verified'] for row in rows], [True, True, False, False]
+        )
+        self.plan['components'][0]['license_review'] = None
+        with self.assertRaises(downloader.InstallationError):
+            flux.component_manifests()
+        self.assertEqual(list(self.root.iterdir()), [])
 
     def test_verify_cli_never_reads_credentials_or_connects(self):
         output = io.StringIO()

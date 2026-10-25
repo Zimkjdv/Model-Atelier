@@ -100,7 +100,11 @@
     "backend/test_training_report.py",
     "scripts/install_model.py",
     "scripts/install_flux.py",
-    "backend/test_flux_install.py"
+    "backend/test_flux_install.py",
+    "backend/flux_observation.py",
+    "backend/test_flux_observation.py",
+    "scripts/flux_runtime_worker.py",
+    "scripts/verify_flux_runtime.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -161,6 +165,7 @@
     "frontend/src/TrainingReviewNavigator.vue",
     "frontend/tests/training-review-navigation.spec.ts",
     "frontend/src/TrainingReport.vue",
+    "frontend/playwright.config.ts",
     "frontend/tests/training-report.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css"]

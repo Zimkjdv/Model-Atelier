@@ -8,6 +8,8 @@
 
 依序執行範圍內格式／靜態檢查、後端 unittest、Vue 型別與正式建置、`npm test` 的四組前端契約檢查、Playwright Chromium。格式與高風險狀態維護見 [維護規則](maintenance.md)。`--skip-browser` 會明列跳過，不表示完整品質通過。
 
+2026-10-25 起，完整入口依檔名排序，每六份瀏覽器 spec 為一批，各自啟動新的 Playwright／Chromium 與臨時平台，使用不同埠及 `runtime/quality/browser-results/group-N`、`browser-report/group-N`。目前 24 份 spec 共四批；新檔會自動納入一次，任一批失敗立即停止，單 worker／單案限制及零重試保留。此調整針對 Windows CI 的 Chromium `net::ERR_NO_BUFFER_SPACE` 與單次整套八分鐘截止；降低單程序累積負荷，不宣稱已證明某個產品記憶體洩漏。
+
 ## 乾淨安裝
 
 Python 3.12、Node.js 24、Git；在新的 checkout 執行：
@@ -24,17 +26,17 @@ Set-Location ..
 
 不需要 ComfyUI、GPU、權重或使用者作品。前端使用 package-lock.json，Playwright 固定 1.64.1；瀏覽器另由該版本安裝。可在 frontend 以 `npm.cmd run test:browser` 單獨重跑，需先完成 `npm.cmd run build`。完整入口將目前 Python 傳給 fixture；單獨執行預設使用根目錄 .venv，也可指定 `ATELIER_TEST_PYTHON`。
 
-請在真實訓練 worker 結束並釋放租約後執行完整回歸；部分既有 API fixture 沿用專案根目錄，真實訓練佔用會正確拒絕這些本機生成 mock。GPU 技術驗收與 CPU／瀏覽器全套分開執行，不以互斥中的失敗視為功能回歸。
+請在真實訓練或 F02 量測 worker 結束並釋放租約後執行完整回歸；部分既有 API fixture 沿用專案根目錄，運算佔用會正確拒絕這些本機生成 mock。GPU 技術驗收與 CPU／瀏覽器全套分開執行，不以互斥中的失敗視為功能回歸。
 
 ## 隔離與覆蓋
 
 `scripts/browser_fixture.py` 每次建立新的系統臨時 DATA，只接受埠參數，不接受既有資料或引擎位置。真實 FastAPI、SQLite、圖片與下載在該資料運作；上游 HTTP 使用 MockTransport，網址固定為不可解析的 `.invalid` 網域，沒有真實推論。測試端點只存在 fixture。
 
-服務固定監聽本機 18765；可用 `ATELIER_TEST_PORT` 指定另一隔離埠。`reuseExistingServer: false` 避免誤用既有平台，埠被占用即失敗。不要同時啟動兩套相同輸出目錄的測試；異常強制終止時可能留下系統臨時資料。
+單次服務預設監聽本機 18765；可用 `ATELIER_TEST_PORT` 指定另一隔離埠，分批入口從此埠依序遞增。`reuseExistingServer: false` 避免誤用既有平台，埠被占用即失敗。不要同時啟動兩套相同輸出目錄的測試；異常強制終止時可能留下系統臨時資料。
 
 瀏覽器案例覆蓋四工作台的 dirty、KeepAlive、重新整理／關頁警示與取消；草稿保存中及完成後狀態；遺失 HTTP 回覆後原 UUID／完整 body／端點恢復且引擎僅收到一次提交；作品 409 保留筆記；實際 workflow 檔案下載及最大 64 位 seed 原文字；Enter 開啟／Escape 關閉預覽與焦點還原；390px 導覽、輸入及預覽。另驗證跨頁比較、模型／收藏／封存組合、較早任務、素材選取保留、Q08 網址／首次使用，以及 Q09 診斷篩選與逐字下載。Node 邏輯檢查另涵蓋六種新舊提交流程。
 
-重試次數為 0；失敗保存 screenshot、video、trace 與 HTML 報告至忽略的 `runtime/quality/`。在 frontend 執行 `npx.cmd playwright show-report ../runtime/quality/browser-report` 或 `npx.cmd playwright show-trace <trace.zip>` 查閱。CI 在 push／PR 執行相同入口，保留證據 14 天。設定依 [Playwright webServer](https://playwright.dev/docs/test-webserver) 與 [CI 官方指南](https://playwright.dev/docs/ci-intro)。
+重試次數為 0；失敗保存 screenshot、video、trace 與 HTML 報告至忽略的 `runtime/quality/`。完整入口在 frontend 以 `npx.cmd playwright show-report ../runtime/quality/browser-report/group-1` 等各批目錄查閱；單獨 `npm run test:browser` 的預設仍為 `browser-report`，trace 可用 `npx.cmd playwright show-trace <trace.zip>`。CI 在 push／PR 執行相同入口，保留證據 14 天。設定依 [Playwright webServer](https://playwright.dev/docs/test-webserver) 與 [CI 官方指南](https://playwright.dev/docs/ci-intro)。
 
 V01 新增 6 項遮罩瀏覽器回歸，當時總計 25 項：1440px／390px 的實際畫布操作與保存 PNG 像素核對、取消選取／素材重讀／KeepAlive、無效 PNG／保存失敗、捕獲／縮放／停用，以及 CDP 主觸點／第二指／取消。兩種寬度另保存全頁與遮罩截圖、像素量測附件至報告。以 `npm.cmd run test:browser -- mask-editor.spec.ts` 單獨執行；實機觸控仍未通過，詳見 [V01 驗收](validation/mask-editor-20261023.md)。
 

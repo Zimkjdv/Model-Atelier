@@ -1,5 +1,19 @@
 # Model Atelier — Changelog
 
+## 2026-10-25 · F02 實際精度／卸載、資源與元件條款
+
+F01 已先以 `5076208` commit／push。新增固定原生節點量測工具、檔案標頭的混合 dtype 盤點、實際 cast／參數裝置觀察、有界 RSS／整卡取樣及程序 CUDA allocator 最高值。先核對完整權重 hash、引擎停止及運算租約，獨立 worker 明確使用 CPU 編碼器、FP8 主模型與 512×512／batch 1／4 步，失敗／逾時保留回執，只停止自己擁有的程序。
+
+RTX 3060／約 64 GiB RAM 完成兩次原生案例，約 59／56 秒，輸出 PNG hash 相同；觀察到 FP8 權重由 CPU／CUDA 轉成 CUDA BF16，以及 CPU 常駐權重。程序 RSS 取樣最高約 36–37 GiB，整卡取樣最高約 11.4–11.6 GiB，不能承諾 32 GiB RAM、其他尺寸或最低硬體需求。條款清冊讀取 BFL／OpenAI／Google 一手全文與模型卡，CLIP／T5 的確切轉檔來源仍未證明，新增 M02 保留 false，不回填 F01 歷史側錄。見 [操作](docs/models/flux-runtime-observation.md)、[實測](docs/validation/flux-runtime-20261025.md)、[條款](docs/models/flux-component-licenses.md)。
+
+770 項後端（1 既有跳過）、型別／建置／契約及全部 120 項 Chromium 分四批通過。另依實際 Windows CI 的 `net::ERR_NO_BUFFER_SPACE` 及 480 秒總截止，將完整入口改為每六份 spec 使用新程序／埠與獨立證據目錄，保留單案限制及零重試；[診斷與驗證](docs/validation/browser-batching-20261025.md)。平台 HTTP／作品保存／離線還原／OOM 仍留 F03，沒有作者圖訓練或品質認列。
+
+<a id="f02"></a>
+
+- [x] **F02 · 實際精度、卸載、資源與元件授權核對**
+  - [x] 驗收 F02-01：逐一記錄主模型、VAE、CLIP-L、T5 的來源、條款及使用條件。
+  - [x] 驗收 F02-02：實測實際精度、卸載與 GPU／RAM 需求；引擎旗標不是實際執行證據，不可得值保持未知。
+
 ## 2026-10-25 · F01 固定 FLUX 四元件來源與安裝
 
 使用者完成官方 Hugging Face 存取及本機 CLI 登入後，固定 BFL 主模型／VAE、ComfyUI 範例編碼器四個來源 HEAD 均為 200。新增 `scripts.install_flux` 的整體來源／容量 check、有限續傳 install 與離線完整 verify；沿用共用下載器，固定 revision／bytes／SHA256、每磁碟區 2 GiB 預留、安裝鎖及不覆寫正式檔。憑證只從官方本機位置讀取，不寫進報告，CDN 與公開編碼器不收到 token。

@@ -1,7 +1,9 @@
 import { defineConfig } from '@playwright/test'
 import path from 'node:path'
 
-const python = process.env.ATELIER_TEST_PYTHON || path.resolve('../.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python')
+const python =
+  process.env.ATELIER_TEST_PYTHON ||
+  path.resolve('../.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python')
 const port = Number(process.env.ATELIER_TEST_PORT || 18765)
 
 export default defineConfig({
@@ -12,7 +14,16 @@ export default defineConfig({
   globalTimeout: 480000,
   expect: { timeout: 10000 },
   outputDir: '../runtime/quality/browser-results',
-  reporter: [['list'], ['html', { outputFolder: '../runtime/quality/browser-report', open: 'never' }]],
+  reporter: [
+    ['list'],
+    [
+      'html',
+      {
+        outputFolder: process.env.ATELIER_BROWSER_REPORT_DIR || '../runtime/quality/browser-report',
+        open: 'never',
+      },
+    ],
+  ],
   use: {
     baseURL: `http://127.0.0.1:${port}`,
     browserName: 'chromium',

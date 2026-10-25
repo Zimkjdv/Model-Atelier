@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-25",
+  "scope": "four pinned weight components; source review is not a blanket rights clearance",
+  "all_component_lineages_verified": false,
+  "sources": [
+    {
+      "id": "bfl-card",
+      "url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/741f7c3ce8b383c54771c7003378a50191e9efe9/README.md",
+      "size_bytes": 3681,
+      "sha256": "66f915ff73552215a78f83852312eda079af1f5a08a258b6b6733350101c58aa"
+    },
+    {
+      "id": "bfl-readme",
+      "url": "https://github.com/black-forest-labs/flux/blob/802fb4713906133fcbd0d8dc5351620ca4773036/README.md",
+      "size_bytes": 6722,
+      "sha256": "d87b208a6a7b4669f08fa1882025c6fe825ee29605b0250d0b9f56b36ce27078"
+    },
+    {
+      "id": "bfl-license",
+      "url": "https://github.com/black-forest-labs/flux/blob/802fb4713906133fcbd0d8dc5351620ca4773036/model_licenses/LICENSE-FLUX1-schnell",
+      "size_bytes": 9155,
+      "sha256": "15ec800f93139ec3f09a72d6afafca51496ad40cb3adf5112fd80c28e69d5140"
+    },
+    {
+      "id": "bfl-encoders",
+      "url": "https://github.com/black-forest-labs/flux/blob/802fb4713906133fcbd0d8dc5351620ca4773036/src/flux/util.py",
+      "size_bytes": 26452,
+      "sha256": "466a7bf0b31237864203b0a80763781faa81bf0d9b955c95383100a1e9cec189"
+    },
+    {
+      "id": "packaging-card",
+      "url": "https://huggingface.co/comfyanonymous/flux_text_encoders/blob/6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5/README.md",
+      "size_bytes": 249,
+      "sha256": "a7574aa7a1f033923bd1374587892e5f3f761f5e30edfad92521842cd0f75d3a"
+    },
+    {
+      "id": "clip-license",
+      "url": "https://github.com/openai/CLIP/blob/d05afc436d78f1c48dc0dbf8e5980a9d471f35f6/LICENSE",
+      "size_bytes": 1064,
+      "sha256": "987e63b32f6c89ff5160e429458a872ff048e6860b590a3912e938f9da8f14db"
+    },
+    {
+      "id": "t5-license",
+      "url": "https://github.com/google-research/text-to-text-transfer-transformer/blob/42909aa15d1fbd16c69333aa474a00ae8ed9fde4/LICENSE",
+      "size_bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "id": "clip-modelcard",
+      "url": "https://huggingface.co/openai/clip-vit-large-patch14/blob/32bd64288804d66eefd0ccbe215aa642df71cc41/README.md",
+      "size_bytes": 7947,
+      "sha256": "de4274ec48590ab3aa1c239720ff55e99a37f4165c117ba3ad7af2b7df72687c"
+    },
+    {
+      "id": "t5-modelcard",
+      "url": "https://huggingface.co/google/t5-v1_1-xxl/blob/3db67ab1af984cf10548a73467f0e5bca2aaaeb2/README.md",
+      "size_bytes": 2677,
+      "sha256": "2e1dd666da56b19e1b0a5cc02a1725553816b0590b4af7f5726f26c010f80a8b"
+    }
+  ],
+  "components": [
+    {
+      "role": "diffusion_model",
+      "repository": "black-forest-labs/FLUX.1-schnell",
+      "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+      "declared_license": "Apache-2.0",
+      "upstream_reference": null,
+      "upstream_license": null,
+      "reviewed_at": "2026-10-25",
+      "source_terms_reviewed": true,
+      "terms_verified": true,
+      "conversion_lineage_verified": true,
+      "document": "docs/models/flux-component-licenses.md",
+      "note": "BFL Apache-2.0 完整條文與作者聲明已核對；保留 HF 模型卡用途條件。"
+    },
+    {
+      "role": "vae",
+      "repository": "black-forest-labs/FLUX.1-schnell",
+      "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "declared_license": "Apache-2.0",
+      "upstream_reference": null,
+      "upstream_license": null,
+      "reviewed_at": "2026-10-25",
+      "source_terms_reviewed": true,
+      "terms_verified": true,
+      "conversion_lineage_verified": true,
+      "document": "docs/models/flux-component-licenses.md",
+      "note": "BFL Apache-2.0 完整條文與作者聲明已核對；保留 HF 模型卡用途條件。"
+    },
+    {
+      "role": "clip_l",
+      "repository": "comfyanonymous/flux_text_encoders",
+      "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+      "declared_license": "Apache-2.0",
+      "upstream_reference": "openai/clip-vit-large-patch14",
+      "upstream_license": "MIT",
+      "reviewed_at": "2026-10-25",
+      "source_terms_reviewed": true,
+      "terms_verified": false,
+      "conversion_lineage_verified": false,
+      "document": "docs/models/flux-component-licenses.md",
+      "note": "整合來源只有 Apache-2.0 模型卡標記；CLIP 上游專案 MIT，確切轉檔鏈仍未證明。"
+    },
+    {
+      "role": "t5xxl",
+      "repository": "comfyanonymous/flux_text_encoders",
+      "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+      "declared_license": "Apache-2.0",
+      "upstream_reference": "google/t5-v1_1-xxl",
+      "upstream_license": "Apache-2.0",
+      "reviewed_at": "2026-10-25",
+      "source_terms_reviewed": true,
+      "terms_verified": false,
+      "conversion_lineage_verified": false,
+      "document": "docs/models/flux-component-licenses.md",
+      "note": "整合來源只有 Apache-2.0 模型卡標記；T5 上游 Apache-2.0，FP8 scaled 轉換履歷仍未證明。"
+    }
+  ]
+}

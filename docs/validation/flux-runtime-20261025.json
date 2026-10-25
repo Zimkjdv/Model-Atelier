@@ -1,0 +1,1596 @@
+{
+  "schema_version": 1,
+  "acceptance": "F02",
+  "observed_date": "2026-10-25",
+  "scope": "single fixed native-node workload; not platform HTTP/storage/OOM or author quality acceptance",
+  "driver_observed_after_runs": "616.56",
+  "runs": [
+    {
+      "run_id": "d557e66a-aa46-4c65-8dd5-cb6912c47c1f",
+      "request_sha256": "f224fa3c8721b97b08febb5b6f68f927a92c5950c41b8c9d327f1c965c35ca6a",
+      "observation_sha256": "8203403af3a4436069ae9684ebf32eaba0fd49e46360be50b6eeddfeb60ba075",
+      "settings": {
+        "workflow_id": "flux1-schnell-text2image-v1",
+        "engine_url": "http://127.0.0.1:8188",
+        "title": "F02 runtime observation",
+        "diffusion_model": "flux1-schnell.safetensors",
+        "clip_l": "clip_l.safetensors",
+        "t5xxl": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "vae": "ae.safetensors",
+        "prompt": "anime illustration, one adult woman reading a book in a quiet sunlit library, fully clothed, soft colors",
+        "seed": "9007199254740993",
+        "width": 512,
+        "height": 512,
+        "steps": 4,
+        "weight_dtype": "fp8_e4m3fn",
+        "encoder_device": "cpu"
+      },
+      "workflow": {
+        "1": {
+          "class_type": "UNETLoader",
+          "inputs": {
+            "unet_name": "flux1-schnell.safetensors",
+            "weight_dtype": "fp8_e4m3fn"
+          }
+        },
+        "2": {
+          "class_type": "DualCLIPLoader",
+          "inputs": {
+            "clip_name1": "clip_l.safetensors",
+            "clip_name2": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+            "type": "flux",
+            "device": "cpu"
+          }
+        },
+        "3": {
+          "class_type": "VAELoader",
+          "inputs": {
+            "vae_name": "ae.safetensors"
+          }
+        },
+        "4": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "anime illustration, one adult woman reading a book in a quiet sunlit library, fully clothed, soft colors",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "5": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "6": {
+          "class_type": "EmptySD3LatentImage",
+          "inputs": {
+            "width": 512,
+            "height": 512,
+            "batch_size": 1
+          }
+        },
+        "7": {
+          "class_type": "KSampler",
+          "inputs": {
+            "model": [
+              "1",
+              0
+            ],
+            "positive": [
+              "4",
+              0
+            ],
+            "negative": [
+              "5",
+              0
+            ],
+            "latent_image": [
+              "6",
+              0
+            ],
+            "seed": 9007199254740993,
+            "steps": 4,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 1.0
+          }
+        },
+        "8": {
+          "class_type": "VAEDecode",
+          "inputs": {
+            "samples": [
+              "7",
+              0
+            ],
+            "vae": [
+              "3",
+              0
+            ]
+          }
+        },
+        "9": {
+          "class_type": "SaveImage",
+          "inputs": {
+            "images": [
+              "8",
+              0
+            ],
+            "filename_prefix": "ModelAtelier"
+          }
+        }
+      },
+      "sources": null,
+      "runtime": {
+        "torch": "2.14.0+cu130",
+        "cuda": "13.0",
+        "gpu": "NVIDIA GeForce RTX 3060",
+        "vram_bytes": 12884377600
+      },
+      "file_precisions": [
+        {
+          "role": "diffusion_model",
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+          "actual_size_bytes": 23782506688,
+          "full_sha256_verified": true,
+          "file_precision": {
+            "tensor_counts_by_dtype": {
+              "BF16": 776
+            },
+            "tensor_bytes_by_dtype": {
+              "BF16": 23782357120
+            },
+            "selected_metadata": {
+              "modelspec.license": "Apache License 2.0",
+              "modelspec.architecture": "Flux.1-schnell"
+            },
+            "execution_precision_verified": false
+          }
+        },
+        {
+          "role": "vae",
+          "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+          "actual_size_bytes": 335304388,
+          "full_sha256_verified": true,
+          "file_precision": {
+            "tensor_counts_by_dtype": {
+              "F32": 244
+            },
+            "tensor_bytes_by_dtype": {
+              "F32": 335278732
+            },
+            "selected_metadata": {
+              "modelspec.license": "Apache License 2.0",
+              "modelspec.architecture": "Flux.1-AE"
+            },
+            "execution_precision_verified": false
+          }
+        },
+        {
+          "role": "clip_l",
+          "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+          "actual_size_bytes": 246144152,
+          "full_sha256_verified": true,
+          "file_precision": {
+            "tensor_counts_by_dtype": {
+              "F16": 196
+            },
+            "tensor_bytes_by_dtype": {
+              "F16": 246120960
+            },
+            "selected_metadata": {},
+            "execution_precision_verified": false
+          }
+        },
+        {
+          "role": "t5xxl",
+          "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+          "actual_size_bytes": 5157348688,
+          "full_sha256_verified": true,
+          "file_precision": {
+            "tensor_counts_by_dtype": {
+              "F32": 168,
+              "F16": 52,
+              "F8_E4M3": 169
+            },
+            "tensor_bytes_by_dtype": {
+              "F32": 672,
+              "F16": 526790656,
+              "F8_E4M3": 4630511616
+            },
+            "selected_metadata": {},
+            "execution_precision_verified": false
+          }
+        }
+      ],
+      "elapsed_seconds": 58.938,
+      "stages": [
+        {
+          "name": "load_encoders_cpu",
+          "elapsed_seconds": 0.531
+        },
+        {
+          "name": "encode_positive_cpu",
+          "elapsed_seconds": 12.094
+        },
+        {
+          "name": "encode_empty_cpu",
+          "elapsed_seconds": 11.656
+        },
+        {
+          "name": "load_diffusion_fp8",
+          "elapsed_seconds": 20.891
+        },
+        {
+          "name": "sample_four_steps",
+          "elapsed_seconds": 9.078
+        },
+        {
+          "name": "load_vae",
+          "elapsed_seconds": 0.453
+        },
+        {
+          "name": "decode",
+          "elapsed_seconds": 0.625
+        }
+      ],
+      "parameter_snapshots": [
+        {
+          "component": "clip_l",
+          "phase": "after_load",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.float32",
+              "device": "cpu",
+              "bytes": 4
+            },
+            {
+              "dtype": "torch.float16",
+              "device": "cpu",
+              "bytes": 247300608
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        },
+        {
+          "component": "t5xxl",
+          "phase": "after_load",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.float32",
+              "device": "cpu",
+              "bytes": 4
+            },
+            {
+              "dtype": "torch.float16",
+              "device": "cpu",
+              "bytes": 9524621312
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        },
+        {
+          "component": "diffusion_model",
+          "phase": "after_load",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.float8_e4m3fn",
+              "device": "cpu",
+              "bytes": 11891178560
+            },
+            {
+              "dtype": "torch.float32",
+              "device": "cpu",
+              "bytes": 4000
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        },
+        {
+          "component": "diffusion_model",
+          "phase": "after_sampling",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.float8_e4m3fn",
+              "device": "cuda:0",
+              "bytes": 10169906240
+            },
+            {
+              "dtype": "torch.float8_e4m3fn",
+              "device": "cpu",
+              "bytes": 1721272320
+            },
+            {
+              "dtype": "torch.float32",
+              "device": "cpu",
+              "bytes": 4000
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        },
+        {
+          "component": "vae",
+          "phase": "after_load",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.bfloat16",
+              "device": "cpu",
+              "bytes": 167639366
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        },
+        {
+          "component": "vae",
+          "phase": "after_decode",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.bfloat16",
+              "device": "cuda:0",
+              "bytes": 167639366
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        }
+      ],
+      "casts": {
+        "observations": [
+          {
+            "component": "t5xxl",
+            "source_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "input_tensor": null,
+            "returned_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "calls": 4
+          },
+          {
+            "component": "t5xxl",
+            "source_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "input_tensor": {
+              "dtype": "torch.float32",
+              "device": "cpu"
+            },
+            "returned_weight": {
+              "dtype": "torch.float32",
+              "device": "cpu"
+            },
+            "calls": 336
+          },
+          {
+            "component": "clip_l",
+            "source_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "input_tensor": null,
+            "returned_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "calls": 2
+          },
+          {
+            "component": "clip_l",
+            "source_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "input_tensor": {
+              "dtype": "torch.float32",
+              "device": "cpu"
+            },
+            "returned_weight": {
+              "dtype": "torch.float32",
+              "device": "cpu"
+            },
+            "calls": 196
+          },
+          {
+            "component": "diffusion_model",
+            "source_weight": {
+              "dtype": "torch.float8_e4m3fn",
+              "device": "cuda:0"
+            },
+            "input_tensor": {
+              "dtype": "torch.bfloat16",
+              "device": "cuda:0"
+            },
+            "returned_weight": {
+              "dtype": "torch.bfloat16",
+              "device": "cuda:0"
+            },
+            "calls": 1504
+          },
+          {
+            "component": "diffusion_model",
+            "source_weight": {
+              "dtype": "torch.float8_e4m3fn",
+              "device": "cpu"
+            },
+            "input_tensor": {
+              "dtype": "torch.bfloat16",
+              "device": "cuda:0"
+            },
+            "returned_weight": {
+              "dtype": "torch.bfloat16",
+              "device": "cuda:0"
+            },
+            "calls": 352
+          }
+        ],
+        "overflow_calls": 0,
+        "scope": "observed_cast_bias_weight_calls_only_not_every_kernel_or_accumulator"
+      },
+      "resources": {
+        "process_rss_observed_max_bytes": 39548456960,
+        "host_used_observed_max_bytes": 67729645568,
+        "card_used_observed_max_bytes": 12410945536,
+        "torch_max_memory_allocated_bytes": 10558828032,
+        "torch_max_memory_reserved_bytes": 10710155264,
+        "sample_count": 54,
+        "retained_samples": 54,
+        "nvidia_failures": 0,
+        "samples": [
+          {
+            "elapsed_seconds": 0.0,
+            "process_rss_bytes": 865509376,
+            "host_available_bytes": 35436642304,
+            "card_used_bytes": 3270508544
+          },
+          {
+            "elapsed_seconds": 1.125,
+            "process_rss_bytes": 2148618240,
+            "host_available_bytes": 34193203200,
+            "card_used_bytes": 3272605696
+          },
+          {
+            "elapsed_seconds": 2.219,
+            "process_rss_bytes": 2810249216,
+            "host_available_bytes": 33617870848,
+            "card_used_bytes": 3266314240
+          },
+          {
+            "elapsed_seconds": 3.313,
+            "process_rss_bytes": 3239849984,
+            "host_available_bytes": 33109475328,
+            "card_used_bytes": 3264217088
+          },
+          {
+            "elapsed_seconds": 4.406,
+            "process_rss_bytes": 3323617280,
+            "host_available_bytes": 33005338624,
+            "card_used_bytes": 3264217088
+          },
+          {
+            "elapsed_seconds": 5.5,
+            "process_rss_bytes": 4071084032,
+            "host_available_bytes": 32225300480,
+            "card_used_bytes": 3264217088
+          },
+          {
+            "elapsed_seconds": 6.61,
+            "process_rss_bytes": 4476821504,
+            "host_available_bytes": 31867535360,
+            "card_used_bytes": 3264217088
+          },
+          {
+            "elapsed_seconds": 7.703,
+            "process_rss_bytes": 4765519872,
+            "host_available_bytes": 31584858112,
+            "card_used_bytes": 3265265664
+          },
+          {
+            "elapsed_seconds": 8.813,
+            "process_rss_bytes": 5142409216,
+            "host_available_bytes": 31093207040,
+            "card_used_bytes": 3264217088
+          },
+          {
+            "elapsed_seconds": 9.938,
+            "process_rss_bytes": 5749559296,
+            "host_available_bytes": 30408142848,
+            "card_used_bytes": 3264217088
+          },
+          {
+            "elapsed_seconds": 11.031,
+            "process_rss_bytes": 6187864064,
+            "host_available_bytes": 29969186816,
+            "card_used_bytes": 3257925632
+          },
+          {
+            "elapsed_seconds": 12.156,
+            "process_rss_bytes": 6327136256,
+            "host_available_bytes": 29798735872,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 13.266,
+            "process_rss_bytes": 6573342720,
+            "host_available_bytes": 29526904832,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 14.375,
+            "process_rss_bytes": 6596300800,
+            "host_available_bytes": 29508591616,
+            "card_used_bytes": 3262119936
+          },
+          {
+            "elapsed_seconds": 15.5,
+            "process_rss_bytes": 6785163264,
+            "host_available_bytes": 29335076864,
+            "card_used_bytes": 3257925632
+          },
+          {
+            "elapsed_seconds": 16.61,
+            "process_rss_bytes": 6573350912,
+            "host_available_bytes": 29549989888,
+            "card_used_bytes": 3262119936
+          },
+          {
+            "elapsed_seconds": 17.703,
+            "process_rss_bytes": 6766759936,
+            "host_available_bytes": 29406208000,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 18.781,
+            "process_rss_bytes": 6618406912,
+            "host_available_bytes": 29512667136,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 19.891,
+            "process_rss_bytes": 6607921152,
+            "host_available_bytes": 29516595200,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 20.969,
+            "process_rss_bytes": 6598111232,
+            "host_available_bytes": 29530103808,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 22.063,
+            "process_rss_bytes": 6775705600,
+            "host_available_bytes": 29347217408,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 23.156,
+            "process_rss_bytes": 6617366528,
+            "host_available_bytes": 29427646464,
+            "card_used_bytes": 3257925632
+          },
+          {
+            "elapsed_seconds": 24.266,
+            "process_rss_bytes": 6444363776,
+            "host_available_bytes": 29680037888,
+            "card_used_bytes": 3262119936
+          },
+          {
+            "elapsed_seconds": 25.547,
+            "process_rss_bytes": 9998278656,
+            "host_available_bytes": 26091986944,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 26.641,
+            "process_rss_bytes": 14284214272,
+            "host_available_bytes": 21845659648,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 27.719,
+            "process_rss_bytes": 18739990528,
+            "host_available_bytes": 17456447488,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 28.797,
+            "process_rss_bytes": 21889110016,
+            "host_available_bytes": 14610255872,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 29.875,
+            "process_rss_bytes": 23579668480,
+            "host_available_bytes": 12911972352,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 30.938,
+            "process_rss_bytes": 25257091072,
+            "host_available_bytes": 11235586048,
+            "card_used_bytes": 3257925632
+          },
+          {
+            "elapsed_seconds": 32.0,
+            "process_rss_bytes": 27749355520,
+            "host_available_bytes": 8763850752,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 33.078,
+            "process_rss_bytes": 30792613888,
+            "host_available_bytes": 5696897024,
+            "card_used_bytes": 3263168512
+          },
+          {
+            "elapsed_seconds": 34.156,
+            "process_rss_bytes": 32470384640,
+            "host_available_bytes": 4143370240,
+            "card_used_bytes": 3254779904
+          },
+          {
+            "elapsed_seconds": 35.235,
+            "process_rss_bytes": 33248157696,
+            "host_available_bytes": 3347697664,
+            "card_used_bytes": 3249537024
+          },
+          {
+            "elapsed_seconds": 36.313,
+            "process_rss_bytes": 33806880768,
+            "host_available_bytes": 3430109184,
+            "card_used_bytes": 3254779904
+          },
+          {
+            "elapsed_seconds": 37.391,
+            "process_rss_bytes": 34251296768,
+            "host_available_bytes": 2891780096,
+            "card_used_bytes": 3254779904
+          },
+          {
+            "elapsed_seconds": 38.485,
+            "process_rss_bytes": 34318114816,
+            "host_available_bytes": 4488151040,
+            "card_used_bytes": 3249537024
+          },
+          {
+            "elapsed_seconds": 39.547,
+            "process_rss_bytes": 35740573696,
+            "host_available_bytes": 3386982400,
+            "card_used_bytes": 3249537024
+          },
+          {
+            "elapsed_seconds": 40.625,
+            "process_rss_bytes": 37256929280,
+            "host_available_bytes": 2208059392,
+            "card_used_bytes": 3254779904
+          },
+          {
+            "elapsed_seconds": 41.703,
+            "process_rss_bytes": 38531866624,
+            "host_available_bytes": 1637462016,
+            "card_used_bytes": 3255828480
+          },
+          {
+            "elapsed_seconds": 42.781,
+            "process_rss_bytes": 38996873216,
+            "host_available_bytes": 956026880,
+            "card_used_bytes": 3152019456
+          },
+          {
+            "elapsed_seconds": 43.875,
+            "process_rss_bytes": 39548456960,
+            "host_available_bytes": 924835840,
+            "card_used_bytes": 3021996032
+          },
+          {
+            "elapsed_seconds": 45.313,
+            "process_rss_bytes": 16286707712,
+            "host_available_bytes": 24213618688,
+            "card_used_bytes": 3023044608
+          },
+          {
+            "elapsed_seconds": 46.391,
+            "process_rss_bytes": 13019410432,
+            "host_available_bytes": 27505479680,
+            "card_used_bytes": 7160725504
+          },
+          {
+            "elapsed_seconds": 47.485,
+            "process_rss_bytes": 8997658624,
+            "host_available_bytes": 31577153536,
+            "card_used_bytes": 11411652608
+          },
+          {
+            "elapsed_seconds": 48.547,
+            "process_rss_bytes": 6873440256,
+            "host_available_bytes": 32729534464,
+            "card_used_bytes": 12111052800
+          },
+          {
+            "elapsed_seconds": 49.61,
+            "process_rss_bytes": 7535538176,
+            "host_available_bytes": 31885598720,
+            "card_used_bytes": 12228493312
+          },
+          {
+            "elapsed_seconds": 50.672,
+            "process_rss_bytes": 7638745088,
+            "host_available_bytes": 31705468928,
+            "card_used_bytes": 12256804864
+          },
+          {
+            "elapsed_seconds": 51.735,
+            "process_rss_bytes": 7638847488,
+            "host_available_bytes": 31693008896,
+            "card_used_bytes": 12410945536
+          },
+          {
+            "elapsed_seconds": 52.797,
+            "process_rss_bytes": 7638900736,
+            "host_available_bytes": 31774052352,
+            "card_used_bytes": 12409896960
+          },
+          {
+            "elapsed_seconds": 53.86,
+            "process_rss_bytes": 7638999040,
+            "host_available_bytes": 31795458048,
+            "card_used_bytes": 12392071168
+          },
+          {
+            "elapsed_seconds": 54.922,
+            "process_rss_bytes": 9184305152,
+            "host_available_bytes": 30254215168,
+            "card_used_bytes": 12354322432
+          },
+          {
+            "elapsed_seconds": 55.985,
+            "process_rss_bytes": 12959375360,
+            "host_available_bytes": 26289803264,
+            "card_used_bytes": 12354322432
+          },
+          {
+            "elapsed_seconds": 57.047,
+            "process_rss_bytes": 16415019008,
+            "host_available_bytes": 22866395136,
+            "card_used_bytes": 12302942208
+          },
+          {
+            "elapsed_seconds": 58.125,
+            "process_rss_bytes": 16726929408,
+            "host_available_bytes": 22837489664,
+            "card_used_bytes": 1661992960
+          }
+        ],
+        "note": "Process CUDA allocator maxima; RSS/card/host values are periodic shared observations, not continuous or task-exclusive minima."
+      },
+      "output": {
+        "filename": "output.png",
+        "sha256": "41102f60f0fa221bc048db37a1e902df4eca6878a7e84e6dae3f7684f0b2e86b",
+        "width": 512,
+        "height": 512,
+        "pixel_standard_deviation": 62.40132366378983,
+        "quality_verified": false
+      },
+      "receipt": null,
+      "source_manifest_sha256_at_run": "044d6894d12a0996dda7e7db363947bf953530f93c9c3e2b22db241f93a45386"
+    },
+    {
+      "run_id": "0b3c6f7d-5918-4f03-ac87-f0f9032766f3",
+      "request_sha256": "089abc499e0d5a1d7110ac0d2a1582eb54669c29908c3fbee70097cf3ffd24ba",
+      "observation_sha256": "e53aa00785236b6ff4d7531ae4344ab7c2c478824cd700730b4e3a27e1b92624",
+      "settings": {
+        "workflow_id": "flux1-schnell-text2image-v1",
+        "engine_url": "http://127.0.0.1:8188",
+        "title": "F02 runtime observation",
+        "diffusion_model": "flux1-schnell.safetensors",
+        "clip_l": "clip_l.safetensors",
+        "t5xxl": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "vae": "ae.safetensors",
+        "prompt": "anime illustration, one adult woman reading a book in a quiet sunlit library, fully clothed, soft colors",
+        "seed": "9007199254740993",
+        "width": 512,
+        "height": 512,
+        "steps": 4,
+        "weight_dtype": "fp8_e4m3fn",
+        "encoder_device": "cpu"
+      },
+      "workflow": {
+        "1": {
+          "class_type": "UNETLoader",
+          "inputs": {
+            "unet_name": "flux1-schnell.safetensors",
+            "weight_dtype": "fp8_e4m3fn"
+          }
+        },
+        "2": {
+          "class_type": "DualCLIPLoader",
+          "inputs": {
+            "clip_name1": "clip_l.safetensors",
+            "clip_name2": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+            "type": "flux",
+            "device": "cpu"
+          }
+        },
+        "3": {
+          "class_type": "VAELoader",
+          "inputs": {
+            "vae_name": "ae.safetensors"
+          }
+        },
+        "4": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "anime illustration, one adult woman reading a book in a quiet sunlit library, fully clothed, soft colors",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "5": {
+          "class_type": "CLIPTextEncode",
+          "inputs": {
+            "text": "",
+            "clip": [
+              "2",
+              0
+            ]
+          }
+        },
+        "6": {
+          "class_type": "EmptySD3LatentImage",
+          "inputs": {
+            "width": 512,
+            "height": 512,
+            "batch_size": 1
+          }
+        },
+        "7": {
+          "class_type": "KSampler",
+          "inputs": {
+            "model": [
+              "1",
+              0
+            ],
+            "positive": [
+              "4",
+              0
+            ],
+            "negative": [
+              "5",
+              0
+            ],
+            "latent_image": [
+              "6",
+              0
+            ],
+            "seed": 9007199254740993,
+            "steps": 4,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 1.0
+          }
+        },
+        "8": {
+          "class_type": "VAEDecode",
+          "inputs": {
+            "samples": [
+              "7",
+              0
+            ],
+            "vae": [
+              "3",
+              0
+            ]
+          }
+        },
+        "9": {
+          "class_type": "SaveImage",
+          "inputs": {
+            "images": [
+              "8",
+              0
+            ],
+            "filename_prefix": "ModelAtelier"
+          }
+        }
+      },
+      "sources": {
+        "comfy_commit": "15eb748b3ec5f8a0a2d470b7fb280e2d7579f916",
+        "file_sha256": {
+          "scripts/flux_runtime_worker.py": "cbf439844f7ad721f2133d0c7b95b4ad37752fcfed223a1dac48ff633569a1b7",
+          "backend/flux_observation.py": "ed3b26446b41af11f6ca80b617f54d64b91bfb62c7cc75a66f55509a47558af7",
+          "backend/flux_workflows.py": "0bf139d98336531624e4ca51e3222022aa8e81206786784ab5a63ac225978725",
+          "runtime/ComfyUI/nodes.py": "d5ef326126c55eaf4fde0355a12bbaa96c83f8c6135daa28877030a79c37c3ad",
+          "runtime/ComfyUI/comfy/ops.py": "1b704470c4ceebf453c54ac9a9c0ff0d120a9d0662bc2df93e33e2edb654ffaf",
+          "runtime/ComfyUI/comfy/model_management.py": "83420988a4173081862a93d8d4ab25bee57ddd78fc0f7dfd29d0078831e6ffa6",
+          "runtime/ComfyUI/comfy/model_patcher.py": "95fe776e84673712488b0f49f8c0c8e989f7b430887d1f4889d41d7fe0f5bb89",
+          "runtime/ComfyUI/comfy/sd.py": "3b71a1a71a78ee327c24201f8d522393eb111264b3569d8b3a24bd9149d77f4f",
+          "runtime/ComfyUI/comfy_extras/nodes_sd3.py": "07523b3583a9fdea80fdeecc3f8cb15eb13a0e86febe775ebe0cd1bc06f619cd"
+        }
+      },
+      "runtime": {
+        "torch": "2.14.0+cu130",
+        "python": "3.12.10",
+        "cuda": "13.0",
+        "gpu": "NVIDIA GeForce RTX 3060",
+        "vram_bytes": 12884377600
+      },
+      "file_precisions": [
+        {
+          "role": "diffusion_model",
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+          "actual_size_bytes": 23782506688,
+          "full_sha256_verified": true,
+          "file_precision": {
+            "tensor_counts_by_dtype": {
+              "BF16": 776
+            },
+            "tensor_bytes_by_dtype": {
+              "BF16": 23782357120
+            },
+            "selected_metadata": {
+              "modelspec.license": "Apache License 2.0",
+              "modelspec.architecture": "Flux.1-schnell"
+            },
+            "execution_precision_verified": false
+          }
+        },
+        {
+          "role": "vae",
+          "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+          "actual_size_bytes": 335304388,
+          "full_sha256_verified": true,
+          "file_precision": {
+            "tensor_counts_by_dtype": {
+              "F32": 244
+            },
+            "tensor_bytes_by_dtype": {
+              "F32": 335278732
+            },
+            "selected_metadata": {
+              "modelspec.license": "Apache License 2.0",
+              "modelspec.architecture": "Flux.1-AE"
+            },
+            "execution_precision_verified": false
+          }
+        },
+        {
+          "role": "clip_l",
+          "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+          "actual_size_bytes": 246144152,
+          "full_sha256_verified": true,
+          "file_precision": {
+            "tensor_counts_by_dtype": {
+              "F16": 196
+            },
+            "tensor_bytes_by_dtype": {
+              "F16": 246120960
+            },
+            "selected_metadata": {},
+            "execution_precision_verified": false
+          }
+        },
+        {
+          "role": "t5xxl",
+          "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+          "actual_size_bytes": 5157348688,
+          "full_sha256_verified": true,
+          "file_precision": {
+            "tensor_counts_by_dtype": {
+              "F32": 168,
+              "F16": 52,
+              "F8_E4M3": 169
+            },
+            "tensor_bytes_by_dtype": {
+              "F32": 672,
+              "F16": 526790656,
+              "F8_E4M3": 4630511616
+            },
+            "selected_metadata": {},
+            "execution_precision_verified": false
+          }
+        }
+      ],
+      "elapsed_seconds": 55.953,
+      "stages": [
+        {
+          "name": "load_encoders_cpu",
+          "elapsed_seconds": 0.437
+        },
+        {
+          "name": "encode_positive_cpu",
+          "elapsed_seconds": 12.25
+        },
+        {
+          "name": "encode_empty_cpu",
+          "elapsed_seconds": 12.016
+        },
+        {
+          "name": "load_diffusion_fp8",
+          "elapsed_seconds": 18.453
+        },
+        {
+          "name": "sample_four_steps",
+          "elapsed_seconds": 8.234
+        },
+        {
+          "name": "load_vae",
+          "elapsed_seconds": 0.469
+        },
+        {
+          "name": "decode",
+          "elapsed_seconds": 0.515
+        }
+      ],
+      "parameter_snapshots": [
+        {
+          "component": "clip_l",
+          "phase": "after_load",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.float32",
+              "device": "cpu",
+              "bytes": 4
+            },
+            {
+              "dtype": "torch.float16",
+              "device": "cpu",
+              "bytes": 247300608
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        },
+        {
+          "component": "t5xxl",
+          "phase": "after_load",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.float32",
+              "device": "cpu",
+              "bytes": 4
+            },
+            {
+              "dtype": "torch.float16",
+              "device": "cpu",
+              "bytes": 9524621312
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        },
+        {
+          "component": "diffusion_model",
+          "phase": "after_load",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.float8_e4m3fn",
+              "device": "cpu",
+              "bytes": 11891178560
+            },
+            {
+              "dtype": "torch.float32",
+              "device": "cpu",
+              "bytes": 4000
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        },
+        {
+          "component": "diffusion_model",
+          "phase": "after_sampling",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.float8_e4m3fn",
+              "device": "cuda:0",
+              "bytes": 10169906240
+            },
+            {
+              "dtype": "torch.float8_e4m3fn",
+              "device": "cpu",
+              "bytes": 1721272320
+            },
+            {
+              "dtype": "torch.float32",
+              "device": "cpu",
+              "bytes": 4000
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        },
+        {
+          "component": "vae",
+          "phase": "after_load",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.bfloat16",
+              "device": "cpu",
+              "bytes": 167639366
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        },
+        {
+          "component": "vae",
+          "phase": "after_decode",
+          "logical_tensor_bytes": [
+            {
+              "dtype": "torch.bfloat16",
+              "device": "cuda:0",
+              "bytes": 167639366
+            }
+          ],
+          "note": "Logical parameter/buffer bytes; not unique storage or allocated VRAM."
+        }
+      ],
+      "casts": {
+        "observations": [
+          {
+            "component": "t5xxl",
+            "source_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "input_tensor": null,
+            "returned_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "calls": 4
+          },
+          {
+            "component": "t5xxl",
+            "source_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "input_tensor": {
+              "dtype": "torch.float32",
+              "device": "cpu"
+            },
+            "returned_weight": {
+              "dtype": "torch.float32",
+              "device": "cpu"
+            },
+            "calls": 336
+          },
+          {
+            "component": "clip_l",
+            "source_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "input_tensor": null,
+            "returned_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "calls": 2
+          },
+          {
+            "component": "clip_l",
+            "source_weight": {
+              "dtype": "torch.float16",
+              "device": "cpu"
+            },
+            "input_tensor": {
+              "dtype": "torch.float32",
+              "device": "cpu"
+            },
+            "returned_weight": {
+              "dtype": "torch.float32",
+              "device": "cpu"
+            },
+            "calls": 196
+          },
+          {
+            "component": "diffusion_model",
+            "source_weight": {
+              "dtype": "torch.float8_e4m3fn",
+              "device": "cuda:0"
+            },
+            "input_tensor": {
+              "dtype": "torch.bfloat16",
+              "device": "cuda:0"
+            },
+            "returned_weight": {
+              "dtype": "torch.bfloat16",
+              "device": "cuda:0"
+            },
+            "calls": 1504
+          },
+          {
+            "component": "diffusion_model",
+            "source_weight": {
+              "dtype": "torch.float8_e4m3fn",
+              "device": "cpu"
+            },
+            "input_tensor": {
+              "dtype": "torch.bfloat16",
+              "device": "cuda:0"
+            },
+            "returned_weight": {
+              "dtype": "torch.bfloat16",
+              "device": "cuda:0"
+            },
+            "calls": 352
+          }
+        ],
+        "overflow_calls": 0,
+        "scope": "observed_cast_bias_weight_calls_only_not_every_kernel_or_accumulator"
+      },
+      "resources": {
+        "host_total_bytes": 68654481408,
+        "process_rss_observed_max_bytes": 38769602560,
+        "host_used_observed_max_bytes": 67715026944,
+        "card_used_observed_max_bytes": 12235833344,
+        "torch_max_memory_allocated_bytes": 10558828032,
+        "torch_max_memory_reserved_bytes": 10710155264,
+        "sample_count": 51,
+        "retained_samples": 51,
+        "nvidia_failures": 0,
+        "samples": [
+          {
+            "elapsed_seconds": 0.016,
+            "process_rss_bytes": 863805440,
+            "host_available_bytes": 38242816000,
+            "card_used_bytes": 1680867328
+          },
+          {
+            "elapsed_seconds": 1.141,
+            "process_rss_bytes": 2236223488,
+            "host_available_bytes": 36945514496,
+            "card_used_bytes": 1680867328
+          },
+          {
+            "elapsed_seconds": 2.25,
+            "process_rss_bytes": 2803183616,
+            "host_available_bytes": 36294975488,
+            "card_used_bytes": 1680867328
+          },
+          {
+            "elapsed_seconds": 3.375,
+            "process_rss_bytes": 3018436608,
+            "host_available_bytes": 36117663744,
+            "card_used_bytes": 1809842176
+          },
+          {
+            "elapsed_seconds": 4.5,
+            "process_rss_bytes": 3625517056,
+            "host_available_bytes": 35653193728,
+            "card_used_bytes": 1808793600
+          },
+          {
+            "elapsed_seconds": 5.625,
+            "process_rss_bytes": 4011216896,
+            "host_available_bytes": 35190398976,
+            "card_used_bytes": 1786773504
+          },
+          {
+            "elapsed_seconds": 6.766,
+            "process_rss_bytes": 4450566144,
+            "host_available_bytes": 34706325504,
+            "card_used_bytes": 1747976192
+          },
+          {
+            "elapsed_seconds": 7.875,
+            "process_rss_bytes": 4673843200,
+            "host_available_bytes": 34502467584,
+            "card_used_bytes": 1743781888
+          },
+          {
+            "elapsed_seconds": 8.985,
+            "process_rss_bytes": 5318131712,
+            "host_available_bytes": 34006581248,
+            "card_used_bytes": 1678770176
+          },
+          {
+            "elapsed_seconds": 10.078,
+            "process_rss_bytes": 5747408896,
+            "host_available_bytes": 33429069824,
+            "card_used_bytes": 1682964480
+          },
+          {
+            "elapsed_seconds": 11.172,
+            "process_rss_bytes": 5835350016,
+            "host_available_bytes": 33334439936,
+            "card_used_bytes": 1682964480
+          },
+          {
+            "elapsed_seconds": 12.297,
+            "process_rss_bytes": 6429962240,
+            "host_available_bytes": 32742268928,
+            "card_used_bytes": 1682964480
+          },
+          {
+            "elapsed_seconds": 13.406,
+            "process_rss_bytes": 6599233536,
+            "host_available_bytes": 32562102272,
+            "card_used_bytes": 1682964480
+          },
+          {
+            "elapsed_seconds": 14.531,
+            "process_rss_bytes": 6774931456,
+            "host_available_bytes": 32399773696,
+            "card_used_bytes": 1682964480
+          },
+          {
+            "elapsed_seconds": 15.641,
+            "process_rss_bytes": 6786527232,
+            "host_available_bytes": 32392589312,
+            "card_used_bytes": 1695547392
+          },
+          {
+            "elapsed_seconds": 16.735,
+            "process_rss_bytes": 6573666304,
+            "host_available_bytes": 32474304512,
+            "card_used_bytes": 1693450240
+          },
+          {
+            "elapsed_seconds": 17.828,
+            "process_rss_bytes": 6777634816,
+            "host_available_bytes": 32289345536,
+            "card_used_bytes": 1682964480
+          },
+          {
+            "elapsed_seconds": 18.906,
+            "process_rss_bytes": 6774968320,
+            "host_available_bytes": 32268922880,
+            "card_used_bytes": 1682964480
+          },
+          {
+            "elapsed_seconds": 20.031,
+            "process_rss_bytes": 6785511424,
+            "host_available_bytes": 32318091264,
+            "card_used_bytes": 1684013056
+          },
+          {
+            "elapsed_seconds": 21.11,
+            "process_rss_bytes": 6573699072,
+            "host_available_bytes": 32510447616,
+            "card_used_bytes": 1684013056
+          },
+          {
+            "elapsed_seconds": 22.25,
+            "process_rss_bytes": 6742585344,
+            "host_available_bytes": 32268140544,
+            "card_used_bytes": 1684013056
+          },
+          {
+            "elapsed_seconds": 23.375,
+            "process_rss_bytes": 6503309312,
+            "host_available_bytes": 32549502976,
+            "card_used_bytes": 1684013056
+          },
+          {
+            "elapsed_seconds": 24.5,
+            "process_rss_bytes": 6776004608,
+            "host_available_bytes": 32361304064,
+            "card_used_bytes": 1684013056
+          },
+          {
+            "elapsed_seconds": 25.578,
+            "process_rss_bytes": 8420208640,
+            "host_available_bytes": 30702551040,
+            "card_used_bytes": 1684013056
+          },
+          {
+            "elapsed_seconds": 26.656,
+            "process_rss_bytes": 12699815936,
+            "host_available_bytes": 26400157696,
+            "card_used_bytes": 1684013056
+          },
+          {
+            "elapsed_seconds": 27.735,
+            "process_rss_bytes": 17196077056,
+            "host_available_bytes": 21926645760,
+            "card_used_bytes": 1685061632
+          },
+          {
+            "elapsed_seconds": 28.813,
+            "process_rss_bytes": 21476286464,
+            "host_available_bytes": 17733378048,
+            "card_used_bytes": 1685061632
+          },
+          {
+            "elapsed_seconds": 29.875,
+            "process_rss_bytes": 25900068864,
+            "host_available_bytes": 13431635968,
+            "card_used_bytes": 1684013056
+          },
+          {
+            "elapsed_seconds": 30.953,
+            "process_rss_bytes": 29486329856,
+            "host_available_bytes": 9982865408,
+            "card_used_bytes": 1685061632
+          },
+          {
+            "elapsed_seconds": 32.063,
+            "process_rss_bytes": 31814787072,
+            "host_available_bytes": 7582392320,
+            "card_used_bytes": 1708130304
+          },
+          {
+            "elapsed_seconds": 33.156,
+            "process_rss_bytes": 33472327680,
+            "host_available_bytes": 6017708032,
+            "card_used_bytes": 1707081728
+          },
+          {
+            "elapsed_seconds": 34.203,
+            "process_rss_bytes": 35137425408,
+            "host_available_bytes": 4358033408,
+            "card_used_bytes": 1704984576
+          },
+          {
+            "elapsed_seconds": 35.281,
+            "process_rss_bytes": 36234223616,
+            "host_available_bytes": 3423363072,
+            "card_used_bytes": 1704984576
+          },
+          {
+            "elapsed_seconds": 36.36,
+            "process_rss_bytes": 36415942656,
+            "host_available_bytes": 3237728256,
+            "card_used_bytes": 1694498816
+          },
+          {
+            "elapsed_seconds": 37.469,
+            "process_rss_bytes": 36767531008,
+            "host_available_bytes": 2826006528,
+            "card_used_bytes": 1692401664
+          },
+          {
+            "elapsed_seconds": 38.547,
+            "process_rss_bytes": 36841148416,
+            "host_available_bytes": 2769768448,
+            "card_used_bytes": 1692401664
+          },
+          {
+            "elapsed_seconds": 39.61,
+            "process_rss_bytes": 38382374912,
+            "host_available_bytes": 1222504448,
+            "card_used_bytes": 1692401664
+          },
+          {
+            "elapsed_seconds": 40.672,
+            "process_rss_bytes": 38270341120,
+            "host_available_bytes": 945676288,
+            "card_used_bytes": 1691353088
+          },
+          {
+            "elapsed_seconds": 41.735,
+            "process_rss_bytes": 38769602560,
+            "host_available_bytes": 939454464,
+            "card_used_bytes": 1655701504
+          },
+          {
+            "elapsed_seconds": 43.313,
+            "process_rss_bytes": 15678730240,
+            "host_available_bytes": 24107925504,
+            "card_used_bytes": 1621098496
+          },
+          {
+            "elapsed_seconds": 44.406,
+            "process_rss_bytes": 12415672320,
+            "host_available_bytes": 27396861952,
+            "card_used_bytes": 5758779392
+          },
+          {
+            "elapsed_seconds": 45.5,
+            "process_rss_bytes": 8243122176,
+            "host_available_bytes": 31635726336,
+            "card_used_bytes": 9971957760
+          },
+          {
+            "elapsed_seconds": 46.547,
+            "process_rss_bytes": 7769100288,
+            "host_available_bytes": 32234520576,
+            "card_used_bytes": 11969495040
+          },
+          {
+            "elapsed_seconds": 47.61,
+            "process_rss_bytes": 8110112768,
+            "host_available_bytes": 31753183232,
+            "card_used_bytes": 12230590464
+          },
+          {
+            "elapsed_seconds": 48.672,
+            "process_rss_bytes": 8110477312,
+            "host_available_bytes": 31742296064,
+            "card_used_bytes": 12235833344
+          },
+          {
+            "elapsed_seconds": 49.735,
+            "process_rss_bytes": 8110649344,
+            "host_available_bytes": 31737167872,
+            "card_used_bytes": 12235833344
+          },
+          {
+            "elapsed_seconds": 50.781,
+            "process_rss_bytes": 8110792704,
+            "host_available_bytes": 31721070592,
+            "card_used_bytes": 12235833344
+          },
+          {
+            "elapsed_seconds": 51.844,
+            "process_rss_bytes": 8736014336,
+            "host_available_bytes": 31103991808,
+            "card_used_bytes": 12235833344
+          },
+          {
+            "elapsed_seconds": 52.906,
+            "process_rss_bytes": 12309106688,
+            "host_available_bytes": 27525500928,
+            "card_used_bytes": 12235833344
+          },
+          {
+            "elapsed_seconds": 53.985,
+            "process_rss_bytes": 15810625536,
+            "host_available_bytes": 24042541056,
+            "card_used_bytes": 12235833344
+          },
+          {
+            "elapsed_seconds": 55.063,
+            "process_rss_bytes": 15963828224,
+            "host_available_bytes": 23890972672,
+            "card_used_bytes": 1605369856
+          }
+        ],
+        "note": "Process CUDA allocator maxima; RSS/card/host values are periodic shared observations, not continuous or task-exclusive minima."
+      },
+      "output": {
+        "filename": "output.png",
+        "sha256": "41102f60f0fa221bc048db37a1e902df4eca6878a7e84e6dae3f7684f0b2e86b",
+        "width": 512,
+        "height": 512,
+        "pixel_standard_deviation": 62.40132366378983,
+        "quality_verified": false
+      },
+      "receipt": {
+        "run_id": "0b3c6f7d-5918-4f03-ac87-f0f9032766f3",
+        "status": "completed",
+        "exit_code": 0,
+        "worker_process_exited": true,
+        "observation_available": true,
+        "request_sha256": "089abc499e0d5a1d7110ac0d2a1582eb54669c29908c3fbee70097cf3ffd24ba"
+      },
+      "source_manifest_sha256_at_run": "fb67b6f6181651988cd5f65b7e35b08ecab1a6686afebc27f256d45beb940621"
+    }
+  ],
+  "minimum_vram_bytes": null,
+  "minimum_ram_bytes": null,
+  "source_identity_note": "Full weight SHA256 verified before each run; metadata file hash is not a weight proof.",
+  "limitations": [
+    "Shared card/host observations include other software.",
+    "Run 2 overlapped a quality attempt that was blocked by the compute lease; final quality is run separately.",
+    "Only observed cast calls and parameter residency are recorded; kernel accumulators remain unknown.",
+    "Process startup is fresh; filesystem cache is unknown and weights were read for verification.",
+    "No RTX 4080, 1024px, training, reference image, LoRA or author-style quality acceptance."
+  ],
+  "validation": {
+    "backend_total": 770,
+    "backend_skipped": 1,
+    "browser_batches_passed": [
+      21,
+      30,
+      27,
+      42
+    ],
+    "browser_total_passed": 120,
+    "final_targeted_backend_passed": 36,
+    "final_model_library_html_probe_passed": 1,
+    "style_types_build_contracts": "passed",
+    "github_after_push": "pending"
+  }
+}

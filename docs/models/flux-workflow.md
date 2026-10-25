@@ -1,5 +1,7 @@
 # FLUX.1 [schnell] 專用工作流程
 
+2026-10-25：[F01 固定安裝](flux-installation.md)與 [F02 原生節點 512 配置量測](flux-runtime-observation.md)已有實際證據；F02 使用獨立程序及明確載入順序，尚未認列本平台 HTTP／作品保存／離線還原與 OOM 的 F03。下方 2026-10-05 的缺權重描述保留為歷史。
+
 2026-10-05：`flux1-schnell-text2image-v1` 使用 9 個原生節點：UNETLoader、DualCLIPLoader（type=flux）、VAELoader、正／空負提示詞 CLIPTextEncode、EmptySD3LatentImage、KSampler、VAEDecode、SaveImage。
 
 採 16 通道 latent；batch 1、CFG 1、Euler／simple、denoise 1，steps 限定 1–4。尺寸 64–8192 且為 16 倍數。負提示詞、LoRA、參考圖及其他變體均不接受，不默默忽略額外欄位。CFG 1 不使用負提示詞；參數依 [ComfyUI 官方範例](https://comfyanonymous.github.io/ComfyUI_examples/flux/) 及 [官方 Schnell workflow](https://github.com/Comfy-Org/workflow_templates/blob/main/templates/flux_schnell.json) 的取樣設定實作，分離載入器介面另核對本機原生源碼與即時節點定義。
