@@ -36,4 +36,4 @@
 
 本機硬體查核為 RTX 3060 12 GiB、系統 RAM 約 63.94 GiB；此項只驗證權重來源與本地檔案，不是 GPU 執行資源或最低需求證據。來源 BF16、檔案大小與啟動旗標皆不能證明執行精度／卸載。主模型、VAE、CLIP-L／T5 上游完整條款仍另由 F02 核對，`terms_verified=false` 保留。
 
-F01 的完成條目移至 [CHANGELOG](../../CHANGELOG.MD#f01)。先 commit／push F01 後，才做 F02；RTX 4080、實際 GPU 出圖／保存／OOM、LoRA 與參考圖仍各自依 [ROADMAP](../../ROADMAP.MD) 驗收。
+F01 的完成條目移至 [CHANGELOG](../../CHANGELOG.md#f01)。先 commit／push F01 後，才做 F02；RTX 4080、實際 GPU 出圖／保存／OOM、LoRA 與參考圖仍各自依 [ROADMAP](../../ROADMAP.md) 驗收。

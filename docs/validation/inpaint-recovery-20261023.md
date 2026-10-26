@@ -54,4 +54,4 @@ Set-Location ..
 
 每個完整案例保存 pending.png／pending-panel.png、original-pending.json 與 recovery-evidence.json，包含原始 pending、平台請求 body、原始任務 JSON、恢復後原始 JSON、輸入 SHA256、實際上傳紀錄、狀態查詢及引擎計數。另保存 original-source.png／original-mask.png 原素材，以及 prepared-source.png／prepared-mask.png、v2 的 prepared-blend.png；逐份核對實際 bytes 的 SHA256 後保存，可獨立重新核對雜湊。上述檔案也附於 HTML 報告，位於忽略的 runtime/quality/browser-report 與 browser-results；CI 會保存整個 runtime/quality 14 天。下次執行會重建輸出，若需長期保留應先另存證據。
 
-修正前失敗證據另保留在忽略的 runtime/v02-before-browser（畫面、錄影、trace）、runtime/v02-before.log 與 v02-receipt-before.log；不將正式圖片或 runtime 加入 Git。結案只關閉 [ROADMAP V02](../../CHANGELOG.MD#v02)，V01 實機觸控維持待驗收；剩餘 35 主項／61 子項，共 96 個未勾選框。
+修正前失敗證據另保留在忽略的 runtime/v02-before-browser（畫面、錄影、trace）、runtime/v02-before.log 與 v02-receipt-before.log；不將正式圖片或 runtime 加入 Git。結案只關閉 [ROADMAP V02](../../CHANGELOG.md#v02)，V01 實機觸控維持待驗收；剩餘 35 主項／61 子項，共 96 個未勾選框。

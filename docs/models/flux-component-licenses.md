@@ -23,4 +23,4 @@
 
 `license_review.source_terms_reviewed=true` 表示已記錄來源聲明、完整參考條文及缺口。主模型／VAE 的 `terms_verified=true` 限於可追溯作者來源與這次條款查核，並非對個別下游用途或所有第三方權利的認證。CLIP-L／T5 的確切轉檔鏈仍未知，`terms_verified=false`、`conversion_lineage_verified=false`；清冊的整體來源鏈驗證亦為 false。
 
-新安裝的 provenance 使用這些逐元件記錄，模型庫顯示相應名稱與限制。F01 當時的側錄仍保存原本「尚未查核」狀態，不自動回填歷史。編碼器追溯缺口另列 [M02](../../ROADMAP.MD#m02)，不隱藏於已完成的 F02；本清冊不涵蓋整個平台、所有 tokenizer／套件及輸入圖片的授權。
+新安裝的 provenance 使用這些逐元件記錄，模型庫顯示相應名稱與限制。F01 當時的側錄仍保存原本「尚未查核」狀態，不自動回填歷史。編碼器追溯缺口另列 [M02](../../ROADMAP.md#m02)，不隱藏於已完成的 F02；本清冊不涵蓋整個平台、所有 tokenizer／套件及輸入圖片的授權。

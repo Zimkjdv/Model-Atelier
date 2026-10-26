@@ -57,7 +57,7 @@ R03 後續：[Fooocus 專用修補與八組比較](fooocus-inpainting.md)已完�
 
 整合前需固定依賴與估計器權重；其 requirements 並非完整 lock，節點會呼叫 `from_pretrained`，不能假定初次運行離線。DWPose 的 provider 探測清單甚至包含 CPU provider，因此啟動訊息不能代替實際裝置／速度量測；README 舊 CUDA 指引也不直接套入目前環境。[依賴清單](https://github.com/Fannovel16/comfyui_controlnet_aux/blob/a587a4c1594524c1d2de5cd1a86cd868ff448e1c/requirements.txt)、[provider 與模型載入](https://github.com/Fannovel16/comfyui_controlnet_aux/blob/a587a4c1594524c1d2de5cd1a86cd868ff448e1c/node_wrappers/dwpose.py#L11-L27)。
 
-建議先選一種 pose 或 depth 完成最小串接，保存來源圖、實際條件圖、前處理參數／版本與 hash，再驗證單次提交、離線讀取、精確還原與固定品質案例；通過後擴充第二種。這是 R01 內的實作方式建議，不改變原定 R01 → R03 順序。[R01 驗收](../CHANGELOG.MD#r01)。
+建議先選一種 pose 或 depth 完成最小串接，保存來源圖、實際條件圖、前處理參數／版本與 hash，再驗證單次提交、離線讀取、精確還原與固定品質案例；通過後擴充第二種。這是 R01 內的實作方式建議，不改變原定 R01 → R03 順序。[R01 驗收](../CHANGELOG.md#r01)。
 
 ## R03：優先評估 comfyui-inpaint-nodes
 
@@ -72,7 +72,7 @@ R03 後續：[Fooocus 專用修補與八組比較](fooocus-inpainting.md)已完�
 - refine 的 `latent_inpaint` 與 `latent_samples` 接線不同；遮罩降噪強度與最終合成遮罩也有不同目的。錯接可能產生品質問題，應保存處理版本與各參數。[conditioning](https://github.com/Acly/comfyui-inpaint-nodes/blob/5b7681746fe19e563113d27366ba85236bc1ba5b/README.md#inpaint-conditioning)、[合成遮罩](https://github.com/Acly/comfyui-inpaint-nodes/blob/5b7681746fe19e563113d27366ba85236bc1ba5b/README.md#denoise-to-compositing-mask)。
 - 色彩匹配節點針對整張輸出都出現色偏的情形；不能當作每次必開的品質保證。遮罩外保留與色偏仍依固定案例實測。[色彩匹配適用條件](https://github.com/Acly/comfyui-inpaint-nodes/blob/5b7681746fe19e563113d27366ba85236bc1ba5b/README.md#color-match-masked)。
 
-驗收沿用 R03：同素材、同模型、同 seed 比較基準與候選；保存原遮罩、處理後遮罩、半徑與合成方式，記錄接縫、色偏、截斷及遮罩外改變。安裝成功或產生一張圖不能取代品質比較。[R03 原定範圍](../ROADMAP.MD)。
+驗收沿用 R03：同素材、同模型、同 seed 比較基準與候選；保存原遮罩、處理後遮罩、半徑與合成方式，記錄接縫、色偏、截斷及遮罩外改變。安裝成功或產生一張圖不能取代品質比較。[R03 原定範圍](../ROADMAP.md)。
 
 ## Krita AI Diffusion：借用工作流程設計
 

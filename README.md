@@ -2,7 +2,7 @@
 
 個人 AI 圖像創作與實驗工作台。Vue 3 + TypeScript 前端、FastAPI 後端，透過獨立 ComfyUI 執行生成；SQLite 與圖片保存在本機。
 
-現行待辦與驗收以 [ROADMAP.MD](ROADMAP.MD) 為準；開發與歷史實測見 [CHANGELOG.MD](CHANGELOG.MD)。文件整理日期：2026-10-25。
+現行待辦與驗收以 [ROADMAP.md](ROADMAP.md) 為準；開發與歷史實測見 [CHANGELOG.md](CHANGELOG.md)。文件整理日期：2026-10-27。
 
 第一次使用可先開啟 [HTML 圖文使用教學](docs/guide/index.html)：依序介紹啟動、生成、單張參考、資料審查、訓練／續訓、LoRA 比較與備份。下載專案後直接用瀏覽器開啟 `docs/guide/index.html`，支援離線閱讀、點圖放大與列印／另存 PDF；圖片與樣式需保留在同一個 guide 目錄。GitHub 檔案頁只顯示 HTML 原碼，不是教學預覽。
 
@@ -53,27 +53,27 @@ Pony 同一權重的 Hugging Face 標記與 Civitai 發布頁條款不同，完�
 
 訓練提供 Windows 獨立環境及 SDXL UNet LoRA CLI；[訓練工作區](docs/training/workspace.md)已接上 T05 圖片審查、T06 明確準備／開始／停止／續訓、產物安裝／模型回登與固定比較方案。環境首次安裝仍依 [T03](docs/training/runtime.md)，資料審查與建方案不自動訓練或生成；尚未提供多租戶／付費、自訂節點編輯器或官方付費 API。設定還原不保證跨環境逐像素一致；實測來源條件與品質限制均保留。
 
-## 動漫畫風的下一步
+## 目前進度與下一步
 
-訓練操作另有 [T07 缺項導覽](docs/training/workspace.md#t07-缺項導覽)及 [T08 訓練報告](docs/training/workspace.md#t08-訓練報告)：篩選並定位待審查圖片，或預覽／下載原 run 的有界紀錄；導覽不批准圖片，報告不重跑訓練。FLUX 的官方資料、3060／4080 提醒與 GGUF 接入差異見 [實作前置判斷](docs/models/flux-rtx3060-planning.md)；F01 安裝與 F02 的 3060／64 GiB RAM、512×512 原生案例已完成。該案例程序 RSS 超過 36 GiB，不能承諾 32 GiB RAM 或較大尺寸。F03 另完成相同固定配置的平台 HTTP／作品保存／離線還原與受控 CUDA OOM 驗收；見 [實測證據](docs/validation/flux-generation-20261025.md)。F04 再獨立驗證固定 PVC LoRA 及 VAE 原圖流程，操作入口為 FLUX 子頁；[限制與圖片提醒](docs/models/flux-extensions.md)另列，未使用作者圖片訓練。
+截至 2026-10-27，ROADMAP 尚有 **10 個未完成主項、11 個待驗收子項**；以下依已提交的驗收紀錄整理，完成代表所列配置通過。
 
-以動漫畫風為目標時，建議依 **R05 品質基準 → L01 畫風 LoRA → R02 參考圖 adapter；使用者指定後續為 T01 → T02 → R01 → R03** 推進。先沿用現有生成與比較功能，再依結果決定是否訓練；整體 Vue／FastAPI／SQLite／ComfyUI 架構保留。
+| 範圍 | 已完成進度 | 下一步／限制 |
+| --- | --- | --- |
+| RTX 4080（E02–E04） | 八個基本流程、兩機固定條件比較、1536² 高負載，以及分開記錄的 512／1024 技術訓練 | 單次結果不代表普遍效能或最低硬體需求；[資源紀錄](docs/validation/hardware-resources-20261026.md) |
+| FLUX（F01–F04） | 固定四元件、3060 原生 512 配置、平台保存／離線恢復／受控 OOM、PVC LoRA 與 VAE 圖生圖 | 所列案例約 64 GiB RAM，程序 RSS 曾超過 36 GiB；4080 FLUX、32 GiB RAM、其他尺寸與身份參考尚未驗收 |
+| 模型來源（M01／M02） | Pony 作者聲明與元件指紋；FLUX 發布追溯及 CLIP 候選全張量比對 | 完整條款適用關係、確切上游及轉檔鏈仍缺證據；[M01 補查](docs/models/pony-v6-xl-license-followup-20261026.md)、[M02 補查](docs/models/flux-encoder-lineage-followup-20261026.md) |
+| 動漫參考與訓練（R01–R05、L01、T01–T08） | 有限品質比較、單張 adapter、pose／depth、修補、資料審查、訓練控制、產物回登及報告 | 作者畫風／角色尚未實際訓練；幾何資料技術驗收不等於作者品質通過 |
+| 介面與官方服務 | 桌面／窄視窗已有驗收；官方 API 尚未接入 | V01 待實體觸控設備；A01–A07 最後實作，A02 先確認模型與提供者 |
 
-R05 已完成兩模型、三題材、兩 seed、提示標籤及新素材 denoise 的 18 件有限比較，保存逐圖失敗觀察與離線核對。可在比較方案選動漫測試集或正／反向提示詞軸；R05 當時未使用作者圖，指定目標的後續比較另見 R02；見 [R05 基準與限制](docs/validation/anime-baseline-20261023.md)。
+### 動漫畫風／角色資料準備
 
-L01 另完成像素畫 LoRA 的固定來源／獨立相容副本及 14 組順序、強度、seed、題材比較，保留原格式未套用與 LCM 模糊等失敗；新增六筆歷史條件不代表當前品質通過。見[安裝與使用](docs/models/pixel-art-lora-sdxl.md)、[L01 驗收](docs/validation/style-matrix-20261023.md)。
+既有 R05、L01、R02、T01、T02、R01、R03 的首輪工作已完成，後續以資料審查及固定品質比較推進。R02 使用的 `artist_ref/ハシスタジオ_pixiv` 共 22 檔、20 個不同內容；每次只用一張參考圖，實際選用一張畫風圖、一張角色圖，另留六張評估，沒有把全部圖片送入訓練。詳見 [圖片用途與分組](docs/validation/reference-inputs-20261023.md)。
 
-第一輪可從三位作者／畫風各十張開始，每組七張候選參考、三張保留評估；只測一種畫風也可先準備一組。確定試訓時，每組可先用 20–50 張訓練圖，另留 5–10 張評估圖。這些是起始配額，不是硬性門檻或品質保證。R02 已接入單張參考圖 adapter；T03 技術驗收僅用自製幾何圖片，現有作者圖片仍待審核，素材用途標籤不會啟用畫風條件。
+1. 在 [訓練工作區](docs/training/workspace.md)完成 caption、來源與角色身分審查；兩條資料路徑各有 10 張訓練候選、6 張開發評估、6 張排除，目前真實資料包仍不能匯出。缺項依 [T02 紀錄](docs/validation/training-dataset-20261023.md)核對，T07 可定位待審查圖片。
+2. 確認試訓時，依 [T03 環境與資源](docs/training/runtime.md)和 [T06 控制流程](docs/training/workspace.md#t06-本機訓練與產物)明確準備／開始；畫風與角色分開，圖片審查不會自動啟動訓練。
+3. 依 [T04 固定比較](docs/training/artifacts.md)評估產物，並用 T08 查看原 run 報告。最終品質驗收前確認獨立保留圖未參與反覆調參；缺圖時先提醒補齊。
 
-2026-10-23 已收到 `artist_ref/ハシスタジオ_pixiv` 的 22 個檔案，去重後為 20 個不同檔案內容，並已確認棕髮綠眼、綠色髮飾的角色目標。**本輪 R02 沒有訓練模型：每次只用一張參考圖，實際選用 1 張畫風圖及 1 張角色圖分別測試，另留 6 張評估，不把 20 張全送入生成或訓練。** 檔名、差分分組、用途與之後 T01／T02 的補圖時點見 [R02 圖片用途紀錄](docs/validation/reference-inputs-20261023.md)。
-
-T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色分開的 SDXL LoRA 候選、固定基底、未來比較與圖片提醒；沒有開始訓練。T02 已完成 [資料契約／本機工具](docs/training/dataset-contract.md)與[官方介面評估](docs/training/tool-interface-research.md)：22 檔各建兩條路徑，10 張訓練候選、6 張開發評估、6 張排除；標註／來源及角色身分仍待審查，真實資料包尚不能匯出。R01 已完成 pose／depth 流程與固定案例驗收，R03 亦已完成有限修補比較，但 Fooocus 未優於一般修補；T03 已有獨立環境與技術試訓，T04 已接上產物回登與固定比較流程；作者品質仍待資料審查與實測。
-
-完整的圖片選擇、資料分割／版本、有限任務數、模組擴充及驗收方式見 [動漫畫風驗證與開發計畫](docs/anime-style-development.md)。
-
-接下來開發先讀 [GitHub 借用與開發策略](docs/github-reuse-assessment-20261023.md)、[全部 47 個主項對照](docs/roadmap-upstream-map-20261023.md)與[動漫相關原碼研究](docs/anime-upstream-candidates-20261023.md)。優先沿用 ComfyUI 現成前處理／修補節點與 sd-scripts 工具，保留本平台架構；已完成功能僅針對具體問題優化。研究後已完成 R01 的固定節點整合與有限實測；R03 已接入 Fooocus 實驗選項並記錄品質限制，其他候選仍待驗證。
-
-實作進入需要真實動漫圖片的品質驗收或訓練時，會先核對已提供資料，缺少時主動提醒使用者；提醒時點與所需內容見 [圖片提供提醒](docs/anime-style-development.md#image-input-reminders)。
+新畫風可先從每組七張候選參考、三張保留評估開始；試訓可先規劃 20–50 張訓練圖及 5–10 張評估圖，僅作起始配額。完整分割、提醒時點與品質判準見 [動漫畫風開發計畫](docs/anime-style-development.md)。模組擴充沿用 [GitHub 借用策略](docs/github-reuse-assessment-20261023.md)與現有 Vue／FastAPI／SQLite／ComfyUI 架構。
 
 ## 日常操作
 
@@ -90,8 +90,8 @@ T01 已完成 [訓練需求 v1](docs/training/requirements.md)：畫風與角色
 ```text
 model-atelier/
 ├── README.md                   # 專案介紹、快速開始與閱讀入口
-├── ROADMAP.MD                  # 現行待辦、優先順序與驗收條件
-├── CHANGELOG.MD                # 已完成變更與歷史實測紀錄
+├── ROADMAP.md                  # 現行待辦、優先順序與驗收條件
+├── CHANGELOG.md                # 已完成變更與歷史實測紀錄
 ├── .github/workflows/          # lock 安裝、完整品質檢查與失敗證據 CI
 ├── Dockerfile                  # 固定基底、前端建置與非 root 平台映像
 ├── compose.yaml                # 選用本機 Docker 平台與持久資料／鎖卷
@@ -160,7 +160,7 @@ model-atelier/
 | 驗證變更與清單效能 | [品質檢查與 CI](docs/quality-checks.md)、[分頁與量測](docs/list-pagination.md)：重跑命令、相容策略與驗收證據 |
 | 調整 UI | [UI 規範](docs/ui-guidelines.md)、[導覽與能力狀態](docs/navigation.md)、[逐頁視覺與無障礙驗收](docs/validation/ui-accessibility-20261023.md)：介面原則、可還原網址與桌面／窄視窗證據 |
 | 部署與存取 | [本機部署決策](docs/deployment.md)：同一台電腦、來源限制與平台／引擎／儲存角色；[驗收](docs/validation/local-deployment-20261025.md) |
-| 安排後續工作 | [ROADMAP](ROADMAP.MD)：尚未完成的項目與完成條件；[CHANGELOG](CHANGELOG.MD)：已完成變更 |
+| 安排後續工作 | [ROADMAP](ROADMAP.md)：尚未完成的項目與完成條件；[CHANGELOG](CHANGELOG.md)：已完成變更 |
 | 開始動漫畫風驗證 | [開發計畫與圖片準備](docs/anime-style-development.md)：本輪成果與後續順序、參考／評估／訓練資料、adapter 流程及人工驗收 |
 | 查核驗收證據 | [驗收目錄](docs/validation)：依硬體、模型、參數與日期記錄結果，不能視為所有環境的保證 |
 | 追溯舊文件 | [整理前 README 全文](docs/history/readme-before-q01-20261022.md)：舊限制、命令與歷史測試數，現行操作請以目前文件為準 |

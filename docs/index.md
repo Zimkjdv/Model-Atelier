@@ -1,6 +1,6 @@
 # 文件索引
 
-現行入口是 [README](../README.md)，待辦與驗收條件以 [ROADMAP](../ROADMAP.MD) 為準；歷史測試數不表示目前所有功能已驗收。
+現行入口是 [README](../README.md)，待辦與驗收條件以 [ROADMAP](../ROADMAP.md) 為準；歷史測試數不表示目前所有功能已驗收。
 
 初次操作先讀 [HTML 圖文使用教學](guide/index.html)：用瀏覽器開啟本機檔案，包含六張介面截圖、操作步驟、資料審查與訓練流程、常見問題及備份提醒，可離線閱讀／列印。深入契約與開發細節再依下列索引閱讀。
 
@@ -87,7 +87,7 @@
 - [R05 動漫基準](validation/anime-baseline-20261023.md)：18 件模型／seed／提示標籤／新素材 denoise 比較與逐圖失敗觀察；使用者目標畫風仍待圖片
 - [L01 更多畫風／有序 LoRA](validation/style-matrix-20261023.md)：14 組原生比較、四組原格式拒絕證據、獨立[像素畫相容副本](models/pixel-art-lora-sdxl.md)與逐圖品質限制
 - [停止](validation/running-stop-rtx3060.md)、[E01](validation/execution-device-20261022.md)、[FLUX 範圍](validation/flux-integration.md)
-- [全部驗收目錄](validation)、[CHANGELOG](../CHANGELOG.MD)、[2026-10-03 檢查](review-2026-10-03.md)
+- [全部驗收目錄](validation)、[CHANGELOG](../CHANGELOG.md)、[2026-10-03 檢查](review-2026-10-03.md)
 - [整理前 README 全文](history/readme-before-q01-20261022.md)：舊限制與命令僅供追溯。
 
 - [E02 RTX 4080 八個基本流程與離線驗收](validation/rtx4080-workflows-20261026.md)、[可解析證據](validation/rtx4080-workflows-20261026.json)

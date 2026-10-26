@@ -10,7 +10,7 @@
 
 開發狀態（2026-10-22）：本地 ComfyUI、Pony／Animagine、LoRA、參考圖工作流程、作品與比較報告已逐步整合；E01 引擎執行裝置回報與新任務提交保護已驗收。整體檢視新增 Q01–Q10 後，目前剩餘 46 個主項、84 個待驗收子項；FLUX 固定來源存取、RTX 4080 實測及其他未完成驗收仍保留。
 
-開發順序與未完成驗收見 [ROADMAP.MD](../../ROADMAP.MD)；全部歷史開發項、驗收與 83 個來源 commit 的日期歸檔見 [CHANGELOG.MD](../../CHANGELOG.MD)。下列帶日期的驗收段落只代表當次結果，最新待辦以 ROADMAP 為準。
+開發順序與未完成驗收見 [ROADMAP.md](../../ROADMAP.md)；全部歷史開發項、驗收與 83 個來源 commit 的日期歸檔見 [CHANGELOG.md](../../CHANGELOG.md)。下列帶日期的驗收段落只代表當次結果，最新待辦以 ROADMAP 為準。
 
 ## 目前功能
 

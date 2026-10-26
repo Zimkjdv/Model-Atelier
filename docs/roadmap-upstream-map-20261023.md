@@ -77,4 +77,4 @@ K／I 的固定版本沿用[初評](github-reuse-assessment-20261023.md)，本�
 4. 保留 UUID 冪等、原引擎、不可變快照及 64-bit seed 字串。具體差異：K 的 generate_seed 原碼因 Qt 限制只產生 32-bit seed，不能直接套用本平台已支援的大整數契約。
 5. 完成項目的優化需附具體缺陷或量測證據及回歸；硬體、觸控、權重來源和品質驗收都不能以找到上游原碼取代。
 
-相關本地依據：[架構](architecture.md)、[維護規則](maintenance.md)、[ROADMAP](../ROADMAP.MD)。以上沒有改變任何勾選狀態，也沒有下載模型或執行第三方程式。
+相關本地依據：[架構](architecture.md)、[維護規則](maintenance.md)、[ROADMAP](../ROADMAP.md)。以上沒有改變任何勾選狀態，也沒有下載模型或執行第三方程式。
