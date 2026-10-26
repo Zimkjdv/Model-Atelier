@@ -152,3 +152,26 @@ AST 靜態找到 815 個 `test_` 方法定義，不等於執行測試數或測�
 尚未驗證倉庫外消費者、使用者持久資料／localStorage、第三方 runtime、真實 Docker／GPU 與訓練。這些限制使動態入口、相容分支、整份模組及相似測試應保留。清理以證據、必要性與可回退性為準，不以刪除行數衡量成果。
 
 後續只執行使用者已明確批准的批次。B1 的執行不構成對 B2–B6 的批准。
+
+## B1 執行紀錄（2026-10-27）
+
+使用者明確批准後，先以 `2e195f7` 保存並推送本報告，再執行 B1。程式差異嚴格限定為上述六份 Python 各刪除一行未使用的標準函式庫 import，共六行；未修改測試、CLI、公開介面、依賴、配置、資料格式或歷史驗收。
+
+| 實際驗證 | 結果 |
+| --- | --- |
+| 修改前相關 unittest 基線 | 39 項全部通過 |
+| 修改後同一批 unittest | 39 項全部通過，test ID 清單完全相同，沒有跳過或刪除測試 |
+| 六份 Python 原文與 AST 比對 | 每份只移除指定 import，其他原文及 AST 與預期完全相同 |
+| 四個 CLI 的 `--help` | 修改前後 stdout、stderr、退出碼完全一致，均 exit 0 |
+| `scripts/check_style.py` | 通過：125 份 Python 格式／lint、前端 scoped 格式、Vue 型別與 CSS／style probes |
+| `git diff --check` | 通過 |
+
+相關 unittest 命令：
+
+```powershell
+.\.venv\Scripts\python.exe -X utf8 -B -m unittest -v backend.test_training_control backend.test_training_review backend.test_training_report backend.test_training_worker_encoding backend.test_hardware_acceptance backend.test_flux_extensions backend.test_structure_workflows
+```
+
+CLI 基線使用 `python -X utf8 -B -m <module> --help`，模組為 `scripts.install_structure_preprocessors`、`scripts.training_worker`、`scripts.verify_flux_extensions`、`scripts.verify_hardware`；沒有執行安裝、下載、GPU 或訓練。
+
+本機原始測試輸出、test ID 與 CLI 前後紀錄保存在忽略的 `runtime/audit-b1-20261027/`，不納入 Git。未執行完整後端 suite、前端正式建置或 Playwright；此低風險批次使用對應回歸及既有靜態入口驗證，不宣稱完整 GPU／UI／品質驗收。此提交僅完成 B1。

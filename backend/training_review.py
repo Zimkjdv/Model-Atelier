@@ -4,7 +4,6 @@ from contextlib import closing
 from datetime import datetime, timezone
 import io
 import json
-from pathlib import Path
 import sqlite3
 from uuid import UUID
 

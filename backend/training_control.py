@@ -3,7 +3,6 @@
 from contextlib import closing
 import json
 import os
-from pathlib import Path
 import socket
 import sqlite3
 import threading
