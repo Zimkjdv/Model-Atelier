@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
-for (const width of [1440, 390]) {
+for (const width of [1440, 1280]) {
   test(`explicit training, lost responses, stop and new resume at ${width}px`, async ({ page }) => {
     const original = 'b5000000-0000-4000-8000-000000000001',
       resumed = 'b5000000-0000-4000-8000-000000000002'
@@ -107,7 +107,7 @@ for (const width of [1440, 390]) {
     })
     await page.setViewportSize({ width, height: 1000 })
     await page.goto('/#/training')
-    await page.getByRole('button', { name: '訓練執行', exact: true }).click()
+    await page.getByRole('button', { name: '3 準備訓練', exact: true }).click()
     await page.getByRole('button', { name: '檢查獨立訓練環境', exact: true }).click()
     await expect(
       page.getByText('獨立環境檢查通過；不代表已開始訓練', { exact: true }),
@@ -115,6 +115,10 @@ for (const width of [1440, 390]) {
     await page.getByLabel('已封存資料包', { exact: true }).selectOption(exported)
     await page.getByLabel('訓練名稱', { exact: true }).fill('Synthetic web case')
     await page.getByLabel('訓練 seed', { exact: true }).fill('4294967295')
+    await page.getByRole('button', { name: '4 執行與產物', exact: true }).click()
+    await expect(page.getByLabel('訓練 seed', { exact: true })).toBeHidden()
+    await page.getByRole('button', { name: '3 準備訓練', exact: true }).click()
+    await expect(page.getByLabel('訓練 seed', { exact: true })).toHaveValue('4294967295')
     await page.getByRole('button', { name: '準備新 run（不開始訓練）', exact: true }).click()
     await expect(page.getByRole('alert')).toBeVisible()
     await page.getByRole('button', { name: '查回原訓練請求', exact: true }).click()

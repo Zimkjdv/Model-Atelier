@@ -45,6 +45,7 @@ const props = defineProps<{
   experiment?: ExperimentLoad | null
   workflow?: 'flux' | 'flux-addon' | 'inpaint' | 'control' | 'reference'
   blockedReason?: string
+  submitTarget?: string
   disabled?: boolean
 }>()
 const checkpointForm = computed(() => ('checkpoint' in props.form ? props.form : null))
@@ -298,15 +299,40 @@ const timer = window.setInterval(() => {
 onBeforeUnmount(() => window.clearInterval(timer))
 </script>
 <template>
-  <article class="panel">
+  <article class="panel generation-history"
+    ><Teleport defer :to="submitTarget || 'body'" :disabled="!submitTarget"
+      ><div class="generation-submit"
+        ><p class="submission-state" role="status" aria-label="提交能力狀態">{{
+          submissionAvailability
+        }}</p>
+        <p v-if="blockedReason" class="notice warning"
+          >{{ blockedReason
+          }}<span v-if="/引擎|ComfyUI|連線|元件/.test(blockedReason)" class="preflight-links"
+            ><a href="#/settings">檢查引擎連線</a><a href="#/models">檢查模型與元件</a></span
+          ></p
+        >
+        <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
+        <p v-if="pending" class="notice warning"
+          >尚有未確認的提交
+          {{
+            pending.request_id
+          }}。恢復時使用原始參數，重複請求不會再次入列。請先確認原提交，再載入失敗任務的設定。</p
+        >
+        <button
+          type="button"
+          class="primary"
+          :disabled="busy || disabled || (!pending && (missingModel || !!blockedReason))"
+          @click="generate"
+          >{{ busy ? '處理中…' : pending ? '恢復原提交請求' : '生成圖片' }}</button
+        ></div
+      ></Teleport
+    >
     <h2>生成任務</h2>
     <WorkflowFormatSupport
       v-if="workflow === 'inpaint' || workflow === 'control' || workflow === 'reference'"
       :family="workflow"
     />
-    <p class="submission-state" role="status" aria-label="提交能力狀態">{{
-      submissionAvailability
-    }}</p>
+
     <details class="footnote"
       ><summary>能力與實機驗證範圍</summary
       ><p
@@ -345,24 +371,11 @@ onBeforeUnmount(() => window.clearInterval(timer))
     <p v-else-if="checkpointForm && !checkpointForm.checkpoint" class="notice"
       >請先安裝並同步 checkpoint，再選擇模型。</p
     >
-    <p v-if="blockedReason" class="notice warning">{{ blockedReason }}</p>
-    <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
+
     <p v-if="pending?.experiment" class="footnote"
       >恢復原請求會保留原比較組關聯與設定，不使用現在的表單或比較預覽。</p
     >
-    <p v-if="pending" class="notice warning"
-      >尚有未確認的提交
-      {{
-        pending.request_id
-      }}。恢復時使用原始參數，重複請求不會再次入列。請先確認原提交，再載入失敗任務的設定。</p
-    >
-    <button
-      type="button"
-      class="primary"
-      :disabled="busy || disabled || (!pending && (missingModel || !!blockedReason))"
-      @click="generate"
-      >{{ busy ? '處理中…' : pending ? '恢復原提交請求' : '生成圖片' }}</button
-    >
+
     <button type="button" class="secondary" :disabled="busy" @click="refresh">更新任務狀態</button>
     <button
       v-if="jobs.some((j) => !terminal(j))"

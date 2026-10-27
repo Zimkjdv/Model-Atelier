@@ -44,6 +44,8 @@ async function openEditor(page: Page, request: APIRequestContext) {
   await page.locator('#inpaint-checkpoint').selectOption('demo.safetensors')
   await expect(editor(page).getByRole('button', { name: '筆刷', exact: true })).toBeEnabled()
   await expect(canvas(page)).toHaveJSProperty('width', 800)
+  await page.locator('.studio-advanced > summary').click()
+  await page.locator('.studio-tools > summary').click()
   return source
 }
 
@@ -260,6 +262,7 @@ for (const width of [1440, 390]) {
     await (await leaving).accept()
     await reload
     await page.locator('#inpaint-source').selectOption(source.id)
+    await page.locator('.studio-advanced > summary').click()
     await page.locator('#inpaint-mask').selectOption(saved.id)
     await expect(mask.getByRole('button', { name: '筆刷', exact: true })).toBeEnabled()
     expect((await pixels(canvas(page))).hash).toBe(loaded.hash)

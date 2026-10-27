@@ -50,9 +50,12 @@ class Pager:
         status='',
         workflow='all',
         purpose='',
+        sort='latest',
     ):
         if kind not in ('artworks', 'jobs', 'assets') or not 1 <= limit <= 100:
             raise ListingError(422, '不支援的清單或頁面大小')
+        if sort not in ('latest', 'oldest', 'rating', 'model'):
+            raise ListingError(422, '不支援的排序')
         query = (
             kind,
             limit,
@@ -63,6 +66,7 @@ class Pager:
             status,
             workflow,
             purpose,
+            sort,
         )
         with self.lock:
             now = self.clock()
@@ -114,7 +118,7 @@ class Pager:
         )
 
     def _snapshot(self, query, now):
-        kind, limit, q, scope, favorite, model, status, workflow, purpose = query
+        kind, limit, q, scope, favorite, model, status, workflow, purpose, sort = query
         prefix = {'artworks': 'artwork', 'jobs': 'job', 'assets': 'asset'}[kind]
         clauses, values = ['key GLOB ?'], [prefix + ':*']
         if kind != 'jobs' and scope != 'all':
@@ -173,6 +177,16 @@ class Pager:
             clauses.append('instr(casefold(' + text + '),?)>0')
             values.append(q)
         date = 'imported_at' if kind == 'artworks' else 'created_at'
+        date_order = (
+            f"json_extract(value,'$.{date}') {'ASC' if sort == 'oldest' else 'DESC'},key DESC"
+        )
+        order = date_order
+        if kind == 'artworks' and sort == 'model':
+            order = "COALESCE(json_extract(value,'$.checkpoint'),'') COLLATE NOCASE," + date_order
+        elif kind == 'artworks' and sort == 'rating':
+            # Average only explicitly rated dimensions; unobserved/null is never a zero rating.
+            score = "(SELECT AVG(CAST(r.value AS REAL)) FROM json_each(COALESCE(json_extract(settings.value,'$.ratings'),'{}')) AS r WHERE r.type IN ('integer','real'))"
+            order = score + ' DESC,' + date_order
         with closing(sqlite3.connect(self.path)) as db:
             db.create_function(
                 'casefold', 1, lambda value: str(value).casefold(), deterministic=True
@@ -182,7 +196,9 @@ class Pager:
             rows = db.execute(
                 'SELECT key FROM settings WHERE '
                 + ' AND '.join(clauses)
-                + f" ORDER BY json_extract(value,'$.{date}') DESC,key DESC LIMIT ?",
+                + ' ORDER BY '
+                + order
+                + ' LIMIT ?',
                 values + [MAX_KEYS + 1],
             ).fetchall()
             if len(rows) > MAX_KEYS:

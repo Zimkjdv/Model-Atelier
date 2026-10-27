@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 for (const [mode, label, input] of [
   ['checkpoint', 'Checkpoint／SDXL', '#draft-prompt'], ['flux', 'FLUX.1 [schnell]', '#flux-prompt'],
-  ['inpaint', '局部編輯', '#inpaint-prompt'], ['control', 'Canny 結構參考', '#control-prompt'],
+  ['inpaint', '局部修補', '#inpaint-prompt'], ['control', '結構引導', '#control-prompt'],
 ]) test(`direct workflow URL and refresh: ${mode}`, async ({ page, request }) => {
   const before = (await (await request.get('/qa/state')).json()).prompts
   await page.goto('/#/studio/' + mode)
@@ -58,22 +58,23 @@ test('back cancellation keeps unsaved artwork notes and matching URL; accepted b
   await expect(page).toHaveURL(/#\/gallery$/)
 })
 
-for (const width of [1440, 390]) test(`${width}px: first connection, model, explicit generation, import, offline reading`, async ({ page, request }, info) => {
+for (const width of [1440, 1280]) test(`${width}px: first connection, model, explicit generation, import, offline reading`, async ({ page, request }, info) => {
   await page.setViewportSize({ width, height: 900 })
   await request.post('/qa/engine/offline')
   await request.post('/qa/model-selection/reset')
   try {
     await page.goto('/#/system')
-    await expect(page.getByText('連線狀態：離線', { exact: true })).toBeVisible()
+    await expect(page.locator('.connection-status')).toHaveText('引擎未連線')
     await page.screenshot({ path: info.outputPath('first-use.png') })
-    await page.getByRole('button', { name: '1. 設定連線', exact: true }).click()
+    await page.getByRole('button', { name: '連線設定', exact: true }).click()
     await expect(page).toHaveURL(/#\/settings$/)
     await request.post('/qa/engine/success')
-    await page.getByRole('button', { name: '保存並檢查連線', exact: true }).click()
+    await page.getByRole('button', { name: '保存並套用', exact: true }).click()
     await expect(page.getByText('ComfyUI 連線成功', { exact: true })).toBeVisible()
-    await page.getByRole('button', { name: '2. 選擇模型', exact: true }).click()
+    await page.getByRole('button', { name: '模型庫', exact: true }).click()
     await page.getByRole('button', { name: '↻ 同步模型清單', exact: true }).click()
     await expect(page.getByText('清單已同步。模型尚未載入 GPU。', { exact: true })).toBeVisible()
+    await page.getByText('模型資料、授權與驗證紀錄', { exact: true }).click()
     await page.getByRole('button', { name: '設為偏好', exact: true }).click()
     await expect(page.getByRole('button', { name: '✓ 偏好模型', exact: true })).toBeDisabled()
     await page.getByRole('button', { name: '創作工作台', exact: true }).click()
@@ -98,8 +99,8 @@ for (const width of [1440, 390]) test(`${width}px: first connection, model, expl
     await expect(cover).toBeVisible()
     await request.post('/qa/engine/offline')
     await page.getByRole('button', { name: '系統資訊', exact: true }).click()
-    await page.getByRole('button', { name: '↻ 重新整理', exact: true }).click()
-    await expect(page.getByText('連線狀態：離線', { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: '重新整理', exact: true }).click()
+    await expect(page.locator('.connection-status')).toBeVisible()
     await page.goBack()
     await cover.click()
     await expect(page.getByRole('dialog').getByRole('img')).toBeVisible()

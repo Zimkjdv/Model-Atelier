@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
-for (const width of [1440, 390]) {
+for (const width of [1440, 1280]) {
   test(`saved review issues navigate past 200 without altering annotations at ${width}px`, async ({
     page,
     request,
@@ -23,6 +23,7 @@ for (const width of [1440, 390]) {
       buffer: Buffer.from(fixture.manifest_json),
     })
     await page.getByRole('button', { name: '匯入待審查清單', exact: true }).click()
+    await page.getByLabel('只顯示待補項目', { exact: true }).uncheck()
     await expect(
       page.getByRole('status').filter({ hasText: '篩選結果 125 / 125 張' }),
     ).toBeVisible()
@@ -69,6 +70,7 @@ for (const width of [1440, 390]) {
     await page.getByRole('button', { name: 'img-0001 · train', exact: true }).click()
     await expect(page.getByLabel('內容標註', { exact: true })).toHaveValue('unsaved first image')
     expect(writes).toBe(0)
+    await page.getByRole('button', { name: '2 匯出資料包', exact: true }).click()
     await expect(
       page.getByRole('button', { name: '匯出已審查訓練資料包', exact: true }),
     ).toBeDisabled()

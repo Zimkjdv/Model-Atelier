@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import SizePresets from './SizePresets.vue'
+import StudioPreview from './StudioPreview.vue'
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { useUnsavedChanges } from './unsavedChanges'
@@ -39,7 +41,10 @@ type Restoration = {
   engine_matches: boolean
   warnings: string[]
 }
-const props = defineProps<{ restoreRequest?: { artworkId: string; token: number } | null }>()
+const props = defineProps<{
+  purposeRequest?: { image: boolean; token: number } | null
+  restoreRequest?: { artworkId: string; token: number } | null
+}>()
 const emit = defineEmits<{ models: []; assets: []; gallery: [id: string] }>()
 const showExtensions = ref(false),
   extensionsOpened = ref(false)
@@ -286,6 +291,17 @@ onBeforeUnmount(() => {
   loads.dispose()
   restores.dispose()
 })
+watch(
+  () => props.purposeRequest,
+  (request) => {
+    if (!request) return
+    if (request.image) openExtensions()
+    else showExtensions.value = false
+  },
+)
+onMounted(() => {
+  if (props.purposeRequest?.image) openExtensions()
+})
 </script>
 
 <template>
@@ -298,195 +314,207 @@ onBeforeUnmount(() => {
       v-if="extensionsOpened"
       v-show="showExtensions"
       :restoration="extensionRestoration"
+      :image-requested="!!purposeRequest?.image"
       @models="emit('models')"
       @assets="emit('assets')"
       @gallery="emit('gallery', $event)"
     />
     <div v-show="!showExtensions">
-      <div class="flux-toolbar"
-        ><strong>FLUX.1 [schnell]</strong
-        ><span class="muted">{{
-          dirty ? '有未保存變更' : id ? '草稿已保存' : '設定僅保留於本頁'
-        }}</span
-        ><button class="secondary" :disabled="busy || loading" @click="choose('new')"
-          >新增 FLUX 草稿</button
-        ><button class="secondary" :disabled="busy || loading" @click="load(true)">{{
-          loading ? '讀取中…' : '同步 FLUX 元件'
-        }}</button
-        ><button class="secondary" @click="emit('models')">元件版本與來源 →</button></div
-      >
-      <UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" />
-      <p class="notice warning"
-        >已有 RTX 3060／64 GiB RAM、固定四元件、512×512／4 步／主模型 FP8 e4m3fn／CPU
-        編碼器的生成保存與失敗復原實測。LoRA／VAE
-        圖生圖請使用上方獨立流程；其他配置及目前引擎未自動驗證，負面提示詞保持停用。</p
-      >
-      <p class="footnote"
-        >原引擎：{{ form.engine_url || '讀取中' }} · 元件同步：{{
-          catalog?.synced_at ? new Date(catalog.synced_at).toLocaleString() : '尚未同步'
-        }}。清單與版本來自原引擎／使用者登記，未驗證實際檔案。</p
-      >
-      <p v-if="error" class="notice warning" role="alert">{{ error }}</p
-      ><p v-if="message" class="notice" role="status">{{ message }}</p>
-      <div v-if="pending" class="notice warning" role="alert"
-        ><p>載入會取代目前未保存的 FLUX 內容。</p
-        ><button class="secondary" @click="pending = null">繼續編輯</button>
-        <button class="secondary" @click="apply(pending)">捨棄變更並載入 FLUX</button></div
-      >
-      <template v-if="origin"
-        ><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{ warning }}</p
-        ><ComponentSnapshot :items="origin.component_metadata" /><RuntimeSnapshot
-          :item="origin.runtime_metadata"
-      /></template>
-      <SettingsTransfer
-        :settings="form"
-        family="flux"
-        :dirty="dirty"
-        :disabled="busy || loading || !!pending"
-        @apply="importSettings"
-      />
-      <div class="flux-grid">
-        <form class="panel flux-editor" aria-label="FLUX 創作設定" @submit.prevent="save()"
-          ><fieldset :disabled="busy">
-            <label for="flux-title">FLUX 草稿名稱</label
-            ><input id="flux-title" v-model="form.title" required maxlength="100" />
-            <div v-for="role in fluxRoles" :key="role.key" class="flux-role"
-              ><label :for="'flux-' + role.key">{{ role.label }}</label
-              ><input
-                :id="'flux-' + role.key"
-                v-model="form[role.key]"
-                :list="'flux-options-' + role.key"
-                required
-                maxlength="2048"
-                autocomplete="off"
-              /><datalist :id="'flux-options-' + role.key"
-                ><option
-                  v-for="item in choices(role.category)"
-                  :key="item.name"
-                  :value="item.name" /></datalist
-              ><p class="footnote"
-                >版本 {{ model(role)?.version || '未知' }} ·
-                {{
-                  model(role)?.listed
-                    ? '上次清單已列出，提交前仍會驗證'
-                    : '清單未確認；可手動填名稱保存草稿'
-                }}</p
-              ></div
-            >
-            <label for="flux-prompt">FLUX 提示詞</label
-            ><textarea
-              id="flux-prompt"
-              v-model="form.prompt"
-              maxlength="20000"
-              rows="5"
-              placeholder="例如：A peaceful mountain lake, soft morning light"
-            />
-            <div class="flux-size"
-              ><label for="flux-width"
-                >FLUX 寬度<input
-                  id="flux-width"
-                  v-model.number="form.width"
-                  type="number"
-                  min="64"
-                  max="8192"
-                  step="16"
-                  required /></label
-              ><label for="flux-height"
-                >FLUX 高度<input
-                  id="flux-height"
-                  v-model.number="form.height"
-                  type="number"
-                  min="64"
-                  max="8192"
-                  step="16"
-                  required /></label
-              ><label for="flux-steps"
-                >FLUX Steps<input
-                  id="flux-steps"
-                  v-model.number="form.steps"
-                  type="number"
-                  min="1"
-                  max="4"
-                  step="1"
-                  required /></label
-            ></div>
-            <label for="flux-seed">FLUX Seed</label
-            ><input
-              id="flux-seed"
-              v-model="form.seed"
-              inputmode="numeric"
-              pattern="[0-9]{1,20}"
-              maxlength="20"
-              required
-            />
-            <details
-              ><summary>精度與裝置設定</summary><label for="flux-dtype">主模型載入精度</label
-              ><select id="flux-dtype" v-model="form.weight_dtype"
-                ><option value="default">引擎預設（不指定轉換精度）</option
-                ><option value="fp8_e4m3fn">FP8 e4m3fn（固定 512 配置已有實測）</option
-                ><option value="fp8_e5m2">FP8 e5m2（未驗證）</option></select
-              ><label for="flux-device">文字編碼器裝置</label
-              ><select id="flux-device" v-model="form.encoder_device"
-                ><option value="default">引擎預設</option
-                ><option value="cpu">CPU（固定 512 配置已有實測）</option></select
-              ><p class="footnote"
-                >這些值會寫入原始 JSON；精度選擇不改寫模型檔案。VRAM／RAM 需求未知，尺寸有效不保證
-                GPU 可執行。</p
-              ></details
-            >
-            <p class="footnote">Euler / simple · CFG 1 · denoise 1 · batch 1 · 16 通道 latent。</p>
-            <p v-if="problem" class="footnote" role="status">{{ problem }}</p>
-            <div class="flux-actions"
-              ><button class="primary" type="submit" :disabled="!!problem || busy"
-                >保存 FLUX 草稿</button
-              ><button
-                class="secondary"
-                type="button"
-                :disabled="!!problem || busy"
-                @click="save(true)"
-                >另存新 FLUX 草稿</button
-              ><button
-                class="secondary"
-                type="button"
-                :disabled="!!problem || busy"
-                @click="downloadPreview"
-                >匯出 FLUX JSON</button
-              ></div
-            >
-            <details v-if="previewJson"
-              ><summary>上次匯出 JSON（可能不是目前設定）</summary
-              ><pre class="flux-json">{{ previewJson }}</pre>
-            </details>
-          </fieldset></form
-        >
-        <div
-          ><GenerationPanel
-            :form="form"
-            workflow="flux"
-            :blocked-reason="block"
-            :disabled="busy || loading"
-            @gallery="emit('gallery', $event)"
-            @restore-job="restore('flux/jobs/' + $event + '/creation-settings')"
-          />
-          <article class="panel"
-            ><h2>已保存 FLUX 草稿</h2
-            ><p v-if="!records.length" class="footnote"
-              >草稿與 SDXL 設定分開保存；保存不會生成圖片。</p
-            ><button
-              v-for="record in records"
-              :key="record.id"
-              class="flux-draft"
-              :disabled="busy"
-              @click="choose(record)"
-              ><strong>{{ record.title }}</strong
-              ><span
-                >{{ record.diffusion_model }} · {{ record.width }} × {{ record.height }} ·
-                {{ record.steps }} steps</span
-              ></button
-            ></article
+      <div class="studio-workbench"
+        ><div class="studio-settings"
+          ><UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" />
+          <p class="notice warning"
+            >已有 RTX 3060／64 GiB RAM、固定四元件、512×512／4 步／主模型 FP8 e4m3fn／CPU
+            編碼器的生成保存與失敗復原實測。LoRA／VAE
+            圖生圖請使用上方獨立流程；其他配置及目前引擎未自動驗證，負面提示詞保持停用。</p
           >
-        </div>
-      </div>
+          <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
+          <p v-if="message" class="notice" role="status">{{ message }}</p>
+          <div v-if="pending" class="notice warning" role="alert"
+            ><p>載入會取代目前未保存的 FLUX 內容。</p
+            ><button class="secondary" @click="pending = null">繼續編輯</button>
+            <button class="secondary" @click="apply(pending)">捨棄變更並載入 FLUX</button></div
+          ><form class="panel flux-editor" aria-label="FLUX 創作設定" @submit.prevent="save()"
+            ><fieldset :disabled="busy">
+              <label for="flux-prompt">FLUX 提示詞</label
+              ><textarea
+                id="flux-prompt"
+                v-model="form.prompt"
+                maxlength="20000"
+                rows="5"
+                placeholder="例如：A peaceful mountain lake, soft morning light"
+              /><details class="studio-advanced"
+                ><summary>進階設定、草稿名稱與模型能力</summary
+                ><label for="flux-title">FLUX 草稿名稱</label
+                ><input id="flux-title" v-model="form.title" required maxlength="100" />
+                <div v-for="role in fluxRoles" :key="role.key" class="flux-role"
+                  ><label :for="'flux-' + role.key">{{ role.label }}</label
+                  ><input
+                    :id="'flux-' + role.key"
+                    v-model="form[role.key]"
+                    :list="'flux-options-' + role.key"
+                    required
+                    maxlength="2048"
+                    autocomplete="off"
+                  /><datalist :id="'flux-options-' + role.key"
+                    ><option
+                      v-for="item in choices(role.category)"
+                      :key="item.name"
+                      :value="item.name" /></datalist
+                  ><p class="footnote"
+                    >版本 {{ model(role)?.version || '未知' }} ·
+                    {{
+                      model(role)?.listed
+                        ? '上次清單已列出，提交前仍會驗證'
+                        : '清單未確認；可手動填名稱保存草稿'
+                    }}</p
+                  ></div
+                >
+
+                <div class="flux-size"
+                  ><label for="flux-width"
+                    >FLUX 寬度<input
+                      id="flux-width"
+                      v-model.number="form.width"
+                      type="number"
+                      min="64"
+                      max="8192"
+                      step="16"
+                      required /></label
+                  ><label for="flux-height"
+                    >FLUX 高度<input
+                      id="flux-height"
+                      v-model.number="form.height"
+                      type="number"
+                      min="64"
+                      max="8192"
+                      step="16"
+                      required /></label
+                  ><label for="flux-steps"
+                    >FLUX Steps<input
+                      id="flux-steps"
+                      v-model.number="form.steps"
+                      type="number"
+                      min="1"
+                      max="4"
+                      step="1"
+                      required /></label
+                ></div>
+                <label for="flux-seed">FLUX Seed</label
+                ><input
+                  id="flux-seed"
+                  v-model="form.seed"
+                  inputmode="numeric"
+                  pattern="[0-9]{1,20}"
+                  maxlength="20"
+                  required
+                />
+                <details
+                  ><summary>精度與裝置設定</summary><label for="flux-dtype">主模型載入精度</label
+                  ><select id="flux-dtype" v-model="form.weight_dtype"
+                    ><option value="default">引擎預設（不指定轉換精度）</option
+                    ><option value="fp8_e4m3fn">FP8 e4m3fn（固定 512 配置已有實測）</option
+                    ><option value="fp8_e5m2">FP8 e5m2（未驗證）</option></select
+                  ><label for="flux-device">文字編碼器裝置</label
+                  ><select id="flux-device" v-model="form.encoder_device"
+                    ><option value="default">引擎預設</option
+                    ><option value="cpu">CPU（固定 512 配置已有實測）</option></select
+                  ><p class="footnote"
+                    >這些值會寫入原始 JSON；精度選擇不改寫模型檔案。VRAM／RAM
+                    需求未知，尺寸有效不保證 GPU 可執行。</p
+                  ></details
+                >
+                <p class="footnote"
+                  >Euler / simple · CFG 1 · denoise 1 · batch 1 · 16 通道 latent。</p
+                >
+                <p v-if="problem" class="footnote" role="status">{{ problem }}</p>
+                <div class="flux-actions"
+                  ><button class="primary" type="submit" :disabled="!!problem || busy"
+                    >保存 FLUX 草稿</button
+                  ><button
+                    class="secondary"
+                    type="button"
+                    :disabled="!!problem || busy"
+                    @click="save(true)"
+                    >另存新 FLUX 草稿</button
+                  ><button
+                    class="secondary"
+                    type="button"
+                    :disabled="!!problem || busy"
+                    @click="downloadPreview"
+                    >匯出 FLUX JSON</button
+                  ></div
+                >
+                <details v-if="previewJson"
+                  ><summary>上次匯出 JSON（可能不是目前設定）</summary
+                  ><pre class="flux-json">{{ previewJson }}</pre>
+                </details></details
+              >
+            </fieldset></form
+          ><details class="studio-tools"
+            ><summary>草稿、來源與設定交換</summary
+            ><div class="flux-toolbar"
+              ><strong>FLUX.1 [schnell]</strong
+              ><span class="muted">{{
+                dirty ? '有未保存變更' : id ? '草稿已保存' : '設定僅保留於本頁'
+              }}</span
+              ><button class="secondary" :disabled="busy || loading" @click="choose('new')"
+                >新增 FLUX 草稿</button
+              ><button class="secondary" :disabled="busy || loading" @click="load(true)">{{
+                loading ? '讀取中…' : '同步 FLUX 元件'
+              }}</button
+              ><button class="secondary" @click="emit('models')">元件版本與來源 →</button></div
+            >
+            <p class="footnote"
+              >原引擎：{{ form.engine_url || '讀取中' }} · 元件同步：{{
+                catalog?.synced_at ? new Date(catalog.synced_at).toLocaleString() : '尚未同步'
+              }}。清單與版本來自原引擎／使用者登記，未驗證實際檔案。</p
+            >
+            <template v-if="origin"
+              ><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{
+                warning
+              }}</p
+              ><ComponentSnapshot :items="origin.component_metadata" /><RuntimeSnapshot
+                :item="origin.runtime_metadata"
+            /></template>
+            <SettingsTransfer
+              :settings="form"
+              family="flux"
+              :dirty="dirty"
+              :disabled="busy || loading || !!pending"
+              @apply="importSettings" /></details
+          ><div class="studio-submit" id="studio-submit-flux"></div></div
+        ><div class="studio-stage"
+          ><StudioPreview :width="form.width" :height="form.height" /><div
+            ><GenerationPanel
+              submit-target="#studio-submit-flux"
+              :form="form"
+              workflow="flux"
+              :blocked-reason="block"
+              :disabled="busy || loading"
+              @gallery="emit('gallery', $event)"
+              @restore-job="restore('flux/jobs/' + $event + '/creation-settings')"
+            />
+            <article class="panel"
+              ><h2>已保存 FLUX 草稿</h2
+              ><p v-if="!records.length" class="footnote"
+                >草稿與 SDXL 設定分開保存；保存不會生成圖片。</p
+              ><button
+                v-for="record in records"
+                :key="record.id"
+                class="flux-draft"
+                :disabled="busy"
+                @click="choose(record)"
+                ><strong>{{ record.title }}</strong
+                ><span
+                  >{{ record.diffusion_model }} · {{ record.width }} × {{ record.height }} ·
+                  {{ record.steps }} steps</span
+                ></button
+              ></article
+            >
+          </div></div
+        ></div
+      >
     </div>
   </section>
 </template>

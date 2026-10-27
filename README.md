@@ -6,6 +6,8 @@
 
 第一次使用可先開啟 [HTML 圖文使用教學](docs/guide/index.html)：依序介紹啟動、生成、單張參考、資料審查、訓練／續訓、LoRA 比較與備份。下載專案後直接用瀏覽器開啟 `docs/guide/index.html`，支援離線閱讀、點圖放大與列印／另存 PDF；圖片與樣式需保留在同一個 guide 目錄。GitHub 檔案頁只顯示 HTML 原碼，不是教學預覽。
 
+桌面介面已依參考重整；新版位置與驗證見 [正式 UI 整合紀錄](docs/ui-redesign/IMPLEMENTATION.md)。教學的部分截圖仍是舊布局。更新後請重新啟動平台並重整瀏覽器，以載入新的後端端點與介面。
+
 ## 快速開始
 
 Windows／PowerShell 使用者先準備 Git、Python 3.12 與 Node.js；本專案曾驗證 Python 3.12.10、Node.js 24.19.0。從專案根目錄執行：

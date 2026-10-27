@@ -246,7 +246,7 @@ async function exportPlan() {
 }
 </script>
 <template>
-  <details class="experiment-planner"
+  <details class="experiment-planner" open
     ><summary>固定測試集與參數比較</summary>
     <p class="footnote"
       >支援 checkpoint 文生圖與單張圖生圖；圖生圖每組沿用同一輸入。一次一個參數、1–4 個值、最多 8
@@ -381,35 +381,36 @@ async function exportPlan() {
           · 測試集 v{{ plan.suite.version }} / {{ plan.suite.sha256 }}</span
         ></p
       >
-      <article v-for="variant in plan.variants" :key="variant.id" class="variant"
-        ><h4>{{ variant.id }} · {{ variant.case_id }} · {{ plan.axis }} = {{ variant.value }}</h4
-        ><p
-          >{{ variant.settings.width }} × {{ variant.settings.height }} ·
-          {{ variant.settings.steps }} steps · CFG {{ variant.settings.cfg }} · Seed
-          {{ variant.settings.seed
-          }}<span v-if="variant.settings.workflow_mode === 'image2image'">
-            · Denoise {{ variant.settings.denoise }}</span
-          ></p
-        ><p
-          >模型 {{ variant.settings.checkpoint }} · {{ variant.settings.sampler_name }}／{{
-            variant.settings.scheduler
-          }}</p
-        ><p>{{ variant.settings.prompt }}</p
-        ><details
-          ><summary>完整設定快照</summary
-          ><pre>{{ JSON.stringify(variant.settings, null, 2) }}</pre></details
-        ><button
-          type="button"
-          class="secondary"
-          :disabled="blocked"
-          :aria-label="'載入比較設定 ' + variant.id"
-          @click="apply(variant)"
-          >載入這組設定</button
-        ><span v-if="loaded.includes(variant.id)" class="footnote">
-          已載入過；不代表已生成</span
-        ></article
-      >
-      <button type="button" class="secondary" :disabled="blocked" @click="exportPlan"
+      <div class="comparison-grid"
+        ><article v-for="variant in plan.variants" :key="variant.id" class="variant"
+          ><h4>{{ variant.id }} · {{ variant.case_id }} · {{ plan.axis }} = {{ variant.value }}</h4
+          ><p
+            >{{ variant.settings.width }} × {{ variant.settings.height }} ·
+            {{ variant.settings.steps }} steps · CFG {{ variant.settings.cfg }} · Seed
+            {{ variant.settings.seed
+            }}<span v-if="variant.settings.workflow_mode === 'image2image'">
+              · Denoise {{ variant.settings.denoise }}</span
+            ></p
+          ><p
+            >模型 {{ variant.settings.checkpoint }} · {{ variant.settings.sampler_name }}／{{
+              variant.settings.scheduler
+            }}</p
+          ><p>{{ variant.settings.prompt }}</p
+          ><details
+            ><summary>完整設定快照</summary
+            ><pre>{{ JSON.stringify(variant.settings, null, 2) }}</pre></details
+          ><button
+            type="button"
+            class="secondary"
+            :disabled="blocked"
+            :aria-label="'載入比較設定 ' + variant.id"
+            @click="apply(variant)"
+            >載入這組設定</button
+          ><span v-if="loaded.includes(variant.id)" class="footnote">
+            已載入過；不代表已生成</span
+          ></article
+        > </div
+      ><button type="button" class="secondary" :disabled="blocked" @click="exportPlan"
         >匯出比較方案 JSON</button
       >
     </section>

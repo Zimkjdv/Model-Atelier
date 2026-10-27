@@ -17,25 +17,13 @@ import { isFluxExtension } from './fluxExtensions'
 import AssetLibrary from './AssetLibrary.vue'
 import ArtworkLibrary from './ArtworkLibrary.vue'
 import LocalModelPaths from './LocalModelPaths.vue'
-import EngineEnvironment from './EngineEnvironment.vue'
-import LocalEnvironmentCheck from './LocalEnvironmentCheck.vue'
-import StorageOverview from './StorageOverview.vue'
-import DeploymentStatus from './DeploymentStatus.vue'
 import DiagnosticsPanel from './DiagnosticsPanel.vue'
 import TrainingWorkspace from './TrainingWorkspace.vue'
 import type { EngineReport } from './environmentTypes'
-type Memory = { total: number | null; used: number | null; free: number | null }
-type System = {
-  runtime_kind?: 'native' | 'container'
-  host: string
-  os: string
-  python: string
-  updated_at: string
-  gpus: (Memory & { index: string; name: string; driver: string })[]
-  gpu_error: string | null
-  ram: Memory
-  disk: Memory & { path: string }
-}
+import SystemWorkspace from './SystemWorkspace.vue'
+import PageTabs from './PageTabs.vue'
+import UiIcon from './UiIcon.vue'
+import type { HostSystem as System } from './systemTypes'
 const system = ref<System | null>(null),
   engine = ref<EngineReport | null>(null)
 const artworkNotesDirty = ref(false)
@@ -156,10 +144,6 @@ async function save() {
     if (alive) saving.value = false
   }
 }
-const size = (n: number | null | undefined) =>
-  n == null ? '無法取得' : `${(n / 1024 ** 3).toFixed(1)} GiB`
-const percent = (m: Memory) =>
-  m.total && m.used != null ? Math.min(100, Math.max(0, (m.used / m.total) * 100)) : 0
 onMounted(async () => {
   const epoch = settingsEpoch
   try {
@@ -184,105 +168,184 @@ onUnmounted(() => {
   refreshRequests.dispose()
   clearInterval(timer)
 })
-</script>
 
+const navIcons = [
+  'studio',
+  'gallery',
+  'experiments',
+  'assets',
+  'models',
+  'training',
+  'system',
+  'settings',
+]
+const navLabels = ['創作', '作品庫', '比較', '素材', '模型', '訓練', '系統', '設定']
+const settingsTab = ref('connection')
+const settingsItems = [
+  { id: 'connection', label: '引擎連線' },
+  { id: 'paths', label: '模型路徑' },
+  { id: 'appearance', label: '外觀與語言' },
+  { id: 'privacy', label: '資料與隱私' },
+  { id: 'diagnostics', label: '診斷' },
+]
+const purposeRequest = ref<{ image: boolean; token: number } | null>(null)
+const imagePurpose = ref(false)
+const modelRequest = ref<{ name: string; engineUrl: string; token: number } | null>(null)
+function useModel(architecture: string, name?: string, engineUrl?: string) {
+  if (!navigate('創作工作台', architecture === 'flux' ? 'flux' : 'checkpoint')) return
+  if (architecture !== 'flux' && name && engineUrl)
+    modelRequest.value = { name, engineUrl, token: Date.now() }
+}
+const assetRequest = ref<{ id: string; purpose: string; token: number } | null>(null)
+function useAsset(id: string, purpose: string) {
+  const mode =
+    purpose === 'composition'
+      ? 'control'
+      : purpose === 'style' || purpose === 'character'
+        ? 'reference'
+        : 'checkpoint'
+  if (!navigate('創作工作台', mode)) return
+  assetRequest.value = { id, purpose, token: Date.now() }
+  if (mode === 'checkpoint') {
+    imagePurpose.value = true
+    purposeRequest.value = { image: true, token: Date.now() }
+  }
+}
+function selectPurpose(image: boolean) {
+  imagePurpose.value = image
+  purposeRequest.value = { image, token: Date.now() }
+  navigate('創作工作台', studioMode.value === 'flux' ? 'flux' : 'checkpoint')
+}
+function openConnection() {
+  settingsTab.value = 'connection'
+  navigate('設定')
+}
+function settingsPaths() {
+  settingsTab.value = 'paths'
+  navigate('設定')
+}
+async function testConnection() {
+  if (saving.value) return
+  saving.value = true
+  message.value = ''
+  try {
+    const result = await api<{ connected: boolean; error?: string }>('engine/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ comfy_url: url.value }),
+    })
+    message.value = result.connected
+      ? '測試連線成功（尚未保存）'
+      : result.error || '測試連線失敗，原設定未變更。'
+  } catch (e) {
+    message.value = e instanceof Error ? e.message : '測試失敗，原設定未變更。'
+  } finally {
+    saving.value = false
+  }
+}
+</script>
 <template>
-  <div class="layout">
+  <div
+    class="layout atelier-shell"
+    :class="{ 'system-page': page === '系統資訊', 'studio-page': page === '創作工作台' }"
+  >
     <a class="skip-link" href="#main-content" @click.prevent="focusMain">跳至主要內容</a>
-    <aside>
-      <a class="brand" title="系統資訊" href="#/system" @click.prevent="navigate('系統資訊')"
-        ><span class="brand-icon" aria-hidden="true">M</span
-        ><span>Model Atelier<small>個人 AI 創作工作台</small></span></a
-      >
-      <div class="nav-label">WORKSPACE</div>
-      <nav aria-label="主要導覽"
+    <aside class="rail"
+      ><a
+        class="brand"
+        title="Model Atelier · 系統資訊"
+        href="#/system"
+        @click.prevent="navigate('系統資訊')"
+        ><span class="brand-icon">M</span></a
+      ><nav aria-label="主要導覽"
         ><button
           v-for="(item, i) in pages"
           :key="item"
-          :class="{ active: page === item }"
+          :class="{ active: page === item, 'nav-management': item === '系統資訊' }"
           :aria-label="item"
           :aria-current="page === item ? 'page' : undefined"
           :title="item"
           @click="navigate(item)"
-          ><span class="nav-icon" aria-hidden="true">{{
-            ['◈', '▦', '▧', '◉', '⚙', '▨', '◇'][i]
-          }}</span
-          >{{ item }}</button
+          ><UiIcon :name="navIcons[i]!" />{{ navLabels[i] }}</button
         ></nav
+      ></aside
+    >
+    <main id="main-content" tabindex="-1"
+      ><header class="app-topbar"
+        ><h1>{{ page }}</h1
+        ><div class="top-tools"
+          ><span class="connection-status"
+            ><span class="dot" :class="{ online: engine?.connected }"></span
+            >{{ engine?.connected ? '引擎已連線' : engine ? '引擎未連線' : '連線狀態未知' }}</span
+          ><button class="secondary" @click="openConnection">連線設定</button></div
+        ></header
       >
-      <div class="sidebar-footer"
-        ><span class="dot" :class="{ online: engine?.connected }"></span
-        >{{ engine?.connected ? 'ComfyUI 已連線' : 'ComfyUI 未連線'
-        }}<small>LOCAL STUDIO · v0.1</small></div
+      <section
+        class="content"
+        :class="{ 'studio-content': page === '創作工作台', 'system-content': page === '系統資訊' }"
       >
-    </aside>
-    <main id="main-content" tabindex="-1">
-      <header
-        ><span>工作空間 <span class="slash">/</span> {{ page }}</span
-        ><span class="badge">本地部署</span></header
-      >
-      <section class="content">
-        <div class="heading"
-          ><div
-            ><div class="eyebrow">YOUR CREATIVE ENVIRONMENT</div><h1>{{ page }}</h1
-            ><p>{{
-              page === '系統資訊'
-                ? '了解你的創作環境，讓每一次實驗都有跡可循。'
-                : page === '設定'
-                  ? '連接模型執行環境，建立你的個人工作空間。'
-                  : '從這裡開始，逐步建立你的創作流程。'
-            }}</p></div
-          ><button
-            v-if="page === '系統資訊'"
-            class="secondary"
-            :disabled="busy"
-            @click="refresh()"
-            >{{ busy ? '更新中…' : '↻ 重新整理' }}</button
-          ></div
-        >
-        <p v-if="error && page === '系統資訊'" role="alert" class="notice warning">{{ error }}</p>
         <p v-if="routeNotice" class="notice" role="status">{{ routeNotice }}</p>
-        <details
-          v-if="['系統資訊', '設定', '創作工作台'].includes(page)"
-          class="panel getting-started"
-          :open="page !== '創作工作台'"
+        <template v-if="page === '創作工作台'"
+          ><div class="studio-navigation"
+            ><div class="workflow-switch" role="group" aria-label="創作工作流程"
+              ><button
+                :aria-pressed="
+                  (studioMode === 'checkpoint' || studioMode === 'flux') && !imagePurpose
+                "
+                @click="selectPurpose(false)"
+                ><UiIcon name="text" />文字創作</button
+              ><button
+                :aria-pressed="
+                  (studioMode === 'checkpoint' || studioMode === 'flux') && imagePurpose
+                "
+                @click="selectPurpose(true)"
+                ><UiIcon name="redraw" />圖片重繪</button
+              ><button
+                :aria-pressed="studioMode === 'inpaint'"
+                @click="navigate('創作工作台', 'inpaint')"
+                ><UiIcon name="inpaint" />局部修補</button
+              ><button
+                :aria-pressed="studioMode === 'control'"
+                @click="navigate('創作工作台', 'control')"
+                ><UiIcon name="control" />結構引導</button
+              ><button
+                :aria-pressed="studioMode === 'reference'"
+                @click="navigate('創作工作台', 'reference')"
+                ><UiIcon name="reference" />風格參考</button
+              ></div
+            ><div
+              v-if="studioMode === 'checkpoint' || studioMode === 'flux'"
+              class="architecture-switch"
+              role="group"
+              aria-label="模型執行架構"
+              ><button
+                class="secondary"
+                :aria-pressed="studioMode === 'checkpoint'"
+                @click="navigate('創作工作台', 'checkpoint')"
+                >Checkpoint／SDXL</button
+              ><button
+                class="secondary"
+                :aria-pressed="studioMode === 'flux'"
+                @click="navigate('創作工作台', 'flux')"
+                >FLUX.1 [schnell]</button
+              ></div
+            ></div
+          ></template
         >
-          <summary>開始創作：連線 → 選模型 → 建立作品</summary>
-          <ol>
-            <li
-              ><strong
-                >連線狀態：{{
-                  engine ? (engine.connected ? '已連線' : '離線') : '未知／尚未取得'
-                }}</strong
-              ><p>離線仍可讀取已保存作品與草稿。連線成功不代表模型可執行。</p
-              ><button class="secondary" @click="navigate('設定')">1. 設定連線</button></li
-            >
-            <li
-              ><strong>確認模型與元件</strong
-              ><p>同步清單、選擇模型，再查看工作台預檢；缺少元件會顯示原因。</p
-              ><button class="secondary" @click="navigate('模型庫')">2. 選擇模型</button></li
-            >
-            <li
-              ><strong>選流程並明確生成</strong
-              ><p>完成後前往作品庫匯入原圖，之後可離線查看；開啟網址不會提交生成。</p
-              ><button class="secondary" @click="navigate('創作工作台')">3. 開始創作</button></li
-            >
-          </ol>
-          <p class="footnote"
-            >五種流程已有程式接入；FLUX 實機 GPU
-            尚未驗證，其他流程的證據限文件所列硬體／模型。執行裝置、版本或檔案 hash
-            無法取得時為未知；表單可提交不保證生成成功。</p
-          >
-        </details>
-        <!-- prettier-ignore -->
-        <div v-if="page === '創作工作台'" class="workflow-switch" role="group" aria-label="創作工作流程"><button class="secondary" :aria-pressed="studioMode === 'checkpoint'" @click="navigate('創作工作台', 'checkpoint')">Checkpoint／SDXL</button> <button class="secondary" :aria-pressed="studioMode === 'flux'" @click="navigate('創作工作台', 'flux')">FLUX.1 [schnell]</button> <button class="secondary" :aria-pressed="studioMode === 'inpaint'" @click="navigate('創作工作台', 'inpaint')">局部編輯</button> <button class="secondary" :aria-pressed="studioMode === 'control'" @click="navigate('創作工作台', 'control')">Canny 結構參考</button> <button class="secondary" :aria-pressed="studioMode === 'reference'" @click="navigate('創作工作台', 'reference')">畫風／角色參考</button><p class="footnote">切換保留各自表單與待確認請求；Checkpoint／FLUX 可保存草稿，局部編輯請先保存遮罩，結構與畫風／角色參考需已保存素材；提交後可載入完整原設定。</p></div>
         <KeepAlive
           ><CreationStudio
-            v-if="page === '創作工作台' && studioMode === 'checkpoint'"
+            v-if="(page === '創作工作台' && studioMode === 'checkpoint') || page === '實驗比較'"
+            :workspace="page === '實驗比較' ? 'experiments' : 'studio'"
+            :purpose-request="purposeRequest"
+            @purpose="imagePurpose = $event"
+            :asset-request="assetRequest?.purpose === 'unspecified' ? assetRequest : null"
+            :model-request="modelRequest"
             :restore-request="restoreRequest"
             @models="navigate('模型庫')"
             @assets="navigate('參考素材')"
-            @gallery="navigate('作品庫', studioMode, $event)" /><FluxStudio
+            @gallery="navigate('作品庫', studioMode, $event)"
+            @studio="navigate('創作工作台', 'checkpoint')" /><FluxStudio
+            :purpose-request="purposeRequest"
             v-else-if="page === '創作工作台' && studioMode === 'flux'"
             :restore-request="fluxRestoreRequest"
             @models="navigate('模型庫')"
@@ -293,124 +356,126 @@ onUnmounted(() => {
             @models="navigate('模型庫')"
             @assets="navigate('參考素材')"
             @gallery="navigate('作品庫', studioMode, $event)" /><ControlStudio
+            :asset-request="assetRequest?.purpose === 'composition' ? assetRequest : null"
             v-else-if="page === '創作工作台' && studioMode === 'control'"
             :restore-request="controlRestoreRequest"
             @models="navigate('模型庫')"
             @assets="navigate('參考素材')"
             @gallery="navigate('作品庫', studioMode, $event)" /><ReferenceStudio
+            :asset-request="
+              assetRequest?.purpose === 'style' || assetRequest?.purpose === 'character'
+                ? assetRequest
+                : null
+            "
             v-else-if="page === '創作工作台' && studioMode === 'reference'"
             :restore-request="referenceRestoreRequest"
             @models="navigate('模型庫')"
             @assets="navigate('參考素材')"
             @gallery="navigate('作品庫', studioMode, $event)"
         /></KeepAlive>
-        <template v-if="page === '系統資訊'">
-          <div class="host-bar"
-            ><span class="chip">{{
-              system?.runtime_kind === 'container' ? '容器平台' : '平台主機'
-            }}</span
-            ><strong>{{ system?.host ?? '讀取中' }}</strong
-            ><span class="muted"
-              >{{ systemStale ? '上次資料 · 本次更新失敗' : '每 15 秒更新' }} ·
-              {{ system ? new Date(system.updated_at).toLocaleTimeString() : '等待資訊' }}</span
-            ></div
-          >
-          <p class="footnote"
-            >{{
-              system?.runtime_kind === 'container'
-                ? '此區為容器可見的 Linux／RAM／掛載磁碟與 GPU；不是 Windows 宿主機的完整資訊。'
-                : '此區來源為平台主機：RAM／磁碟由本機系統查詢，GPU／驅動由 nvidia-smi 回報。'
-            }}
-            與下方選定引擎的環境分開。</p
-          >
-          <div class="cards" v-if="system">
-            <article class="card gpu" v-for="gpu in system.gpus" :key="gpu.index"
-              ><div class="card-label">GPU {{ gpu.index }} <span>NVIDIA</span></div
-              ><h2>{{ gpu.name.replace('NVIDIA GeForce ', '') }}</h2
-              ><p class="muted">專用顯示記憶體</p
-              ><div class="amount"
-                >{{ size(gpu.free) }} <small>可用 / {{ size(gpu.total) }}</small></div
-              ><div class="meter"><div :style="{ width: percent(gpu) + '%' }"></div></div
-              ><footer
-                >已使用 {{ size(gpu.used) }}<span>驅動 {{ gpu.driver }}</span></footer
-              ></article
-            >
-            <article v-if="system.gpu_error" class="card"
-              ><div class="card-label">GPU</div><h2>無法取得</h2><p>{{ system.gpu_error }}</p
-              ><p class="muted">其他平台功能仍可使用。</p></article
-            >
-            <article class="card"
-              ><div class="card-label">SYSTEM MEMORY <span>RAM</span></div
-              ><h2>系統記憶體</h2><p class="muted">平台主機可用記憶體</p
-              ><div class="amount"
-                >{{ size(system.ram.free) }} <small>/ {{ size(system.ram.total) }}</small></div
-              ><div class="meter violet"
-                ><div :style="{ width: percent(system.ram) + '%' }"></div></div
-              ><footer>已使用 {{ size(system.ram.used) }}</footer></article
-            >
-            <article class="card"
-              ><div class="card-label">STORAGE <span>DISK</span></div
-              ><h2>資料儲存空間</h2><p class="muted">平台資料目錄所在磁碟</p
-              ><div class="amount"
-                >{{ size(system.disk.free) }} <small>/ {{ size(system.disk.total) }}</small></div
-              ><div class="meter blue"
-                ><div :style="{ width: percent(system.disk) + '%' }"></div></div
-              ><footer>已使用 {{ size(system.disk.used) }}</footer></article
-            >
-          </div>
-          <div v-else class="card">{{
-            busy ? '正在讀取硬體資訊…' : '尚無硬體資料，請重新整理。'
-          }}</div>
-          <EngineEnvironment
-            :engine="engine"
-            :selected-url="savedUrl"
-            @settings="navigate('設定')"
-          />
-          <LocalEnvironmentCheck v-if="system?.runtime_kind !== 'container'" />
-          <article v-else class="panel">
-            <h2>原生 ComfyUI 安裝檢查</h2>
-            <p class="footnote"
-              >容器無法檢查 Windows 的原生 Python 安裝；請在 Windows
-              平台執行本機安裝檢查。上方選定引擎的連線與裝置回報仍可使用。</p
-            >
-          </article>
-          <DeploymentStatus />
-          <StorageOverview />
-          <article class="panel details" v-if="system"
-            ><h2>環境詳細資訊</h2
-            ><dl
-              ><dt>作業系統</dt><dd>{{ system.os }}</dd
-              ><dt>平台 Python</dt><dd>{{ system.python }}</dd
-              ><dt>資料目錄</dt><dd>{{ system.disk.path }}</dd></dl
-            ></article
-          >
-          <p class="footnote"
-            >硬體資訊供資源評估使用。平台不依顯卡型號限制存取；模型能否執行仍取決於完整工作流程。</p
-          >
-        </template>
+        <SystemWorkspace
+          v-if="page === '系統資訊'"
+          :system="system"
+          :engine="engine"
+          :selected-url="savedUrl"
+          :stale="systemStale"
+          :busy="busy"
+          :error="error"
+          @refresh="refresh()"
+          @settings="openConnection"
+          @paths="settingsPaths"
+        />
         <template v-else-if="page === '設定'"
-          ><form class="panel settings" @submit.prevent="save"
-            ><h2>ComfyUI 連線</h2
-            ><p class="muted">先啟動 ComfyUI，再填入其服務位址。設定保存在本機資料庫。</p
-            ><label for="url">服務位址</label
-            ><input
-              id="url"
-              v-model="url"
-              :disabled="saving"
-              placeholder="http://127.0.0.1:8188"
-              required
-              type="url"
-            /><p class="muted">支援本機或你管理的遠端執行主機。</p
-            ><button class="primary" :disabled="saving">{{
-              saving ? '保存中…' : '保存並檢查連線'
-            }}</button
-            ><p role="status">{{ message }}</p
-            ><p v-if="engine">{{ engine.connected ? 'ComfyUI 連線成功' : engine.error }}</p></form
-          ><LocalModelPaths :selected-engine-url="savedUrl"
-        /></template>
-        <DiagnosticsPanel v-if="page === '設定'" />
-        <ModelLibrary v-if="page === '模型庫'" @settings="navigate('設定')" />
-        <AssetLibrary v-else-if="page === '參考素材'" />
+          ><div class="page-intro"><p>只放你需要設定一次的事，日常創作時不會用到。</p></div
+          ><div class="settings-workspace"
+            ><PageTabs
+              id="settings"
+              v-model="settingsTab"
+              label="設定分類"
+              :items="settingsItems"
+              vertical /><div
+              ><section
+                v-show="settingsTab === 'connection'"
+                id="settings-panel-connection"
+                role="tabpanel"
+                aria-labelledby="settings-tab-connection"
+                ><form class="panel settings" @submit.prevent="save"
+                  ><h2>引擎連線</h2
+                  ><p
+                    >先啟動
+                    ComfyUI，再填入服務位址。設定保存在平台資料庫，可使用本機或你管理的遠端執行主機。</p
+                  ><label for="url">引擎位址</label
+                  ><input
+                    id="url"
+                    v-model="url"
+                    :disabled="saving"
+                    required
+                    type="url"
+                    placeholder="http://127.0.0.1:8188"
+                  /><div class="actions"
+                    ><button
+                      type="button"
+                      class="secondary"
+                      :disabled="saving || !url"
+                      @click="testConnection"
+                      >測試（不保存）</button
+                    ><button class="primary" :disabled="saving">{{
+                      saving ? '保存中…' : '保存並套用'
+                    }}</button></div
+                  ><p role="status">{{ message }}</p
+                  ><p v-if="engine">{{ engine.connected ? 'ComfyUI 連線成功' : engine.error }}</p
+                  ><p class="footnote"
+                    >測試不修改設定；保存後套用選定引擎，不會啟動或重新啟動
+                    ComfyUI。連線成功後仍需確認模型與必要元件。</p
+                  ><button type="button" class="secondary" @click="navigate('系統資訊')"
+                    >查看引擎執行環境</button
+                  ></form
+                ></section
+              ><section
+                v-show="settingsTab === 'paths'"
+                id="settings-panel-paths"
+                role="tabpanel"
+                aria-labelledby="settings-tab-paths"
+                ><LocalModelPaths :selected-engine-url="savedUrl" /></section
+              ><section
+                v-show="settingsTab === 'appearance'"
+                id="settings-panel-appearance"
+                role="tabpanel"
+                aria-labelledby="settings-tab-appearance"
+                class="panel"
+                ><h2>外觀與語言</h2
+                ><label
+                  >外觀<select disabled
+                    ><option>深色</option></select
+                  ></label
+                ><label
+                  >介面語言<select disabled
+                    ><option>繁體中文</option></select
+                  ></label
+                ><p>目前提供深色與繁體中文，其他主題及語言尚未開放。</p></section
+              ><section
+                v-show="settingsTab === 'privacy'"
+                id="settings-panel-privacy"
+                role="tabpanel"
+                aria-labelledby="settings-tab-privacy"
+                class="panel"
+                ><h2>資料與隱私</h2
+                ><p
+                  >作品、素材與設定保存在平台的資料目錄。使用遠端引擎時，生成需要的提示詞與輸入圖會送往你選定的引擎。</p
+                ><p
+                  >封存可隨時還原，不會刪除圖片或釋放容量。完整備份沿用專案的停機備份流程；快取清除尚未開放。</p
+                ><button class="secondary" @click="navigate('系統資訊')"
+                  >查看資料位置與磁碟容量</button
+                ></section
+              ><section
+                v-show="settingsTab === 'diagnostics'"
+                id="settings-panel-diagnostics"
+                role="tabpanel"
+                aria-labelledby="settings-tab-diagnostics"
+                ><DiagnosticsPanel /></section></div></div
+        ></template>
+        <ModelLibrary v-if="page === '模型庫'" @create="useModel" @settings="openConnection" />
+        <AssetLibrary v-else-if="page === '參考素材'" @use="useAsset" />
         <TrainingWorkspace v-else-if="page === '訓練工作區'" @dirty="trainingDirty = $event" />
         <ArtworkLibrary
           v-else-if="page === '作品庫'"
@@ -418,8 +483,6 @@ onUnmounted(() => {
           @studio="navigate('創作工作台')"
           @restore="restoreArtwork"
           @dirty="artworkNotesDirty = $event"
-        />
-      </section>
-    </main>
-  </div>
+        /> </section></main
+  ></div>
 </template>

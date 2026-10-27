@@ -63,6 +63,27 @@ def install(app, host):
             )
         return value
 
+    @app.post('/api/engine/test')
+    async def test_engine(value: Settings):
+        try:
+            async with host.http_client(timeout=5, trust_env=False) as client:
+                response = await client.get(value.comfy_url + '/system_stats')
+                response.raise_for_status()
+                stats = response.json()
+            if (
+                not isinstance(stats, dict)
+                or not isinstance(stats.get('system'), dict)
+                or not isinstance(stats.get('devices'), list)
+            ):
+                raise ValueError('回應不是 ComfyUI 系統資訊')
+            return {'connected': True, 'url': value.comfy_url}
+        except (httpx.HTTPError, ValueError):
+            return {
+                'connected': False,
+                'url': value.comfy_url,
+                'error': '無法確認 ComfyUI 回報，原連線設定未變更。',
+            }
+
     @app.get('/api/system')
     def system():
         cards, error = host.gpu_info()

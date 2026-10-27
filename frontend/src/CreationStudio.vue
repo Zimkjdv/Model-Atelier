@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import SizePresets from './SizePresets.vue'
+import StudioPreview from './StudioPreview.vue'
 import { api } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { useUnsavedChanges } from './unsavedChanges'
@@ -54,7 +56,7 @@ type Draft = Omit<CreationForm, keyof GenerationFields> &
     model_version: string
     updated_at: string
   }
-type Model = { name: string; listed: boolean; version?: string }
+type Model = { name: string; listed: boolean; version?: string; architecture?: string }
 type Catalog = { engine_url: string; models: Model[]; selected: string | null }
 type Range = { min: number; max: number }
 type Capabilities = {
@@ -69,12 +71,45 @@ type Capabilities = {
   synced_at: string | null
   sync_error: string | null
 }
-const emit = defineEmits<{ models: []; assets: []; gallery: [jobId: string] }>()
-const props = defineProps<{ restoreRequest?: { artworkId: string; token: number } | null }>()
+const emit = defineEmits<{
+  models: []
+  assets: []
+  gallery: [jobId: string]
+  studio: []
+  purpose: [image: boolean]
+}>()
+const props = defineProps<{
+  modelRequest?: { name: string; engineUrl: string; token: number } | null
+  assetRequest?: { id: string; purpose: string; token: number } | null
+  workspace?: 'studio' | 'experiments'
+  purposeRequest?: { image: boolean; token: number } | null
+  restoreRequest?: { artworkId: string; token: number } | null
+}>()
 const form = reactive(newCreation())
+watch(
+  () => form.workflow_mode,
+  (value) => emit('purpose', value === 'image2image'),
+)
+onMounted(() => {
+  if (props.purposeRequest) {
+    form.workflow_mode = props.purposeRequest.image ? 'image2image' : 'text2image'
+    changeWorkflow()
+  }
+})
+watch(
+  () => props.purposeRequest,
+  (request) => {
+    if (!request) return
+    form.workflow_mode = request.image ? 'image2image' : 'text2image'
+    changeWorkflow()
+  },
+)
 const experimentLoad = ref<ExperimentLoad | null>(null),
   generationBusy = ref(false),
   generationPending = ref(false)
+watch(experimentLoad, (value) => {
+  if (value && props.workspace === 'experiments') emit('studio')
+})
 const experimentChanged = computed(
   () => !!experimentLoad.value && !matchesExperiment(experimentLoad.value, form),
 )
@@ -583,288 +618,352 @@ onActivated(() => {
   active = true
   void refresh()
 })
+
+let appliedModelToken = 0
+watch(
+  [
+    () => props.modelRequest,
+    () => models.value,
+    () => busy.value,
+    () => restoring.value,
+    () => generationBusy.value,
+    () => generationPending.value,
+  ],
+  ([request]) => {
+    if (
+      !request ||
+      busy.value ||
+      restoring.value ||
+      generationBusy.value ||
+      generationPending.value ||
+      request.token === appliedModelToken ||
+      !models.value
+    )
+      return
+    appliedModelToken = request.token
+    if (form.engine_url !== request.engineUrl || models.value.engine_url !== request.engineUrl) {
+      error.value = '模型來源與目前草稿引擎不同，請先確認引擎設定；原設定已保留。'
+      return
+    }
+    if (!models.value.models.some((item) => item.name === request.name && item.listed)) {
+      error.value = '模型已不在目前引擎清單，請重新同步；原設定已保留。'
+      return
+    }
+    if (
+      form.checkpoint !== request.name &&
+      dirty.value &&
+      !window.confirm('只更換目前模型，提示詞、Seed 與其他參數保留，確定套用？')
+    )
+      return
+    form.checkpoint = request.name
+    draftVersion.value = ''
+    message.value = '已帶入模型。其他參數保留，尚未生成。'
+  },
+  { flush: 'post' },
+)
+
+let appliedAssetToken = 0
+watch(
+  [
+    () => props.assetRequest,
+    () => references.value,
+    () => busy.value,
+    () => restoring.value,
+    () => generationBusy.value,
+    () => generationPending.value,
+  ],
+  ([request]) => {
+    if (
+      !request ||
+      busy.value ||
+      restoring.value ||
+      generationBusy.value ||
+      generationPending.value ||
+      request.token === appliedAssetToken ||
+      !references.value.some((item) => item.id === request.id)
+    )
+      return
+    appliedAssetToken = request.token
+    if (dirty.value && !window.confirm('帶入素材會更換目前來源圖片，其他參數保留，確定套用？'))
+      return
+    form.workflow_mode = 'image2image'
+    chooseImage(request.id)
+  },
+  { flush: 'post' },
+)
 </script>
 
 <template>
   <div class="studio">
-    <div class="studio-toolbar"
-      ><span class="chip">創作草稿</span
-      ><span class="muted">{{
-        dirty ? '尚有未保存變更' : id ? '已保存 · 修訂 ' + revision : '新草稿'
-      }}</span
-      ><button class="secondary" :disabled="busy || restoring" @click="choose('new')"
-        >＋ 新草稿</button
-      ><button class="secondary" :disabled="busy || restoring" @click="refresh"
-        >重新整理清單</button
-      ></div
-    >
-    <UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" />
-    <p v-if="error" class="notice warning" role="alert">{{ error }}</p
-    ><p v-if="message" class="notice" role="status">{{ message }}</p>
-    <p v-if="restoring" class="notice" role="status">正在讀取原始創作設定…</p>
-    <!-- prettier-ignore -->
-    <div v-if="pending" class="notice warning" role="alert"><p>載入其他草稿、作品或任務設定會取代目前未保存的內容。</p><button class="secondary" :disabled="busy || restoring" @click="pending = null">繼續編輯</button> <button class="secondary" :disabled="busy || restoring" @click="apply(pending)">捨棄變更並載入</button></div>
-    <div v-if="origin" class="notice" role="status"
-      ><p
-        >{{
-          origin.kind === 'job'
-            ? '來源任務 ' + origin.job_id.slice(0, 8) + ' · 提交時版本：'
-            : '來源作品版本：'
-        }}{{ origin.model_version }} · 已保留原引擎與生成設定。</p
-      ><p v-if="selected?.version && selected.version !== origin.model_version"
-        >模型庫目前登記版本：{{ selected.version }}。再次生成使用目前安裝的模型，請確認版本。</p
-      ><p v-for="warning in origin.warnings" :key="warning">{{ warning }}</p></div
-    >
-    <LoraSnapshot v-if="origin" :items="origin.lora_metadata" />
-    <ReferenceSnapshot v-if="origin" :items="origin.reference_metadata" />
-    <RuntimeSnapshot v-if="origin" :item="origin.runtime_metadata" />
-    <AssetChoices
-      :selected-ids="[...form.reference_ids, ...(form.image_asset_id ? [form.image_asset_id] : [])]"
-      @items="references = $event"
-    />
-    <SettingsTransfer
-      :settings="form"
-      family="checkpoint"
-      :dirty="dirty"
-      :disabled="busy || restoring || !!pending || generationBusy || generationPending"
-      @apply="importSettings"
-    />
-    <ExperimentPlanner
-      :settings="form"
-      :dirty="dirty"
-      :disabled="busy || restoring || !!pending || generationBusy || generationPending"
-      @apply="importSettings"
-      @gallery="emit('gallery', $event)"
-      @state="experimentState"
-    />
-    <section v-if="experimentLoad" class="notice" aria-label="目前比較組關聯"
-      ><strong>{{ experimentLoad.plan_title }} · {{ experimentLoad.selection.variant_id }}</strong
-      ><p>{{
-        experimentChanged
-          ? '設定已改動，生成前需解除關聯或重新載入原組。'
-          : '目前完整設定符合原比較組；另按生成才建立任務及結果關聯。'
-      }}</p
-      ><p class="footnote"
-        >比較關聯跟隨目前載入的組別；保存草稿不保存關聯，重載草稿、作品或一般設定會解除。</p
-      ><button
-        type="button"
-        class="secondary"
-        :disabled="generationBusy || generationPending"
-        @click="experimentLoad = null"
-        >解除比較關聯，保留目前設定</button
-      ></section
-    >
-    <p v-if="display.error.value" class="notice" role="status">{{ display.error.value }}</p>
-    <div class="studio-layout-controls"
-      ><button
-        type="button"
-        class="secondary"
-        :aria-expanded="!editorCollapsed"
-        aria-controls="studio-editor"
-        @click="editorCollapsed = !editorCollapsed"
-        >{{ editorCollapsed ? '展開創作設定' : '收合創作設定' }}</button
-      ><p v-if="editorCollapsed" class="footnote"
-        >{{ form.checkpoint || '尚未選擇模型' }} · {{ form.width }} × {{ form.height }} ·
-        {{ form.steps }} steps · CFG {{ form.cfg }}。設定與未保存內容仍保留。</p
-      ></div
-    >
-    <div class="studio-grid" :class="{ 'editor-collapsed': editorCollapsed }">
-      <form
-        id="studio-editor"
-        v-show="!editorCollapsed"
-        class="panel editor"
-        aria-label="創作設定"
-        @submit.prevent="save()"
-        ><h2>創作設定</h2
-        ><fieldset :disabled="busy || restoring">
-          <label for="draft-title">草稿名稱</label
-          ><input id="draft-title" v-model="form.title" required maxlength="100" />
-          <label for="checkpoint-workflow">Checkpoint 工作流程</label
-          ><select id="checkpoint-workflow" v-model="form.workflow_mode" @change="changeWorkflow"
-            ><option value="text2image">文生圖</option
-            ><option value="image2image">圖生圖 · 單張輸入</option></select
+    <div v-show="workspace === 'experiments'" class="experiments-workspace"
+      ><p class="page-description"
+        >固定其他條件，只改變一個設定，並排看差異。每組仍需明確載入並生成。</p
+      ><ExperimentPlanner
+        :settings="form"
+        :dirty="dirty"
+        :disabled="busy || restoring || !!pending || generationBusy || generationPending"
+        @apply="importSettings"
+        @gallery="emit('gallery', $event)"
+        @state="experimentState" /></div
+    ><div class="studio-workbench" v-show="workspace !== 'experiments'"
+      ><div class="studio-settings"
+        ><UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" />
+        <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
+        <p v-if="message" class="notice" role="status">{{ message }}</p>
+        <p v-if="restoring" class="notice" role="status">正在讀取原始創作設定…</p>
+        <div v-if="pending" class="notice warning" role="alert"
+          ><p>載入其他草稿、作品或任務設定會取代目前未保存的內容。</p
+          ><button class="secondary" :disabled="busy || restoring" @click="pending = null"
+            >繼續編輯</button
           >
-          <p v-if="isImage" class="footnote"
-            >{{ imageWorkflow?.input_requirement }} {{ imageWorkflow?.control }}</p
-          >
-          <label for="draft-model">Checkpoint 模型</label
-          ><select id="draft-model" v-model="form.checkpoint" @change="draftVersion = ''"
-            ><option value="">尚未選擇模型</option
-            ><option
-              v-if="form.checkpoint && !available.some((m) => m.name === form.checkpoint)"
-              :value="form.checkpoint"
-              >{{ form.checkpoint }}（目前清單未列出）</option
-            ><option v-for="model in available" :key="model.name" :value="model.name">{{
-              model.name
-            }}</option></select
-          >
-          <p class="footnote"
-            >模型版本：{{ modelVersion }} · {{ form.engine_url || '等待讀取引擎設定' }}</p
-          >
-          <p v-if="!available.length" class="inline-note"
-            >目前沒有可選的 checkpoint。仍可先保存創作草稿。
-            <button type="button" class="text-button" @click="emit('models')"
-              >前往模型庫 →</button
-            ></p
-          >
-          <p v-else-if="form.checkpoint && !selected?.listed" class="inline-note"
-            >這份草稿的模型未在目前清單中，保留原設定供整理。</p
-          >
-          <section v-if="form.checkpoint" class="model-profile" aria-label="模型工作流程與預設">
-            <div class="profile-heading"
-              ><h3>模型工作流程</h3
-              ><button
-                type="button"
-                class="secondary"
-                :disabled="profileBusy"
-                @click="refreshProfile"
-                >{{ profileBusy ? '更新中…' : '更新模型資料' }}</button
-              ></div
+          <button class="secondary" :disabled="busy || restoring" @click="apply(pending)"
+            >捨棄變更並載入</button
+          ></div
+        >
+        <p v-if="display.error.value" class="notice" role="status">{{ display.error.value }}</p
+        ><form
+          id="studio-editor"
+          v-show="!editorCollapsed"
+          class="panel editor"
+          aria-label="創作設定"
+          @submit.prevent="save()"
+          ><h2>創作設定</h2
+          ><fieldset :disabled="busy || restoring">
+            <template v-if="editableWorkflow"
+              ><label for="draft-prompt"
+                >畫面描述 <small>{{ form.prompt.length }} / 20000</small></label
+              ><textarea
+                id="draft-prompt"
+                v-model="form.prompt"
+                maxlength="20000"
+                rows="7"
+                placeholder="描述角色、場景、光線與你想呈現的畫面…"
+              ></textarea>
+            </template>
+            <label for="draft-model">Checkpoint 模型</label
+            ><select id="draft-model" v-model="form.checkpoint" @change="draftVersion = ''"
+              ><option value="">尚未選擇模型</option
+              ><option
+                v-if="form.checkpoint && !available.some((m) => m.name === form.checkpoint)"
+                :value="form.checkpoint"
+                >{{ form.checkpoint }}（目前清單未列出）</option
+              ><option
+                v-for="model in available"
+                :key="model.name"
+                :value="model.name"
+                :disabled="['flux', 'sd3', 'other'].includes(model.architecture || '')"
+                >{{ model.name
+                }}{{
+                  ['flux', 'sd3', 'other'].includes(model.architecture || '')
+                    ? '（此流程不支援）'
+                    : ''
+                }}</option
+              ></select
             >
-            <p v-if="profileBusy" role="status">正在確認此模型的登記架構與工作流程…</p>
-            <p v-else-if="profileError || !matchingProfile" role="alert" class="profile-warning">{{
-              profileError || '尚無此模型的工作流程資料。'
-            }}</p>
-            <template v-else
-              ><p class="footnote"
-                >登記架構：{{ architectureLabel(matchingProfile.architecture) }}</p
+            <ImageInput
+              v-if="isImage"
+              :model-value="form.image_asset_id"
+              v-model:resize="form.reference_resize"
+              v-model:denoise="form.denoise"
+              :assets="references"
+              :width="form.width"
+              :height="form.height"
+              @update:model-value="chooseImage"
+            />
+            <SizePresets
+              :family="matchingProfile?.architecture"
+              :width="form.width"
+              :height="form.height"
+              @select="
+                (w, h) => {
+                  form.width = w
+                  form.height = h
+                }
+              "
+            /><details class="studio-advanced"
+              ><summary>進階設定、草稿名稱與模型能力</summary
+              ><label for="draft-title">草稿名稱</label
+              ><input id="draft-title" v-model="form.title" required maxlength="100" />
+              <label for="checkpoint-workflow">Checkpoint 工作流程</label
+              ><select
+                id="checkpoint-workflow"
+                v-model="form.workflow_mode"
+                @change="changeWorkflow"
+                ><option value="text2image">文生圖</option
+                ><option value="image2image">圖生圖 · 單張輸入</option></select
               >
-              <p
-                :class="{ 'profile-warning': matchingProfile.compatibility.status !== 'supported' }"
-                role="status"
-                >{{ profileMessage }}</p
+              <p v-if="isImage" class="footnote"
+                >{{ imageWorkflow?.input_requirement }} {{ imageWorkflow?.control }}</p
               >
-              <template v-if="matchingProfile.preset && !isImage"
-                ><h3>{{ matchingProfile.preset.name }}</h3>
-                <p class="footnote">{{ presetValidationLabel }}</p>
-                <details class="preset-reference"
-                  ><summary>預設來源與提示詞參考</summary>
-                  <p>{{ matchingProfile.preset.description }}</p
-                  ><p class="footnote">{{ matchingProfile.preset.validation }}</p>
-                  <p v-if="presetReferenceUrl"
-                    ><a :href="presetReferenceUrl" target="_blank" rel="noopener noreferrer"
-                      >查看預設來源與驗證狀態 ↗</a
-                    ></p
-                  >
-                  <p v-if="matchingProfile.preset.prompt_hint" class="profile-hint"
-                    >提示詞參考：{{ matchingProfile.preset.prompt_hint }}</p
-                  >
-                </details>
-                <details v-if="!presetChoice" class="preset-differences"
-                  ><summary>預設參數與目前設定</summary
-                  ><table
-                    ><thead
-                      ><tr
-                        ><th scope="col">參數</th><th scope="col">目前</th
-                        ><th scope="col">預設</th></tr
-                      ></thead
-                    ><tbody
-                      ><tr
-                        v-for="row in presetRows"
-                        :key="row.key"
-                        :class="{ changed: row.changed }"
-                        ><th scope="row">{{ row.label }}</th
-                        ><td>{{ row.current }}</td
-                        ><td>{{ row.next }}</td></tr
-                      ></tbody
-                    ></table
-                  ></details
-                >
-                <button
-                  v-if="!presetChoice"
-                  type="button"
-                  class="secondary apply-preset"
-                  :disabled="profileBusy || !matchingProfile.compatibility.allows_submission"
-                  @click="choosePreset"
-                  >套用模型預設</button
-                >
-                <div v-else class="preset-confirm" role="alert"
-                  ><p>套用預設將取代下方參數，請確認差異。</p
-                  ><table
-                    ><thead
-                      ><tr
-                        ><th scope="col">參數</th><th scope="col">目前</th
-                        ><th scope="col">套用後</th></tr
-                      ></thead
-                    ><tbody
-                      ><tr
-                        v-for="row in presetRows"
-                        :key="row.key"
-                        :class="{ changed: row.changed }"
-                        ><th scope="row">{{ row.label }}</th
-                        ><td>{{ row.current }}</td
-                        ><td>{{ row.next }}</td></tr
-                      ></tbody
-                    ></table
-                  ><div class="preset-actions"
+
+              <p class="footnote"
+                >模型版本：{{ modelVersion }} · {{ form.engine_url || '等待讀取引擎設定' }}</p
+              >
+              <p v-if="!available.length" class="inline-note"
+                >目前沒有可選的 checkpoint。仍可先保存創作草稿。
+                <button type="button" class="text-button" @click="emit('models')"
+                  >前往模型庫 →</button
+                ></p
+              >
+              <p v-else-if="form.checkpoint && !selected?.listed" class="inline-note"
+                >這份草稿的模型未在目前清單中，保留原設定供整理。</p
+              >
+              <section v-if="form.checkpoint" class="model-profile" aria-label="模型工作流程與預設"
+                ><details
+                  ><summary>模型能力、預設與差異確認</summary>
+                  <div class="profile-heading"
+                    ><h3>模型工作流程</h3
                     ><button
                       type="button"
-                      class="primary"
+                      class="secondary"
                       :disabled="profileBusy"
-                      @click="confirmPreset"
-                      >套用並取代上述參數</button
-                    ><button type="button" class="secondary" @click="presetChoice = null"
-                      >保留目前設定</button
+                      @click="refreshProfile"
+                      >{{ profileBusy ? '更新中…' : '更新模型資料' }}</button
                     ></div
-                  ></div
-                > </template
-              ><p v-else class="footnote">{{
-                isImage
-                  ? '圖生圖保留目前取樣參數；文生圖預設未自動套用。'
-                  : '此模型尚無可套用的參數預設。'
-              }}</p>
-            </template>
-            <p v-if="matchingProfile?.preset && !isImage" class="footnote">預設僅在確認後套用。</p>
-          </section>
-          <ModelValidation
-            v-if="!isImage && form.checkpoint && !form.loras.some((item) => item.enabled)"
-            :engine-url="form.engine_url"
-            :name="form.checkpoint"
-            :refresh-key="matchingProfile?.metadata_updated_at || ''"
-          />
-          <LoraValidation
-            v-else-if="!isImage && form.checkpoint && activeLora && activeLoraCount === 1"
-            :engine-url="form.engine_url"
-            :checkpoint="form.checkpoint"
-            :lora="activeLora"
-            :settings="loraParameters"
-            :has-references="form.reference_ids.length > 0"
-            :refresh-key="matchingProfile?.metadata_updated_at || ''"
-          />
-          <StackValidation
-            v-else-if="!isImage && form.checkpoint && activeLoraCount > 1"
-            :engine-url="form.engine_url"
-            :checkpoint="form.checkpoint"
-            :loras="form.loras"
-            :settings="loraParameters"
-            :refresh-key="matchingProfile?.metadata_updated_at || ''"
-          />
-          <p v-if="matchingProfile?.workflow" class="footnote" role="status"
-            >{{ isImage ? 'Checkpoint 單張圖生圖' : matchingProfile.workflow.name }} · 每次 1
-            張；最多 {{ matchingProfile.workflow.max_loras }} 個 LoRA。</p
-          >
-          <div v-show="editableWorkflow">
-            <label for="draft-prompt"
-              >畫面描述 <small>{{ form.prompt.length }} / 20000</small></label
-            ><textarea
-              id="draft-prompt"
-              v-model="form.prompt"
-              maxlength="20000"
-              rows="7"
-              placeholder="描述角色、場景、光線與你想呈現的畫面…"
-            ></textarea>
-            <label for="draft-negative"
-              >負面提示詞 <small>{{ form.negative_prompt.length }} / 20000</small></label
-            ><textarea
-              id="draft-negative"
-              v-model="form.negative_prompt"
-              maxlength="20000"
-              rows="3"
-              placeholder="描述希望避免的畫面特徵…"
-            ></textarea>
-            <div class="size-presets">
-              <!-- prettier-ignore -->
-              <button
+                  >
+                  <p v-if="profileBusy" role="status">正在確認此模型的登記架構與工作流程…</p>
+                  <p
+                    v-else-if="profileError || !matchingProfile"
+                    role="alert"
+                    class="profile-warning"
+                    >{{ profileError || '尚無此模型的工作流程資料。' }}</p
+                  >
+                  <template v-else
+                    ><p class="footnote"
+                      >登記架構：{{ architectureLabel(matchingProfile.architecture) }}</p
+                    >
+                    <p
+                      :class="{
+                        'profile-warning': matchingProfile.compatibility.status !== 'supported',
+                      }"
+                      role="status"
+                      >{{ profileMessage }}</p
+                    >
+                    <template v-if="matchingProfile.preset && !isImage"
+                      ><h3>{{ matchingProfile.preset.name }}</h3>
+                      <p class="footnote">{{ presetValidationLabel }}</p>
+                      <details class="preset-reference"
+                        ><summary>預設來源與提示詞參考</summary>
+                        <p>{{ matchingProfile.preset.description }}</p
+                        ><p class="footnote">{{ matchingProfile.preset.validation }}</p>
+                        <p v-if="presetReferenceUrl"
+                          ><a :href="presetReferenceUrl" target="_blank" rel="noopener noreferrer"
+                            >查看預設來源與驗證狀態 ↗</a
+                          ></p
+                        >
+                        <p v-if="matchingProfile.preset.prompt_hint" class="profile-hint"
+                          >提示詞參考：{{ matchingProfile.preset.prompt_hint }}</p
+                        >
+                      </details>
+                      <details v-if="!presetChoice" class="preset-differences"
+                        ><summary>預設參數與目前設定</summary
+                        ><table
+                          ><thead
+                            ><tr
+                              ><th scope="col">參數</th><th scope="col">目前</th
+                              ><th scope="col">預設</th></tr
+                            ></thead
+                          ><tbody
+                            ><tr
+                              v-for="row in presetRows"
+                              :key="row.key"
+                              :class="{ changed: row.changed }"
+                              ><th scope="row">{{ row.label }}</th
+                              ><td>{{ row.current }}</td
+                              ><td>{{ row.next }}</td></tr
+                            ></tbody
+                          ></table
+                        ></details
+                      >
+                      <button
+                        v-if="!presetChoice"
+                        type="button"
+                        class="secondary apply-preset"
+                        :disabled="profileBusy || !matchingProfile.compatibility.allows_submission"
+                        @click="choosePreset"
+                        >套用模型預設</button
+                      >
+                      <div v-else class="preset-confirm" role="alert"
+                        ><p>套用預設將取代下方參數，請確認差異。</p
+                        ><table
+                          ><thead
+                            ><tr
+                              ><th scope="col">參數</th><th scope="col">目前</th
+                              ><th scope="col">套用後</th></tr
+                            ></thead
+                          ><tbody
+                            ><tr
+                              v-for="row in presetRows"
+                              :key="row.key"
+                              :class="{ changed: row.changed }"
+                              ><th scope="row">{{ row.label }}</th
+                              ><td>{{ row.current }}</td
+                              ><td>{{ row.next }}</td></tr
+                            ></tbody
+                          ></table
+                        ><div class="preset-actions"
+                          ><button
+                            type="button"
+                            class="primary"
+                            :disabled="profileBusy"
+                            @click="confirmPreset"
+                            >套用並取代上述參數</button
+                          ><button type="button" class="secondary" @click="presetChoice = null"
+                            >保留目前設定</button
+                          ></div
+                        ></div
+                      > </template
+                    ><p v-else class="footnote">{{
+                      isImage
+                        ? '圖生圖保留目前取樣參數；文生圖預設未自動套用。'
+                        : '此模型尚無可套用的參數預設。'
+                    }}</p>
+                  </template>
+                  <p v-if="matchingProfile?.preset && !isImage" class="footnote"
+                    >預設僅在確認後套用。</p
+                  >
+                </details></section
+              >
+              <ModelValidation
+                v-if="!isImage && form.checkpoint && !form.loras.some((item) => item.enabled)"
+                :engine-url="form.engine_url"
+                :name="form.checkpoint"
+                :refresh-key="matchingProfile?.metadata_updated_at || ''"
+              />
+              <LoraValidation
+                v-else-if="!isImage && form.checkpoint && activeLora && activeLoraCount === 1"
+                :engine-url="form.engine_url"
+                :checkpoint="form.checkpoint"
+                :lora="activeLora"
+                :settings="loraParameters"
+                :has-references="form.reference_ids.length > 0"
+                :refresh-key="matchingProfile?.metadata_updated_at || ''"
+              />
+              <StackValidation
+                v-else-if="!isImage && form.checkpoint && activeLoraCount > 1"
+                :engine-url="form.engine_url"
+                :checkpoint="form.checkpoint"
+                :loras="form.loras"
+                :settings="loraParameters"
+                :refresh-key="matchingProfile?.metadata_updated_at || ''"
+              />
+              <p v-if="matchingProfile?.workflow" class="footnote" role="status"
+                >{{ isImage ? 'Checkpoint 單張圖生圖' : matchingProfile.workflow.name }} · 每次 1
+                張；最多 {{ matchingProfile.workflow.max_loras }} 個 LoRA。</p
+              >
+              <div v-show="editableWorkflow">
+                <label for="draft-negative"
+                  >負面提示詞 <small>{{ form.negative_prompt.length }} / 20000</small></label
+                ><textarea
+                  id="draft-negative"
+                  v-model="form.negative_prompt"
+                  maxlength="20000"
+                  rows="3"
+                  placeholder="描述希望避免的畫面特徵…"
+                ></textarea>
+                <div class="size-presets">
+                  <!-- prettier-ignore -->
+                  <button
                 v-for="preset in [
                   { label: '正方形', w: 1024, h: 1024 },
                   { label: '直式', w: 832, h: 1216 },
@@ -876,268 +975,343 @@ onActivated(() => {
                 @click="form.width = preset.w; form.height = preset.h"
                 >{{ preset.label }}</button
               ></div
-            >
-            <div class="size-fields"
-              ><label for="width"
-                >寬度<input
-                  id="width"
-                  v-model.number="form.width"
-                  type="number"
-                  min="64"
-                  max="8192"
-                  step="8"
-                  required /></label
-              ><label for="height"
-                >高度<input
-                  id="height"
-                  v-model.number="form.height"
-                  type="number"
-                  min="64"
-                  max="8192"
-                  step="8"
-                  required /></label
-            ></div>
-            <div class="size-fields"
-              ><label for="steps"
-                >Steps<input
-                  id="steps"
-                  v-model.number="form.steps"
-                  type="number"
-                  min="1"
-                  max="150"
-                  step="1"
-                  required /></label
-              ><label for="cfg"
-                >CFG<input
-                  id="cfg"
-                  v-model.number="form.cfg"
-                  type="number"
-                  min="0"
-                  max="30"
-                  step="any"
-                  required /></label
-            ></div>
-            <ImageInput
-              v-if="isImage"
-              :model-value="form.image_asset_id"
-              v-model:resize="form.reference_resize"
-              v-model:denoise="form.denoise"
-              :assets="references"
-              :width="form.width"
-              :height="form.height"
-              @update:model-value="chooseImage"
-            />
-            <button
-              v-if="isImage"
-              class="secondary manage-reference"
-              type="button"
-              @click="emit('assets')"
-              >管理／上傳參考圖 →</button
-            >
-            <details
-              v-else
-              :open="display.value.references"
-              @toggle="display.toggle('references', $event)"
-              ><summary>參考素材（{{ form.reference_ids.length }} / 8）</summary
-              ><p class="footnote"
-                >文生圖的素材關聯僅為草稿記錄；生成前需取消選取。要使用圖片請選擇圖生圖流程。</p
-              ><button class="secondary" type="button" @click="emit('assets')"
-                >管理／上傳參考圖 →</button
-              ><div class="reference-list"
-                ><label
-                  v-for="asset in references.filter(
-                    (a) => !a.archived || form.reference_ids.includes(a.id),
-                  )"
-                  :key="asset.id"
-                  ><input
-                    v-model="form.reference_ids"
-                    type="checkbox"
-                    :value="asset.id"
-                    :disabled="
-                      !form.reference_ids.includes(asset.id) && form.reference_ids.length >= 8
-                    "
-                  /><img :src="'/api/assets/' + asset.id + '/image'" :alt="asset.title" />{{
-                    asset.title
-                  }}
-                  · {{ purposeLabel(asset.purpose) }}{{ asset.archived ? '（已封存）' : '' }}</label
+                >
+                <details class="custom-size"
+                  ><summary>自訂像素尺寸</summary
+                  ><div class="size-fields"
+                    ><label for="width"
+                      >寬度<input
+                        id="width"
+                        v-model.number="form.width"
+                        type="number"
+                        min="64"
+                        max="8192"
+                        step="8"
+                        required /></label
+                    ><label for="height"
+                      >高度<input
+                        id="height"
+                        v-model.number="form.height"
+                        type="number"
+                        min="64"
+                        max="8192"
+                        step="8"
+                        required /></label></div
+                ></details>
+                <div class="size-fields"
+                  ><label for="steps"
+                    >Steps<input
+                      id="steps"
+                      v-model.number="form.steps"
+                      type="number"
+                      min="1"
+                      max="150"
+                      step="1"
+                      required /></label
+                  ><label for="cfg"
+                    >CFG<input
+                      id="cfg"
+                      v-model.number="form.cfg"
+                      type="number"
+                      min="0"
+                      max="30"
+                      step="any"
+                      required /></label
+                ></div>
+
+                <button
+                  v-if="isImage"
+                  class="secondary manage-reference"
+                  type="button"
+                  @click="emit('assets')"
+                  >管理／上傳參考圖 →</button
+                >
+                <details
+                  v-else
+                  :open="display.value.references"
+                  @toggle="display.toggle('references', $event)"
+                  ><summary>參考素材（{{ form.reference_ids.length }} / 8）</summary
+                  ><p class="footnote"
+                    >文生圖的素材關聯僅為草稿記錄；生成前需取消選取。要使用圖片請選擇圖生圖流程。</p
+                  ><button class="secondary" type="button" @click="emit('assets')"
+                    >管理／上傳參考圖 →</button
+                  ><div class="reference-list"
+                    ><label
+                      v-for="asset in references.filter(
+                        (a) => !a.archived || form.reference_ids.includes(a.id),
+                      )"
+                      :key="asset.id"
+                      ><input
+                        v-model="form.reference_ids"
+                        type="checkbox"
+                        :value="asset.id"
+                        :disabled="
+                          !form.reference_ids.includes(asset.id) && form.reference_ids.length >= 8
+                        "
+                      /><img :src="'/api/assets/' + asset.id + '/image'" :alt="asset.title" />{{
+                        asset.title
+                      }}
+                      · {{ purposeLabel(asset.purpose)
+                      }}{{ asset.archived ? '（已封存）' : '' }}</label
+                    ></div
+                  ><p v-if="!references.length" class="footnote"
+                    >尚無素材，可先到參考素材頁上傳圖片。</p
+                  ></details
+                >
+                <details :open="display.value.advanced" @toggle="display.toggle('advanced', $event)"
+                  ><summary>進階設定</summary><label for="seed">Seed</label
+                  ><div class="seed-field"
+                    ><input
+                      id="seed"
+                      v-model="form.seed"
+                      inputmode="numeric"
+                      pattern="[0-9]{1,20}"
+                      required
+                    /><button type="button" class="secondary" @click="randomSeed">隨機</button></div
+                  ><p class="footnote">以文字精確保存 64 位元整數，避免瀏覽器數字精度造成變更。</p>
+                  <div class="inline-note" role="status"
+                    ><p>{{
+                      capabilityBusy
+                        ? '正在讀取 ComfyUI 取樣選項…'
+                        : matchingCapabilities?.available
+                          ? matchingCapabilities.stale
+                            ? '顯示上次引擎選項快照；尚未確認目前支援情況。'
+                            : '選項來自目前 ComfyUI 的 KSampler。'
+                          : '尚無此引擎的取樣選項資料。'
+                    }}</p
+                    ><p v-if="matchingCapabilities?.synced_at" class="footnote"
+                      >{{ matchingCapabilities.engine_url }} · 同步於
+                      {{ new Date(matchingCapabilities.synced_at).toLocaleString() }}</p
+                    ><p v-if="capabilityError || matchingCapabilities?.sync_error">{{
+                      capabilityError || matchingCapabilities?.sync_error
+                    }}</p
+                    ><button
+                      type="button"
+                      class="secondary"
+                      :disabled="capabilityBusy"
+                      @click="refreshCapabilities(true)"
+                      >{{ capabilityBusy ? '更新中…' : '更新引擎選項' }}</button
+                    ></div
+                  >
+
+                  <label for="sampler">Sampler</label
+                  ><select id="sampler" v-model="form.sampler_name"
+                    ><option v-if="!samplers.includes(form.sampler_name)" :value="form.sampler_name"
+                      >{{ form.sampler_name }}（原設定，{{
+                        matchingCapabilities?.available && !matchingCapabilities.stale
+                          ? '目前引擎未列出'
+                          : '尚未確認支援'
+                      }}）</option
+                    ><option v-for="sampler in samplers" :key="sampler" :value="sampler">{{
+                      sampler
+                    }}</option></select
+                  >
+                  <label for="scheduler">Scheduler</label
+                  ><select id="scheduler" v-model="form.scheduler"
+                    ><option v-if="!schedulers.includes(form.scheduler)" :value="form.scheduler"
+                      >{{ form.scheduler }}（原設定，{{
+                        matchingCapabilities?.available && !matchingCapabilities.stale
+                          ? '目前引擎未列出'
+                          : '尚未確認支援'
+                      }}）</option
+                    ><option v-for="scheduler in schedulers" :key="scheduler" :value="scheduler">{{
+                      scheduler
+                    }}</option></select
+                  >
+                  <template v-if="!isImage"
+                    ><label for="denoise">Denoise</label
+                    ><input
+                      id="denoise"
+                      v-model.number="form.denoise"
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="any"
+                      required /></template
+                  ><p class="footnote">草稿可保存原設定，生成前會重新確認引擎選項與參數範圍。</p
+                  ><p v-if="matchingCapabilities?.available" class="footnote"
+                    >{{ matchingCapabilities.stale ? '上次記錄的' : '目前' }}可用範圍：<template
+                      v-for="field in ['steps', 'cfg', 'denoise'] as const"
+                      :key="field"
+                      ><span v-if="matchingCapabilities.bounds[field]">
+                        {{ field }} {{ matchingCapabilities.bounds[field]!.min }}–{{
+                          matchingCapabilities.bounds[field]!.max
+                        }}；</span
+                      ></template
+                    >平台上限不因引擎範圍變大而提高。</p
+                  >
+                </details>
+              </div>
+              <section v-if="!editableWorkflow" class="notice" aria-label="保留的創作參數"
+                ><p
+                  >此模型尚未取得可用的表單流程；原參數未修改，仍可保存草稿。切換回支援模型後可繼續編輯。</p
+                ><details
+                  ><summary>查看保留的原始參數</summary
+                  ><pre class="retained-parameters">{{
+                    JSON.stringify(retainedParameters, null, 2)
+                  }}</pre>
+                </details></section
+              >
+              <details class="advanced-controls"
+                ><summary>LoRA 與有序組合</summary
+                ><LoraControls
+                  v-model="form.loras"
+                  :engine-url="form.engine_url"
+                  :checkpoint="form.checkpoint"
+                  @blocked="loraBlock = $event"
+              /></details>
+              <div class="save-actions"
+                ><button class="primary" :disabled="!form.engine_url">{{
+                  busy ? '處理中…' : '保存草稿'
+                }}</button
+                ><button v-if="id" type="button" class="secondary" @click="save(true)"
+                  >另存新草稿</button
                 ></div
-              ><p v-if="!references.length" class="footnote"
-                >尚無素材，可先到參考素材頁上傳圖片。</p
               ></details
             >
-            <details :open="display.value.advanced" @toggle="display.toggle('advanced', $event)"
-              ><summary>進階設定</summary><label for="seed">Seed</label
-              ><div class="seed-field"
-                ><input
-                  id="seed"
-                  v-model="form.seed"
-                  inputmode="numeric"
-                  pattern="[0-9]{1,20}"
-                  required
-                /><button type="button" class="secondary" @click="randomSeed">隨機</button></div
-              ><p class="footnote">以文字精確保存 64 位元整數，避免瀏覽器數字精度造成變更。</p>
-              <div class="inline-note" role="status"
-                ><p>{{
-                  capabilityBusy
-                    ? '正在讀取 ComfyUI 取樣選項…'
-                    : matchingCapabilities?.available
-                      ? matchingCapabilities.stale
-                        ? '顯示上次引擎選項快照；尚未確認目前支援情況。'
-                        : '選項來自目前 ComfyUI 的 KSampler。'
-                      : '尚無此引擎的取樣選項資料。'
-                }}</p
-                ><p v-if="matchingCapabilities?.synced_at" class="footnote"
-                  >{{ matchingCapabilities.engine_url }} · 同步於
-                  {{ new Date(matchingCapabilities.synced_at).toLocaleString() }}</p
-                ><p v-if="capabilityError || matchingCapabilities?.sync_error">{{
-                  capabilityError || matchingCapabilities?.sync_error
-                }}</p
-                ><button
-                  type="button"
-                  class="secondary"
-                  :disabled="capabilityBusy"
-                  @click="refreshCapabilities(true)"
-                  >{{ capabilityBusy ? '更新中…' : '更新引擎選項' }}</button
-                ></div
-              >
-
-              <label for="sampler">Sampler</label
-              ><select id="sampler" v-model="form.sampler_name"
-                ><option v-if="!samplers.includes(form.sampler_name)" :value="form.sampler_name"
-                  >{{ form.sampler_name }}（原設定，{{
-                    matchingCapabilities?.available && !matchingCapabilities.stale
-                      ? '目前引擎未列出'
-                      : '尚未確認支援'
-                  }}）</option
-                ><option v-for="sampler in samplers" :key="sampler" :value="sampler">{{
-                  sampler
-                }}</option></select
-              >
-              <label for="scheduler">Scheduler</label
-              ><select id="scheduler" v-model="form.scheduler"
-                ><option v-if="!schedulers.includes(form.scheduler)" :value="form.scheduler"
-                  >{{ form.scheduler }}（原設定，{{
-                    matchingCapabilities?.available && !matchingCapabilities.stale
-                      ? '目前引擎未列出'
-                      : '尚未確認支援'
-                  }}）</option
-                ><option v-for="scheduler in schedulers" :key="scheduler" :value="scheduler">{{
-                  scheduler
-                }}</option></select
-              >
-              <template v-if="!isImage"
-                ><label for="denoise">Denoise</label
-                ><input
-                  id="denoise"
-                  v-model.number="form.denoise"
-                  type="number"
-                  min="0"
-                  max="1"
-                  step="any"
-                  required /></template
-              ><p class="footnote">草稿可保存原設定，生成前會重新確認引擎選項與參數範圍。</p
-              ><p v-if="matchingCapabilities?.available" class="footnote"
-                >{{ matchingCapabilities.stale ? '上次記錄的' : '目前' }}可用範圍：<template
-                  v-for="field in ['steps', 'cfg', 'denoise'] as const"
-                  :key="field"
-                  ><span v-if="matchingCapabilities.bounds[field]">
-                    {{ field }} {{ matchingCapabilities.bounds[field]!.min }}–{{
-                      matchingCapabilities.bounds[field]!.max
-                    }}；</span
-                  ></template
-                >平台上限不因引擎範圍變大而提高。</p
-              >
-            </details>
-          </div>
-          <section v-if="!editableWorkflow" class="notice" aria-label="保留的創作參數"
+          </fieldset></form
+        ><details class="studio-tools"
+          ><summary>草稿、來源與設定交換</summary
+          ><div class="studio-toolbar"
+            ><span class="chip">創作草稿</span
+            ><span class="muted">{{
+              dirty ? '尚有未保存變更' : id ? '已保存 · 修訂 ' + revision : '新草稿'
+            }}</span
+            ><button class="secondary" :disabled="busy || restoring" @click="choose('new')"
+              >＋ 新草稿</button
+            ><button class="secondary" :disabled="busy || restoring" @click="refresh"
+              >重新整理清單</button
+            ></div
+          >
+          <div v-if="origin" class="notice" role="status"
             ><p
-              >此模型尚未取得可用的表單流程；原參數未修改，仍可保存草稿。切換回支援模型後可繼續編輯。</p
-            ><details
-              ><summary>查看保留的原始參數</summary
-              ><pre class="retained-parameters">{{
-                JSON.stringify(retainedParameters, null, 2)
-              }}</pre>
-            </details></section
+              >{{
+                origin.kind === 'job'
+                  ? '來源任務 ' + origin.job_id.slice(0, 8) + ' · 提交時版本：'
+                  : '來源作品版本：'
+              }}{{ origin.model_version }} · 已保留原引擎與生成設定。</p
+            ><p v-if="selected?.version && selected.version !== origin.model_version"
+              >模型庫目前登記版本：{{
+                selected.version
+              }}。再次生成使用目前安裝的模型，請確認版本。</p
+            ><p v-for="warning in origin.warnings" :key="warning">{{ warning }}</p></div
           >
-          <LoraControls
-            v-model="form.loras"
-            :engine-url="form.engine_url"
-            :checkpoint="form.checkpoint"
-            @blocked="loraBlock = $event"
+          <LoraSnapshot v-if="origin" :items="origin.lora_metadata" />
+          <ReferenceSnapshot v-if="origin" :items="origin.reference_metadata" />
+          <RuntimeSnapshot v-if="origin" :item="origin.runtime_metadata" />
+          <AssetChoices
+            :selected-ids="[
+              ...form.reference_ids,
+              ...(assetRequest?.id ? [assetRequest.id] : []),
+              ...(form.image_asset_id ? [form.image_asset_id] : []),
+            ]"
+            @items="references = $event"
           />
-          <div class="save-actions"
-            ><button class="primary" :disabled="!form.engine_url">{{
-              busy ? '處理中…' : '保存草稿'
-            }}</button
-            ><button v-if="id" type="button" class="secondary" @click="save(true)"
-              >另存新草稿</button
-            ></div
+          <SettingsTransfer
+            :settings="form"
+            family="checkpoint"
+            :dirty="dirty"
+            :disabled="busy || restoring || !!pending || generationBusy || generationPending"
+            @apply="importSettings"
+          />
+          <section v-if="experimentLoad" class="notice" aria-label="目前比較組關聯"
+            ><strong
+              >{{ experimentLoad.plan_title }} · {{ experimentLoad.selection.variant_id }}</strong
+            ><p>{{
+              experimentChanged
+                ? '設定已改動，生成前需解除關聯或重新載入原組。'
+                : '目前完整設定符合原比較組；另按生成才建立任務及結果關聯。'
+            }}</p
+            ><p class="footnote"
+              >比較關聯跟隨目前載入的組別；保存草稿不保存關聯，重載草稿、作品或一般設定會解除。</p
+            ><button
+              type="button"
+              class="secondary"
+              :disabled="generationBusy || generationPending"
+              @click="experimentLoad = null"
+              >解除比較關聯，保留目前設定</button
+            ></section
           >
-        </fieldset></form
-      >
-      <div
-        ><GenerationAdvice v-if="!isImage" :form="form" />
-        <article v-else class="panel"
-          ><h3>圖生圖流程驗證範圍</h3
-          ><p class="footnote"
-            >Pony V6 XL／RTX 3060 的單張一般風景流程已驗證；其他 checkpoint、參考圖加
-            LoRA、畫風品質與 RTX 4080 仍待實測。文生圖的驗證紀錄不代表圖生圖結果。</p
-          ><a
-            href="https://github.com/Zimkjdv/Model-Atelier/blob/main/docs/validation/checkpoint-image2image-rtx3060.md"
-            target="_blank"
-            rel="noopener"
-            >查看圖生圖驗收紀錄 ↗</a
-          ></article
-        >
-        <GenerationPanel
-          :experiment="experimentLoad"
-          @busy="generationBusy = $event"
-          @pending="generationPending = $event"
-          :form="form"
-          :blocked-reason="submissionBlock"
-          :disabled="busy || restoring || !!pending"
-          @gallery="emit('gallery', $event)"
-          @restore-job="restoreJob"
-        /><article class="panel canvas-panel"
-          ><div class="panel-heading"
-            ><h2>畫布比例預覽</h2
-            ><span class="badge">{{ form.width }} × {{ form.height }}</span></div
-          ><div class="canvas-area"
-            ><div
-              class="canvas"
-              :style="{
-                aspectRatio: aspect,
-                width: `min(100%, ${Math.min(300, (320 * Number(form.width)) / Number(form.height))}px)`,
-              }"
-              ><span>◈</span><p>為下一張作品留下構想</p
-              ><small>此處僅預覽比例，不是生成結果</small></div
+          <div class="studio-layout-controls"
+            ><button
+              type="button"
+              class="secondary"
+              :aria-expanded="!editorCollapsed"
+              aria-controls="studio-editor"
+              @click="editorCollapsed = !editorCollapsed"
+              >{{ editorCollapsed ? '展開創作設定' : '收合創作設定' }}</button
+            ><p v-if="editorCollapsed" class="footnote"
+              >{{ form.checkpoint || '尚未選擇模型' }} · {{ form.width }} × {{ form.height }} ·
+              {{ form.steps }} steps · CFG {{ form.cfg }}。設定與未保存內容仍保留。</p
             ></div
-          ><p>使用「生成圖片」提交目前表單。保存草稿不會啟動 GPU 任務。</p></article
-        >
-        <article class="panel"
-          ><h2
-            >已保存草稿 <span class="muted">{{ records.length }}</span></h2
-          ><p v-if="!records.length" class="muted">保存第一份草稿後，可以在這裡接續編輯。</p
-          ><button
-            v-for="record in records"
-            :key="record.id"
-            class="draft-row"
-            :class="{ chosen: id === record.id }"
-            :disabled="busy || restoring"
-            @click="choose(record)"
-            ><strong>{{ record.title }}</strong
-            ><span
-              >{{ record.workflow_mode === 'image2image' ? '圖生圖' : '文生圖' }} ·
-              {{ record.width }} × {{ record.height }} ·
-              {{ new Date(record.updated_at).toLocaleString() }}</span
-            ><small
-              >{{ record.checkpoint || '未選擇模型' }} · 版本
-              {{ record.model_version || '未知' }}</small
-            ></button
-          ></article
+          ></details
+        ><div class="studio-submit" id="studio-submit-checkpoint"></div></div
+      ><div class="studio-stage"
+        ><StudioPreview :width="form.width" :height="form.height" /><div
+          ><GenerationAdvice v-if="!isImage" :form="form" />
+          <article v-else class="panel"
+            ><h3>圖生圖流程驗證範圍</h3
+            ><p class="footnote"
+              >Pony V6 XL／RTX 3060 的單張一般風景流程已驗證；其他 checkpoint、參考圖加
+              LoRA、畫風品質與 RTX 4080 仍待實測。文生圖的驗證紀錄不代表圖生圖結果。</p
+            ><a
+              href="https://github.com/Zimkjdv/Model-Atelier/blob/main/docs/validation/checkpoint-image2image-rtx3060.md"
+              target="_blank"
+              rel="noopener"
+              >查看圖生圖驗收紀錄 ↗</a
+            ></article
+          >
+          <GenerationPanel
+            submit-target="#studio-submit-checkpoint"
+            :experiment="experimentLoad"
+            @busy="generationBusy = $event"
+            @pending="generationPending = $event"
+            :form="form"
+            :blocked-reason="submissionBlock"
+            :disabled="busy || restoring || !!pending"
+            @gallery="emit('gallery', $event)"
+            @restore-job="restoreJob"
+          /><article class="panel canvas-panel"
+            ><div class="panel-heading"
+              ><h2>畫布比例預覽</h2
+              ><span class="badge">{{ form.width }} × {{ form.height }}</span></div
+            ><div class="canvas-area"
+              ><div
+                class="canvas"
+                :style="{
+                  aspectRatio: aspect,
+                  width: `min(100%, ${Math.min(300, (320 * Number(form.width)) / Number(form.height))}px)`,
+                }"
+                ><span>◈</span><p>為下一張作品留下構想</p
+                ><small>此處僅預覽比例，不是生成結果</small></div
+              ></div
+            ><p>使用「生成圖片」提交目前表單。保存草稿不會啟動 GPU 任務。</p></article
+          >
+          <article class="panel"
+            ><h2
+              >已保存草稿 <span class="muted">{{ records.length }}</span></h2
+            ><p v-if="!records.length" class="muted">保存第一份草稿後，可以在這裡接續編輯。</p
+            ><button
+              v-for="record in records"
+              :key="record.id"
+              class="draft-row"
+              :class="{ chosen: id === record.id }"
+              :disabled="busy || restoring"
+              @click="choose(record)"
+              ><strong>{{ record.title }}</strong
+              ><span
+                >{{ record.workflow_mode === 'image2image' ? '圖生圖' : '文生圖' }} ·
+                {{ record.width }} × {{ record.height }} ·
+                {{ new Date(record.updated_at).toLocaleString() }}</span
+              ><small
+                >{{ record.checkpoint || '未選擇模型' }} · 版本
+                {{ record.model_version || '未知' }}</small
+              ></button
+            ></article
+          ></div
         ></div
-      >
-    </div>
+      ></div
+    >
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { api } from './apiClient'
 
 type Volume = {
@@ -27,6 +27,11 @@ type Report = {
   folder_open_supported?: boolean
   totals: { total: number | null; free: number | null; volume_count: number; partial: boolean }
 }
+const props = defineProps<{ refreshKey?: string }>()
+const emit = defineEmits<{
+  report: [value: Report]
+  state: [value: { stale: boolean; error: string }]
+}>()
 const report = ref<Report | null>(null)
 const busy = ref(false),
   error = ref(''),
@@ -36,7 +41,9 @@ const openMessage = ref(''),
 let controller: AbortController | null = null,
   alive = true
 const gib = (value: number | null) =>
-  value === null ? '未知' : `${(value / 1024 ** 3).toFixed(2)} GiB`
+  value === null
+    ? '未知'
+    : `${(value / 1e9).toLocaleString('zh-TW', { maximumFractionDigits: 1 })} GB`
 const usage = (volume: Volume) =>
   volume.total && volume.free !== null
     ? Math.max(0, Math.min(100, Math.round((1 - volume.free / volume.total) * 100)))
@@ -64,13 +71,19 @@ async function refresh() {
   controller = new AbortController()
   try {
     const value = await api<Report>('storage', 'GET', undefined, controller.signal)
-    if (alive) report.value = value
+    if (alive) {
+      report.value = value
+      emit('report', value)
+      emit('state', { stale: false, error: '' })
+    }
   } catch (e) {
-    if (alive)
+    if (alive) {
       error.value =
         '目錄與容量更新失敗。' +
         (report.value ? '目前顯示上次快照。' : '') +
         (e instanceof Error ? e.message : '')
+      emit('state', { stale: true, error: error.value })
+    }
   } finally {
     if (alive) busy.value = false
   }
@@ -107,6 +120,12 @@ function openTitle(entry: Directory) {
   return `在檔案總管開啟${entry.role}`
 }
 onMounted(refresh)
+watch(
+  () => props.refreshKey,
+  (_value, previous) => {
+    if (previous) void refresh()
+  },
+)
 onBeforeUnmount(() => {
   alive = false
   controller?.abort()
@@ -115,133 +134,110 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="panel storage-overview" aria-label="目錄與磁碟容量" :aria-busy="busy">
-    <div class="storage-heading">
-      <div
-        ><h2>目錄與磁碟容量</h2
-        ><p class="storage-subtitle">資料位置與磁碟使用情況，一目了然。</p></div
-      >
-      <button
+    <div class="storage-heading"
+      ><div
+        ><h2>磁碟容量</h2
+        ><p class="storage-subtitle">資料來源：平台目錄快照 · 同一磁碟不重複計算</p></div
+      ><button
         type="button"
         class="secondary storage-refresh"
         :disabled="busy || opening !== null"
         @click="refresh"
+        ><svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 12a8 8 0 11-2.3-5.7M20 4v5h-5" /></svg
+        >{{ busy ? '更新中…' : '更新容量' }}</button
+      ></div
+    >
+    <p v-if="error" class="notice warning" role="alert">{{ error }}</p
+    ><p v-if="openError" class="notice warning" role="alert">{{ openError }}</p
+    ><p v-if="openMessage" class="notice" role="status">{{ openMessage }}</p
+    ><p v-if="!report" role="status">{{
+      busy ? '正在讀取本機目錄與磁碟容量…' : '尚無容量回報。'
+    }}</p>
+    <template v-if="report"
+      ><div class="disk-row" v-for="volume in report.volumes" :key="volume.id"
+        ><div
+          ><strong>{{ volume.path }}</strong
+          ><span
+            >已用
+            {{
+              gib(volume.total != null && volume.free != null ? volume.total - volume.free : null)
+            }}
+            / {{ gib(volume.total) }} ·
+            {{ usage(volume) == null ? '未知' : usage(volume) + '%' }}</span
+          ></div
+        ><div
+          role="progressbar"
+          :aria-label="volume.path + ' 已使用容量'"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuenow="usage(volume) ?? undefined"
+          class="usage-track"
+          :class="{ warning: (usage(volume) || 0) >= 90 }"
+          ><span :style="{ width: (usage(volume) || 0) + '%' }"></span></div
+      ></div>
+      <details
+        ><summary>完整資訊與容量統計範圍</summary
+        ><dl class="summary-facts"
+          ><div
+            ><dt>可用空間</dt><dd>{{ gib(report.totals.free) }}</dd></div
+          ><div
+            ><dt>磁碟區</dt><dd>{{ report.totals.volume_count }} 個</dd></div
+          ></dl
+        ><p
+          >快照時間：{{ new Date(report.checked_at).toLocaleString() }} ·
+          {{ report.totals.partial ? '部分容量未知' : '容量已取得' }}</p
+        ><p v-for="warning in report.warnings" :key="warning">{{ warning }}</p
+        ><p class="footnote"
+          >容量屬於磁碟區，並非資料夾佔用大小；同磁碟多個目錄不重複合計。</p
+        ></details
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1" />
-        </svg>
-        {{ busy ? '更新中…' : '更新容量' }}
-      </button>
-    </div>
-    <p v-if="error" class="notice warning storage-feedback" role="alert">{{ error }}</p>
-    <p v-if="openError" class="notice warning storage-feedback" role="alert">{{ openError }}</p>
-    <p v-if="openMessage" class="notice storage-feedback" role="status">{{ openMessage }}</p>
-    <p v-if="!report && busy" class="storage-empty" role="status">正在讀取本機目錄與磁碟容量…</p>
-    <template v-if="report">
-      <dl class="storage-summary">
-        <div
-          ><dt>可用空間</dt><dd class="storage-free">{{ gib(report.totals.free) }}</dd></div
-        >
-        <div
-          ><dt>總容量</dt><dd>{{ gib(report.totals.total) }}</dd></div
-        >
-        <div
-          ><dt>可讀磁碟區</dt><dd>{{ report.totals.volume_count }}<span>個</span></dd></div
-        >
-      </dl>
-      <div class="storage-snapshot">
-        <span v-if="report.totals.partial" class="storage-partial">部分容量未知</span>
-        <span>本機目錄快照 · {{ new Date(report.checked_at).toLocaleString() }}</span>
-      </div>
-      <div class="storage-volumes">
-        <article
-          v-for="group in groups"
-          :key="group.id"
-          class="storage-volume"
-          :aria-label="'磁碟區 ' + group.label"
-        >
-          <div class="storage-volume-heading">
-            <span class="storage-drive-icon" aria-hidden="true"
-              ><svg viewBox="0 0 24 24">
-                <rect x="3" y="5" width="18" height="14" rx="3" />
-                <path d="M3 13h18M16 16h.01M18 16h.01" /></svg
-            ></span>
-            <div class="storage-volume-title"
-              ><h3>{{ group.label }}</h3
-              ><span>{{ group.entries.length }} 個目錄</span></div
-            >
-            <span v-if="group.volume && usage(group.volume) !== null" class="storage-usage-label"
-              >已使用 {{ usage(group.volume) }}%</span
-            >
-            <span v-else class="storage-usage-label">容量未知</span>
-          </div>
-          <template v-if="group.volume">
-            <div
-              v-if="usage(group.volume) !== null"
-              class="storage-meter"
-              :class="{ 'storage-low': (usage(group.volume) ?? 0) >= 90 }"
-              role="progressbar"
-              :aria-label="group.label + ' 已使用容量'"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              :aria-valuenow="usage(group.volume) ?? undefined"
-            >
-              <span :style="{ width: (usage(group.volume) ?? 0) + '%' }"></span>
-            </div>
-            <p class="storage-volume-capacity"
-              ><span
-                >可用 <strong>{{ gib(group.volume.free) }}</strong></span
-              ><span>總計 {{ gib(group.volume.total) }}</span></p
-            >
-          </template>
-          <ul class="storage-directories" aria-label="目錄清單">
-            <li
+      <section class="directory-section"
+        ><h3>目錄</h3
+        ><p class="muted"
+          >{{ report.directories.length }} 個目錄 ·
+          {{
+            report.directories.filter(
+              (item) =>
+                item.status === 'available' || item.status === 'ready' || item.status === 'ok',
+            ).length
+          }}
+          個已確認可讀</p
+        ><details
+          ><summary>查看 {{ report.directories.length }} 個目錄</summary
+          ><template v-for="group in groups" :key="group.id"
+            ><p v-if="!group.volume" class="notice">其他目錄 · 容量未知</p
+            ><div
               v-for="entry in group.entries"
-              :key="entry.id || entry.role + entry.path"
+              :key="entry.id || entry.path"
               class="storage-directory"
-            >
-              <div class="storage-directory-info">
-                <h4
+              ><div class="storage-directory-info"
+                ><h4
                   >{{ entry.role
-                  }}<span v-if="entry.status === 'missing'" class="storage-entry-status"
-                    >尚未建立</span
-                  ></h4
-                >
-                <code>{{ entry.path }}</code>
-                <small v-if="entry.resolved_path && entry.resolved_path !== entry.path"
+                  }}<span v-if="entry.status === 'missing'" class="chip warning">尚未建立</span></h4
+                ><code>{{ entry.path }}</code
+                ><small v-if="entry.resolved_path && entry.resolved_path !== entry.path"
                   >實際位置：{{ entry.resolved_path }}</small
-                >
-                <span v-if="entry.error" class="storage-entry-error">{{ entry.error }}</span>
-              </div>
-              <button
-                type="button"
-                class="storage-folder"
+                ><span v-if="entry.error" class="storage-entry-error">{{ entry.error }}</span></div
+              ><button
+                class="storage-folder secondary"
                 :disabled="!entry.can_open || busy || opening !== null"
                 :title="openTitle(entry)"
                 :aria-label="'開啟' + entry.role + '資料夾'"
                 :aria-busy="opening === entry.id"
                 @click="openDirectory(entry)"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
+                ><svg viewBox="0 0 24 24" aria-hidden="true">
                   <path
-                    d="M3 7V5a1 1 0 0 1 1-1h5l2 3h9a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Zm0 3h18"
-                  />
-                </svg>
-              </button>
-            </li>
-          </ul>
-        </article>
-      </div>
-      <div class="storage-notes">
-        <p v-if="report.folder_open_supported === undefined"
-          >請重新啟動平台後使用開啟資料夾功能。</p
-        >
-        <p v-else-if="!report.folder_open_supported"
-          >開啟資料夾僅支援 Windows 本機平台；仍可查看並複製完整路徑。</p
-        >
-        <p v-for="warning in report.warnings" :key="warning">{{ warning }}</p>
-      </div>
-    </template>
-  </section>
+                    d="M4 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2z"
+                  /></svg></button></div></template></details
+      ></section>
+      <p v-if="report.folder_open_supported === undefined" class="footnote"
+        >請重新啟動平台後使用開啟資料夾功能。</p
+      ><p v-else-if="!report.folder_open_supported" class="footnote"
+        >開啟資料夾僅支援 Windows 本機平台；仍可查看並複製完整路徑。</p
+      >
+    </template></section
+  >
 </template>
 
 <style scoped>

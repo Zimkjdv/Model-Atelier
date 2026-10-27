@@ -37,6 +37,7 @@ type Listing = {
   runs: Pick<Run, 'run_id' | 'status' | 'configuration'>[]
   exports: { request_id: string; dataset_label: string; revision: number; kind: string }[]
 }
+const props = defineProps<{ stage?: number }>()
 const emit = defineEmits<{ dirty: [value: boolean] }>()
 const listing = ref<Listing | null>(null),
   current = ref<Run | null>(null),
@@ -306,7 +307,7 @@ onUnmounted(() => {
       >
     </article>
     <template v-if="listing?.available">
-      <form class="panel" @submit.prevent="prepare('new')"
+      <form v-show="props.stage !== 3" class="panel" @submit.prevent="prepare('new')"
         ><h2>建立凍結訓練設定</h2
         ><p class="footnote"
           >固定基底為 Animagine XL 4.0 Opt；只接受 T05

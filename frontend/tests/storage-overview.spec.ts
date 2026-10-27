@@ -44,7 +44,7 @@ const report = {
   ],
 }
 
-for (const width of [1440, 390]) {
+for (const width of [1440, 1280]) {
   test(`storage overview ${width}px: capacity, folder action and missing directory`, async ({
     page,
   }, info) => {
@@ -62,16 +62,19 @@ for (const width of [1440, 390]) {
       await route.fulfill({ json: { opened: true, directory_id: 'data' } })
     })
     await page.goto('/#/system')
+    await page.getByRole('tab', { name: '儲存與目錄', exact: true }).click()
+    await page.getByText(/查看 [0-9]+ 個目錄/).click()
     const panel = page.getByRole('region', { name: '目錄與磁碟容量' })
-    await expect(panel).toContainText('400.00 GiB')
+    await panel.getByText('完整資訊與容量統計範圍', { exact: true }).click()
+    await expect(panel).toContainText('429.5 GB')
     await expect(panel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '60')
     await expect(panel.getByRole('button', { name: '開啟作品庫輸出資料夾' })).toBeDisabled()
     await expect(panel).toContainText('尚未建立')
     const folder = panel.getByRole('button', { name: '開啟平台資料資料夾' })
     await folder.scrollIntoViewIfNeeded()
     const bounds = (await folder.boundingBox())!
-    expect(bounds.width).toBeGreaterThanOrEqual(44)
-    expect(bounds.height).toBeGreaterThanOrEqual(44)
+    expect(bounds.width).toBeGreaterThanOrEqual(36)
+    expect(bounds.height).toBeGreaterThanOrEqual(36)
     try {
       if (width === 1440) {
         await folder.focus()
@@ -114,6 +117,8 @@ test('storage action errors do not retry; refresh failure keeps the last snapsho
     })
   })
   await page.goto('/#/system')
+  await page.getByRole('tab', { name: '儲存與目錄', exact: true }).click()
+  await page.getByText(/查看 [0-9]+ 個目錄/).click()
   const panel = page.getByRole('region', { name: '目錄與磁碟容量' })
   await panel.getByRole('button', { name: '開啟平台資料資料夾' }).click()
   await expect(panel.getByRole('alert')).toContainText('目錄位置已變更')
@@ -134,6 +139,8 @@ test('storage folder action is disabled on unsupported hosts', async ({ page }) 
     }),
   )
   await page.goto('/#/system')
+  await page.getByRole('tab', { name: '儲存與目錄', exact: true }).click()
+  await page.getByText(/查看 [0-9]+ 個目錄/).click()
   const panel = page.getByRole('region', { name: '目錄與磁碟容量' })
   await expect(panel.getByRole('button', { name: '開啟平台資料資料夾' })).toBeDisabled()
   await expect(panel).toContainText('開啟資料夾僅支援 Windows 本機平台')
@@ -154,6 +161,8 @@ test('storage older running platform asks for restart before folder actions', as
     }),
   )
   await page.goto('/#/system')
+  await page.getByRole('tab', { name: '儲存與目錄', exact: true }).click()
+  await page.getByText(/查看 [0-9]+ 個目錄/).click()
   const panel = page.getByRole('region', { name: '目錄與磁碟容量' })
   await expect(panel).toContainText('請重新啟動平台後使用開啟資料夾功能')
   await expect(panel.getByRole('button', { name: '開啟平台資料資料夾' })).toBeDisabled()

@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, onActivated, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  onMounted,
+  ref,
+  watch,
+} from 'vue'
 import type { ReferenceAsset } from './referenceSettings'
 import { binaryMask, maskPoint, uploadMaskAsset } from './inpaintSettings'
 const props = defineProps<{ source?: ReferenceAsset; mask?: ReferenceAsset; disabled?: boolean }>()
@@ -25,6 +34,89 @@ const status = computed(() => {
   if (dirty.value) return '遮罩尚未保存，生成已暫停。'
   return props.mask ? '使用已保存遮罩。' : '請繪製或載入遮罩，再保存。'
 })
+type MaskState = { png: string; white: number; dirty: boolean }
+const history = ref<MaskState[]>([]),
+  historyIndex = ref(-1)
+let active = true
+function remember() {
+  const png = canvas.value!.toDataURL('image/png')
+  if (
+    history.value[historyIndex.value]?.png === png &&
+    history.value[historyIndex.value]?.dirty === dirty.value
+  )
+    return
+  const states = history.value.slice(0, historyIndex.value + 1)
+  states.push({ png, white: white.value, dirty: dirty.value })
+  while (
+    states.length > 21 ||
+    (states.length > 2 &&
+      states.reduce((sum, state) => sum + state.png.length, 0) > 32 * 1024 * 1024)
+  )
+    states.shift()
+  history.value = states
+  historyIndex.value = states.length - 1
+}
+async function undo(direction: number) {
+  const index = historyIndex.value + direction,
+    state = history.value[index]
+  if (!state || !editable.value || pointer !== null) return
+  const current = ticket
+  busy.value = true
+  try {
+    const loaded = await image(state.png)
+    if (current !== ticket) return
+    context().clearRect(0, 0, canvas.value!.width, canvas.value!.height)
+    context().drawImage(loaded, 0, 0)
+    historyIndex.value = index
+    white.value = state.white
+    dirty.value = state.dirty
+    message.value = ''
+    error.value = ''
+  } catch {
+    if (current === ticket) error.value = '無法還原遮罩，原畫布已保留。'
+  } finally {
+    busy.value = false
+  }
+}
+function region(position: string) {
+  if (!editable.value) return
+  stop()
+  const w = canvas.value!.width,
+    h = canvas.value!.height,
+    ctx = context()
+  const rectangle =
+    position === '上方'
+      ? [0, 0, w, h / 3]
+      : position === '下方'
+        ? [0, (h * 2) / 3, w, h / 3]
+        : position === '左側'
+          ? [0, 0, w / 3, h]
+          : position === '右側'
+            ? [(w * 2) / 3, 0, w / 3, h]
+            : [w / 4, h / 4, w / 2, h / 2]
+  ctx.fillStyle = 'white'
+  ctx.fillRect(rectangle[0]!, rectangle[1]!, rectangle[2]!, rectangle[3]!)
+  changed()
+  count()
+  remember()
+}
+function keyboard(event: KeyboardEvent) {
+  if (
+    !active ||
+    !canvas.value?.isConnected ||
+    !(event.ctrlKey || event.metaKey) ||
+    (event.target as Element)?.closest('input,textarea,select,[contenteditable="true"]')
+  )
+    return
+  if (event.key.toLowerCase() === 'z') {
+    event.preventDefault()
+    void undo(event.shiftKey ? 1 : -1)
+  } else if (event.key.toLowerCase() === 'y') {
+    event.preventDefault()
+    void undo(1)
+  }
+}
+onMounted(() => document.addEventListener('keydown', keyboard))
 let ticket = 0,
   pointer: number | null = null,
   last: { x: number; y: number } | null = null
@@ -58,6 +150,8 @@ async function load() {
   error.value = ''
   message.value = ''
   white.value = 0
+  history.value = []
+  historyIndex.value = -1
   if (!source || source.archived) return
   await nextTick()
   if (current !== ticket || !canvas.value) return
@@ -81,7 +175,10 @@ async function load() {
       ctx.drawImage(loaded, 0, 0)
       count()
     } else white.value = 0
-    if (current === ticket) ready.value = true
+    if (current === ticket) {
+      ready.value = true
+      remember()
+    }
   } catch (e) {
     if (current === ticket) error.value = e instanceof Error ? e.message : '遮罩讀取失敗'
   }
@@ -141,7 +238,10 @@ function stop(event?: PointerEvent) {
   last = null
   if (captured !== null && canvas.value?.hasPointerCapture(captured))
     canvas.value.releasePointerCapture(captured)
-  if (captured !== null && ready.value) count()
+  if (captured !== null && ready.value) {
+    count()
+    remember()
+  }
 }
 function clear() {
   if (!editable.value) return
@@ -151,6 +251,7 @@ function clear() {
   ctx.fillRect(0, 0, canvas.value!.width, canvas.value!.height)
   changed()
   white.value = 0
+  remember()
 }
 function invert() {
   if (!editable.value) return
@@ -160,6 +261,7 @@ function invert() {
   white.value = binaryMask(pixels.data, true)
   ctx.putImageData(pixels, 0, 0)
   changed()
+  remember()
 }
 async function upload(blob: Blob, name: string, current: number, sourceId: string) {
   const value = await uploadMaskAsset(blob, name)
@@ -224,6 +326,7 @@ async function selectFile(event: Event) {
     ctx.drawImage(loaded, 0, 0)
     changed()
     count()
+    remember()
     message.value = '遮罩已載入畫布，請保存後再生成。'
   } catch (e) {
     if (current === ticket) error.value = e instanceof Error ? e.message : '載入失敗'
@@ -250,14 +353,17 @@ watch(
   { flush: 'sync' },
 )
 onDeactivated(() => {
+  active = false
   stop()
   ++ticket
 })
 onBeforeUnmount(() => {
+  document.removeEventListener('keydown', keyboard)
   stop()
   ++ticket
 })
 onActivated(() => {
+  active = true
   if (!ready.value && !dirty.value) void load()
 })
 </script>
@@ -269,6 +375,19 @@ onActivated(() => {
     >
     <div class="tools"
       ><button
+        type="button"
+        class="secondary"
+        :disabled="!editable || historyIndex <= 0"
+        @click="undo(-1)"
+        >復原</button
+      ><button
+        type="button"
+        class="secondary"
+        :disabled="!editable || historyIndex >= history.length - 1"
+        @click="undo(1)"
+        >重做</button
+      >
+      <button
         type="button"
         class="secondary"
         :aria-pressed="!erase"
@@ -336,6 +455,22 @@ onActivated(() => {
         @click="save"
         >{{ busy ? '處理中…' : '保存遮罩' }}</button
       ></div
+    >
+    <details
+      ><summary>鍵盤區塊選取與快捷鍵</summary
+      ><p class="footnote"
+        >Ctrl/Cmd+Z 復原，Shift+Ctrl/Cmd+Z 或 Ctrl+Y 重做。文字欄位保留原生快捷鍵。</p
+      ><div class="tools"
+        ><button
+          v-for="position in ['中央', '上方', '下方', '左側', '右側']"
+          :key="position"
+          type="button"
+          class="secondary"
+          :disabled="!editable"
+          @click="region(position)"
+          >{{ position }}區塊</button
+        ></div
+      ></details
     >
     <p class="footnote" role="status"
       >{{ status }} 已標記 {{ white.toLocaleString() }} 個原圖像素。</p

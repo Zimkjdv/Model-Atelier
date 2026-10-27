@@ -3,6 +3,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { trainingIssue, type Readiness, type TrainingImage } from './trainingTypes'
 
 const props = defineProps<{
+  datasetId: string
   images: TrainingImage[]
   report: Readiness | null
   selected: string
@@ -11,6 +12,7 @@ const props = defineProps<{
   revision: number
 }>()
 const emit = defineEmits<{ select: [id: string, focus: boolean] }>()
+const onlyPending = ref(true)
 const search = ref(''),
   split = ref(''),
   code = ref(''),
@@ -48,6 +50,7 @@ const filtered = computed(() => {
   const text = search.value.trim().toLocaleLowerCase()
   return props.images.filter(
     (row) =>
+      (!onlyPending.value || byImage.value.has(row.id)) &&
       (!split.value || row.split === split.value) &&
       (!text ||
         [row.id, row.path, row.group_id].some((v) => v.toLocaleLowerCase().includes(text))) &&
@@ -66,7 +69,7 @@ const globalIssues = computed(() => issues.value.filter((v) => !v.image_id))
 const blockingImages = computed(() =>
   props.images.filter((row) => (byImage.value.get(row.id) || []).some((v) => v.blocking)),
 )
-watch([search, split, code], () => {
+watch([search, split, code, onlyPending], () => {
   page.value = 0
   issuePage.value = 0
 })
@@ -81,6 +84,7 @@ watch(
   },
 )
 function clear() {
+  onlyPending.value = false
   search.value = ''
   split.value = ''
   code.value = ''
@@ -112,7 +116,18 @@ function nextIssue() {
 
 <template>
   <section class="review-navigation" aria-label="圖片與缺項導覽">
-    <h3>圖片與缺項導覽</h3>
+    <h3>圖片與缺項導覽</h3
+    ><div class="review-progress"
+      ><span
+        >{{ images.length - blockingImages.length }} / {{ images.length }} 已通過阻擋項檢查</span
+      ><progress
+        :max="images.length || 1"
+        :value="images.length - blockingImages.length"
+        aria-label="資料檢查進度"
+      ></progress></div
+    ><label class="pending-filter"
+      ><input type="checkbox" v-model="onlyPending" />只顯示待補項目</label
+    >
     <p class="footnote"
       >缺項依已保存修訂 {{ revision }} 的後端檢查；{{
         dirty ? '目前編輯尚未保存，缺項不會隨輸入消失。' : '來源變更後仍需重新檢查。'
@@ -182,7 +197,16 @@ function nextIssue() {
         :disabled="busy"
         :aria-pressed="selected === row.id"
         @click="emit('select', row.id, false)"
-        >{{ row.id }} · {{ row.split }}</button
+        ><span v-if="byImage.has(row.id)" class="pending-dot" aria-hidden="true"></span
+        ><img
+          v-if="row.split !== 'test'"
+          :src="
+            '/api/training/datasets/' + datasetId + '/images/' + row.id + '?revision=' + revision
+          "
+          alt=""
+          loading="lazy"
+          class="review-thumb"
+        />{{ row.id }} · {{ row.split }}</button
       ></div
     >
     <details v-if="globalIssues.length" open

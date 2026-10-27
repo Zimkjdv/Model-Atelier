@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import StudioPreview from './StudioPreview.vue'
 import {
   computed,
   onActivated,
@@ -35,7 +36,7 @@ type Profile = {
   lora: { filename: string; sha256: string; version: string }
   components: Record<string, string>
 }
-const props = defineProps<{ restoration?: Restoration | null }>()
+const props = defineProps<{ imageRequested?: boolean; restoration?: Restoration | null }>()
 const emit = defineEmits<{ gallery: [id: string]; models: []; assets: [] }>()
 const base = reactive({
   ...newFlux(),
@@ -276,154 +277,175 @@ onBeforeUnmount(() => {
   scope.dispose()
   restores.dispose()
 })
+watch(
+  () => props.imageRequested,
+  (value) => {
+    if (value) kind.value = 'image'
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
   <section aria-label="FLUX LoRA 與圖生圖工作台">
-    <p class="notice"
-      >兩個獨立流程：Schnell 模型 LoRA、原生 VAE 圖生圖。固定 512×512／4 步／FP8 e4m3fn／CPU
-      編碼器；未知元件及 LoRA＋圖生圖混用保持停用。</p
-    >
-    <div class="extension-actions"
-      ><button class="secondary" :disabled="locked" @click="load(true)">同步附加元件</button
-      ><button class="secondary" @click="emit('models')">登記版本與 SHA256</button
-      ><button class="secondary" @click="emit('assets')">匯入參考素材</button></div
-    >
-    <UnsavedChangesNotice :dirty="dirty" :saving="busy" :saved="!!draftId" />
-    <p v-if="error" class="notice warning" role="alert">{{ error }}</p
-    ><p v-if="message" class="notice" role="status">{{ message }}</p>
-    <div v-if="candidate" class="notice warning" role="alert"
-      ><p>載入會取代未保存的附加流程設定。</p
-      ><button class="secondary" @click="candidate = null">繼續編輯附加流程</button
-      ><button class="secondary" @click="apply(candidate)">捨棄變更並載入附加流程</button></div
-    >
-    <AssetChoices
-      v-if="kind === 'image'"
-      :selected-ids="imageId ? [imageId] : []"
-      @items="assets = $event"
-    />
-    <div class="extension-grid">
-      <form class="panel extension-editor" aria-label="FLUX 附加流程設定" @submit.prevent="save()"
-        ><fieldset :disabled="locked">
-          <label for="flux-extension-kind">附加流程</label
-          ><select id="flux-extension-kind" v-model="kind"
-            ><option value="lora">Schnell PVC LoRA</option
-            ><option value="image">VAE 圖生圖（構圖重繪）</option></select
+    <div class="studio-workbench"
+      ><div class="studio-settings"
+        ><p class="notice"
+          >兩個獨立流程：Schnell 模型 LoRA、原生 VAE 圖生圖。固定 512×512／4 步／FP8 e4m3fn／CPU
+          編碼器；未知元件及 LoRA＋圖生圖混用保持停用。</p
+        >
+        <UnsavedChangesNotice :dirty="dirty" :saving="busy" :saved="!!draftId" />
+        <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
+        <p v-if="message" class="notice" role="status">{{ message }}</p
+        ><form
+          class="panel extension-editor"
+          aria-label="FLUX 附加流程設定"
+          @submit.prevent="save()"
+          ><fieldset :disabled="locked"
+            ><label for="flux-extension-kind">附加流程</label>
+            <select id="flux-extension-kind" v-model="kind"
+              ><option value="lora">Schnell PVC LoRA</option
+              ><option value="image">VAE 圖生圖（構圖重繪）</option></select
+            >
+            <label for="flux-extension-prompt">附加流程提示詞</label>
+            <textarea id="flux-extension-prompt" v-model="base.prompt" rows="5" maxlength="20000" />
+            <template v-if="kind === 'image'"
+              ><label for="flux-extension-image">FLUX 原圖素材</label
+              ><select id="flux-extension-image" v-model="imageId"
+                ><option value="">選擇原圖</option
+                ><option
+                  v-for="item in assets.filter((item) => !item.archived)"
+                  :key="item.id"
+                  :value="item.id"
+                  >{{ item.title }}</option
+                ></select
+              ><label for="flux-extension-denoise">FLUX 重繪強度</label
+              ><input
+                id="flux-extension-denoise"
+                v-model.number="denoise"
+                type="number"
+                min="0.05"
+                max="0.99"
+                step="0.05" /><label for="flux-extension-resize">原圖縮放</label
+              ><select id="flux-extension-resize" v-model="resize"
+                ><option value="fit">等比完整放入，白色補邊</option
+                ><option value="stretch">拉伸至輸出尺寸</option></select
+              ><p class="footnote"
+                >VAE 由原圖建立 latent，會保留部分構圖；這不是
+                Redux／IP-Adapter，也不保證畫風或角色身份一致。輸入
+                PNG、來源與前處理雜湊會隨任務保存。</p
+              ><img
+                v-if="imageId"
+                :src="'/api/assets/' + imageId + '/image'"
+                alt="目前選擇的 FLUX 原圖"
+                class="extension-image"
+            /></template>
+            <details class="studio-advanced"
+              ><summary>進階設定、草稿名稱與模型能力</summary>
+              <label for="flux-extension-title">附加草稿名稱</label
+              ><input id="flux-extension-title" v-model="base.title" required maxlength="100" />
+              <template v-if="kind === 'lora'"
+                ><label for="flux-extension-lora">FLUX LoRA 名稱</label
+                ><input id="flux-extension-lora" v-model="loraName" required /><label
+                  for="flux-extension-strength"
+                  >模型 LoRA 強度</label
+                ><input
+                  id="flux-extension-strength"
+                  v-model.number="strength"
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                /><p class="footnote"
+                  >只處理 diffusion model，CLIP 強度固定 0。已驗收固定 PVC 版本；Schnell 不沿用
+                  SDXL／Dev LoRA。建議提示詞含 pvc figure；品質與授權另行確認。</p
+                ></template
+              >
+
+              <div v-for="role in fluxRoles" :key="role.key"
+                ><label :for="'extension-' + role.key">{{ role.label }}</label
+                ><input
+                  :id="'extension-' + role.key"
+                  v-model="base[role.key]"
+                  required
+                  maxlength="2048"
+              /></div>
+
+              <label for="flux-extension-seed">附加流程 Seed</label
+              ><input
+                id="flux-extension-seed"
+                v-model="base.seed"
+                inputmode="numeric"
+                pattern="[0-9]{1,20}"
+                required
+                maxlength="20"
+              />
+              <p v-if="problem" class="footnote" role="status">{{ problem }}</p>
+              <div class="extension-actions"
+                ><button class="primary" type="submit" :disabled="!!problem"
+                  >保存附加流程草稿</button
+                ><button class="secondary" type="button" :disabled="!!problem" @click="save(true)"
+                  >另存附加流程草稿</button
+                ><button class="secondary" type="button" :disabled="!!problem" @click="download"
+                  >匯出附加流程 JSON</button
+                ></div
+              >
+              <p class="footnote"
+                >一般設定交換格式暫不支援這兩種流程；請使用本頁完整草稿、原任務／作品還原與原始
+                JSON。</p
+              ></details
+            >
+          </fieldset></form
+        ><details class="studio-tools"
+          ><summary>草稿、來源與設定交換</summary
+          ><div class="extension-actions"
+            ><button class="secondary" :disabled="locked" @click="load(true)">同步附加元件</button
+            ><button class="secondary" @click="emit('models')">登記版本與 SHA256</button
+            ><button class="secondary" @click="emit('assets')">匯入參考素材</button></div
           >
-          <label for="flux-extension-title">附加草稿名稱</label
-          ><input id="flux-extension-title" v-model="base.title" required maxlength="100" />
-          <template v-if="kind === 'lora'"
-            ><label for="flux-extension-lora">FLUX LoRA 名稱</label
-            ><input id="flux-extension-lora" v-model="loraName" required /><label
-              for="flux-extension-strength"
-              >模型 LoRA 強度</label
-            ><input
-              id="flux-extension-strength"
-              v-model.number="strength"
-              type="number"
-              min="0"
-              max="1"
-              step="0.05"
-            /><p class="footnote"
-              >只處理 diffusion model，CLIP 強度固定 0。已驗收固定 PVC 版本；Schnell 不沿用
-              SDXL／Dev LoRA。建議提示詞含 pvc figure；品質與授權另行確認。</p
-            ></template
-          >
-          <template v-else
-            ><label for="flux-extension-image">FLUX 原圖素材</label
-            ><select id="flux-extension-image" v-model="imageId"
-              ><option value="">選擇原圖</option
-              ><option
-                v-for="item in assets.filter((item) => !item.archived)"
-                :key="item.id"
-                :value="item.id"
-                >{{ item.title }}</option
-              ></select
-            ><label for="flux-extension-denoise">FLUX 重繪強度</label
-            ><input
-              id="flux-extension-denoise"
-              v-model.number="denoise"
-              type="number"
-              min="0.05"
-              max="0.99"
-              step="0.05" /><label for="flux-extension-resize">原圖縮放</label
-            ><select id="flux-extension-resize" v-model="resize"
-              ><option value="fit">等比完整放入，白色補邊</option
-              ><option value="stretch">拉伸至輸出尺寸</option></select
-            ><p class="footnote"
-              >VAE 由原圖建立 latent，會保留部分構圖；這不是
-              Redux／IP-Adapter，也不保證畫風或角色身份一致。輸入
-              PNG、來源與前處理雜湊會隨任務保存。</p
-            ><img
-              v-if="imageId"
-              :src="'/api/assets/' + imageId + '/image'"
-              alt="目前選擇的 FLUX 原圖"
-              class="extension-image"
-          /></template>
-          <div v-for="role in fluxRoles" :key="role.key"
-            ><label :for="'extension-' + role.key">{{ role.label }}</label
-            ><input
-              :id="'extension-' + role.key"
-              v-model="base[role.key]"
-              required
-              maxlength="2048"
-          /></div>
-          <label for="flux-extension-prompt">附加流程提示詞</label
-          ><textarea id="flux-extension-prompt" v-model="base.prompt" rows="5" maxlength="20000" />
-          <label for="flux-extension-seed">附加流程 Seed</label
-          ><input
-            id="flux-extension-seed"
-            v-model="base.seed"
-            inputmode="numeric"
-            pattern="[0-9]{1,20}"
-            required
-            maxlength="20"
-          />
-          <p v-if="problem" class="footnote" role="status">{{ problem }}</p>
-          <div class="extension-actions"
-            ><button class="primary" type="submit" :disabled="!!problem">保存附加流程草稿</button
-            ><button class="secondary" type="button" :disabled="!!problem" @click="save(true)"
-              >另存附加流程草稿</button
-            ><button class="secondary" type="button" :disabled="!!problem" @click="download"
-              >匯出附加流程 JSON</button
+          <div v-if="candidate" class="notice warning" role="alert"
+            ><p>載入會取代未保存的附加流程設定。</p
+            ><button class="secondary" @click="candidate = null">繼續編輯附加流程</button
+            ><button class="secondary" @click="apply(candidate)"
+              >捨棄變更並載入附加流程</button
             ></div
           >
-          <p class="footnote"
-            >一般設定交換格式暫不支援這兩種流程；請使用本頁完整草稿、原任務／作品還原與原始
-            JSON。</p
+          <AssetChoices
+            v-if="kind === 'image'"
+            :selected-ids="imageId ? [imageId] : []"
+            @items="assets = $event" /></details
+        ><div class="studio-submit" id="studio-submit-flux-addon"></div></div
+      ><div class="studio-stage"
+        ><StudioPreview :width="form.width" :height="form.height" /><div
+          ><GenerationPanel
+            submit-target="#studio-submit-flux-addon"
+            :form="form"
+            workflow="flux-addon"
+            :blocked-reason="problem"
+            :disabled="busy || loading || !!candidate"
+            @busy="generationBusy = $event"
+            @pending="generationPending = $event"
+            @gallery="emit('gallery', $event)"
+            @restore-job="restoreJob"
+          />
+          <article class="panel"
+            ><h2>附加流程草稿</h2
+            ><p v-if="!drafts.length" class="footnote">LoRA 與原圖設定使用獨立版本格式保存。</p
+            ><button
+              v-for="record in drafts"
+              :key="record.id"
+              class="extension-draft secondary"
+              :disabled="locked"
+              @click="choose(record)"
+              >{{ record.title }} · {{ record.workflow_id }}</button
+            ></article
           >
-        </fieldset></form
-      >
-      <div
-        ><GenerationPanel
-          :form="form"
-          workflow="flux-addon"
-          :blocked-reason="problem"
-          :disabled="busy || loading || !!candidate"
-          @busy="generationBusy = $event"
-          @pending="generationPending = $event"
-          @gallery="emit('gallery', $event)"
-          @restore-job="restoreJob"
-        />
-        <article class="panel"
-          ><h2>附加流程草稿</h2
-          ><p v-if="!drafts.length" class="footnote">LoRA 與原圖設定使用獨立版本格式保存。</p
-          ><button
-            v-for="record in drafts"
-            :key="record.id"
-            class="extension-draft secondary"
-            :disabled="locked"
-            @click="choose(record)"
-            >{{ record.title }} · {{ record.workflow_id }}</button
-          ></article
-        >
-        <template v-if="origin"
-          ><ComponentSnapshot :items="origin.component_metadata" /><LoraSnapshot
-            :items="origin.lora_metadata" /><ReferenceSnapshot
-            :items="origin.reference_metadata" /><RuntimeSnapshot :item="origin.runtime_metadata"
-        /></template>
-      </div>
-    </div>
+          <template v-if="origin"
+            ><ComponentSnapshot :items="origin.component_metadata" /><LoraSnapshot
+              :items="origin.lora_metadata" /><ReferenceSnapshot
+              :items="origin.reference_metadata" /><RuntimeSnapshot :item="origin.runtime_metadata"
+          /></template> </div></div
+    ></div>
   </section>
 </template>
 

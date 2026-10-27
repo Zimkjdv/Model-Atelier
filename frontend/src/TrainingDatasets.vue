@@ -11,6 +11,7 @@ import {
   type TrainingExport,
 } from './trainingTypes'
 
+const props = defineProps<{ stage?: number }>()
 const emit = defineEmits<{ dirty: [value: boolean] }>()
 const list = ref<DatasetSummary[]>([]),
   current = ref<DatasetReview | null>(null),
@@ -228,7 +229,7 @@ onUnmounted(() => {
 <template>
   <div class="training-review">
     <article class="panel">
-      <h2>訓練圖片與標註審查</h2>
+      <h2>{{ props.stage === 1 ? '匯出資料包' : '訓練圖片與標註審查' }}</h2>
       <p>逐張確認內容、來源用途及角色身分；保存、檢查與匯出都不會開始訓練。</p>
       <p v-if="!available" role="status"
         >請使用 Windows 原生平台進行審查；容器無法存取原生圖片與訓練環境。</p
@@ -292,7 +293,7 @@ onUnmounted(() => {
       </template>
     </article>
     <template v-if="current && edited">
-      <article class="panel">
+      <article v-show="props.stage !== 1" class="panel">
         <h2>{{ edited.dataset.dataset_id }} · 圖片審查</h2>
         <p
           >{{ edited.dataset.kind === 'style' ? '畫風' : '角色' }} · 目標
@@ -325,6 +326,7 @@ onUnmounted(() => {
         >
         <TrainingReviewNavigator
           :key="current.id"
+          :dataset-id="current.id"
           :images="edited.dataset.images"
           :report="readiness"
           :selected="selected"
@@ -333,7 +335,7 @@ onUnmounted(() => {
           :revision="current.revision"
           @select="selectImage"
         />
-        <div v-if="image" class="image-review">
+        <div v-if="image" v-show="props.stage !== 1" class="image-review">
           <div
             ><p v-if="image.split === 'test'">最終評估圖保留不預覽，避免在資料審查階段提前曝光。</p
             ><img
@@ -423,7 +425,7 @@ onUnmounted(() => {
           </fieldset>
         </div>
       </article>
-      <article class="panel">
+      <article v-show="props.stage === 1 || props.stage === undefined" class="panel">
         <h2>資料出口檢查</h2
         ><p
           >{{

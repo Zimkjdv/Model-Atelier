@@ -35,7 +35,7 @@ export type LocalEnvironment = {
 
 export const environmentText = (value: string | null | undefined) => typeof value === 'string' && value.trim() ? value : '未知'
 export const environmentSize = (value: number | null | undefined) => typeof value === 'number' && Number.isFinite(value) && value >= 0
-  ? `${(value / 1024 ** 3).toFixed(2)} GiB` : '未知'
+  ? `${(value / 1e9).toFixed(2)} GB` : '未知'
 export const cudaStatus = (value: boolean | null | undefined) => value === true ? '可用' : value === false ? '不可用' : '未知'
 export function environmentTime(value: string | null | undefined): string {
   if (!value) return '尚無檢查時間'

@@ -20,6 +20,7 @@ def install(app, host):
             'all', 'checkpoint', 'flux', 'flux-addon', 'inpaint', 'control', 'reference'
         ] = 'all',
         purpose: Literal['', 'unspecified', 'style', 'character', 'composition'] = '',
+        sort: Literal['latest', 'oldest', 'rating', 'model'] = 'latest',
     ):
         try:
             result = pager.page(
@@ -33,6 +34,7 @@ def install(app, host):
                 status=status,
                 workflow=workflow,
                 purpose=purpose,
+                sort=sort,
             )
         except ListingError as exc:
             raise HTTPException(exc.status, str(exc))

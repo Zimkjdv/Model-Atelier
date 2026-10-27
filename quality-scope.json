@@ -124,7 +124,8 @@
     "scripts/inspect_weight_provenance.py",
     "backend/test_weight_provenance.py",
     "scripts/compare_clip_provenance.py",
-    "backend/test_clip_provenance.py"
+    "backend/test_clip_provenance.py",
+    "backend/test_ui_redesign.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -190,7 +191,22 @@
     "frontend/src/fluxExtensions.ts",
     "frontend/src/FluxExtensionStudio.vue",
     "frontend/src/FluxStudio.vue",
-    "frontend/tests/flux-extensions.spec.ts"
+    "frontend/tests/flux-extensions.spec.ts",
+    "frontend/src/UiIcon.vue",
+    "frontend/src/PageTabs.vue",
+    "frontend/src/SizePresets.vue",
+    "frontend/src/SystemWorkspace.vue",
+    "frontend/src/ReferenceLibrary.vue",
+    "frontend/src/StudioPreview.vue",
+    "frontend/src/systemTypes.ts",
+    "frontend/src/masonry.ts",
+    "frontend/src/redesign.css",
+    "frontend/tests/ui-redesign.spec.ts",
+    "frontend/src/AssetLibrary.vue",
+    "frontend/src/ModelLibrary.vue",
+    "frontend/src/ControlStudio.vue",
+    "frontend/src/LocalEnvironmentCheck.vue",
+    "frontend/src/EngineEnvironment.vue"
   ],
-  "css": ["frontend/src/style.css", "frontend/src/theme.css"]
+  "css": ["frontend/src/style.css", "frontend/src/theme.css", "frontend/src/redesign.css"]
 }

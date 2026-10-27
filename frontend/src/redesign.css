@@ -1,0 +1,1465 @@
+/* Approved desktop UI: docs/ui-redesign/preview.html. Existing workflow contracts stay in their components. */
+:root {
+  --bg: #0f1412;
+  --rail: #121a17;
+  --panel: #182019;
+  --raised: #212c25;
+  --stage: #0a0e0c;
+  --line: #2c3a32;
+  --line2: #4a5e51;
+  --ink: #e8efe9;
+  --ink2: #bccabf;
+  --ink3: #93a69a;
+  --accent: #b9d3a4;
+  --aink: #13200f;
+  --asoft: #2a3b2c;
+  --warm: #e0b98a;
+  --wsoft: #3a2f22;
+  --surface-input: var(--stage);
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink2);
+  --text-muted: var(--ink3);
+  --border-control: var(--line2);
+  --focus-ring: #f2d58a;
+  --surface-notice: var(--raised);
+  --border-notice: var(--line);
+  --text-notice: var(--ink2);
+  --surface-warning: var(--wsoft);
+  --border-warning: #6b5638;
+  --text-warning: var(--warm);
+  --radius-control: 10px;
+  color: var(--ink);
+  background: var(--bg);
+  font-family: 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+}
+#app .atelier-shell {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+#app .atelier-shell .rail {
+  width: 72px;
+  padding: 14px 0;
+  gap: 4px;
+  background: var(--rail);
+  border-right: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+#app .atelier-shell .brand {
+  margin: 0 0 14px;
+  justify-content: center;
+  flex: none;
+}
+#app .atelier-shell .brand-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  padding: 0;
+  background: var(--accent);
+  color: var(--aink);
+  font:
+    700 22px 'Noto Serif TC',
+    'Songti TC',
+    Georgia,
+    serif;
+  letter-spacing: normal;
+}
+#app .atelier-shell .rail nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  width: 100%;
+}
+#app .atelier-shell .rail nav button {
+  width: 54px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 0 6px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.65;
+  font-weight: 400;
+  color: var(--ink3);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  text-align: center;
+}
+#app .atelier-shell .rail nav button.active {
+  background: var(--asoft);
+  color: var(--accent);
+}
+#app .atelier-shell .rail nav button:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+#app .atelier-shell .rail .nav-management {
+  margin-top: auto;
+}
+#app .atelier-shell .app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 62px;
+  padding: 12px 32px;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 20;
+  color: var(--ink);
+}
+#app .atelier-shell .app-topbar h1 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0;
+  letter-spacing: normal;
+}
+#app .atelier-shell.system-page .app-topbar {
+  height: 57px;
+}
+#app .atelier-shell.system-page .app-topbar h1 {
+  font-size: 18px;
+}
+#app .atelier-shell .top-tools {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--ink2);
+}
+#app .atelier-shell .top-tools button {
+  min-height: 34px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+#app .atelier-shell .dot {
+  width: 8px;
+  height: 8px;
+  background: var(--ink3);
+}
+#app .atelier-shell .dot.online {
+  background: #7fc17a;
+  box-shadow: 0 0 0 3px #7fc17a33;
+}
+#app .atelier-shell .content {
+  max-width: 1500px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 32px 56px;
+}
+#app .atelier-shell .content.system-content {
+  max-width: 1120px;
+  padding: 24px 32px 64px;
+}
+#app .atelier-shell p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink2);
+}
+#app .atelier-shell :is(h2, h3, h4) {
+  color: var(--ink);
+  letter-spacing: normal;
+  font-weight: 600;
+}
+#app .atelier-shell h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+#app .atelier-shell h3 {
+  font-size: 16px;
+}
+#app .atelier-shell .footnote,
+#app .atelier-shell .muted {
+  font-size: 13px;
+  color: var(--ink3);
+  line-height: 1.75;
+}
+#app .atelier-shell :is(button, input, select, textarea) {
+  font-family: inherit;
+  line-height: 1.65;
+}
+#app
+  .atelier-shell
+  :is(input:not([type='checkbox']):not([type='radio']):not([type='file']), select, textarea) {
+  background: var(--stage);
+  border: 1px solid var(--line2);
+  border-radius: 10px;
+  color: var(--ink);
+  font-size: 15px;
+  min-height: 44px;
+  padding: 9px 12px;
+  max-width: 100%;
+}
+#app .atelier-shell textarea {
+  resize: vertical;
+}
+#app .atelier-shell input[type='checkbox'] {
+  accent-color: var(--accent);
+  width: auto;
+}
+#app .atelier-shell label {
+  color: var(--ink);
+  font-size: 13px;
+}
+#app .atelier-shell :is(.panel, .card) {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: none;
+  min-width: 0;
+}
+#app .atelier-shell :is(.primary, .secondary) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line2);
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 15px;
+  white-space: normal;
+}
+#app .atelier-shell .primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--aink);
+  font-weight: 700;
+}
+#app .atelier-shell .primary:hover:not(:disabled) {
+  background: #cde3ba;
+}
+#app .atelier-shell .secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+#app .atelier-shell button:disabled {
+  cursor: not-allowed;
+}
+#app .atelier-shell a {
+  color: var(--accent);
+}
+#app .atelier-shell .chip {
+  display: inline-block;
+  border-radius: 99px;
+  border: 1px solid #456347;
+  background: var(--asoft);
+  color: var(--accent);
+  font-size: 12px;
+  padding: 2px 10px;
+  letter-spacing: normal;
+}
+#app .atelier-shell :is(.chip.warning, .status:not(.connected)) {
+  background: var(--wsoft);
+  border-color: #6b5638;
+  color: var(--warm);
+}
+#app .atelier-shell .status {
+  font-size: 12px;
+  padding: 2px 10px;
+}
+#app .atelier-shell .notice {
+  background: var(--raised);
+  border: 1px solid var(--line);
+  color: var(--ink2);
+  font-size: 14px;
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+#app .atelier-shell .notice.warning {
+  background: var(--wsoft);
+  border-color: #6b5638;
+  color: var(--warm);
+}
+#app .atelier-shell summary {
+  cursor: pointer;
+  font-size: 14px;
+  min-height: 32px;
+  color: var(--ink2);
+}
+#app .atelier-shell details {
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+  padding-top: 12px;
+}
+#app .atelier-shell :is(pre, code, dd) {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  min-width: 0;
+}
+#app .atelier-shell .page-description {
+  margin: 0 0 22px;
+}
+#app .atelier-shell .actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+#app .atelier-shell .text-button {
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font-size: 14px;
+  min-height: 36px;
+}
+#app .atelier-shell .page-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 20px;
+}
+#app .atelier-shell .page-tabs button {
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 10px 16px;
+  min-height: 44px;
+  font-size: 15px;
+  color: var(--ink2);
+}
+#app .atelier-shell .page-tabs button[aria-selected='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+#app .atelier-shell .page-tabs.vertical {
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+  border: 0;
+  gap: 4px;
+}
+#app .atelier-shell .page-tabs.vertical button {
+  text-align: left;
+  min-height: 38px;
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+#app .atelier-shell .page-tabs.vertical button[aria-selected='true'] {
+  background: var(--asoft);
+  border-color: #456347;
+}
+#app .atelier-shell [role='tabpanel'] {
+  scroll-margin-top: 126px;
+  min-width: 0;
+}
+#app .atelier-shell [role='tabpanel']:focus {
+  outline: none;
+}
+#app .atelier-shell .page-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+#app .atelier-shell .page-intro p {
+  margin: 0;
+}
+#app .atelier-shell .page-intro > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#app .atelier-shell .system-workspace > .page-tabs {
+  position: sticky;
+  top: 57px;
+  z-index: 10;
+}
+#app .atelier-shell .system-verdict {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  border: 1px solid #456347;
+  background: var(--asoft);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+#app .atelier-shell .system-verdict.warning {
+  background: var(--wsoft);
+  border-color: #6b5638;
+}
+#app .atelier-shell .system-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+#app .atelier-shell .system-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+}
+#app .atelier-shell .summary-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+#app .atelier-shell .summary-title h2 {
+  font-size: 15px;
+  color: var(--ink2);
+  margin: 0;
+}
+#app .atelier-shell .summary-kpi {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 14px;
+  overflow-wrap: anywhere;
+}
+#app .atelier-shell .summary-kpi small {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink3);
+}
+#app .atelier-shell .summary-resource {
+  margin-bottom: 12px;
+}
+#app .atelier-shell .summary-resource > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink2);
+}
+#app .atelier-shell .summary-resource strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+#app .atelier-shell .usage-track {
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  background: var(--line);
+  overflow: hidden;
+  margin-top: 6px;
+}
+#app .atelier-shell .usage-track > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+#app .atelier-shell .usage-track.warning > span {
+  background: var(--warm);
+}
+#app .atelier-shell .summary-link {
+  margin-top: auto;
+  align-self: start;
+  padding: 14px 0 6px;
+  background: none;
+  color: var(--accent);
+  font-size: 14px;
+  border: 0;
+  min-height: 36px;
+}
+#app .atelier-shell .summary-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0 0 12px;
+}
+#app .atelier-shell .summary-facts dt {
+  font-size: 13px;
+  color: var(--ink3);
+}
+#app .atelier-shell .summary-facts dd {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+#app .atelier-shell .endpoint {
+  overflow-wrap: anywhere;
+  margin: 0;
+  font-size: 13px;
+}
+#app .atelier-shell .storage-legend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+#app .atelier-shell .storage-legend span {
+  display: block;
+  font-size: 12px;
+  color: var(--accent);
+}
+#app .atelier-shell .storage-legend > div:nth-child(2) span {
+  color: #90cbd2;
+}
+#app .atelier-shell .storage-legend > div:nth-child(3) span {
+  color: #c3b1d4;
+}
+#app .atelier-shell .storage-legend strong {
+  display: block;
+  font-size: 14px;
+  margin-top: 3px;
+}
+#app .atelier-shell .attention-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+#app .atelier-shell .attention-row > div {
+  flex: 1;
+  min-width: 0;
+}
+#app .atelier-shell .attention-row p {
+  font-size: 13px;
+  margin: 2px 0 0;
+}
+#app .atelier-shell .environment-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+#app .atelier-shell .environment-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+}
+#app .atelier-shell .environment-facts dt {
+  color: var(--ink3);
+  font-size: 13px;
+}
+#app .atelier-shell .environment-facts dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+#app .atelier-shell .host-gpu {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+#app .atelier-shell .environment-versions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+#app .atelier-shell :is(.environment-versions dt, .local-versions dt) {
+  font-size: 13px;
+}
+#app .atelier-shell :is(.environment-versions dd, .local-versions dd) {
+  font-size: 15px;
+  margin-top: 2px;
+}
+#app .atelier-shell .engine-environment {
+  margin: 0;
+}
+#app .atelier-shell .disk-row {
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+#app .atelier-shell .disk-row > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  gap: 12px;
+}
+#app .atelier-shell .directory-section {
+  border-top: 1px solid var(--line);
+  margin-top: 20px;
+  padding-top: 16px;
+}
+#app .atelier-shell .storage-directory {
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+#app .atelier-shell .storage-directory h4 {
+  font-size: 15px;
+  margin: 0 0 3px;
+}
+#app .atelier-shell .storage-directory code {
+  font:
+    12px/1.8 Consolas,
+    monospace;
+  color: #b5d0d9;
+}
+#app .atelier-shell .storage-folder {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  background: var(--raised);
+  color: var(--ink2);
+  border-color: var(--line2);
+}
+#app .atelier-shell .storage-folder svg,
+#app .atelier-shell .storage-refresh svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+}
+#app .atelier-shell .empty-state {
+  border: 1px dashed var(--line2);
+  border-radius: 12px;
+  padding: 28px 20px;
+  text-align: center;
+}
+#app .atelier-shell .settings-workspace {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 680px);
+  gap: 28px;
+}
+#app .atelier-shell .settings {
+  max-width: none;
+}
+#app .atelier-shell .settings label {
+  margin: 20px 0 6px;
+}
+#app .atelier-shell .settings-workspace .panel {
+  margin-top: 0;
+}
+#app .atelier-shell .settings-workspace label {
+  display: block;
+  margin-bottom: 6px;
+}
+#app .atelier-shell .studio-content {
+  position: relative;
+  max-width: none;
+  padding: 0;
+  height: calc(100vh - 62px);
+  overflow: hidden;
+}
+#app .atelier-shell .studio-navigation {
+  position: absolute;
+  left: 24px;
+  top: 18px;
+  width: 362px;
+  z-index: 5;
+  background: var(--bg);
+  padding-bottom: 8px;
+}
+#app .atelier-shell .workflow-switch {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
+  border: 1px solid var(--line);
+  background: var(--stage);
+  border-radius: 10px;
+  padding: 3px;
+}
+#app .atelier-shell .workflow-switch button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 56px;
+  padding: 8px 2px 6px;
+  background: transparent;
+  color: var(--ink3);
+  font-size: 12px;
+  border-radius: 7px;
+}
+#app .atelier-shell .workflow-switch button[aria-pressed='true'] {
+  background: var(--raised);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line2);
+}
+#app .atelier-shell .architecture-switch {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+#app .atelier-shell .architecture-switch button {
+  font-size: 12px;
+  min-height: 32px;
+  padding: 4px 8px;
+}
+#app .atelier-shell .architecture-switch button[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+#app .atelier-shell .studio-workbench {
+  display: grid;
+  grid-template-columns: 410px minmax(0, 1fr);
+  height: calc(100vh - 62px);
+  min-height: 0;
+  background: var(--bg);
+}
+#app .atelier-shell .studio-settings {
+  min-width: 0;
+  overflow: auto;
+  height: 100%;
+  border-right: 1px solid var(--line);
+  padding: 142px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#app .atelier-shell .studio-settings > .panel {
+  padding: 0;
+  border: 0;
+  background: none;
+  margin: 0;
+}
+#app .atelier-shell .studio-settings fieldset {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  min-width: 0;
+}
+#app .atelier-shell .studio-settings .editor h2,
+#app .atelier-shell .studio-settings .flux-editor h2 {
+  font-size: 16px;
+}
+#app .atelier-shell .studio-settings label {
+  display: block;
+  margin: 14px 0 6px;
+  font-size: 13px;
+}
+#app .atelier-shell .studio-settings :is(input, select, textarea) {
+  width: 100%;
+  min-width: 0;
+}
+#app .atelier-shell .studio-settings textarea {
+  min-height: 110px;
+}
+#app .atelier-shell .studio-settings .size-fields,
+#app .atelier-shell .studio-settings .fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+#app .atelier-shell .studio-stage {
+  min-width: 0;
+  overflow: auto;
+  background: var(--stage);
+  padding: 20px 24px;
+  height: 100%;
+}
+#app .atelier-shell .studio-submit {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: 12px 0 16px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  z-index: 3;
+}
+#app .atelier-shell .generation-submit .primary {
+  width: 100%;
+  font-size: 17px;
+}
+#app .atelier-shell .generation-submit .submission-state {
+  margin: 0 0 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 13px;
+}
+#app .atelier-shell .generation-submit > .notice {
+  font-size: 13px;
+  margin: 6px 0;
+  padding: 8px;
+}
+#app .atelier-shell .generation-history {
+  background: transparent;
+  border: 0;
+  padding: 12px 0;
+  margin-top: 16px;
+}
+#app .atelier-shell .generation-history > h2 {
+  font-size: 16px;
+}
+#app .atelier-shell .studio-tools {
+  margin: 0 0 10px;
+}
+#app .atelier-shell .studio-tools .studio-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#app .atelier-shell .studio-tools .panel {
+  padding: 12px;
+}
+#app .atelier-shell .studio-tools .studio-layout-controls {
+  display: none;
+}
+#app .atelier-shell .studio-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 320px;
+  margin: 0 0 20px;
+}
+#app .atelier-shell .stage-dimensions {
+  align-self: end;
+  color: var(--ink3);
+  font-size: 13px;
+}
+#app .atelier-shell .empty-canvas {
+  width: min(100%, 600px);
+  max-height: calc(100vh - 190px);
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  text-align: center;
+  padding: 24px;
+  color: var(--ink2);
+}
+#app .atelier-shell .empty-canvas p {
+  font-size: 13px;
+}
+#app .atelier-shell .canvas-panel {
+  display: none;
+}
+#app .atelier-shell .size-presets {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+#app .atelier-shell .size-presets button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 62px;
+  min-height: 62px;
+  border: 1px solid var(--line2);
+  border-radius: 10px;
+  background: none;
+  color: var(--ink2);
+  font-size: 12px;
+  padding: 6px 10px;
+}
+#app .atelier-shell .size-presets button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--asoft);
+  color: var(--accent);
+}
+#app .atelier-shell .size-presets i {
+  display: block;
+  box-sizing: content-box;
+  height: 18px;
+  width: auto;
+  min-width: 14px;
+  border: 1.6px solid currentColor;
+  border-radius: 1px;
+}
+#app .atelier-shell .size-summary {
+  font-size: 13px;
+  color: var(--ink3);
+  margin: 6px 0;
+}
+#app .atelier-shell .mask-editor {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+#app .atelier-shell .mask-stage {
+  width: min(100%, 650px);
+  margin: auto;
+}
+#app .atelier-shell .studio-content > section > .flux-toolbar {
+  position: absolute;
+  left: 24px;
+  top: 112px;
+  z-index: 6;
+  display: flex;
+  gap: 4px;
+  background: var(--bg);
+  width: 362px;
+}
+#app .atelier-shell .studio-content > section > .flux-toolbar button {
+  min-height: 28px;
+  font-size: 12px;
+  padding: 3px 6px;
+}
+#app .atelier-shell .studio-content > section:has(> .flux-toolbar) .studio-settings {
+  padding-top: 164px;
+}
+#app .atelier-shell .experiments-workspace {
+  max-width: 1500px;
+  margin: auto;
+}
+#app .atelier-shell .experiments-workspace .experiment-planner {
+  margin: 0;
+}
+#app .atelier-shell :is(.library-intro, .upload-panel, .import-panel) {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-bottom: 22px;
+}
+#app .atelier-shell :is(.library-intro, .upload-panel, .import-panel) > :is(.chip, h2) {
+  display: none;
+}
+#app .atelier-shell .library-intro {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+#app .atelier-shell .library-intro .chip,
+#app .atelier-shell .library-intro h2 {
+  display: none;
+}
+#app .atelier-shell :is(.artwork-toolbar, .asset-toolbar, .library-toolbar) {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: end;
+  margin: 16px 0;
+}
+#app .atelier-shell :is(.artwork-toolbar, .asset-toolbar, .library-toolbar) label {
+  margin: 0;
+  font-size: 13px;
+}
+#app .atelier-shell :is(.artwork-grid, .asset-grid, .model-grid) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+#app .atelier-shell .asset-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+#app .atelier-shell :is(.artwork-card, .asset-card) {
+  padding: 0;
+  overflow: hidden;
+}
+#app .atelier-shell :is(.artwork-card, .asset-card) > :not(.artwork-cover):not(a:first-child) {
+  margin-left: 14px;
+  margin-right: 14px;
+}
+#app .atelier-shell :is(.artwork-cover, .asset-card > a:first-child) {
+  display: block;
+  width: 100%;
+  padding: 0;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 0;
+  background: var(--stage);
+  overflow: hidden;
+}
+#app .atelier-shell .artwork-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#app .atelier-shell .asset-card img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+}
+#app .atelier-shell .artwork-card .card-title h2,
+#app .atelier-shell .asset-card h2 {
+  font-size: 15px;
+  margin: 12px 0 2px;
+}
+#app .atelier-shell .artwork-card p,
+#app .atelier-shell .asset-card p {
+  font-size: 13px;
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+#app .atelier-shell .asset-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+#app .atelier-shell .asset-actions button {
+  font-size: 13px;
+  min-height: 36px;
+  padding: 5px 10px;
+}
+#app .atelier-shell .artwork-dialog {
+  width: min(1080px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100vh - 32px);
+  border: 1px solid var(--line2);
+  border-radius: 16px;
+  background: var(--panel);
+  padding: 24px;
+  color: var(--ink);
+}
+#app .atelier-shell .artwork-dialog::backdrop {
+  background: #000a;
+}
+#app .atelier-shell .preview-grid {
+  grid-template-columns: 1.1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+#app .atelier-shell .preview-image {
+  background: var(--stage);
+  border: 0;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 0;
+}
+#app .atelier-shell .preview-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+}
+#app .atelier-shell .preview-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+#app .atelier-shell .preview-heading h2 {
+  font:
+    600 22px 'Noto Serif TC',
+    'Songti TC',
+    Georgia,
+    serif;
+  margin: 0;
+}
+#app .atelier-shell .preview-top-actions {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+#app .atelier-shell .preview-top-actions button {
+  min-height: 36px;
+  font-size: 14px;
+  padding: 5px 12px;
+}
+#app .atelier-shell .organization-panel {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+#app .atelier-shell .training-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+}
+#app .atelier-shell .training-tabs button {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 14px;
+  min-height: 70px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink2);
+  font-size: 14px;
+}
+#app .atelier-shell .training-tabs button[aria-pressed='true'] {
+  border-color: var(--accent);
+  outline: none;
+  color: var(--ink);
+}
+#app .atelier-shell .step-number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--raised);
+  font-weight: 600;
+}
+#app .atelier-shell .training-tabs button[aria-pressed='true'] .step-number {
+  background: var(--accent);
+  color: var(--aink);
+}
+#app .atelier-shell .training-review .image-review {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+#app .atelier-shell .training-review .image-review img {
+  max-height: 600px;
+  width: 100%;
+  object-fit: contain;
+}
+#app .atelier-shell .review-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+}
+#app .atelier-shell .review-progress progress {
+  flex: 1;
+  height: 6px;
+  accent-color: var(--accent);
+}
+@media (max-width: 1000px) {
+  #app .atelier-shell .environment-columns {
+    grid-template-columns: 1fr;
+  }
+  #app .atelier-shell .asset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #app .atelier-shell .system-summary-cards {
+    grid-template-columns: 1fr;
+  }
+  #app .atelier-shell .studio-content {
+    height: auto;
+    overflow: visible;
+  }
+  #app .atelier-shell .studio-navigation {
+    position: static;
+    width: auto;
+    margin: 16px;
+  }
+  #app .atelier-shell .studio-workbench {
+    height: auto;
+    grid-template-columns: 1fr;
+  }
+  #app .atelier-shell .studio-settings {
+    height: auto;
+    padding: 20px;
+    border: 0;
+  }
+  #app .atelier-shell .studio-stage {
+    height: auto;
+  }
+  #app .atelier-shell .studio-submit {
+    position: static;
+  }
+  #app .atelier-shell .settings-workspace {
+    grid-template-columns: 160px minmax(0, 1fr);
+  }
+  #app .atelier-shell .preview-grid {
+    grid-template-columns: 1fr;
+  }
+  #app .atelier-shell .top-tools .connection-status {
+    display: none;
+  }
+  #app .atelier-shell .page-intro {
+    flex-wrap: wrap;
+  }
+}
+
+#app .atelier-shell .view-switch {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+#app .atelier-shell .view-switch label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+#app .atelier-shell .view-switch button[aria-pressed='true'] {
+  background: var(--asoft);
+  border-color: #456347;
+  color: var(--accent);
+}
+#app .atelier-shell .purpose-tabs {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+#app .atelier-shell .purpose-tabs button {
+  padding: 6px 14px;
+  min-height: 38px;
+  border: 1px solid transparent;
+  border-radius: 99px;
+  background: none;
+  color: var(--ink2);
+  font-size: 15px;
+}
+#app .atelier-shell .purpose-tabs button[aria-pressed='true'] {
+  border-color: #456347;
+  background: var(--asoft);
+  color: var(--accent);
+}
+#app .atelier-shell .asset-purpose {
+  display: inline-block;
+  float: right;
+  background: var(--asoft);
+  color: var(--accent);
+  padding: 2px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 400;
+}
+#app .atelier-shell .model-grid.model-list {
+  grid-template-columns: 1fr;
+  gap: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 20px;
+}
+#app .atelier-shell .model-card {
+  background: var(--panel);
+  padding: 20px;
+}
+#app .atelier-shell .model-list .model-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 12px 24px;
+  align-items: center;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding: 20px 0;
+  margin: 0;
+}
+#app .atelier-shell .model-list .model-card:last-child {
+  border-bottom: 0;
+}
+#app .atelier-shell .model-list .model-summary {
+  grid-column: 1;
+  grid-row: 1;
+}
+#app .atelier-shell .model-list .model-card-top {
+  grid-column: 2;
+  grid-row: 1;
+}
+#app .atelier-shell .model-list .model-details {
+  grid-column: 1/-1;
+}
+#app .atelier-shell .model-list .model-footer {
+  grid-column: 3;
+  grid-row: 1;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  justify-content: flex-end;
+}
+#app .atelier-shell .model-summary h2 {
+  font-size: 15px;
+  margin: 0;
+}
+#app .atelier-shell .model-summary p {
+  margin: 6px 0 0;
+}
+#app .atelier-shell .model-list .model-details {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+#app .atelier-shell .model-list .model-details > summary {
+  font-size: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .model-card .model-footer button {
+  margin: 0;
+}
+#app .atelier-shell .artwork-card {
+  position: relative;
+}
+#app .atelier-shell .gallery-overlay {
+  position: absolute;
+  top: 8px;
+  width: 40px;
+  height: 40px;
+  min-height: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line2);
+  background: #0a0e0ccc;
+  color: var(--ink);
+  font-size: 18px;
+  z-index: 2;
+}
+#app .atelier-shell .gallery-overlay.select {
+  left: 8px;
+}
+#app .atelier-shell .gallery-overlay.favorite {
+  right: 8px;
+}
+#app .atelier-shell .gallery-overlay[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--aink);
+  border-color: var(--accent);
+}
+#app .atelier-shell .gallery-card-meta {
+  padding: 12px 14px;
+  margin: 0 !important;
+}
+#app .atelier-shell .gallery-card-meta .card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#app .atelier-shell .gallery-card-meta .card-title h2 {
+  margin: 0;
+  font-size: 15px;
+}
+#app .atelier-shell .gallery-card-meta details {
+  font-size: 13px;
+}
+#app .atelier-shell .artwork-grid.masonry {
+  grid-auto-rows: 8px;
+  grid-auto-flow: row;
+  gap: 16px;
+}
+#app .atelier-shell .artwork-grid.masonry .artwork-card {
+  height: max-content;
+  align-self: start;
+}
+#app .atelier-shell .artwork-grid.masonry .artwork-cover {
+  aspect-ratio: auto;
+}
+#app .atelier-shell .artwork-grid.masonry .artwork-cover img {
+  height: auto;
+  object-fit: contain;
+}
+#app .atelier-shell .artwork-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  margin: 0 0 16px;
+}
+#app .atelier-shell .artwork-facts dt {
+  font-size: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .artwork-facts dd {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+#app .atelier-shell .artwork-info > .preview-heading {
+  margin: 0 0 16px;
+}
+#app .atelier-shell .artwork-info .organization-panel > h3 {
+  display: none;
+}
+#app .atelier-shell .artwork-info .organization-panel textarea {
+  width: 100%;
+  min-height: 110px;
+}
+#app .atelier-shell .artwork-dialog .artwork-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+#app .atelier-shell .artwork-dialog .artwork-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line2);
+  color: var(--ink);
+  background: var(--raised);
+  text-decoration: none;
+}
+#app .atelier-shell .pending-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--warm);
+  margin-right: 6px;
+}
+#app .atelier-shell .pending-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+#app .atelier-shell .review-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 4px;
+  flex: none;
+}
+#app .atelier-shell .image-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+#app .atelier-shell .image-choices button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+}
+
+#app .atelier-shell .preflight-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 8px;
+}
+
+#app .atelier-shell .library > .page-tabs {
+  border: 0;
+  gap: 8px;
+}
+#app .atelier-shell .library > .page-tabs button {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 6px 16px;
+  min-height: 40px;
+}
+#app .atelier-shell .library > .page-tabs button[aria-selected='true'] {
+  background: var(--asoft);
+  border-color: #416445;
+}
+
+#app .atelier-shell .comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+#app .atelier-shell .comparison-grid .variant {
+  margin: 0;
+  min-width: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+}

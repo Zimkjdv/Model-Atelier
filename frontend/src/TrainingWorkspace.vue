@@ -3,39 +3,40 @@ import { ref } from 'vue'
 import TrainingDatasets from './TrainingDatasets.vue'
 import TrainingControl from './TrainingControl.vue'
 const emit = defineEmits<{ dirty: [value: boolean] }>()
+const stage = ref(0)
+const stages = ['審查資料', '匯出資料包', '準備訓練', '執行與產物']
 const tab = ref('datasets'),
   dirty = ref(false)
 function changed(value: boolean) {
   dirty.value = value
   emit('dirty', value)
 }
-function select(value: string) {
-  if (
-    value === tab.value ||
-    (dirty.value && !window.confirm('訓練工作區尚有未保存內容或正在處理，確定切換？'))
-  )
+function selectStage(index: number) {
+  const value = index < 2 ? 'datasets' : 'control'
+  if (value === tab.value) {
+    stage.value = index
     return
+  }
+  if (dirty.value && !window.confirm('訓練工作區尚有未保存內容或正在處理，確定切換？')) return
+  stage.value = index
   tab.value = value
 }
 </script>
 <template>
-  <div class="training-tabs"
+  <div class="page-intro"><p>從資料品質開始，每個階段都清楚說明下一步。</p></div
+  ><div class="training-tabs" role="group" aria-label="訓練階段"
     ><button
-      class="secondary"
+      v-for="(label, index) in stages"
+      :key="label"
       type="button"
-      :aria-pressed="tab === 'datasets'"
-      @click="select('datasets')"
-      >資料審查</button
-    ><button
-      class="secondary"
-      type="button"
-      :aria-pressed="tab === 'control'"
-      @click="select('control')"
-      >訓練執行</button
+      :aria-pressed="stage === index"
+      @click="selectStage(index)"
+      ><span class="step-number">{{ index + 1 }}</span
+      ><span>{{ label }}</span></button
     ></div
-  >
-  <TrainingDatasets v-if="tab === 'datasets'" @dirty="changed" /><TrainingControl
+  ><TrainingDatasets v-if="tab === 'datasets'" :stage="stage" @dirty="changed" /><TrainingControl
     v-else
+    :stage="stage"
     @dirty="changed"
   />
 </template>

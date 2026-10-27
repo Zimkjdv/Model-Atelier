@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import SizePresets from './SizePresets.vue'
+import StudioPreview from './StudioPreview.vue'
 import {
   computed,
   onActivated,
@@ -33,13 +35,16 @@ import { validateProfile, type ModelProfile } from './modelProfiles'
 import type { ReferenceAsset, ReferenceSnapshot as ReferenceMetadata } from './referenceSettings'
 import type { RuntimeMetadata } from './runtimeMetadata'
 
-const props = defineProps<{ restoreRequest?: { artworkId: string; token: number } | null }>()
+const props = defineProps<{
+  assetRequest?: { id: string; purpose: string; token: number } | null
+  restoreRequest?: { artworkId: string; token: number } | null
+}>()
 const emit = defineEmits<{ models: []; assets: []; gallery: [jobId: string] }>()
 type Catalog = {
   engine_url: string
   synced_at: string | null
   sync_error: string | null
-  models: { name: string; listed: boolean; version?: string }[]
+  models: { name: string; listed: boolean; version?: string; architecture?: string }[]
 }
 type Capabilities = {
   engine_url: string
@@ -242,247 +247,289 @@ onBeforeUnmount(() => {
   loads.dispose()
   restores.dispose()
 })
+
+let appliedAssetToken = 0
+watch(
+  [() => props.assetRequest, () => assets.value, () => locked.value],
+  ([request]) => {
+    if (
+      !request ||
+      locked.value ||
+      request.token === appliedAssetToken ||
+      !assets.value.some((item) => item.id === request.id)
+    )
+      return
+    appliedAssetToken = request.token
+    if (dirty.value && !window.confirm('帶入素材會更換目前來源圖片，其他參數保留，確定套用？'))
+      return
+    chooseSource(request.id)
+    if (request.purpose === 'style' || request.purpose === 'character')
+      form.reference_mode = request.purpose
+  },
+  { flush: 'post' },
+)
 </script>
 <template>
   <section aria-label="畫風角色參考工作台">
-    <div class="toolbar"
-      ><strong>SDXL 畫風／角色外觀參考</strong
-      ><button class="secondary" :disabled="locked" @click="load(true)">更新清單與引擎選項</button
-      ><button class="secondary" @click="emit('assets')">管理參考素材 →</button
-      ><button class="secondary" @click="emit('models')">Checkpoint 版本與來源 →</button></div
-    >
-    <UnsavedChangesNotice :dirty="dirty" page-only />
-    <p class="footnote"
-      >單張參考圖，兩種模式分開驗收。畫風模式使用 style transfer；角色外觀模式使用
-      linear。相似外觀不代表身份鎖定，構圖與服裝也可能被帶入。首版不組合 LoRA。</p
-    >
-    <p class="footnote"
-      >參考圖等比補白至 224 × 224，再由原引擎編碼；輸出尺寸獨立。單次一張、空 latent、denoise
-      1。表單僅在本次工作台切換時保留，提交後可從任務／作品載入完整原設定。</p
-    >
-    <p v-if="error" role="alert" class="notice warning">{{ error }}</p
-    ><p v-if="message" role="status" class="notice">{{ message }}</p>
-    <div v-if="pendingRestore" class="notice warning"
-      ><p>載入將取代目前未提交表單。</p
-      ><button class="secondary" @click="pendingRestore = null">繼續編輯</button
-      ><button
-        class="secondary"
-        :disabled="generationBusy || generationPending || metadataBusy"
-        @click="apply(pendingRestore)"
-        >捨棄變更並載入</button
-      ></div
-    >
-    <template v-if="origin"
-      ><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{ warning }}</p
-      ><ReferenceComponentsSnapshot :items="origin.component_metadata" /><ReferenceSnapshot
-        :items="origin.reference_metadata" /><RuntimeSnapshot :item="origin.runtime_metadata"
-    /></template>
-    <ReferenceComponents
-      :library="components"
-      :engine-url="form.engine_url"
-      :disabled="locked"
-      @busy="metadataBusy = $event"
-      @updated="load()"
-    />
-    <AssetChoices
-      :selected-ids="form.image_asset_id ? [form.image_asset_id] : []"
-      @items="assets = $event"
-    />
-    <div class="reference-grid">
-      <form class="panel editor" @submit.prevent
-        ><fieldset :disabled="locked">
-          <h2>參考圖與生成設定</h2>
-          <label for="reference-title">名稱</label
-          ><input id="reference-title" v-model="form.title" maxlength="100" required />
-          <label for="reference-checkpoint">SDXL Checkpoint</label
-          ><select id="reference-checkpoint" v-model="form.checkpoint"
-            ><option value="">選擇模型</option
-            ><option
-              v-if="form.checkpoint && !catalog?.models.some((m) => m.name === form.checkpoint)"
-              :value="form.checkpoint"
-              >{{ form.checkpoint }}（清單未確認）</option
-            ><option
-              v-for="m in catalog?.models"
-              :key="m.name"
-              :value="m.name"
-              :disabled="!m.listed"
-              >{{ m.name }}{{ m.listed ? '' : '（已不在清單）' }}</option
-            ></select
-          >
-          <label for="reference-mode">參考模式</label
-          ><select id="reference-mode" v-model="form.reference_mode"
-            ><option value="style">畫風參考</option
-            ><option value="character">角色外觀參考</option></select
-          >
-          <label for="reference-source">參考素材</label
-          ><select
-            id="reference-source"
-            :value="form.image_asset_id || ''"
-            @change="chooseSource(($event.target as HTMLSelectElement).value || null)"
-            ><option value="">選擇一張參考圖</option
-            ><option v-if="form.image_asset_id && !source" :value="form.image_asset_id"
-              >原素材不存在（{{ form.image_asset_id }}）</option
-            ><option
-              v-for="a in assets.filter((a) => !a.archived || a.id === form.image_asset_id)"
-              :key="a.id"
-              :value="a.id"
-              :disabled="a.archived"
-              >{{ a.title }} · {{ a.width }} × {{ a.height
-              }}{{ a.archived ? '（已封存）' : '' }}</option
-            ></select
-          >
-          <figure v-if="source" class="source-preview"
-            ><img
-              :src="'/api/assets/' + source.id + '/image'"
-              :alt="'參考素材：' + source.title"
-            /><figcaption
-              >原素材預覽；生成時會等比縮放並補白至 224 方圖。素材用途標籤不會切換模式。</figcaption
-            ></figure
-          >
-          <template v-for="spec in referenceRoles" :key="spec.role"
-            ><label :for="'reference-' + spec.role">{{ spec.label }}</label
-            ><select :id="'reference-' + spec.role" v-model="form[spec.key]"
-              ><option value="">選擇元件</option
+    <div class="studio-workbench"
+      ><div class="studio-settings"
+        ><UnsavedChangesNotice :dirty="dirty" page-only />
+        <p v-if="error" role="alert" class="notice warning">{{ error }}</p>
+        <p v-if="message" role="status" class="notice">{{ message }}</p>
+        <div v-if="pendingRestore" class="notice warning"
+          ><p>載入將取代目前未提交表單。</p
+          ><button class="secondary" @click="pendingRestore = null">繼續編輯</button
+          ><button
+            class="secondary"
+            :disabled="generationBusy || generationPending || metadataBusy"
+            @click="apply(pendingRestore)"
+            >捨棄變更並載入</button
+          ></div
+        ><form class="panel editor" @submit.prevent
+          ><fieldset :disabled="locked">
+            <label for="reference-source">參考素材</label
+            ><select
+              id="reference-source"
+              :value="form.image_asset_id || ''"
+              @change="chooseSource(($event.target as HTMLSelectElement).value || null)"
+              ><option value="">選擇一張參考圖</option
+              ><option v-if="form.image_asset_id && !source" :value="form.image_asset_id"
+                >原素材不存在（{{ form.image_asset_id }}）</option
               ><option
-                v-if="
-                  form[spec.key] &&
-                  !components?.components.some(
-                    (r) => r.role === spec.role && r.name === form[spec.key],
-                  )
-                "
-                :value="form[spec.key]"
-                >{{ form[spec.key] }}（清單未確認）</option
-              ><option
-                v-for="r in components?.components.filter((r) => r.role === spec.role)"
-                :key="r.name"
-                :value="r.name"
-                :disabled="!r.listed"
-                >{{ r.name }} · {{ r.version || '未知版本' }} · {{ r.family
-                }}{{ r.listed ? '' : '（已不在清單）' }}</option
+                v-for="a in assets.filter((a) => !a.archived || a.id === form.image_asset_id)"
+                :key="a.id"
+                :value="a.id"
+                :disabled="a.archived"
+                >{{ a.title }} · {{ a.width }} × {{ a.height
+                }}{{ a.archived ? '（已封存）' : '' }}</option
               ></select
-            ></template
+            >
+            <label for="reference-prompt">提示詞</label
+            ><textarea id="reference-prompt" v-model="form.prompt" rows="5" maxlength="20000" />
+            <label for="reference-checkpoint">SDXL Checkpoint</label
+            ><select id="reference-checkpoint" v-model="form.checkpoint"
+              ><option value="">選擇模型</option
+              ><option
+                v-if="form.checkpoint && !catalog?.models.some((m) => m.name === form.checkpoint)"
+                :value="form.checkpoint"
+                >{{ form.checkpoint }}（清單未確認）</option
+              ><option
+                v-for="m in catalog?.models"
+                :key="m.name"
+                :value="m.name"
+                :disabled="!m.listed"
+                >{{ m.name }}{{ m.listed ? '' : '（已不在清單）' }}</option
+              ></select
+            >
+            <SizePresets
+              :family="profile?.architecture"
+              :width="form.width"
+              :height="form.height"
+              @select="
+                (w, h) => {
+                  form.width = w
+                  form.height = h
+                }
+              "
+            /><details class="studio-advanced"
+              ><summary>進階設定、草稿名稱與模型能力</summary><h2>參考圖與生成設定</h2>
+              <label for="reference-title">名稱</label
+              ><input id="reference-title" v-model="form.title" maxlength="100" required />
+
+              <label for="reference-mode">參考模式</label
+              ><select id="reference-mode" v-model="form.reference_mode"
+                ><option value="style">畫風參考</option
+                ><option value="character">角色外觀參考</option></select
+              >
+
+              <figure v-if="source" class="source-preview"
+                ><img
+                  :src="'/api/assets/' + source.id + '/image'"
+                  :alt="'參考素材：' + source.title"
+                /><figcaption
+                  >原素材預覽；生成時會等比縮放並補白至 224
+                  方圖。素材用途標籤不會切換模式。</figcaption
+                ></figure
+              >
+              <template v-for="spec in referenceRoles" :key="spec.role"
+                ><label :for="'reference-' + spec.role">{{ spec.label }}</label
+                ><select :id="'reference-' + spec.role" v-model="form[spec.key]"
+                  ><option value="">選擇元件</option
+                  ><option
+                    v-if="
+                      form[spec.key] &&
+                      !components?.components.some(
+                        (r) => r.role === spec.role && r.name === form[spec.key],
+                      )
+                    "
+                    :value="form[spec.key]"
+                    >{{ form[spec.key] }}（清單未確認）</option
+                  ><option
+                    v-for="r in components?.components.filter((r) => r.role === spec.role)"
+                    :key="r.name"
+                    :value="r.name"
+                    :disabled="!r.listed"
+                    >{{ r.name }} · {{ r.version || '未知版本' }} · {{ r.family
+                    }}{{ r.listed ? '' : '（已不在清單）' }}</option
+                  ></select
+                ></template
+              >
+              <label for="reference-weight">參考權重</label
+              ><input
+                id="reference-weight"
+                v-model.number="form.reference_weight"
+                type="number"
+                min="0"
+                max="2"
+                step="any"
+              />
+              <p class="footnote"
+                >0
+                為同流程無參考對照；權重增加可能帶入姿勢、服裝並降低提示詞遵循，沒有通用品質預設。</p
+              >
+              <div class="fields"
+                ><label for="reference-start"
+                  >作用起始<input
+                    id="reference-start"
+                    v-model.number="form.reference_start"
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="any" /></label
+                ><label for="reference-end"
+                  >作用結束<input
+                    id="reference-end"
+                    v-model.number="form.reference_end"
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="any" /></label
+              ></div>
+
+              <label for="reference-negative">負面提示詞</label
+              ><textarea
+                id="reference-negative"
+                v-model="form.negative_prompt"
+                rows="3"
+                maxlength="20000"
+              />
+              <details class="custom-size"
+                ><summary>自訂像素尺寸</summary
+                ><div class="fields"
+                  ><label for="reference-width"
+                    >寬度<input
+                      id="reference-width"
+                      v-model.number="form.width"
+                      type="number"
+                      min="64"
+                      max="8192"
+                      step="8" /></label
+                  ><label for="reference-height"
+                    >高度<input
+                      id="reference-height"
+                      v-model.number="form.height"
+                      type="number"
+                      min="64"
+                      max="8192"
+                      step="8" /></label></div
+              ></details>
+              <label for="reference-seed">Seed（精確整數）</label
+              ><input
+                id="reference-seed"
+                v-model="form.seed"
+                inputmode="numeric"
+                pattern="[0-9]{1,20}"
+                maxlength="20"
+              />
+              <div class="fields"
+                ><label for="reference-steps"
+                  >Steps<input
+                    id="reference-steps"
+                    v-model.number="form.steps"
+                    type="number"
+                    min="1"
+                    max="150"
+                    step="1" /></label
+                ><label for="reference-cfg"
+                  >CFG<input
+                    id="reference-cfg"
+                    v-model.number="form.cfg"
+                    type="number"
+                    min="0"
+                    max="30"
+                    step="any" /></label
+              ></div>
+              <label for="reference-sampler">取樣器</label
+              ><select id="reference-sampler" v-model="form.sampler_name"
+                ><option
+                  v-if="!capabilities?.sampler_names.includes(form.sampler_name)"
+                  :value="form.sampler_name"
+                  >{{ form.sampler_name }}（未確認）</option
+                ><option v-for="name in capabilities?.sampler_names" :key="name" :value="name">{{
+                  name
+                }}</option></select
+              >
+              <label for="reference-scheduler">Scheduler</label
+              ><select id="reference-scheduler" v-model="form.scheduler"
+                ><option
+                  v-if="!capabilities?.schedulers.includes(form.scheduler)"
+                  :value="form.scheduler"
+                  >{{ form.scheduler }}（未確認）</option
+                ><option v-for="name in capabilities?.schedulers" :key="name" :value="name">{{
+                  name
+                }}</option></select
+              >
+              <p class="footnote"
+                >原引擎：{{
+                  form.engine_url || '讀取中'
+                }}。需要參考模式、前處理及元件的專用格式，目前一般草稿、設定交換與比較方案均未開放。</p
+              ></details
+            >
+          </fieldset></form
+        ><details class="studio-tools"
+          ><summary>草稿、來源與設定交換</summary
+          ><div class="toolbar"
+            ><strong>SDXL 畫風／角色外觀參考</strong
+            ><button class="secondary" :disabled="locked" @click="load(true)"
+              >更新清單與引擎選項</button
+            ><button class="secondary" @click="emit('assets')">管理參考素材 →</button
+            ><button class="secondary" @click="emit('models')">Checkpoint 版本與來源 →</button></div
           >
-          <label for="reference-weight">參考權重</label
-          ><input
-            id="reference-weight"
-            v-model.number="form.reference_weight"
-            type="number"
-            min="0"
-            max="2"
-            step="any"
-          />
           <p class="footnote"
-            >0 為同流程無參考對照；權重增加可能帶入姿勢、服裝並降低提示詞遵循，沒有通用品質預設。</p
-          >
-          <div class="fields"
-            ><label for="reference-start"
-              >作用起始<input
-                id="reference-start"
-                v-model.number="form.reference_start"
-                type="number"
-                min="0"
-                max="1"
-                step="any" /></label
-            ><label for="reference-end"
-              >作用結束<input
-                id="reference-end"
-                v-model.number="form.reference_end"
-                type="number"
-                min="0"
-                max="1"
-                step="any" /></label
-          ></div>
-          <label for="reference-prompt">提示詞</label
-          ><textarea id="reference-prompt" v-model="form.prompt" rows="5" maxlength="20000" />
-          <label for="reference-negative">負面提示詞</label
-          ><textarea
-            id="reference-negative"
-            v-model="form.negative_prompt"
-            rows="3"
-            maxlength="20000"
-          />
-          <div class="fields"
-            ><label for="reference-width"
-              >寬度<input
-                id="reference-width"
-                v-model.number="form.width"
-                type="number"
-                min="64"
-                max="8192"
-                step="8" /></label
-            ><label for="reference-height"
-              >高度<input
-                id="reference-height"
-                v-model.number="form.height"
-                type="number"
-                min="64"
-                max="8192"
-                step="8" /></label
-          ></div>
-          <label for="reference-seed">Seed（精確整數）</label
-          ><input
-            id="reference-seed"
-            v-model="form.seed"
-            inputmode="numeric"
-            pattern="[0-9]{1,20}"
-            maxlength="20"
-          />
-          <div class="fields"
-            ><label for="reference-steps"
-              >Steps<input
-                id="reference-steps"
-                v-model.number="form.steps"
-                type="number"
-                min="1"
-                max="150"
-                step="1" /></label
-            ><label for="reference-cfg"
-              >CFG<input
-                id="reference-cfg"
-                v-model.number="form.cfg"
-                type="number"
-                min="0"
-                max="30"
-                step="any" /></label
-          ></div>
-          <label for="reference-sampler">取樣器</label
-          ><select id="reference-sampler" v-model="form.sampler_name"
-            ><option
-              v-if="!capabilities?.sampler_names.includes(form.sampler_name)"
-              :value="form.sampler_name"
-              >{{ form.sampler_name }}（未確認）</option
-            ><option v-for="name in capabilities?.sampler_names" :key="name" :value="name">{{
-              name
-            }}</option></select
-          >
-          <label for="reference-scheduler">Scheduler</label
-          ><select id="reference-scheduler" v-model="form.scheduler"
-            ><option
-              v-if="!capabilities?.schedulers.includes(form.scheduler)"
-              :value="form.scheduler"
-              >{{ form.scheduler }}（未確認）</option
-            ><option v-for="name in capabilities?.schedulers" :key="name" :value="name">{{
-              name
-            }}</option></select
+            >單張參考圖，兩種模式分開驗收。畫風模式使用 style transfer；角色外觀模式使用
+            linear。相似外觀不代表身份鎖定，構圖與服裝也可能被帶入。首版不組合 LoRA。</p
           >
           <p class="footnote"
-            >原引擎：{{
-              form.engine_url || '讀取中'
-            }}。需要參考模式、前處理及元件的專用格式，目前一般草稿、設定交換與比較方案均未開放。</p
+            >參考圖等比補白至 224 × 224，再由原引擎編碼；輸出尺寸獨立。單次一張、空 latent、denoise
+            1。表單僅在本次工作台切換時保留，提交後可從任務／作品載入完整原設定。</p
           >
-        </fieldset></form
-      >
-      <GenerationPanel
-        :form="form"
-        workflow="reference"
-        :blocked-reason="block"
-        :disabled="busy || metadataBusy || !!pendingRestore"
-        @busy="generationBusy = $event"
-        @pending="generationPending = $event"
-        @gallery="emit('gallery', $event)"
-        @restore-job="restore('jobs', $event)"
-      />
-    </div>
+          <template v-if="origin"
+            ><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{ warning }}</p
+            ><ReferenceComponentsSnapshot :items="origin.component_metadata" /><ReferenceSnapshot
+              :items="origin.reference_metadata" /><RuntimeSnapshot :item="origin.runtime_metadata"
+          /></template>
+          <ReferenceComponents
+            :library="components"
+            :engine-url="form.engine_url"
+            :disabled="locked"
+            @busy="metadataBusy = $event"
+            @updated="load()" />
+          <AssetChoices
+            :selected-ids="[form.image_asset_id || '', assetRequest?.id || '']"
+            @items="assets = $event" /></details
+        ><div class="studio-submit" id="studio-submit-reference"></div></div
+      ><div class="studio-stage"
+        ><StudioPreview :width="form.width" :height="form.height" /><GenerationPanel
+          submit-target="#studio-submit-reference"
+          :form="form"
+          workflow="reference"
+          :blocked-reason="block"
+          :disabled="busy || metadataBusy || !!pendingRestore"
+          @busy="generationBusy = $event"
+          @pending="generationPending = $event"
+          @gallery="emit('gallery', $event)"
+          @restore-job="restore('jobs', $event)" /></div
+    ></div>
   </section>
 </template>
 <style scoped>

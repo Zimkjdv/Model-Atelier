@@ -2,18 +2,20 @@ import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 
 export const pages = [
   '創作工作台',
-  '模型庫',
   '作品庫',
+  '實驗比較',
+  '參考素材',
+  '模型庫',
+  '訓練工作區',
   '系統資訊',
   '設定',
-  '參考素材',
-  '訓練工作區',
 ] as const
 export type Page = (typeof pages)[number]
 export type Mode = 'checkpoint' | 'flux' | 'inpaint' | 'control' | 'reference'
 type Route = { page: Page; mode: Mode; job: string }
 const paths: Record<Page, string> = {
   創作工作台: 'studio',
+  實驗比較: 'experiments',
   模型庫: 'models',
   作品庫: 'gallery',
   系統資訊: 'system',
