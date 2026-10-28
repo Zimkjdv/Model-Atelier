@@ -223,7 +223,10 @@
     "frontend/src/generationPreflight.ts",
     "frontend/src/ImageInput.vue",
     "frontend/check-preflight.mjs",
-    "frontend/tests/secondary-gaps.spec.ts"
+    "frontend/tests/secondary-gaps.spec.ts",
+    "frontend/playwright.journey.config.ts",
+    "frontend/journey-tests/isolated-journey.spec.ts",
+    "frontend/tests/asset-handoff.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css", "frontend/src/redesign.css"]
 }

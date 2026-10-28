@@ -1,0 +1,37 @@
+{
+  "synthetic_engine": true,
+  "viewport": "1440×900",
+  "executed_at": "2026-10-28T18:36:21.373Z",
+  "asset": {
+    "id": "d54ed306-5ac7-48db-ad46-3bc3a1a38ce7",
+    "sha256": "ce09de38bbafeda34c8ce8960140886bb013271bcf31e55f8b177cebfe2d2312"
+  },
+  "jobs": [
+    "0f2f1940-5da7-4bb3-be35-677d98bd1920",
+    "0a02d503-0da1-4902-9117-7653f614fb16"
+  ],
+  "primary": {
+    "id": "5d95119f-2cfe-5486-87a7-b0370dd38d63",
+    "job_id": "0f2f1940-5da7-4bb3-be35-677d98bd1920",
+    "sha256": "73ffc18d742a1376e58a2e779e63daa11736d5d4e5f5720452a1668698e89d80"
+  },
+  "companion": {
+    "id": "6f73e81d-d909-5347-94b9-e85a40dbf371",
+    "job_id": "0a02d503-0da1-4902-9117-7653f614fb16"
+  },
+  "zip_original_hashes": {
+    "5d95119f-2cfe-5486-87a7-b0370dd38d63.png": "73ffc18d742a1376e58a2e779e63daa11736d5d4e5f5720452a1668698e89d80",
+    "6f73e81d-d909-5347-94b9-e85a40dbf371.png": "73ffc18d742a1376e58a2e779e63daa11736d5d4e5f5720452a1668698e89d80"
+  },
+  "failed_job": {
+    "id": "a23950f4-b538-415a-81ea-d28d07bb8ec5",
+    "status": "failed",
+    "failure_code": "execution_failed"
+  },
+  "final": {
+    "prompts": 3,
+    "input_uploads": 3,
+    "artworks": 2,
+    "page_errors": []
+  }
+}

@@ -115,7 +115,9 @@ def uploaded_image(request):
     return image | fields
 
 
-def fixture(data, count=None, legacy_ui=False):
+def fixture(data, count=None, legacy_ui=False, empty=False):
+    if empty and count is not None:
+        raise ValueError('Empty and populated initial states are mutually exclusive')
     state = {'prompts': 0, 'uploads': 0, 'engine_requests': 0, 'mode': 'uncertain'}
     generated = {}
     audit = []
@@ -152,6 +154,31 @@ def fixture(data, count=None, legacy_ui=False):
                     }
                 },
             }
+            if state['mode'] == 'failed':
+                node_id = next(
+                    key
+                    for key, node in payload['prompt'].items()
+                    if node['class_type'] == 'KSampler'
+                )
+                generated[identifier] = {
+                    'status': {
+                        'completed': False,
+                        'status_str': 'error',
+                        'messages': [
+                            [
+                                'execution_error',
+                                {
+                                    'prompt_id': identifier,
+                                    'node_id': node_id,
+                                    'node_type': 'KSampler',
+                                    'exception_type': 'RuntimeError',
+                                    'exception_message': 'Synthetic journey execution failure',
+                                },
+                            ]
+                        ],
+                    },
+                    'outputs': {},
+                }
             return httpx.Response(200, json={'prompt_id': identifier})
         if request.url.path == '/upload/image':
             state['uploads'] += 1
@@ -229,44 +256,52 @@ def fixture(data, count=None, legacy_ui=False):
     catalog.update_metadata(context.DB, ENGINE, 'demo.safetensors', {'architecture': 'sdxl'})
     raw = io.BytesIO()
     Image.new('RGB', (64, 64), '#718d76').save(raw, 'PNG')
-    asset = assets.create(context.DB, data / 'assets', raw.getvalue(), 'qa-source.png')
-    mask_image = Image.new('RGB', (64, 64), 'black')
-    mask_image.paste('white', (32, 0, 64, 64))
-    mask_bytes = io.BytesIO()
-    mask_image.save(mask_bytes, 'PNG')
-    mask_asset = assets.create(context.DB, data / 'assets', mask_bytes.getvalue(), 'qa-mask.png')
-    graph = workflows.build(
-        dict(
-            checkpoint='demo.safetensors',
-            prompt='fixture forest',
-            negative_prompt='blurry',
-            width=64,
-            height=64,
-            seed=str(2**64 - 1),
-            steps=20,
-            cfg=7,
-            sampler_name='euler',
-            scheduler='normal',
-            denoise=1,
+    asset = mask_asset = artwork = None
+    if not empty:
+        asset = assets.create(context.DB, data / 'assets', raw.getvalue(), 'qa-source.png')
+        mask_image = Image.new('RGB', (64, 64), 'black')
+        mask_image.paste('white', (32, 0, 64, 64))
+        mask_bytes = io.BytesIO()
+        mask_image.save(mask_bytes, 'PNG')
+        mask_asset = assets.create(
+            context.DB, data / 'assets', mask_bytes.getvalue(), 'qa-mask.png'
         )
-    )
-    job_id = str(uuid4())
-    jobs.reserve(context.DB, job_id, ENGINE, graph, 'demo.safetensors', 'fixture-v1')
-    job = jobs.update(
-        context.DB,
-        job_id,
-        status='completed',
-        prompt_id=str(uuid4()),
-        history={
-            'status': {'completed': True, 'status_str': 'success'},
-            'outputs': {
-                '7': {'images': [{'filename': 'qa-artwork.png', 'subfolder': '', 'type': 'output'}]}
+        graph = workflows.build(
+            dict(
+                checkpoint='demo.safetensors',
+                prompt='fixture forest',
+                negative_prompt='blurry',
+                width=64,
+                height=64,
+                seed=str(2**64 - 1),
+                steps=20,
+                cfg=7,
+                sampler_name='euler',
+                scheduler='normal',
+                denoise=1,
+            )
+        )
+        job_id = str(uuid4())
+        jobs.reserve(context.DB, job_id, ENGINE, graph, 'demo.safetensors', 'fixture-v1')
+        job = jobs.update(
+            context.DB,
+            job_id,
+            status='completed',
+            prompt_id=str(uuid4()),
+            history={
+                'status': {'completed': True, 'status_str': 'success'},
+                'outputs': {
+                    '7': {
+                        'images': [
+                            {'filename': 'qa-artwork.png', 'subfolder': '', 'type': 'output'}
+                        ]
+                    }
+                },
             },
-        },
-    )
-    artwork, _ = gallery.save(
-        context.DB, data / 'artworks', job, gallery.outputs(job)[0], raw.getvalue()
-    )
+        )
+        artwork, _ = gallery.save(
+            context.DB, data / 'artworks', job, gallery.outputs(job)[0], raw.getvalue()
+        )
     if count is not None:
         from scripts.listing_dataset import seed
 
@@ -316,7 +351,11 @@ def fixture(data, count=None, legacy_ui=False):
     @wrapper.get('/qa/state')
     def status():
         return dict(
-            state, artwork_id=artwork['id'], asset_id=asset['id'], mask_asset_id=mask_asset['id']
+            state,
+            empty_start=empty,
+            artwork_id=artwork['id'] if artwork else None,
+            asset_id=asset['id'] if asset else None,
+            mask_asset_id=mask_asset['id'] if mask_asset else None,
         )
 
     @wrapper.post('/qa/flux-extensions')
@@ -535,7 +574,7 @@ def fixture(data, count=None, legacy_ui=False):
         return {'ok': True}
 
     @wrapper.post('/qa/engine/{mode}')
-    def engine_mode(mode: Literal['offline', 'success', 'uncertain']):
+    def engine_mode(mode: Literal['offline', 'success', 'uncertain', 'failed']):
         state['mode'] = mode
         return {'ok': True}
 
@@ -558,7 +597,11 @@ def fixture(data, count=None, legacy_ui=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', type=int, required=True)
-    parser.add_argument('--count', type=int, choices=[100, 1000, 10000])
+    initial = parser.add_mutually_exclusive_group()
+    initial.add_argument('--count', type=int, choices=[100, 1000, 10000])
+    initial.add_argument(
+        '--empty', action='store_true', help='Start a journey with no seeded images or jobs'
+    )
     parser.add_argument(
         '--legacy-ui',
         action='store_true',
@@ -567,7 +610,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='atelier-browser-') as folder:
         uvicorn.run(
-            fixture(Path(folder), args.count, args.legacy_ui),
+            fixture(Path(folder), args.count, args.legacy_ui, args.empty),
             host='127.0.0.1',
             port=args.port,
             log_level='warning',

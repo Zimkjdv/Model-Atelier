@@ -30,7 +30,7 @@ Set-Location ..
 
 ## 隔離與覆蓋
 
-`scripts/browser_fixture.py` 每次建立新的系統臨時 DATA，只接受埠參數，不接受既有資料或引擎位置。真實 FastAPI、SQLite、圖片與下載在該資料運作；上游 HTTP 使用 MockTransport，網址固定為不可解析的 `.invalid` 網域，沒有真實推論。測試端點只存在 fixture。
+`scripts/browser_fixture.py` 每次建立新的系統臨時 DATA，只接受測試啟動選項（埠、隔離樣本數或空資料），不接受既有資料或引擎位置。真實 FastAPI、SQLite、圖片與下載在該資料運作；上游 HTTP 使用 MockTransport，網址固定為不可解析的 `.invalid` 網域，沒有真實推論。測試端點只存在 fixture。
 
 單次服務預設監聽本機 18765；可用 `ATELIER_TEST_PORT` 指定另一隔離埠，分批入口從此埠依序遞增。`reuseExistingServer: false` 避免誤用既有平台，埠被占用即失敗。不要同時啟動兩套相同輸出目錄的測試；異常強制終止時可能留下系統臨時資料。
 
@@ -59,3 +59,13 @@ Starlette 1.6.0 的 TestClient 優先使用 httpx2，現行 lock 的 httpx 0.28.
 安裝時發現 Vite 7.3.6 與 source-map-js 1.2.1 的既有 npm 警告，更新相容修補版至 7.3.7／1.2.2，當次 `npm audit` 回報 0 項已知問題；這不代表完整安全稽核。真正 GPU、觸控、行動瀏覽器、對比／讀屏及全站視覺仍依 V01–V06 各自驗收，這些案例不代替上述項目；Q04 效能指標及最新回歸見 [分頁說明](list-pagination.md)。
 
 首次遠端 Q06 CI 的 Windows 8.3 TEMP 問題已以實際別名重現並獨立修正，產品路徑防護不變；見 [診斷與回歸](validation/quality-windows-paths-20261022.md)。
+
+## 同組隔離資料連續驗收
+
+從 `frontend` 執行以下獨立設定；每次建立新的 `--empty` 臨時資料，不沿用一般套件的預設樣本。
+
+```powershell
+npx.cmd playwright test --config playwright.journey.config.ts
+```
+
+此設定只執行 `isolated-journey.spec.ts`，使用正式建置的前端、真實 API／SQLite 與合成引擎，從空庫沿一張來源圖串接生成、作品匯入、詳情、比較、下載、封存還原、離線與未保存保護。此檔位於獨立的 `frontend/journey-tests/`，一般 Playwright 與分批入口只收集 `frontend/tests/`，避免在已有其他測試資料的批次假裝驗證空庫；這個獨立命令需另外執行，不含在既有 `check_quality.py` 成功宣告內。無自動重試，輸出與 HTML 報告分別位於 `runtime/quality/journey-results`、`journey-report`。詳細範圍、證據與未完成能力見 [逐流程驗收](ui-redesign/ISOLATED-JOURNEY-ACCEPTANCE.md)。

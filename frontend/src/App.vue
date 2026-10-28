@@ -215,10 +215,6 @@ function useAsset(id: string, purpose: string) {
         : 'checkpoint'
   if (!navigate('創作工作台', mode)) return
   assetRequest.value = { id, purpose, token: Date.now() }
-  if (mode === 'checkpoint') {
-    imagePurpose.value = true
-    purposeRequest.value = { image: true, token: Date.now() }
-  }
 }
 function selectPurpose(image: boolean) {
   imagePurpose.value = image
