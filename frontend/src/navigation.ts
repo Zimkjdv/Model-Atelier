@@ -12,7 +12,7 @@ export const pages = [
 ] as const
 export type Page = (typeof pages)[number]
 export type Mode = 'checkpoint' | 'flux' | 'inpaint' | 'control' | 'reference'
-type Route = { page: Page; mode: Mode; job: string }
+type Route = { page: Page; mode: Mode; job: string; comparison?: boolean }
 const paths: Record<Page, string> = {
   創作工作台: 'studio',
   實驗比較: 'experiments',
@@ -30,6 +30,7 @@ export function routeHash(route: Route): string {
     '#/' +
     paths[route.page] +
     (route.page === '創作工作台' ? '/' + route.mode : '') +
+    (route.page === '作品庫' && route.comparison ? '/compare' : '') +
     (route.page === '作品庫' && route.job ? '?job=' + route.job : '')
   )
 }
@@ -40,14 +41,23 @@ export function parseRoute(hash: string): { route: Route; invalid: boolean } {
   if (
     !match ||
     !page ||
-    (page === '創作工作台' ? !modes.includes(match[2] as Mode) || !!match[3] : !!match[2]) ||
+    (page === '創作工作台'
+      ? !modes.includes(match[2] as Mode) || !!match[3]
+      : page === '作品庫'
+        ? !!match[2] && match[2] !== 'compare'
+        : !!match[2]) ||
     (match[3] &&
       (page !== '作品庫' || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(match[3])))
   ) {
     return { route: { ...fallback }, invalid: true }
   }
   return {
-    route: { page, mode: (match[2] as Mode) || 'checkpoint', job: match[3] || '' },
+    route: {
+      page,
+      mode: page === '創作工作台' ? (match[2] as Mode) : 'checkpoint',
+      job: match[3] || '',
+      comparison: page === '作品庫' && match[2] === 'compare',
+    },
     invalid: false,
   }
 }
@@ -60,6 +70,7 @@ export function useNavigation(canLeave: () => boolean) {
   const page = computed(() => route.value.page),
     studioMode = ref<Mode>(route.value.mode)
   const galleryJob = computed(() => route.value.job)
+  const galleryComparison = computed(() => !!route.value.comparison)
   let index = Number.isSafeInteger(history.state?.atelierNavigation?.index)
     ? history.state.atelierNavigation.index
     : 0
@@ -72,7 +83,7 @@ export function useNavigation(canLeave: () => boolean) {
   async function focusMain() {
     await nextTick()
     document.getElementById('main-content')?.focus()
-    document.title = `${page.value} · Model Atelier`
+    document.title = `${galleryComparison.value ? '作品比較' : page.value} · Model Atelier`
   }
   function apply(next: Route) {
     route.value = next
@@ -80,11 +91,16 @@ export function useNavigation(canLeave: () => boolean) {
     committed = routeHash(next)
     void focusMain()
   }
-  function navigate(next: Page, mode: Mode = studioMode.value, job = ''): boolean {
-    const target = { page: next, mode, job: next === '作品庫' ? job : '' }
+  function navigate(
+    next: Page,
+    mode: Mode = studioMode.value,
+    job = '',
+    comparison = false,
+  ): boolean {
+    const target = { page: next, mode, job: next === '作品庫' ? job : '', comparison }
     const hash = routeHash(target)
     if (hash === committed) return true
-    if (next !== page.value && !canLeave()) return false
+    if (!canLeave()) return false
     notice.value = ''
     history.pushState(state(hash, ++index), '', hash)
     apply(target)
@@ -98,7 +114,7 @@ export function useNavigation(canLeave: () => boolean) {
     if (location.hash === committed) return
     const parsed = parseRoute(location.hash)
     const entry = history.state?.atelierNavigation
-    if (parsed.route.page !== page.value && !canLeave()) {
+    if (!canLeave()) {
       if (
         entry?.hash === location.hash &&
         Number.isSafeInteger(entry.index) &&
@@ -128,5 +144,5 @@ export function useNavigation(canLeave: () => boolean) {
     window.removeEventListener('popstate', fromHistory)
     window.removeEventListener('hashchange', fromHistory)
   })
-  return { page, studioMode, galleryJob, notice, navigate, focusMain }
+  return { page, studioMode, galleryJob, galleryComparison, notice, navigate, focusMain }
 }

@@ -32,6 +32,7 @@ const {
   page,
   studioMode,
   galleryJob,
+  galleryComparison,
   notice: routeNotice,
   navigate,
   focusMain,
@@ -42,7 +43,7 @@ const {
       window.confirm('訓練標註尚未保存或正在處理，確定離開訓練工作區？')) &&
     (page.value !== '作品庫' ||
       !artworkNotesDirty.value ||
-      window.confirm('作品筆記或評分尚未保存或正在保存，確定離開作品庫？')),
+      window.confirm('作品筆記或評分尚未保存，或批次操作正在處理，確定離開目前畫面？')),
 )
 const systemStale = ref(false),
   savedUrl = ref('')
@@ -272,7 +273,7 @@ async function testConnection() {
     >
     <main id="main-content" tabindex="-1"
       ><header class="app-topbar"
-        ><h1>{{ page }}</h1
+        ><h1>{{ page === '作品庫' && galleryComparison ? '作品比較' : page }}</h1
         ><div class="top-tools"
           ><span class="connection-status"
             ><span class="dot" :class="{ online: engine?.connected }"></span
@@ -497,6 +498,8 @@ async function testConnection() {
         <ArtworkLibrary
           v-else-if="page === '作品庫'"
           :job-id="galleryJob"
+          :comparing="galleryComparison"
+          @compare="navigate('作品庫', studioMode, galleryJob, $event)"
           @studio="navigate('創作工作台')"
           @restore="restoreArtwork"
           @dirty="artworkNotesDirty = $event"

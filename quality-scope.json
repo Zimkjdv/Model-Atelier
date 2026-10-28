@@ -125,7 +125,8 @@
     "backend/test_weight_provenance.py",
     "scripts/compare_clip_provenance.py",
     "backend/test_clip_provenance.py",
-    "backend/test_ui_redesign.py"
+    "backend/test_ui_redesign.py",
+    "backend/test_artwork_downloads.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -210,7 +211,8 @@
     "frontend/src/ExperimentResults.vue",
     "frontend/src/SavedExperimentPlans.vue",
     "frontend/src/outputPresets.ts",
-    "frontend/tests/preview-alignment.spec.ts"
+    "frontend/tests/preview-alignment.spec.ts",
+    "frontend/tests/gallery-selection.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css", "frontend/src/redesign.css"]
 }

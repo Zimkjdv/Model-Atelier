@@ -8,7 +8,7 @@ function selectCollection(value: 'active' | 'archived', favorites = false) {
   scope.value = value
   favoritesOnly.value = favorites
 }
-import { api } from './apiClient'
+import { api, apiResponse, ApiError } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
@@ -45,11 +45,12 @@ import ReferenceComponentsSnapshot from './ReferenceComponentsSnapshot.vue'
 import { imageWorkflowId, type ReferenceSnapshot as ReferenceMetadata } from './referenceSettings'
 import { fluxWorkflowId, type ComponentSnapshot as ComponentMetadata } from './fluxSettings'
 import { isFluxExtension } from './fluxExtensions'
-const props = defineProps<{ jobId?: string }>()
+const props = defineProps<{ jobId?: string; comparing?: boolean }>()
 const emit = defineEmits<{
   studio: []
   restore: [artworkId: string, workflowId?: string | null]
   dirty: [value: boolean]
+  compare: [show: boolean]
 }>()
 type Parameters = {
   prompt: string | null
@@ -149,17 +150,30 @@ const comparisonIds = ref<string[]>([]),
 const comparisonItems = computed(() =>
   comparisonIds.value.map((id) => comparisonRecords.value.get(id)).filter((v): v is Artwork => !!v),
 )
+const batchMode = ref<'archive' | 'download' | 'refresh' | null>(null)
+const batchCancel = ref(false)
+const batchFailures = ref<{ id: string; title: string; message: string }[]>([])
+const selectionReady = computed(
+  () =>
+    comparisonIds.value.length > 0 && comparisonItems.value.length === comparisonIds.value.length,
+)
+const canCompare = computed(
+  () => selectionReady.value && comparisonIds.value.length >= 2 && comparisonIds.value.length <= 4,
+)
 function clearComparison() {
+  if (saving.value) return
   comparisonIds.value = []
   comparisonRecords.value.clear()
+  batchFailures.value = []
 }
 async function toggleComparison(id: string) {
+  if (saving.value) return
   if (comparisonIds.value.includes(id)) {
     comparisonIds.value = comparisonIds.value.filter((v) => v !== id)
     comparisonRecords.value.delete(id)
     return
   }
-  if (comparisonIds.value.length >= 4) return
+  if (comparisonIds.value.length >= 100) return
   comparisonIds.value.push(id)
   try {
     const item = await api<Artwork>('artworks/' + id)
@@ -167,6 +181,115 @@ async function toggleComparison(id: string) {
   } catch (e) {
     comparisonIds.value = comparisonIds.value.filter((v) => v !== id)
     error.value = e instanceof Error ? e.message : '比較資料讀取失敗'
+  }
+}
+function showComparison() {
+  if (canCompare.value && !saving.value) emit('compare', true)
+}
+watch(
+  () => props.comparing,
+  () => {
+    preview.value?.close()
+    selected.value = null
+  },
+)
+let disposed = false
+async function refreshSelection() {
+  if (saving.value) return
+  saving.value = true
+  batchMode.value = 'refresh'
+  batchFailures.value = []
+  try {
+    for (const id of comparisonIds.value) {
+      if (disposed) break
+      try {
+        replaceItem(await api<Artwork>('artworks/' + id))
+      } catch (e) {
+        batchFailures.value.push({
+          id,
+          title: comparisonRecords.value.get(id)?.title || id,
+          message: e instanceof Error ? e.message : '讀取失敗',
+        })
+      }
+    }
+    message.value = batchFailures.value.length
+      ? '部分選取狀態無法更新，請查看逐項結果。'
+      : '已重新讀取所選作品；請確認後再執行操作。'
+  } finally {
+    saving.value = false
+    batchMode.value = null
+  }
+}
+async function archiveSelection() {
+  if (saving.value || busy.value || !selectionReady.value) return
+  const archived = scope.value !== 'archived'
+  const chosen = [...comparisonItems.value]
+  saving.value = true
+  batchMode.value = 'archive'
+  batchCancel.value = false
+  batchFailures.value = []
+  error.value = ''
+  let completed = 0
+  try {
+    for (const item of chosen) {
+      if (disposed || batchCancel.value) break
+      try {
+        if (item.archived !== archived) {
+          const updated = await api<Artwork>(`artworks/${item.id}/organization`, 'PATCH', {
+            revision: item.revision,
+            archived,
+          })
+          replaceItem(updated)
+        }
+        completed++
+        comparisonIds.value = comparisonIds.value.filter((id) => id !== item.id)
+        comparisonRecords.value.delete(item.id)
+      } catch (e) {
+        const uncertain = !(e instanceof ApiError) || !e.conclusive
+        batchFailures.value.push({
+          id: item.id,
+          title: item.title,
+          message:
+            (e instanceof Error ? e.message : '保存失敗') +
+            (uncertain ? ' 結果尚未確認，已停止後續操作；請重新讀取選取狀態。' : ''),
+        })
+        if (uncertain) break
+      }
+    }
+    message.value =
+      `已${archived ? '封存' : '還原'} ${completed} 件；保留 ${comparisonIds.value.length} 件選取。` +
+      (batchCancel.value ? '已停止，已完成的項目會保留。' : '')
+    if (!disposed) await read(null, false)
+  } finally {
+    saving.value = false
+    batchMode.value = null
+  }
+}
+async function downloadSelection() {
+  if (saving.value || !selectionReady.value) return
+  saving.value = true
+  batchMode.value = 'download'
+  error.value = ''
+  try {
+    const response = await apiResponse('artwork-downloads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ artwork_ids: comparisonIds.value }),
+    })
+    const blob = await response.blob()
+    if (disposed) return
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'model-atelier-artworks.zip'
+    link.click()
+    setTimeout(() => URL.revokeObjectURL(url), 60000)
+    message.value = `已交給瀏覽器下載 ${comparisonIds.value.length} 張原圖（ZIP），選取保持不變。`
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : '下載失敗，選取保持不變。'
+  } finally {
+    saving.value = false
+    batchMode.value = null
   }
 }
 function inspectComparison(item: ComparisonArtwork) {
@@ -427,6 +550,7 @@ onMounted(() => {
   void refresh()
 })
 onBeforeUnmount(() => {
+  disposed = true
   clearTimeout(filterTimer)
   reads.dispose()
   details.dispose()
@@ -437,239 +561,304 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <p v-if="busy" class="footnote" role="status">正在讀取或匯入作品，請稍候…</p>
-  <div class="page-intro"
-    ><p>瀏覽、收藏與重用設定，延續每一次創作。</p
-    ><button class="primary" @click="importOpen = !importOpen">匯入任務結果</button></div
-  ><div v-show="importOpen || !!jobId"
-    ><article class="panel import-panel">
-      <p>把已完成任務的圖片保存到作品庫。匯入後可離線瀏覽，並保留原圖與生成設定。</p>
-      <div class="import-controls"
-        ><label for="artwork-job"
-          >已完成的任務<select
-            id="artwork-job"
-            v-model="selectedJob"
-            :disabled="busy || !completed.length"
-            ><option value="">{{ completed.length ? '選擇任務' : '尚無已完成任務' }}</option
-            ><option v-for="job in completed" :key="job.id" :value="job.id"
-              >{{ new Date(job.created_at).toLocaleString() }} · {{ job.checkpoint }} ·
-              {{ job.id.slice(0, 8) }}</option
-            ></select
-          ></label
-        ><button class="primary" :disabled="busy || !selectedJob" @click="importImages">{{
-          busy ? '處理中…' : '匯入／補齊圖片'
-        }}</button></div
-      >
-      <button v-if="taskCursor" class="secondary" :disabled="taskBusy || busy" @click="olderTasks"
-        >載入較早已完成任務</button
-      >
-      <p class="footnote"
-        >PNG、JPEG、WebP · 每張最多 32 MiB、3200 萬像素。匯入時需連接原 ComfyUI
-        引擎；重複匯入會略過已保存的作品。</p
-      >
-      <p v-if="!completed.length" class="footnote"
-        >先在創作工作台生成圖片並更新任務狀態，再回到這裡匯入。</p
-      >
-      <button class="secondary" @click="emit('studio')">前往創作工作台 →</button>
-    </article></div
-  >
-  <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
-  <p v-if="message" class="notice" role="status">{{ message }}</p>
-  <ul v-if="failures.length" class="notice warning" role="alert"
-    ><li v-for="(failure, index) in failures" :key="index"
-      >{{ failure.source.filename }}：{{ failure.message }}</li
-    ></ul
-  >
-  <div class="gallery-browser-tools">
-    <label class="gallery-search" for="artwork-search"
-      ><span class="sr-only">搜尋作品</span
-      ><input
-        id="artwork-search"
-        v-model="search"
-        :disabled="saving || importing"
-        maxlength="200"
-        type="search"
-        placeholder="搜尋作品名稱"
-    /></label>
-    <div class="purpose-tabs" role="group" aria-label="作品狀態">
-      <button
-        :aria-pressed="scope === 'active' && !favoritesOnly"
-        :disabled="saving || importing"
-        @click="selectCollection('active')"
-        >全部</button
-      >
-      <button
-        :aria-pressed="favoritesOnly"
-        :disabled="saving || importing"
-        @click="selectCollection('active', true)"
-        >已收藏</button
-      >
-      <button
-        :aria-pressed="scope === 'archived'"
-        :disabled="saving || importing"
-        @click="selectCollection('archived')"
-        >已封存</button
+  <div v-show="!comparing">
+    <p v-if="busy" class="footnote" role="status">正在讀取或匯入作品，請稍候…</p>
+    <div class="page-intro"
+      ><p>瀏覽、收藏與重用設定，延續每一次創作。</p
+      ><button class="primary" @click="importOpen = !importOpen">匯入任務結果</button></div
+    ><div v-show="importOpen || !!jobId"
+      ><article class="panel import-panel">
+        <p>把已完成任務的圖片保存到作品庫。匯入後可離線瀏覽，並保留原圖與生成設定。</p>
+        <div class="import-controls"
+          ><label for="artwork-job"
+            >已完成的任務<select
+              id="artwork-job"
+              v-model="selectedJob"
+              :disabled="busy || !completed.length"
+              ><option value="">{{ completed.length ? '選擇任務' : '尚無已完成任務' }}</option
+              ><option v-for="job in completed" :key="job.id" :value="job.id"
+                >{{ new Date(job.created_at).toLocaleString() }} · {{ job.checkpoint }} ·
+                {{ job.id.slice(0, 8) }}</option
+              ></select
+            ></label
+          ><button class="primary" :disabled="busy || !selectedJob" @click="importImages">{{
+            busy ? '處理中…' : '匯入／補齊圖片'
+          }}</button></div
+        >
+        <button v-if="taskCursor" class="secondary" :disabled="taskBusy || busy" @click="olderTasks"
+          >載入較早已完成任務</button
+        >
+        <p class="footnote"
+          >PNG、JPEG、WebP · 每張最多 32 MiB、3200 萬像素。匯入時需連接原 ComfyUI
+          引擎；重複匯入會略過已保存的作品。</p
+        >
+        <p v-if="!completed.length" class="footnote"
+          >先在創作工作台生成圖片並更新任務狀態，再回到這裡匯入。</p
+        >
+        <button class="secondary" @click="emit('studio')">前往創作工作台 →</button>
+      </article></div
+    >
+    <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
+    <p v-if="message" class="notice" role="status">{{ message }}</p>
+    <ul v-if="failures.length" class="notice warning" role="alert"
+      ><li v-for="(failure, index) in failures" :key="index"
+        >{{ failure.source.filename }}：{{ failure.message }}</li
+      ></ul
+    >
+    <div class="gallery-browser-tools">
+      <label class="gallery-search" for="artwork-search"
+        ><span class="sr-only">搜尋作品</span
+        ><input
+          id="artwork-search"
+          v-model="search"
+          :disabled="saving || importing"
+          maxlength="200"
+          type="search"
+          placeholder="搜尋作品名稱"
+      /></label>
+      <div class="purpose-tabs" role="group" aria-label="作品狀態">
+        <button
+          :aria-pressed="scope === 'active' && !favoritesOnly"
+          :disabled="saving || importing"
+          @click="selectCollection('active')"
+          >全部</button
+        >
+        <button
+          :aria-pressed="favoritesOnly"
+          :disabled="saving || importing"
+          @click="selectCollection('active', true)"
+          >已收藏</button
+        >
+        <button
+          :aria-pressed="scope === 'archived'"
+          :disabled="saving || importing"
+          @click="selectCollection('archived')"
+          >已封存</button
+        >
+      </div>
+      <label class="gallery-model" for="artwork-model"
+        ><span class="sr-only">模型篩選</span
+        ><input
+          id="artwork-model"
+          v-model="modelFilter"
+          :disabled="saving || importing"
+          list="artwork-model-options"
+          maxlength="2048"
+          placeholder="全部模型" /><datalist id="artwork-model-options"
+          ><option v-for="name in modelChoices" :key="name" :value="name" /></datalist
+      ></label>
+      <div class="view-switch" role="group" aria-label="作品排版"
+        ><span>排版</span
+        ><button class="secondary" :aria-pressed="layout === 'masonry'" @click="layout = 'masonry'"
+          >瀑布流</button
+        ><button class="secondary" :aria-pressed="layout === 'fixed'" @click="layout = 'fixed'"
+          >固定</button
+        ></div
       >
     </div>
-    <label class="gallery-model" for="artwork-model"
-      ><span class="sr-only">模型篩選</span
-      ><input
-        id="artwork-model"
-        v-model="modelFilter"
-        :disabled="saving || importing"
-        list="artwork-model-options"
-        maxlength="2048"
-        placeholder="全部模型" /><datalist id="artwork-model-options"
-        ><option v-for="name in modelChoices" :key="name" :value="name" /></datalist
-    ></label>
-    <div class="view-switch" role="group" aria-label="作品排版"
-      ><span>排版</span
-      ><button class="secondary" :aria-pressed="layout === 'masonry'" @click="layout = 'masonry'"
-        >瀑布流</button
-      ><button class="secondary" :aria-pressed="layout === 'fixed'" @click="layout = 'fixed'"
-        >固定</button
-      ></div
-    >
-  </div>
-  <div class="gallery-list-meta"
-    ><span class="footnote" role="status"
-      >{{ total }} 張符合 · 第 {{ Math.floor(offset / 40) + 1 }} 頁 · 本頁
-      {{ items.length }} 張</span
-    ><label
-      >排序<select v-model="sort" :disabled="saving || importing"
-        ><option value="latest">最新</option
-        ><option value="oldest">最早</option
-        ><option value="rating">評分最高</option
-        ><option value="model">模型</option></select
-      ></label
-    ></div
-  >
-  <article v-if="!visible.length" class="panel placeholder"
-    ><h2>{{ busy ? '讀取作品中…' : '沒有符合的作品' }}</h2
-    ><p>{{
-      hasFilters
-        ? '調整搜尋、模型或收藏篩選；封存作品可在「已封存」中還原。'
-        : '完成生成後，選擇上方任務匯入圖片。作品會保存在這台平台主機。'
-    }}</p></article
-  >
-  <ArtworkComparison
-    :items="comparisonItems"
-    @remove="toggleComparison"
-    @clear="clearComparison"
-    @inspect="inspectComparison"
-  />
-  <div
-    class="artwork-grid"
-    v-masonry="layout === 'masonry'"
-    :class="{ masonry: layout === 'masonry' }"
-    ><article v-for="item in visible" :key="item.id" class="panel artwork-card">
-      <button class="artwork-cover" :aria-label="'查看作品 ' + item.title" @click="open(item)"
-        ><img
-          v-if="item.thumbnail_available"
-          :src="imageUrl(item, true)"
-          :alt="item.title"
-          loading="lazy"
-          @error="item.thumbnail_available = false"
-        /><span v-else>縮圖無法讀取 · 點此查看資料</span></button
-      ><button
-        class="gallery-overlay favorite"
-        :aria-label="(item.favorite ? '取消收藏：' : '收藏作品：') + item.title"
-        :aria-pressed="!!item.favorite"
-        :disabled="busy || saving"
-        @click="
-          organize(
-            item,
-            { favorite: !item.favorite },
-            item.favorite ? '已取消收藏。' : '已加入收藏。',
-          )
-        "
-        ><span aria-hidden="true">★</span></button
-      ><button
-        class="gallery-overlay select"
-        :aria-pressed="comparisonIds.includes(item.id)"
-        :aria-label="'比較作品：' + item.title"
-        :disabled="!comparisonIds.includes(item.id) && comparisonIds.length >= 4"
-        @click="toggleComparison(item.id)"
-        ><UiIcon name="check" :size="20" /></button
-      ><div class="gallery-card-meta"
-        ><div class="card-title"
-          ><h2>{{ item.title }}</h2
-          ><span v-if="item.archived" class="archive-badge">已封存</span
-          ><span v-if="item.favorite" class="favorite-badge">★ 收藏</span></div
-        ><p>{{ item.checkpoint }} · {{ item.width }}×{{ item.height }}</p
-        ><details
-          ><summary>資訊與操作</summary
-          ><p
-            >{{ item.width }} × {{ item.height }} ·
-            {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p
-          >
-          <p>{{ item.checkpoint }} · 版本 {{ item.model_version }}</p>
-          <p v-if="item.notes" class="note-excerpt"
-            >{{ item.notes.slice(0, 160)
-            }}{{ item.notes_truncated || item.notes.length > 160 ? '…' : '' }}</p
-          >
-          <p v-if="isControlWorkflow(item.workflow_id)">Canny 結構參考 · 輪廓條件</p>
-          <p v-if="item.workflow_id === referenceWorkflowId">畫風／角色外觀參考 · 非身份鎖定</p>
-          <p v-if="isInpaintWorkflow(item.workflow_id)">局部編輯 · 原圖與遮罩</p>
-          <p v-if="item.workflow_id === imageWorkflowId"
-            >圖生圖 · 參考素材 {{ item.reference_metadata?.length ?? 0 }} 張</p
-          >
-          <p v-for="(lora, index) in item.lora_metadata ?? []" :key="index"
-            >LoRA {{ lora.name }} · 版本 {{ lora.version?.trim() || '未知' }}</p
-          >
-          <p v-if="!item.image_available" class="missing"
-            >原圖已遺失，請從備份還原；生成參數仍保留。</p
-          >
-          <div class="organization-actions"
-            ><button
-              class="secondary"
-              :aria-label="(item.archived ? '還原作品：' : '封存作品：') + item.title"
-              :disabled="busy || saving"
-              @click="archive(item)"
-              >{{ item.archived ? '還原作品' : '封存作品' }}</button
-            ></div
-          >
-          <div class="artwork-actions"
-            ><button class="secondary" :aria-label="'預覽與參數：' + item.title" @click="open(item)"
-              >預覽與參數</button
-            ><button
-              class="secondary"
-              :aria-label="'載入創作設定：' + item.title"
-              @click="restore(item)"
-              >載入創作設定 →</button
-            ><a v-if="item.image_available" :href="imageUrl(item) + '?download=true'"
-              >下載原圖 ↓</a
-            ></div
-          ></details
-        ></div
-      ></article
-    ></div
-  >
-  <div class="library-footer">
-    <div v-if="previousCursor || nextCursor" role="group" aria-label="作品分頁"
-      ><button
-        class="secondary"
-        :disabled="busy || saving || !previousCursor"
-        @click="changePage(previousCursor)"
-        >上一頁</button
-      ><button
-        class="secondary"
-        :disabled="busy || saving || !nextCursor"
-        @click="changePage(nextCursor)"
-        >下一頁</button
-      ></div
-    >
-    <button class="secondary" :disabled="busy || saving" @click="refresh">重新整理</button>
-    <details
-      ><summary>清單與篩選說明</summary
-      ><p class="footnote">本次清單成員固定；重新整理或變更篩選可取得新增項目。比較選擇跨頁保留。</p
+    <div class="gallery-list-meta"
+      ><span class="footnote" role="status"
+        >{{ total }} 張符合 · 第 {{ Math.floor(offset / 40) + 1 }} 頁 · 本頁
+        {{ items.length }} 張</span
       ><label
-        >作品狀態<select id="artwork-scope" v-model="scope" :disabled="saving || importing"
-          ><option value="active">使用中</option
-          ><option value="archived">已封存</option
-          ><option value="all">全部作品</option></select
+        >排序<select v-model="sort" :disabled="saving || importing"
+          ><option value="latest">最新</option
+          ><option value="oldest">最早</option
+          ><option value="rating">評分最高</option
+          ><option value="model">模型</option></select
         ></label
-      ></details
+      ></div
+    >
+    <article v-if="!visible.length" class="panel placeholder"
+      ><h2>{{ busy ? '讀取作品中…' : '沒有符合的作品' }}</h2
+      ><p>{{
+        hasFilters
+          ? '調整搜尋、模型或收藏篩選；封存作品可在「已封存」中還原。'
+          : '完成生成後，選擇上方任務匯入圖片。作品會保存在這台平台主機。'
+      }}</p></article
+    >
+    <div
+      class="artwork-grid"
+      v-masonry="layout === 'masonry'"
+      :class="{ masonry: layout === 'masonry' }"
+      ><article v-for="item in visible" :key="item.id" class="panel artwork-card">
+        <button class="artwork-cover" :aria-label="'查看作品 ' + item.title" @click="open(item)"
+          ><img
+            v-if="item.thumbnail_available"
+            :src="imageUrl(item, true)"
+            :alt="item.title"
+            loading="lazy"
+            @error="item.thumbnail_available = false"
+          /><span v-else>縮圖無法讀取 · 點此查看資料</span></button
+        ><button
+          class="gallery-overlay favorite"
+          :aria-label="(item.favorite ? '取消收藏：' : '收藏作品：') + item.title"
+          :aria-pressed="!!item.favorite"
+          :disabled="busy || saving"
+          @click="
+            organize(
+              item,
+              { favorite: !item.favorite },
+              item.favorite ? '已取消收藏。' : '已加入收藏。',
+            )
+          "
+          ><span aria-hidden="true">★</span></button
+        ><button
+          class="gallery-overlay select"
+          :aria-pressed="comparisonIds.includes(item.id)"
+          :aria-label="'選取作品：' + item.title"
+          :disabled="saving || (!comparisonIds.includes(item.id) && comparisonIds.length >= 100)"
+          @click="toggleComparison(item.id)"
+          ><UiIcon name="check" :size="20" /></button
+        ><div class="gallery-card-meta"
+          ><div class="card-title"
+            ><h2>{{ item.title }}</h2
+            ><span v-if="item.archived" class="archive-badge">已封存</span
+            ><span v-if="item.favorite" class="favorite-badge">★ 收藏</span></div
+          ><p>{{ item.checkpoint }} · {{ item.width }}×{{ item.height }}</p
+          ><details
+            ><summary>資訊與操作</summary
+            ><p
+              >{{ item.width }} × {{ item.height }} ·
+              {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p
+            >
+            <p>{{ item.checkpoint }} · 版本 {{ item.model_version }}</p>
+            <p v-if="item.notes" class="note-excerpt"
+              >{{ item.notes.slice(0, 160)
+              }}{{ item.notes_truncated || item.notes.length > 160 ? '…' : '' }}</p
+            >
+            <p v-if="isControlWorkflow(item.workflow_id)">Canny 結構參考 · 輪廓條件</p>
+            <p v-if="item.workflow_id === referenceWorkflowId">畫風／角色外觀參考 · 非身份鎖定</p>
+            <p v-if="isInpaintWorkflow(item.workflow_id)">局部編輯 · 原圖與遮罩</p>
+            <p v-if="item.workflow_id === imageWorkflowId"
+              >圖生圖 · 參考素材 {{ item.reference_metadata?.length ?? 0 }} 張</p
+            >
+            <p v-for="(lora, index) in item.lora_metadata ?? []" :key="index"
+              >LoRA {{ lora.name }} · 版本 {{ lora.version?.trim() || '未知' }}</p
+            >
+            <p v-if="!item.image_available" class="missing"
+              >原圖已遺失，請從備份還原；生成參數仍保留。</p
+            >
+            <div class="organization-actions"
+              ><button
+                class="secondary"
+                :aria-label="(item.archived ? '還原作品：' : '封存作品：') + item.title"
+                :disabled="busy || saving"
+                @click="archive(item)"
+                >{{ item.archived ? '還原作品' : '封存作品' }}</button
+              ></div
+            >
+            <div class="artwork-actions"
+              ><button
+                class="secondary"
+                :aria-label="'預覽與參數：' + item.title"
+                @click="open(item)"
+                >預覽與參數</button
+              ><button
+                class="secondary"
+                :aria-label="'載入創作設定：' + item.title"
+                @click="restore(item)"
+                >載入創作設定 →</button
+              ><a v-if="item.image_available" :href="imageUrl(item) + '?download=true'"
+                >下載原圖 ↓</a
+              ></div
+            ></details
+          ></div
+        ></article
+      ></div
+    >
+    <div class="library-footer">
+      <div v-if="previousCursor || nextCursor" role="group" aria-label="作品分頁"
+        ><button
+          class="secondary"
+          :disabled="busy || saving || !previousCursor"
+          @click="changePage(previousCursor)"
+          >上一頁</button
+        ><button
+          class="secondary"
+          :disabled="busy || saving || !nextCursor"
+          @click="changePage(nextCursor)"
+          >下一頁</button
+        ></div
+      >
+      <button class="secondary" :disabled="busy || saving" @click="refresh">重新整理</button>
+      <details
+        ><summary>清單與篩選說明</summary
+        ><p class="footnote"
+          >本次清單成員固定；重新整理或變更篩選可取得新增項目。比較選擇跨頁保留。</p
+        ><label
+          >作品狀態<select id="artwork-scope" v-model="scope" :disabled="saving || importing"
+            ><option value="active">使用中</option
+            ><option value="archived">已封存</option
+            ><option value="all">全部作品</option></select
+          ></label
+        ></details
+      >
+    </div>
+    <section v-if="comparisonIds.length" class="gallery-selectionbar" aria-label="已選作品">
+      <span role="status">已選 {{ comparisonIds.length }} 件</span>
+      <button class="primary" :disabled="!canCompare || saving" @click="showComparison"
+        >並排比較（2–4 張）</button
+      >
+      <button
+        class="secondary"
+        :disabled="!selectionReady || busy || saving"
+        @click="archiveSelection"
+        >{{ scope === 'archived' ? '批次還原' : '批次封存' }}</button
+      >
+      <button class="secondary" :disabled="!selectionReady || saving" @click="downloadSelection"
+        >批次下載原圖（{{ comparisonIds.length }} 張）</button
+      >
+      <button class="secondary" :disabled="saving" @click="clearComparison">清除選取</button>
+      <span v-if="!selectionReady" class="footnote">正在讀取選取資料…</span>
+      <span v-else-if="comparisonIds.length > 4" class="footnote"
+        >比較最多選 4 張；批次管理最多選 100 件。</span
+      >
+      <template v-if="batchMode"
+        ><span role="status">{{
+          batchMode === 'archive'
+            ? '正在逐項保存…'
+            : batchMode === 'download'
+              ? '正在準備 ZIP…'
+              : '正在讀取選取狀態…'
+        }}</span>
+        <button
+          v-if="batchMode === 'archive'"
+          class="secondary"
+          :disabled="batchCancel"
+          @click="batchCancel = true"
+          >停止後續操作</button
+        >
+      </template>
+    </section>
+    <div v-if="batchFailures.length" class="notice warning" role="alert">
+      <ul
+        ><li v-for="failure in batchFailures" :key="failure.id"
+          >{{ failure.title }}：{{ failure.message }}</li
+        ></ul
+      >
+      <button class="secondary" :disabled="saving" @click="refreshSelection"
+        >重新讀取選取狀態</button
+      >
+    </div>
+  </div>
+  <div v-if="comparing" class="gallery-comparison-page">
+    <div class="page-intro"
+      ><p>原圖並排查看，保留生成參數與人工評分。</p
+      ><button class="secondary" @click="emit('compare', false)">返回作品庫</button></div
+    >
+    <ArtworkComparison
+      v-if="comparisonItems.length <= 4"
+      :items="comparisonItems"
+      @remove="toggleComparison"
+      @clear="clearComparison"
+      @inspect="inspectComparison"
+    />
+    <p v-if="comparisonItems.length > 4" class="notice" role="status"
+      >比較最多選 4 張，請返回作品庫調整選取。</p
+    >
+    <p v-if="!comparisonItems.length" class="notice" role="status"
+      >尚未選取作品。請返回作品庫選取 2–4 張，再按「並排比較」。</p
     >
   </div>
   <dialog
@@ -941,6 +1130,30 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.gallery-selectionbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 20px 0 0;
+  position: sticky;
+  bottom: 10px;
+  z-index: 3;
+  justify-content: center;
+  border: 1px solid var(--border-control);
+  border-radius: 12px;
+  background: #202d25;
+}
+.gallery-selectionbar > span:first-child {
+  white-space: nowrap;
+}
+.gallery-selectionbar button {
+  white-space: nowrap;
+}
+.gallery-comparison-page {
+  min-width: 0;
+}
 .import-panel {
   background: linear-gradient(120deg, #253b2d, #191d20);
 }

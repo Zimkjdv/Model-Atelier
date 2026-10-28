@@ -33,7 +33,9 @@ async function enter(control: Locator) {
 
 async function openDetails(page: Page) {
   // Exercise the native keyboard disclosure rather than setting the DOM's open property.
-  const closed = page.locator('details:visible:not([open]) > summary')
+  const modal = page.getByRole('dialog')
+  const root = (await modal.isVisible()) ? modal : page
+  const closed = root.locator('details:visible:not([open]) > summary')
   while (await closed.count()) await enter(closed.first())
 }
 
@@ -343,10 +345,12 @@ for (const width of [1440, 390]) {
     request,
   }, info) => {
     await page.setViewportSize({ width, height: 900 })
+    await request.post('/qa/populate')
     const state = await (await request.get('/qa/state')).json()
     const original = await (await request.get('/api/artworks/' + state.artwork_id)).json()
     await page.goto('/#/gallery')
     await expect(page.getByRole('group', { name: '作品分頁', exact: true })).toBeVisible()
+    await page.getByLabel('搜尋作品', { exact: true }).fill('qa-artwork.png')
     const card = page
       .locator('.artwork-card')
       .filter({ has: page.getByRole('button', { name: '查看作品 qa-artwork.png', exact: true }) })
@@ -365,12 +369,14 @@ for (const width of [1440, 390]) {
       'aria-pressed',
       String(!!original.favorite),
     )
-    await enter(card.getByRole('button', { name: '比較作品：qa-artwork.png', exact: true }))
-    await capture(page, info, 'artwork-comparison')
+    await enter(card.getByRole('button', { name: '選取作品：qa-artwork.png', exact: true }))
+    await expect(page.getByRole('region', { name: '已選作品', exact: true })).toBeVisible()
+    await expect(page.getByRole('region', { name: '作品並排比較', exact: true })).toHaveCount(0)
+    await capture(page, info, 'artwork-selection')
     const cover = page.getByRole('button', { name: '查看作品 qa-artwork.png', exact: true })
     await enter(cover)
     const dialog = page.getByRole('dialog', { name: 'qa-artwork.png', exact: true })
-    const close = dialog.getByRole('button', { name: '關閉 ×', exact: true })
+    const close = dialog.getByRole('button', { name: '關閉', exact: true })
     await expect(close).toBeFocused()
     await close.press('Shift+Tab')
     expect(await page.locator(':focus').evaluate((element) => !!element.closest('dialog'))).toBe(

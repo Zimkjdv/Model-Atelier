@@ -2,12 +2,15 @@
 
 import asyncio
 import json
+import tempfile
+import zipfile
 from uuid import UUID
 from typing import Literal
 
 import httpx
 from fastapi import HTTPException, Response
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
+from starlette.background import BackgroundTask
 from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -37,6 +40,22 @@ class OrganizationInput(BaseModel):
         return self
 
 
+class ArtworkDownloadInput(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    artwork_ids: list[str] = Field(min_length=1, max_length=100)
+
+    @model_validator(mode='after')
+    def unique_identifiers(self):
+        if len(set(self.artwork_ids)) != len(self.artwork_ids):
+            raise ValueError('作品不能重複')
+        if any(str(UUID(value)) != value for value in self.artwork_ids):
+            raise ValueError('作品識別碼格式不正確')
+        return self
+
+
+MAX_DOWNLOAD_BYTES = 256 * 1024 * 1024
+
+
 def install(app, host):
     import_lock = asyncio.Lock()
 
@@ -64,6 +83,56 @@ def install(app, host):
             if (scope == 'all' or item['archived'] == (scope == 'archived'))
             and (not favorites_only or item['favorite'])
         ]
+
+    @app.post('/api/artwork-downloads')
+    def download_artworks(value: ArtworkDownloadInput):
+        """Package only saved originals; never download again from an engine."""
+        targets = []
+        size = 0
+        for artwork_id in value.artwork_ids:
+            item = lookup(artwork_id)
+            target = host.DATA / 'artworks' / (artwork_id + '.' + item['extension'])
+            try:
+                size += target.stat().st_size
+            except OSError:
+                raise HTTPException(
+                    409, f'原圖無法讀取：{item["title"]}。未產生 ZIP，選取保持不變。'
+                )
+            if size > MAX_DOWNLOAD_BYTES:
+                raise HTTPException(413, '所選原圖超過 256 MiB，請分批下載。')
+            targets.append(target)
+        archive = tempfile.SpooledTemporaryFile(max_size=8 * 1024 * 1024)
+        try:
+            with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_STORED) as bundle:
+                for target in targets:
+                    bundle.write(target, arcname=target.name)
+            length = archive.tell()
+            archive.seek(0)
+        except OSError:
+            archive.close()
+            raise HTTPException(409, '原圖讀取或打包失敗；未產生 ZIP，請確認檔案後再下載。')
+        except BaseException:
+            archive.close()
+            raise
+
+        def chunks():
+            try:
+                while chunk := archive.read(64 * 1024):
+                    yield chunk
+            finally:
+                archive.close()
+
+        return StreamingResponse(
+            chunks(),
+            media_type='application/zip',
+            headers={
+                'Content-Disposition': 'attachment; filename="model-atelier-artworks.zip"',
+                'Content-Length': str(length),
+                'X-Content-Type-Options': 'nosniff',
+                'Cache-Control': 'no-store',
+            },
+            background=BackgroundTask(archive.close),
+        )
 
     @app.patch('/api/artworks/{artwork_id}/organization')
     def organize(artwork_id: UUID, value: OrganizationInput):

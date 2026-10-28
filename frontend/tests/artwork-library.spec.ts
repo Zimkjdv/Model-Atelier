@@ -94,11 +94,13 @@ async function save(page: Page, id: string, button: Locator) {
 }
 
 async function close(page: Page) {
-  await dialog(page).getByRole('button', { name: '關閉 ×', exact: true }).click()
+  await dialog(page).getByRole('button', { name: '關閉', exact: true }).click()
   await expect(dialog(page)).not.toBeVisible()
 }
 
 async function scores(page: Page, values: (number | null)[]) {
+  if (!(await page.locator('#rating-prompt_adherence').isVisible()))
+    await dialog(page).getByText('生成設定、人工評分與完整來源', { exact: true }).click()
   for (const [index, key] of [
     'prompt_adherence',
     'character_consistency',
@@ -205,7 +207,7 @@ test('390px unsaved notes and ratings protect close, Escape, reload, window and 
   await page.getByLabel('作品筆記', { exact: true }).fill('keep this unsaved note')
   await scores(page, [4, null, 2, 5])
   await decision(page, () =>
-    dialog(page).getByRole('button', { name: '關閉 ×', exact: true }).click(),
+    dialog(page).getByRole('button', { name: '關閉', exact: true }).click(),
   )
   await decision(page, () => page.keyboard.press('Escape'))
   await decision(page, () =>
@@ -221,7 +223,7 @@ test('390px unsaved notes and ratings protect close, Escape, reload, window and 
   await page.screenshot({ path: info.outputPath('unsaved.png') })
   await decision(
     page,
-    () => dialog(page).getByRole('button', { name: '關閉 ×', exact: true }).click(),
+    () => dialog(page).getByRole('button', { name: '關閉', exact: true }).click(),
     true,
   )
   await expect(dialog(page)).not.toBeVisible()
@@ -247,8 +249,9 @@ test('390px original images: parameter differences, keyboard scroll and four-ite
   const { group, items } = await seed(page, request)
   for (const item of items.slice(0, 2))
     await card(page, item)
-      .getByRole('button', { name: '比較作品：' + item.title, exact: true })
+      .getByRole('button', { name: '選取作品：' + item.title, exact: true })
       .click()
+  await page.getByRole('button', { name: '並排比較（2–4 張）', exact: true }).click()
   const compare = comparison(page)
   await expect(compare).toContainText('作品比較 · 2 / 4')
   const images = compare.locator('.comparison-images img')
@@ -288,19 +291,20 @@ test('390px original images: parameter differences, keyboard scroll and four-ite
   await expect(scroller).toBeFocused()
   await scroller.press('ArrowRight')
   await expect.poll(() => scroller.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0)
+  await page.getByRole('button', { name: '返回作品庫', exact: true }).click()
   await page.getByLabel('搜尋作品', { exact: true }).fill(group + '-no-match')
   await expect(page.locator('.artwork-card')).toHaveCount(0)
-  await expect(compare).toContainText('作品比較 · 2 / 4')
+  await expect(page.getByRole('region', { name: '已選作品', exact: true })).toContainText(
+    '已選 2 件',
+  )
   await page.getByLabel('搜尋作品', { exact: true }).fill(group)
   await expect(page.locator('.artwork-card')).toHaveCount(5)
   for (const item of items.slice(2, 4))
     await card(page, item)
-      .getByRole('button', { name: '比較作品：' + item.title, exact: true })
+      .getByRole('button', { name: '選取作品：' + item.title, exact: true })
       .click()
+  await page.getByRole('button', { name: '並排比較（2–4 張）', exact: true }).click()
   await expect(compare).toContainText('作品比較 · 4 / 4')
-  await expect(
-    card(page, items[4]).getByRole('button', { name: '比較作品：' + items[4].title, exact: true }),
-  ).toBeDisabled()
   await scroller.hover({ position: { x: 30, y: 30 } })
   await page.mouse.wheel(1800, 0)
   await expect.poll(() => scroller.evaluate((element) => element.scrollLeft)).toBeGreaterThan(400)
@@ -310,13 +314,14 @@ test('390px original images: parameter differences, keyboard scroll and four-ite
   )
   await compare.getByRole('button', { name: '移出比較：' + items[1].title, exact: true }).click()
   await expect(compare).toContainText('作品比較 · 3 / 4')
+  await page.getByRole('button', { name: '返回作品庫', exact: true }).click()
   await expect(
-    card(page, items[4]).getByRole('button', { name: '比較作品：' + items[4].title, exact: true }),
+    card(page, items[4]).getByRole('button', { name: '選取作品：' + items[4].title, exact: true }),
   ).toBeEnabled()
-  await compare.getByRole('button', { name: '清空比較選擇', exact: true }).click()
+  await page.getByRole('button', { name: '清除選取', exact: true }).click()
   await expect(compare).not.toBeVisible()
   await expect(
-    page.locator('.artwork-card button[aria-label^="比較作品："][aria-pressed="true"]'),
+    page.locator('.artwork-card button[aria-label^="選取作品："][aria-pressed="true"]'),
   ).toHaveCount(0)
   await evidence(info, 'comparison.json', JSON.stringify({ items, loras }, null, 2))
 })
@@ -329,8 +334,9 @@ test('390px two tabs: notes and ratings conflict, explicit reload and save keep 
   const item = items[0]
   for (const entry of items.slice(0, 2))
     await card(page, entry)
-      .getByRole('button', { name: '比較作品：' + entry.title, exact: true })
+      .getByRole('button', { name: '選取作品：' + entry.title, exact: true })
       .click()
+  await page.getByRole('button', { name: '並排比較（2–4 張）', exact: true }).click()
   await comparison(page)
     .getByRole('button', { name: '預覽及評分：' + item.title, exact: true })
     .click()
@@ -430,7 +436,7 @@ test('390px two tabs: notes and ratings conflict, explicit reload and save keep 
     item.id,
     dialog(page).getByRole('button', { name: '保存筆記', exact: true }),
   )
-  await expect(dialog(page).getByRole('button', { name: '關閉 ×', exact: true })).toBeDisabled()
+  await expect(dialog(page).getByRole('button', { name: '關閉', exact: true })).toBeDisabled()
   await expect(dialog(page).getByRole('button', { name: '保存評分', exact: true })).toBeDisabled()
   await page.keyboard.press('Escape')
   await expect(dialog(page)).toBeVisible()
@@ -448,8 +454,10 @@ test('390px two tabs: notes and ratings conflict, explicit reload and save keep 
     .filter({ has: page.getByRole('heading', { name: item.title, exact: true }) })
   await expect(compared.locator('dd')).toHaveText(['5 / 5', '未評分／不適用', '2 / 5', '4 / 5'])
   await page.reload()
+  await page.getByRole('button', { name: '返回作品庫', exact: true }).click()
   await page.getByLabel('搜尋作品', { exact: true }).fill(group)
   await open(page, item)
+  await page.getByText('生成設定、人工評分與完整來源', { exact: true }).click()
   await expect(page.locator('#rating-composition')).toHaveValue('4')
   await expect(page.getByLabel('作品筆記', { exact: true })).toHaveValue(
     'confirmed local rationale',

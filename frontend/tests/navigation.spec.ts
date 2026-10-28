@@ -44,6 +44,7 @@ test('history retains forms, focuses content, rejects malformed URL and skip lin
 test('back cancellation keeps unsaved artwork notes and matching URL; accepted back and forward work', async ({ page }) => {
   await page.goto('/#/system')
   await page.getByRole('button', { name: '作品庫', exact: true }).click()
+  await page.getByLabel('搜尋作品', { exact: true }).fill('qa-artwork.png')
   await page.getByRole('button', { name: '查看作品 qa-artwork.png', exact: true }).click()
   await page.locator('#artwork-notes').fill('history must preserve unsaved note')
   page.once('dialog', dialog => dialog.dismiss())
