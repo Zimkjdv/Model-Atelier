@@ -62,6 +62,8 @@ Starlette 1.6.0 的 TestClient 優先使用 httpx2，現行 lock 的 httpx 0.28.
 
 ## 同組隔離資料連續驗收
 
+模型五分類／兩版型、訓練四階段、五種創作目的／Checkpoint／FLUX 的桌面三尺寸另由 `frontend/tests/desktop-acceptance-matrix.spec.ts` 驗證。此檔沿用一般隔離 fixture，會由既有分批入口自動收集，也可在 `frontend` 執行 `npx.cmd playwright test tests/desktop-acceptance-matrix.spec.ts`。視覺基準直接讀原 `preview.html`，不產生另一份基準檔；支援界線、機器證據與必要差異見 [桌面驗收矩陣](ui-redesign/DESKTOP-ACCEPTANCE-MATRIX.md)。
+
 從 `frontend` 執行以下獨立設定；每次建立新的 `--empty` 臨時資料，不沿用一般套件的預設樣本。
 
 ```powershell

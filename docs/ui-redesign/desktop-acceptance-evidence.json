@@ -1,0 +1,1236 @@
+{
+  "executed_at": "2026-10-28T18:53:14.434969+00:00",
+  "reference": "docs/ui-redesign/preview.html",
+  "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+  "verification": "browser operations and measured geometry; no GPU inference or trainer start",
+  "counts": {
+    "models": 30,
+    "training": 12,
+    "purposes": 30
+  },
+  "cases": [
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "rows": [
+        {
+          "category": "Checkpoint",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 278.59375,
+              "width": 1144,
+              "height": 168.796875
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 482.0625
+            }
+          }
+        },
+        {
+          "category": "Checkpoint",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 278.59375,
+              "width": 1144,
+              "height": 332.140625
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 283.765625
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 276.59375,
+              "width": 1144,
+              "height": 195.4375
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 276.59375,
+              "width": 1144,
+              "height": 216.875
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 276.59375,
+              "width": 1144,
+              "height": 389.875
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 276.59375,
+              "width": 1144,
+              "height": 195.4375
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 249.25,
+              "width": 1144,
+              "height": 393.875
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 250.25
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 249.25,
+              "width": 1144,
+              "height": 197.4375
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "清單",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 343.84375,
+              "width": 1144,
+              "height": 144.9375
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 459.5
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "卡片",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 343.84375,
+              "width": 1144,
+              "height": 187.8125
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 452.34375
+            }
+          }
+        }
+      ],
+      "group": "models",
+      "width": 1280,
+      "status": "passed"
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "rows": [
+        {
+          "family": "Checkpoint",
+          "purpose": "文字創作",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "圖片重繪",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "局部修補",
+          "route": "inpaint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "結構引導",
+          "route": "control",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "風格參考",
+          "route": "reference",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "FLUX",
+          "purpose": "文字創作",
+          "workflow": "flux1-schnell-text2image-v1",
+          "form": "split four components"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "圖片重繪",
+          "workflow": "flux1-schnell-image2image-v1",
+          "restriction": "512×512 / 4 steps / FP8 / CPU; denoise below 1"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "局部修補",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "結構引導",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "風格參考",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        }
+      ],
+      "group": "purposes",
+      "width": 1280,
+      "status": "passed"
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "rows": [
+        {
+          "stage": 1,
+          "dataset_id": "f1694030-01f3-4b1c-b8a6-3d4bc4e2267a",
+          "revision": 2,
+          "stagebar": {
+            "actual": {
+              "x": 104,
+              "y": 152.75,
+              "width": 1144,
+              "height": 72.890625
+            },
+            "preview": {
+              "x": 104,
+              "y": 152.75,
+              "width": 1144,
+              "height": 70.546875
+            }
+          },
+          "dirty_guard": true
+        },
+        {
+          "stage": 2,
+          "export_id": "d888262b-86e2-4186-9f19-350ebdde4587",
+          "status": "completed",
+          "dataset_id": "f1694030-01f3-4b1c-b8a6-3d4bc4e2267a",
+          "report": {
+            "bundle_verified": true,
+            "manifest_sha256": "59296d019136f9606c55a24960281d71e6ab845f4d9ab1efdc867ceb8fcdb98f",
+            "train_count": 1,
+            "training_started": false
+          }
+        },
+        {
+          "stage": 3,
+          "export_id": "d888262b-86e2-4186-9f19-350ebdde4587",
+          "synthetic_run_id": "c0d8908d-db2c-4577-aadf-fefc0b05a8e9",
+          "explicit_prepares": 1,
+          "starts": 0
+        },
+        {
+          "stage": 4,
+          "synthetic_run_id": "c0d8908d-db2c-4577-aadf-fefc0b05a8e9",
+          "progress": [
+            0,
+            5,
+            "unknown"
+          ],
+          "stale_snapshot_guard": true,
+          "starts": 0
+        }
+      ],
+      "group": "training",
+      "width": 1280,
+      "status": "passed"
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "rows": [
+        {
+          "category": "Checkpoint",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 278.59375,
+              "width": 1304,
+              "height": 168.796875
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 450.265625
+            }
+          }
+        },
+        {
+          "category": "Checkpoint",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 278.59375,
+              "width": 1304,
+              "height": 332.140625
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 283.765625
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 276.59375,
+              "width": 1304,
+              "height": 195.4375
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 276.59375,
+              "width": 1304,
+              "height": 216.875
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 276.59375,
+              "width": 1304,
+              "height": 389.875
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 276.59375,
+              "width": 1304,
+              "height": 195.4375
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 249.25,
+              "width": 1304,
+              "height": 393.875
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 250.25
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 249.25,
+              "width": 1304,
+              "height": 197.4375
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "清單",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 343.84375,
+              "width": 1304,
+              "height": 144.9375
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 459.5
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "卡片",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 343.84375,
+              "width": 1304,
+              "height": 166.375
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 452.34375
+            }
+          }
+        }
+      ],
+      "group": "models",
+      "width": 1440,
+      "status": "passed"
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "rows": [
+        {
+          "family": "Checkpoint",
+          "purpose": "文字創作",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "圖片重繪",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "局部修補",
+          "route": "inpaint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "結構引導",
+          "route": "control",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "風格參考",
+          "route": "reference",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "FLUX",
+          "purpose": "文字創作",
+          "workflow": "flux1-schnell-text2image-v1",
+          "form": "split four components"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "圖片重繪",
+          "workflow": "flux1-schnell-image2image-v1",
+          "restriction": "512×512 / 4 steps / FP8 / CPU; denoise below 1"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "局部修補",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "結構引導",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "風格參考",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        }
+      ],
+      "group": "purposes",
+      "width": 1440,
+      "status": "passed"
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "rows": [
+        {
+          "stage": 1,
+          "dataset_id": "4c63d449-2921-4259-9633-e479776d1a53",
+          "revision": 2,
+          "stagebar": {
+            "actual": {
+              "x": 104,
+              "y": 152.75,
+              "width": 1304,
+              "height": 72.890625
+            },
+            "preview": {
+              "x": 104,
+              "y": 152.75,
+              "width": 1304,
+              "height": 70.546875
+            }
+          },
+          "dirty_guard": true
+        },
+        {
+          "stage": 2,
+          "export_id": "5b3cc9ec-cd2d-4143-a8d7-2010e338d787",
+          "status": "completed",
+          "dataset_id": "4c63d449-2921-4259-9633-e479776d1a53",
+          "report": {
+            "bundle_verified": true,
+            "manifest_sha256": "59296d019136f9606c55a24960281d71e6ab845f4d9ab1efdc867ceb8fcdb98f",
+            "train_count": 1,
+            "training_started": false
+          }
+        },
+        {
+          "stage": 3,
+          "export_id": "5b3cc9ec-cd2d-4143-a8d7-2010e338d787",
+          "synthetic_run_id": "c1fd2543-86ad-4a6c-8511-ff5d7f5d0d63",
+          "explicit_prepares": 1,
+          "starts": 0
+        },
+        {
+          "stage": 4,
+          "synthetic_run_id": "c1fd2543-86ad-4a6c-8511-ff5d7f5d0d63",
+          "progress": [
+            0,
+            5,
+            "unknown"
+          ],
+          "stale_snapshot_guard": true,
+          "starts": 0
+        }
+      ],
+      "group": "training",
+      "width": 1440,
+      "status": "passed"
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "rows": [
+        {
+          "category": "Checkpoint",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 278.59375,
+              "width": 1436,
+              "height": 168.796875
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 450.265625
+            }
+          }
+        },
+        {
+          "category": "Checkpoint",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 278.59375,
+              "width": 1436,
+              "height": 332.140625
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 283.765625
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 276.59375,
+              "width": 1436,
+              "height": 195.4375
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 276.59375,
+              "width": 1436,
+              "height": 216.875
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 276.59375,
+              "width": 1436,
+              "height": 389.875
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 276.59375,
+              "width": 1436,
+              "height": 195.4375
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 249.25,
+              "width": 1436,
+              "height": 393.875
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 250.25
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 249.25,
+              "width": 1436,
+              "height": 197.4375
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "清單",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 343.84375,
+              "width": 1436,
+              "height": 144.9375
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 459.5
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "卡片",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 343.84375,
+              "width": 1436,
+              "height": 166.375
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 452.34375
+            }
+          }
+        }
+      ],
+      "group": "models",
+      "width": 1920,
+      "status": "passed"
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "rows": [
+        {
+          "family": "Checkpoint",
+          "purpose": "文字創作",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "圖片重繪",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "局部修補",
+          "route": "inpaint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "結構引導",
+          "route": "control",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "風格參考",
+          "route": "reference",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "FLUX",
+          "purpose": "文字創作",
+          "workflow": "flux1-schnell-text2image-v1",
+          "form": "split four components"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "圖片重繪",
+          "workflow": "flux1-schnell-image2image-v1",
+          "restriction": "512×512 / 4 steps / FP8 / CPU; denoise below 1"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "局部修補",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "結構引導",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "風格參考",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        }
+      ],
+      "group": "purposes",
+      "width": 1920,
+      "status": "passed"
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "rows": [
+        {
+          "stage": 1,
+          "dataset_id": "f43a0261-1da4-48e5-926a-fe8697aa0c48",
+          "revision": 2,
+          "stagebar": {
+            "actual": {
+              "x": 278,
+              "y": 152.75,
+              "width": 1436,
+              "height": 72.890625
+            },
+            "preview": {
+              "x": 278,
+              "y": 152.75,
+              "width": 1436,
+              "height": 70.546875
+            }
+          },
+          "dirty_guard": true
+        },
+        {
+          "stage": 2,
+          "export_id": "40f9472b-c0df-417f-95f9-c46f7ec4a91d",
+          "status": "completed",
+          "dataset_id": "f43a0261-1da4-48e5-926a-fe8697aa0c48",
+          "report": {
+            "bundle_verified": true,
+            "manifest_sha256": "59296d019136f9606c55a24960281d71e6ab845f4d9ab1efdc867ceb8fcdb98f",
+            "train_count": 1,
+            "training_started": false
+          }
+        },
+        {
+          "stage": 3,
+          "export_id": "40f9472b-c0df-417f-95f9-c46f7ec4a91d",
+          "synthetic_run_id": "3fafaa1e-c566-4789-9be4-c40bbcbb9fbb",
+          "explicit_prepares": 1,
+          "starts": 0
+        },
+        {
+          "stage": 4,
+          "synthetic_run_id": "3fafaa1e-c566-4789-9be4-c40bbcbb9fbb",
+          "progress": [
+            0,
+            5,
+            "unknown"
+          ],
+          "stale_snapshot_guard": true,
+          "starts": 0
+        }
+      ],
+      "group": "training",
+      "width": 1920,
+      "status": "passed"
+    }
+  ],
+  "extra_checks": {
+    "icon_regression": 1,
+    "existing_geometry_cases": 3,
+    "backend_support_tests": 23
+  }
+}

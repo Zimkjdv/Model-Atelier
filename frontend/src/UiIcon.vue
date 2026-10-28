@@ -15,12 +15,12 @@ const paths: Record<string, string> = {
     '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
 }
 Object.assign(paths, {
-  text: '<path d="M5 6h14M5 12h10M5 18h7"/>',
-  redraw: '<path d="M4 11a8 8 0 0114-5l2 2M20 13a8 8 0 01-14 5l-2-2"/>',
-  inpaint: '<rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 3"/>',
-  control: '<circle cx="12" cy="5" r="2"/><path d="M12 7v6m-5-3h10m-5 3l-4 8m4-8l4 8"/>',
+  text: '<path d="M5 6h14M5 12h14M5 18h9"/>',
+  redraw: '<path d="M4 12a8 8 0 0114-5l2 2M20 12a8 8 0 01-14 5l-2-2"/>',
+  inpaint: '<rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="3 3"/>',
+  control: '<circle cx="12" cy="6" r="2"/><path d="M12 8v6M8 11h8M12 14l-3 6M12 14l3 6"/>',
   reference:
-    '<circle cx="12" cy="12" r="9"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/>',
+    '<circle cx="12" cy="12" r="8"/><circle cx="9" cy="10" r="1"/><circle cx="14" cy="9" r="1"/>',
   refresh: '<path d="M20 12a8 8 0 11-2.3-5.7M20 4v5h-5"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
 })

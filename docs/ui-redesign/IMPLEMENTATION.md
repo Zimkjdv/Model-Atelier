@@ -80,6 +80,8 @@
 
 ## 相關文件
 
+- [三尺寸模型／訓練／創作支援驗收矩陣](DESKTOP-ACCEPTANCE-MATRIX.md)
+
 - [N07／N05／N06 獨立能力待辦](BACKEND-CAPABILITIES-BACKLOG.md)
 - [同組隔離資料逐流程驗收](ISOLATED-JOURNEY-ACCEPTANCE.md)
 

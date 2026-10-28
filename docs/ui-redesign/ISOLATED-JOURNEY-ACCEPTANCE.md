@@ -86,3 +86,5 @@ npx.cmd playwright test --config playwright.journey.config.ts
 N07 分類容量、N05 全域任務抽屜、N06 跨次 UI 偏好保存仍是獨立未完成工作，見 [後續能力與驗收條件](BACKEND-CAPABILITIES-BACKLOG.md)。本輪沒有新增分類容量 API 或換色段冒充掃描結果。
 
 本資料鏈驗收的是素材 → Checkpoint 圖片重繪 → 任務 → 作品／比較 → 設定匯出。模型五分類、其他創作流程、訓練四階段與實際部署仍依其各自的既有測試及後續驗收，不因這一條成功而一併宣告全平台全情境完成；尤其本輪沒有把訓練候選資料或合成進度冒充真實訓練成果。
+
+後續三尺寸的模型五類、訓練四階段及創作目的／架構驗收已另列於 [桌面驗收矩陣](DESKTOP-ACCEPTANCE-MATRIX.md)，不回寫為本資料鏈當時已驗過的項目。
