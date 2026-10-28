@@ -889,6 +889,205 @@
 #app .atelier-shell .engine-settings {
   margin-top: 16px;
 }
+#app .atelier-shell .system-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+}
+#app .atelier-shell .system-panel-heading h2 {
+  margin: 0;
+}
+#app .atelier-shell .system-panel-heading .chip {
+  flex: none;
+  white-space: nowrap;
+}
+#app .atelier-shell .system-panel-source {
+  margin: 8px 0 18px;
+  font-size: 13px;
+  color: var(--ink3);
+}
+#app .atelier-shell .system-panel-description {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--ink2);
+}
+#app .atelier-shell .system-path-display {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--stage);
+}
+#app .atelier-shell .system-path-display .ui-icon {
+  margin-top: 2px;
+  color: #b5d0d9;
+}
+#app .atelier-shell .system-path-display code,
+#app .atelier-shell .deployment-engine-url {
+  min-width: 0;
+  font:
+    12px/1.8 Consolas,
+    monospace;
+  color: #b5d0d9;
+  user-select: all;
+}
+#app .atelier-shell .local-check-actions {
+  justify-content: space-between;
+  margin: 0 0 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+}
+#app .atelier-shell .local-check-time {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+#app .atelier-shell .local-check-time span {
+  font-size: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .local-check-time strong {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink2);
+}
+#app .atelier-shell .local-python-path {
+  margin: 18px 0;
+}
+#app .atelier-shell .local-python-path > span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ink3);
+  font-size: 12px;
+}
+#app .atelier-shell .local-result-layout,
+#app .atelier-shell .deployment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+#app .atelier-shell .local-runtime,
+#app .atelier-shell .local-device-section,
+#app .atelier-shell .deployment-card {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+}
+#app .atelier-shell .local-result-layout h3,
+#app .atelier-shell .deployment-card h3 {
+  margin: 0 0 14px;
+  font-size: 14px;
+}
+#app .atelier-shell .local-runtime .local-versions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 16px;
+  margin: 0;
+}
+#app .atelier-shell .local-runtime .local-versions dd {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+#app .atelier-shell .local-device-section > h3 {
+  margin: 0 0 14px;
+}
+#app .atelier-shell .local-device-section .environment-devices {
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+}
+#app .atelier-shell .local-device-section .environment-device {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+#app .atelier-shell .local-device-section .environment-device + .environment-device {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+}
+#app .atelier-shell .local-device-section .environment-device-heading strong {
+  font-size: 14px;
+}
+#app .atelier-shell .local-device-section .environment-device-heading span,
+#app .atelier-shell .local-device-section .environment-device dl {
+  font-size: 12px;
+}
+#app .atelier-shell .local-device-section .environment-device p {
+  font-size: 13px;
+}
+#app .atelier-shell .local-environment .local-warnings {
+  font-size: 13px;
+  color: var(--ink3);
+}
+#app .atelier-shell .system-detail-count {
+  float: right;
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .deployment-access {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--asoft);
+}
+#app .atelier-shell .deployment-access .ui-icon {
+  margin-top: 2px;
+  color: var(--accent);
+}
+#app .atelier-shell .deployment-access strong {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+#app .atelier-shell .deployment-access p,
+#app .atelier-shell .deployment-card p {
+  margin: 6px 0 0;
+  color: var(--ink2);
+  font-size: 13px;
+}
+#app .atelier-shell .deployment-card .system-path-display {
+  margin-top: 14px;
+}
+#app .atelier-shell .deployment-engine-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+#app .atelier-shell .deployment-engine-heading h3 {
+  margin: 0;
+}
+#app .atelier-shell .deployment-engine-url {
+  display: block;
+  margin-bottom: 10px;
+}
+#app .atelier-shell .deployment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+#app .atelier-shell .deployment-actions p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink3);
+}
 #app .atelier-shell .disk-row {
   padding: 14px 0;
   border-top: 1px solid var(--line);

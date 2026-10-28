@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import EnvironmentDevices from './EnvironmentDevices.vue'
+import UiIcon from './UiIcon.vue'
 import { cudaStatus, environmentText, environmentTime } from './environmentTypes'
 import type { LocalEnvironment } from './environmentTypes'
 const emit = defineEmits<{ status: [value: string] }>()
@@ -69,63 +70,97 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <article class="panel local-environment">
-    <div class="panel-heading"
-      ><div
-        ><h2>本機 ComfyUI 安裝檢查</h2
-        ><p class="muted">來源：本專案 ComfyUI Python；驅動資訊另由本機 nvidia-smi 回報。</p></div
-      ><span class="status" :class="{ connected: report?.status === 'available' }">{{
-        statusLabel
-      }}</span></div
+  <article class="panel local-environment" aria-label="本機 ComfyUI 安裝檢查">
+    <div class="panel-heading system-panel-heading"
+      ><h2>本機 ComfyUI 安裝檢查</h2
+      ><span
+        class="chip"
+        :class="{
+          warning: !!error || report?.status === 'unavailable' || report?.status === 'timeout',
+        }"
+        >{{ busy ? '讀取中' : error ? '更新失敗' : statusLabel }}</span
+      ></div
     >
-    <p class="footnote"
-      >範圍固定為本專案 runtime/ComfyUI 的 Python 環境，與目前選定的本機或遠端引擎分開。</p
+    <p class="system-panel-source">資料來源：本專案 ComfyUI Python · 驅動：本機 nvidia-smi</p>
+    <p class="system-panel-description"
+      >只檢查本專案 runtime/ComfyUI 的 Python 環境，與目前選定的本機或遠端引擎分開。</p
     >
-    <p v-if="report?.python_path" class="python-path">{{ report.python_path }}</p>
     <div class="local-check-actions"
       ><button type="button" class="primary" :disabled="busy" @click="read(true)">{{
         busy ? '讀取中…' : '檢查本機 ComfyUI 安裝'
       }}</button
-      ><span>上次檢查：{{ environmentTime(report?.checked_at) }}</span></div
+      ><div class="local-check-time"
+        ><span>上次檢查</span><strong>{{ environmentTime(report?.checked_at) }}</strong></div
+      ></div
     >
     <p class="footnote"
       >顯示上次檢查的快照，只有按下按鈕才更新。環境變更後快照可能已過期；平台重啟後需重新檢查。</p
     >
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
+    <div v-if="report?.python_path" class="local-python-path"
+      ><span>Python 執行檔</span
+      ><div class="system-path-display"
+        ><UiIcon name="assets" :size="18" /><code>{{ report.python_path }}</code></div
+      ></div
+    >
     <div v-if="!report || report.status === 'not_checked'" class="empty-state"
       ><h3>尚未檢查</h3><p>檢查會讀取 Python、PyTorch 與 CUDA 資訊，不會生成圖片。</p></div
     >
-    <dl v-else class="local-versions">
-      <div
-        ><dt>本機 ComfyUI Python</dt><dd>{{ environmentText(report?.system.python) }}</dd></div
+    <div v-else class="local-result-layout">
+      <section class="local-runtime"
+        ><h3>執行環境</h3
+        ><dl class="local-versions">
+          <div
+            ><dt>本機 ComfyUI Python</dt><dd>{{ environmentText(report?.system.python) }}</dd></div
+          >
+          <div
+            ><dt>本機 PyTorch</dt><dd>{{ environmentText(report?.system.pytorch) }}</dd></div
+          >
+          <div
+            ><dt>PyTorch CUDA 建置版本</dt
+            ><dd>{{ environmentText(report?.system.cuda_runtime) }}</dd></div
+          >
+          <div
+            ><dt>CUDA 可用（本機檢查）</dt
+            ><dd :class="{ unavailable: report?.system.cuda_available === false }">{{
+              cudaStatus(report?.system.cuda_available)
+            }}</dd></div
+          >
+          <div
+            ><dt>本機 NVIDIA 驅動</dt><dd>{{ environmentText(report?.system.driver) }}</dd></div
+          >
+        </dl></section
       >
-      <div
-        ><dt>本機 PyTorch</dt><dd>{{ environmentText(report?.system.pytorch) }}</dd></div
-      >
-      <div
-        ><dt>PyTorch CUDA 建置版本</dt
-        ><dd>{{ environmentText(report?.system.cuda_runtime) }}</dd></div
-      >
-      <div
-        ><dt>CUDA 可用（本機檢查）</dt
-        ><dd :class="{ unavailable: report?.system.cuda_available === false }">{{
-          cudaStatus(report?.system.cuda_available)
-        }}</dd></div
-      >
-      <div
-        ><dt>本機 NVIDIA 驅動</dt><dd>{{ environmentText(report?.system.driver) }}</dd></div
-      >
-    </dl>
-    <EnvironmentDevices
-      v-if="report?.devices.length"
-      :devices="report.devices"
-      memory-label="本機檢查回報 VRAM"
-    />
-    <p v-if="report?.system.cuda_available === false" class="local-warning" role="status"
+      <section class="local-device-section"
+        ><h3>本機裝置</h3
+        ><EnvironmentDevices
+          v-if="report?.devices.length"
+          :devices="report.devices"
+          memory-label="本機檢查回報 VRAM"
+        /><p v-else class="footnote">尚無可顯示的裝置資訊，不能據此判定沒有 GPU。</p></section
+      ></div
+    >
+    <p
+      v-if="report?.system.cuda_available === false"
+      class="notice warning local-warning"
+      role="status"
       >此 Python 環境回報 CUDA 不可用，請依下方資訊檢查安裝與驅動。</p
     >
-    <ul v-if="report?.warnings.length" class="local-warnings"
-      ><li v-for="(warning, index) in report.warnings" :key="index">{{ warning }}</li></ul
+    <details
+      class="local-check-details"
+      :open="
+        report?.status === 'unavailable' ||
+        report?.status === 'timeout' ||
+        report?.system.cuda_available === false
+      "
+      ><summary
+        >檢查範圍與完整說明<span v-if="report?.warnings.length" class="system-detail-count"
+          >{{ report.warnings.length }} 項說明</span
+        ></summary
+      >
+      <ul v-if="report?.warnings.length" class="local-warnings"
+        ><li v-for="(warning, index) in report.warnings" :key="index">{{ warning }}</li></ul
+      ></details
     >
     <p class="footnote"
       >CUDA 建置版本來自 PyTorch，不代表本機 CUDA Toolkit

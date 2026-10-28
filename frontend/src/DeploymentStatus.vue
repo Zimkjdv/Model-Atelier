@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { apiJson } from './apiClient'
 import { createRequestScope } from './requestScope'
+import UiIcon from './UiIcon.vue'
 
 type Deployment = {
   schema_version: 1
@@ -32,30 +33,48 @@ onUnmounted(() => scope.dispose())
 </script>
 
 <template>
-  <article class="panel details" aria-labelledby="deployment-title" :aria-busy="busy">
-    <h2 id="deployment-title">部署與存取</h2>
-    <p>目前規劃：同一台電腦使用，平台與 ComfyUI 分開執行。</p>
-    <p v-if="error" role="alert">{{ error }}{{ report ? '下方保留上次資料。' : '' }}</p>
+  <article class="panel deployment-status" aria-labelledby="deployment-title" :aria-busy="busy">
+    <div class="system-panel-heading"
+      ><h2 id="deployment-title">部署與存取</h2
+      ><span v-if="report" class="chip">{{
+        report.mode === 'container-local' ? '本機容器' : '本機存取'
+      }}</span></div
+    >
+    <p class="system-panel-source">平台與 ComfyUI 分開執行，以下顯示平台的存取範圍與資料位置。</p>
+    <p v-if="error" class="notice warning" role="alert"
+      >{{ error }}{{ report ? '下方保留上次資料。' : '' }}</p
+    >
     <template v-if="report">
-      <p
-        ><span class="chip">{{ report.mode === 'container-local' ? '本機容器' : '本機存取' }}</span>
-        未開放區網或公開連線。</p
+      <div class="deployment-access"
+        ><UiIcon name="system" :size="22" /><div
+          ><strong>未開放區網或公開連線</strong
+          ><p>此模式沒有帳號登入，本機使用者與程式皆視為可信。</p></div
+        ></div
       >
-      <dl>
-        <dt>平台與資料</dt><dd>平台程序讀取硬體資訊，圖片與資料庫保存在平台的檔案系統。</dd>
-        <dt>選定引擎</dt
-        ><dd
-          >{{ report.engine.role === 'local-engine' ? '本機引擎' : '外部引擎' }} ·
-          <code>{{ report.engine.url }}</code></dd
+      <div class="deployment-grid">
+        <section class="deployment-card"
+          ><h3>平台與資料</h3><p>平台程序讀取硬體資訊，圖片與資料庫保存在平台的檔案系統。</p
+          ><div class="system-path-display"
+            ><UiIcon name="assets" :size="18" /><code>{{ report.storage.path }}</code></div
+          ></section
         >
-      </dl>
-      <p class="muted"
-        >引擎裝置以該引擎回報為準；平台硬體資訊不代表引擎主機。此模式沒有帳號登入，本機使用者與程式皆視為可信。</p
-      >
+        <section class="deployment-card"
+          ><div class="deployment-engine-heading"
+            ><h3>選定引擎</h3
+            ><span class="chip">{{
+              report.engine.role === 'local-engine' ? '本機引擎' : '外部引擎'
+            }}</span></div
+          ><code class="deployment-engine-url">{{ report.engine.url }}</code
+          ><p>引擎裝置以該引擎回報為準；平台硬體資訊不代表引擎主機。</p></section
+        >
+      </div>
     </template>
-    <p v-else-if="busy" role="status">正在讀取存取模式…</p>
-    <button type="button" :disabled="busy" @click="load">{{
-      busy ? '讀取中…' : '更新存取模式'
-    }}</button>
+    <p v-else-if="busy" class="empty-state" role="status">正在讀取存取模式…</p>
+    <p v-else class="empty-state">尚未取得部署資訊，請更新存取模式後再查看。</p>
+    <div class="deployment-actions"
+      ><button type="button" class="secondary" :disabled="busy" @click="load"
+        ><UiIcon name="refresh" :size="18" />{{ busy ? '讀取中…' : '更新存取模式' }}</button
+      ><p>僅重新讀取狀態，不會修改存取設定。</p></div
+    >
   </article>
 </template>
