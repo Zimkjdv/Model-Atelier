@@ -740,6 +740,155 @@
 #app .atelier-shell .engine-environment {
   margin: 0;
 }
+#app .atelier-shell .engine-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+#app .atelier-shell .engine-heading h2 {
+  margin: 0;
+}
+#app .atelier-shell .engine-heading .status {
+  flex: none;
+  white-space: nowrap;
+}
+#app .atelier-shell .engine-source {
+  margin: 8px 0 18px;
+  font-size: 13px;
+  color: var(--ink3);
+}
+#app .atelier-shell .environment-endpoint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+#app .atelier-shell .environment-endpoint code {
+  font:
+    12px/1.8 Consolas,
+    monospace;
+  color: #b5d0d9;
+}
+#app .atelier-shell .environment-endpoint span {
+  font-size: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .engine-facts {
+  display: grid;
+  gap: 16px 20px;
+  margin: 20px 0;
+}
+#app .atelier-shell .engine-facts > div {
+  min-width: 0;
+}
+#app .atelier-shell .engine-facts dt {
+  color: var(--ink3);
+}
+#app .atelier-shell .engine-facts dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+#app .atelier-shell .engine-resource {
+  margin-top: 16px;
+}
+#app .atelier-shell .engine-resource-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 13px;
+  color: var(--ink2);
+}
+#app .atelier-shell .engine-resource-heading strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+#app .atelier-shell .engine-usage-unknown {
+  margin: 4px 0 0;
+  color: var(--ink3);
+  font-size: 12px;
+}
+#app .atelier-shell .engine-device-status {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--ink2);
+}
+#app .atelier-shell .engine-device-status > strong {
+  font-weight: 500;
+}
+#app .atelier-shell .engine-device-status.is-available > strong {
+  color: var(--accent);
+}
+#app .atelier-shell .engine-device-status p {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+#app .atelier-shell .engine-note {
+  margin: 8px 0 18px;
+  font-size: 12px;
+  color: var(--ink3);
+  line-height: 1.8;
+}
+#app .atelier-shell .engine-detail-facts {
+  margin: 16px 0;
+}
+#app .atelier-shell .engine-detail-facts dt {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .engine-detail-facts dd {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ink2);
+}
+#app .atelier-shell .engine-detail-facts code {
+  font:
+    12px/1.8 Consolas,
+    monospace;
+  color: #b5d0d9;
+}
+#app .atelier-shell .engine-environment .environment-devices {
+  grid-template-columns: minmax(0, 1fr);
+  margin: 14px 0;
+}
+#app .atelier-shell .engine-environment .environment-device {
+  padding: 14px;
+  border-color: var(--line);
+  background: var(--bg);
+}
+#app .atelier-shell .engine-environment .environment-device-heading strong {
+  font-size: 14px;
+}
+#app .atelier-shell .engine-environment .environment-device-heading span,
+#app .atelier-shell .engine-environment .environment-device dl {
+  font-size: 12px;
+}
+#app .atelier-shell .engine-environment .environment-device p {
+  font-size: 13px;
+}
+#app .atelier-shell .engine-environment .environment-warnings {
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--ink3);
+}
+#app .atelier-shell .engine-detail-count {
+  float: right;
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .engine-settings {
+  margin-top: 16px;
+}
 #app .atelier-shell .disk-row {
   padding: 14px 0;
   border-top: 1px solid var(--line);
