@@ -611,17 +611,61 @@
   border-top: 1px solid var(--line);
   padding-top: 12px;
 }
-#app .atelier-shell .host-os dd {
+#app .atelier-shell .host-os-display {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--raised);
+}
+#app .atelier-shell .host-os-display strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+#app .atelier-shell .host-os-version {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-width: 0;
+  font-size: 12px;
   font-weight: 400;
+  color: var(--ink3);
+}
+#app .atelier-shell .host-os-version code {
+  font:
+    12px/1.8 Consolas,
+    monospace;
   color: var(--ink2);
+  white-space: normal;
+}
+#app .atelier-shell .host-path-display {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--stage);
+}
+#app .atelier-shell .host-path-display .ui-icon {
+  margin-top: 2px;
+  color: #b5d0d9;
 }
 #app .atelier-shell .host-data-path code {
   display: block;
+  flex: 1;
   font:
     12px/1.8 Consolas,
     monospace;
   color: #b5d0d9;
   white-space: normal;
+  user-select: all;
 }
 #app .atelier-shell .host-gpu {
   margin-top: 16px;

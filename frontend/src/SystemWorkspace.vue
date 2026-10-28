@@ -27,6 +27,13 @@ const items = [
   { id: 'storage', label: '儲存與目錄' },
   { id: 'installation', label: '安裝與部署' },
 ]
+const hostOs = computed(() => {
+  const raw = props.system?.os || '未知'
+  const windows = /^Windows-([^-]+)-(.+)$/.exec(raw)
+  return windows
+    ? { name: 'Windows ' + windows[1], version: windows[2] }
+    : { name: raw, version: '' }
+})
 const total = computed(() => storage.value?.totals.total ?? null)
 const free = computed(() => storage.value?.totals.free ?? null)
 const used = computed(() =>
@@ -276,15 +283,21 @@ async function select(value: string, focus = false) {
             ><dt>部署範圍</dt
             ><dd>{{ system.runtime_kind === 'container' ? '容器可見資源' : '原生平台' }}</dd></div
           ><div class="host-fact-wide host-os"
-            ><dt>作業系統</dt><dd>{{ system.os }}</dd></div
+            ><dt>作業系統</dt
+            ><dd class="host-os-display" :title="system.os"
+              ><strong>{{ hostOs.name }}</strong
+              ><span v-if="hostOs.version" class="host-os-version"
+                ><span>版本</span><code>{{ hostOs.version }}</code></span
+              ></dd
+            ></div
           ><div
             ><dt>平台 Python</dt><dd>{{ system.python }}</dd></div
           ><div
             ><dt>可用記憶體</dt><dd>{{ gb(system.ram.free) }}</dd></div
           ><div class="host-fact-wide host-data-path"
             ><dt>資料目錄</dt
-            ><dd
-              ><code>{{ system.disk.path }}</code></dd
+            ><dd class="host-path-display"
+              ><UiIcon name="assets" :size="18" /><code>{{ system.disk.path }}</code></dd
             ></div
           ></dl
         ><p v-else class="muted host-empty">尚未取得主機資訊，請重新整理後再查看。</p
