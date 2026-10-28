@@ -261,35 +261,55 @@ async function select(value: string, focus = false) {
       role="tabpanel"
       aria-labelledby="system-tab-host"
       tabindex="-1"
-      ><section class="panel"
-        ><h2>平台主機</h2
-        ><p class="muted"
-          >資料來源：系統查詢與 nvidia-smi · {{ stale ? '上次快照已過期' : '每 15 秒更新' }}</p
+      ><section class="panel host-panel" aria-label="平台主機"
+        ><div class="host-heading"
+          ><h2><UiIcon name="system" :size="22" />平台主機</h2
+          ><span class="chip" :class="{ warning: stale }">{{
+            stale ? '快照已過期' : system ? '每 15 秒更新' : '等待資料'
+          }}</span></div
+        ><p class="host-source">資料來源：系統查詢與 nvidia-smi</p
         ><p v-if="error" role="alert" class="notice warning">{{ error }}</p
-        ><dl v-if="system" class="environment-facts"
+        ><dl v-if="system" class="environment-facts host-facts"
           ><div
             ><dt>主機名稱</dt><dd>{{ system.host }}</dd></div
           ><div
+            ><dt>部署範圍</dt
+            ><dd>{{ system.runtime_kind === 'container' ? '容器可見資源' : '原生平台' }}</dd></div
+          ><div class="host-fact-wide host-os"
             ><dt>作業系統</dt><dd>{{ system.os }}</dd></div
           ><div
             ><dt>平台 Python</dt><dd>{{ system.python }}</dd></div
           ><div
-            ><dt>部署範圍</dt
-            ><dd>{{ system.runtime_kind === 'container' ? '容器可見資源' : '原生平台' }}</dd></div
-          ><div
             ><dt>可用記憶體</dt><dd>{{ gb(system.ram.free) }}</dd></div
-          ><div
-            ><dt>資料目錄</dt><dd>{{ system.disk.path }}</dd></div
+          ><div class="host-fact-wide host-data-path"
+            ><dt>資料目錄</dt
+            ><dd
+              ><code>{{ system.disk.path }}</code></dd
+            ></div
           ></dl
-        ><div v-for="(gpu, index) in system?.gpus || []" :key="gpu.index" class="host-gpu"
-          ><h3>GPU {{ gpu.index }} · {{ gpu.name }}</h3
-          ><p>可用顯存 {{ gb(gpu.free) }} · 驅動 {{ gpu.driver || '未知' }}</p
-          ><p v-if="index"
+        ><p v-else class="muted host-empty">尚未取得主機資訊，請重新整理後再查看。</p
+        ><section
+          v-for="(gpu, index) in system?.gpus || []"
+          :key="gpu.index"
+          class="host-gpu"
+          :aria-label="'GPU ' + gpu.index"
+          ><div class="host-gpu-heading"
+            ><span class="host-gpu-index">GPU {{ gpu.index }}</span
+            ><h3>{{ gpu.name }}</h3></div
+          ><dl class="host-gpu-facts"
+            ><div
+              ><dt>可用顯存</dt><dd>{{ gb(gpu.free) }}</dd></div
+            ><div
+              ><dt>驅動版本</dt><dd>{{ gpu.driver || '未知' }}</dd></div
+            ></dl
+          ><p v-if="index" class="host-gpu-usage"
             >已用 {{ gb(gpu.used) }} / {{ gb(gpu.total) }} ·
-            {{ Math.round(usedPercent(gpu) || 0) }}%</p
-          ></div
+            {{ usedPercent(gpu) == null ? '未知' : Math.round(usedPercent(gpu)!) + '%' }}</p
+          ></section
+        ><p v-if="system && !system.gpus.length && !system.gpu_error" class="muted host-empty"
+          >目前沒有可顯示的 GPU 資訊。</p
         ><p v-if="system?.gpu_error" class="notice warning">{{ system.gpu_error }}</p
-        ><p class="footnote"
+        ><p class="footnote host-note"
           >此處 RAM 屬於平台主機，不代表引擎 RAM。{{
             system?.runtime_kind === 'container'
               ? '此處是容器可見的 OS、RAM、掛載磁碟與 GPU，並非 Windows 宿主機完整資訊。'

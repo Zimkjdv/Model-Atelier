@@ -564,9 +564,124 @@
   margin: 2px 0 0;
   font-weight: 600;
 }
+#app .atelier-shell .host-heading,
+#app .atelier-shell .host-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#app .atelier-shell .host-heading {
+  justify-content: space-between;
+}
+#app .atelier-shell .host-heading h2 {
+  margin: 0;
+}
+#app .atelier-shell .host-heading .ui-icon {
+  color: var(--accent);
+}
+#app .atelier-shell .host-heading .chip {
+  flex: none;
+}
+#app .atelier-shell .host-source {
+  margin: 8px 0 18px;
+  font-size: 13px;
+  color: var(--ink3);
+}
+#app .atelier-shell .host-facts,
 #app .atelier-shell .host-gpu {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+}
+#app .atelier-shell .host-facts {
+  gap: 14px 20px;
+  margin: 0;
+}
+#app .atelier-shell .host-facts > div {
+  min-width: 0;
+}
+#app .atelier-shell .host-facts dd {
+  margin-top: 4px;
+  font-size: 14px;
+  white-space: normal;
+}
+#app .atelier-shell .host-fact-wide {
+  grid-column: 1 / -1;
   border-top: 1px solid var(--line);
   padding-top: 12px;
+}
+#app .atelier-shell .host-os dd {
+  font-weight: 400;
+  color: var(--ink2);
+}
+#app .atelier-shell .host-data-path code {
+  display: block;
+  font:
+    12px/1.8 Consolas,
+    monospace;
+  color: #b5d0d9;
+  white-space: normal;
+}
+#app .atelier-shell .host-gpu {
+  margin-top: 16px;
+}
+#app .atelier-shell .host-gpu-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+#app .atelier-shell .host-gpu-index {
+  flex: none;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--asoft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+}
+#app .atelier-shell .host-gpu h3 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+#app .atelier-shell .host-gpu-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin: 14px 0 0;
+}
+#app .atelier-shell .host-gpu-facts dt {
+  font-size: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .host-gpu-facts dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+#app .atelier-shell .host-gpu-facts > div:first-child dd {
+  color: var(--accent);
+}
+#app .atelier-shell .host-gpu-usage {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink2);
+}
+#app .atelier-shell .host-empty {
+  padding: 16px;
+  border: 1px dashed var(--line2);
+  border-radius: 10px;
+  font-size: 13px;
+}
+#app .atelier-shell .host-note {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
 }
 #app .atelier-shell .environment-versions {
   grid-template-columns: repeat(2, minmax(0, 1fr));
