@@ -470,17 +470,22 @@ async function testConnection() {
                 id="settings-panel-appearance"
                 role="tabpanel"
                 aria-labelledby="settings-tab-appearance"
-                class="panel"
-                ><h2>外觀與語言</h2
-                ><label
-                  >外觀<select disabled
-                    ><option>深色</option></select
-                  ></label
-                ><label
-                  >介面語言<select disabled
-                    ><option>繁體中文</option></select
-                  ></label
-                ><p>目前提供深色與繁體中文，其他主題及語言尚未開放。</p></section
+                class="panel appearance-panel"
+                ><div class="appearance-heading"
+                  ><h2>外觀與語言</h2><span class="chip">目前預設</span></div
+                ><dl class="appearance-options"
+                  ><div class="appearance-option"
+                    ><dt>外觀<small>介面的背景與重點配色</small></dt
+                    ><dd class="appearance-value"
+                      ><span class="appearance-swatch" aria-hidden="true"></span>深色</dd
+                    ></div
+                  ><div class="appearance-option"
+                    ><dt>介面語言<small>平台選單與操作文字的顯示語言</small></dt
+                    ><dd class="appearance-value">繁體中文</dd></div
+                  ></dl
+                ><p class="appearance-note"
+                  >目前僅提供深色與繁體中文，其他主題及語言尚未開放。</p
+                ></section
               ><section
                 v-show="settingsTab === 'privacy'"
                 id="settings-panel-privacy"

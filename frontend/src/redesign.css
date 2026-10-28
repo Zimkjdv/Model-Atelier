@@ -649,6 +649,72 @@
   display: block;
   margin-bottom: 6px;
 }
+#app .atelier-shell .appearance-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+#app .atelier-shell .appearance-heading h2 {
+  margin: 0;
+}
+#app .atelier-shell .appearance-options {
+  margin: 22px 0 0;
+}
+#app .atelier-shell .appearance-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 156px;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+#app .atelier-shell .appearance-option:first-child {
+  padding-top: 0;
+}
+#app .atelier-shell .appearance-option dt {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+#app .atelier-shell .appearance-option small {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink3);
+  font-size: 13px;
+  font-weight: 400;
+}
+#app .atelier-shell .appearance-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 46px;
+  margin: 0;
+  padding: 9px 16px;
+  border: 1px solid var(--line2);
+  border-radius: 10px;
+  background: var(--stage);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 500;
+  white-space: normal;
+}
+#app .atelier-shell .appearance-swatch {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border: 1px solid var(--line2);
+  border-radius: 5px;
+  background: var(--raised);
+  box-shadow: inset -6px 0 var(--accent);
+}
+#app .atelier-shell .appearance-note {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--ink3);
+  line-height: 1.75;
+}
 #app .atelier-shell .studio-content {
   position: relative;
   max-width: none;
