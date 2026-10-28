@@ -649,6 +649,19 @@
   display: block;
   margin-bottom: 6px;
 }
+#app .atelier-shell .local-model-paths .directory-card {
+  background: var(--bg);
+  border-color: var(--line);
+  border-radius: 10px;
+  padding: 16px;
+}
+#app .atelier-shell .local-model-paths .directory-card > code {
+  display: block;
+  font:
+    12px/1.8 Consolas,
+    monospace;
+  color: #b5d0d9;
+}
 #app .atelier-shell .appearance-heading {
   display: flex;
   align-items: center;
