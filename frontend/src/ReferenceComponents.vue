@@ -9,8 +9,9 @@ const props = defineProps<{
   library: ReferenceCatalog | null
   engineUrl: string
   disabled: boolean
+  managed?: boolean
 }>()
-const emit = defineEmits<{ updated: []; busy: [value: boolean] }>()
+const emit = defineEmits<{ updated: []; busy: [value: boolean]; editing: [value: boolean] }>()
 const selected = ref(''),
   busy = ref(false),
   error = ref(''),
@@ -28,6 +29,17 @@ const edits = reactive({
 })
 const reads = createRequestScope()
 watch(busy, (v) => emit('busy', v), { flush: 'sync' })
+const metadataPanel = ref<HTMLDetailsElement | null>(null)
+watch(selected, (value) => emit('editing', !!value), { flush: 'sync' })
+function editComponent(item: ReferenceComponent) {
+  selected.value = key(item)
+  choose()
+  if (metadataPanel.value) {
+    metadataPanel.value.open = true
+    metadataPanel.value.scrollIntoView({ block: 'nearest' })
+  }
+}
+defineExpose({ editComponent })
 const key = (r: ReferenceComponent) => JSON.stringify([r.role, r.name])
 function choose() {
   const r = props.library?.components.find((r) => key(r) === selected.value)
@@ -105,7 +117,7 @@ onDeactivated(() => {
 onBeforeUnmount(reads.dispose)
 </script>
 <template>
-  <details class="panel component-editor">
+  <details ref="metadataPanel" class="panel component-editor">
     <summary>同步與登記參考元件</summary>
     <p>先安裝固定節點與權重，再同步清單。登記是人工來源紀錄；不讀取或下載權重。</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
@@ -115,6 +127,7 @@ onBeforeUnmount(reads.dispose)
       type="button"
       class="secondary"
       :disabled="disabled || busy || !engineUrl"
+      v-if="!managed"
       @click="change(true)"
       >同步 adapter 與編碼器清單</button
     >
@@ -127,7 +140,10 @@ onBeforeUnmount(reads.dispose)
           }}{{ r.listed ? '' : '（已不在清單）' }}</option
         >
       </select>
-      <template v-if="selected">
+      <template v-if="selected"
+        ><button type="button" class="secondary" :disabled="busy" @click="selected = ''"
+          >結束元件編輯</button
+        >
         <label for="reference-metadata-family">元件家族</label
         ><select id="reference-metadata-family" v-model="edits.family"
           ><option value="unknown">未知</option

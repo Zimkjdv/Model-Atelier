@@ -28,6 +28,7 @@ const system = ref<System | null>(null),
   engine = ref<EngineReport | null>(null)
 const artworkNotesDirty = ref(false)
 const trainingDirty = ref(false)
+const assetDirty = ref(false)
 const {
   page,
   studioMode,
@@ -41,6 +42,9 @@ const {
     (page.value !== '訓練工作區' ||
       !trainingDirty.value ||
       window.confirm('訓練標註尚未保存或正在處理，確定離開訓練工作區？')) &&
+    (page.value !== '參考素材' ||
+      !assetDirty.value ||
+      window.confirm('素材資料尚未保存或正在處理，確定離開？')) &&
     (page.value !== '作品庫' ||
       !artworkNotesDirty.value ||
       window.confirm('作品筆記或評分尚未保存，或批次操作正在處理，確定離開目前畫面？')),
@@ -493,7 +497,11 @@ async function testConnection() {
                 ><DiagnosticsPanel /></section></div></div
         ></template>
         <ModelLibrary v-if="page === '模型庫'" @create="useModel" @settings="openConnection" />
-        <AssetLibrary v-else-if="page === '參考素材'" @use="useAsset" />
+        <AssetLibrary
+          v-else-if="page === '參考素材'"
+          @use="useAsset"
+          @dirty="assetDirty = $event"
+        />
         <TrainingWorkspace v-else-if="page === '訓練工作區'" @dirty="trainingDirty = $event" />
         <ArtworkLibrary
           v-else-if="page === '作品庫'"

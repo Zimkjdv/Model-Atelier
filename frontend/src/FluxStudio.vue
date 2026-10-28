@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import SizePresets from './SizePresets.vue'
 import StudioPreview from './StudioPreview.vue'
+import type { Job as PreviewJob } from './jobEvents'
+const previewJob = ref<PreviewJob | null>(null)
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { useUnsavedChanges } from './unsavedChanges'
@@ -485,8 +487,16 @@ onMounted(() => {
               @apply="importSettings" /></details
           ><div class="studio-submit" id="studio-submit-flux"></div></div
         ><div class="studio-stage"
-          ><StudioPreview title="文字創作" :width="form.width" :height="form.height" /><div
+          ><StudioPreview
+            :job="previewJob"
+            @gallery="emit('gallery', $event)"
+            title="文字創作"
+            :width="form.width"
+            :height="form.height"
+          /><div
             ><GenerationPanel
+              preview-stage
+              @preview="previewJob = $event"
               submit-target="#studio-submit-flux"
               :form="form"
               workflow="flux"

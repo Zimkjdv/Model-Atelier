@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import SizePresets from './SizePresets.vue'
 import StudioPreview from './StudioPreview.vue'
+import type { Job as PreviewJob } from './jobEvents'
+const previewJob = ref<PreviewJob | null>(null)
 import {
   computed,
   onActivated,
@@ -519,9 +521,13 @@ watch(
         ><div class="studio-submit" id="studio-submit-reference"></div></div
       ><div class="studio-stage"
         ><StudioPreview
+          :job="previewJob"
+          @gallery="emit('gallery', $event)"
           title="風格參考"
           :width="form.width"
           :height="form.height" /><GenerationPanel
+          preview-stage
+          @preview="previewJob = $event"
           submit-target="#studio-submit-reference"
           :form="form"
           workflow="reference"

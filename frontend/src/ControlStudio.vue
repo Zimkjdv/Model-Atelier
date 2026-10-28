@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import SizePresets from './SizePresets.vue'
 import StudioPreview from './StudioPreview.vue'
+import type { Job as PreviewJob } from './jobEvents'
+const previewJob = ref<PreviewJob | null>(null)
+const stageView = ref('source')
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { useUnsavedChanges } from './unsavedChanges'
@@ -574,11 +577,32 @@ watch(
             @items="assets = $event" /></details
         ><div class="studio-submit" id="studio-submit-control"></div></div
       ><div class="studio-stage"
-        ><CannyPreview
+        ><div class="stage-view-switch" role="group" aria-label="舞台內容"
+          ><button
+            class="secondary"
+            :aria-pressed="stageView === 'source'"
+            @click="stageView = 'source'"
+            >結構預覽</button
+          ><button
+            class="secondary"
+            :aria-pressed="stageView === 'result'"
+            @click="stageView = 'result'"
+            >生成結果</button
+          ></div
+        ><StudioPreview
+          v-if="stageView === 'result'"
+          :job="previewJob"
+          :width="form.width"
+          :height="form.height"
+          title="結構引導"
+          @gallery="emit('gallery', $event)" /><CannyPreview
+          v-show="stageView === 'source'"
           v-if="!form.control_kind"
           :form="form"
           :source="source"
           :disabled="locked" /><GenerationPanel
+          preview-stage
+          @preview="previewJob = $event"
           submit-target="#studio-submit-control"
           :form="form"
           workflow="control"

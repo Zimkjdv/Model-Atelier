@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import StudioPreview from './StudioPreview.vue'
+import type { Job as PreviewJob } from './jobEvents'
+const previewJob = ref<PreviewJob | null>(null)
+const stageView = ref('source')
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { useUnsavedChanges } from './unsavedChanges'
@@ -524,7 +528,26 @@ onBeforeUnmount(() => {
             @items="assets = $event" /></details
         ><div class="studio-submit" id="studio-submit-inpaint"></div></div
       ><div class="studio-stage"
-        ><MaskEditor
+        ><div class="stage-view-switch" role="group" aria-label="舞台內容"
+          ><button
+            class="secondary"
+            :aria-pressed="stageView === 'source'"
+            @click="stageView = 'source'"
+            >遮罩編輯</button
+          ><button
+            class="secondary"
+            :aria-pressed="stageView === 'result'"
+            @click="stageView = 'result'"
+            >生成結果</button
+          ></div
+        ><StudioPreview
+          v-if="stageView === 'result'"
+          :job="previewJob"
+          :width="form.width"
+          :height="form.height"
+          title="局部修補"
+          @gallery="emit('gallery', $event)" /><MaskEditor
+          v-show="stageView === 'source'"
           v-model:feather="form.feather_radius"
           :source="source"
           :mask="mask"
@@ -533,6 +556,7 @@ onBeforeUnmount(() => {
           @dirty="maskDirty = $event"
           @busy="maskBusy = $event" />
         <InpaintBlendPreview
+          v-show="stageView === 'source'"
           :form="form"
           :blocked="
             maskDirty
@@ -540,6 +564,8 @@ onBeforeUnmount(() => {
               : inpaintProblem(form, source, mask) || featherProblem(form)
           "
           :disabled="locked" /><GenerationPanel
+          preview-stage
+          @preview="previewJob = $event"
           submit-target="#studio-submit-inpaint"
           :form="form"
           workflow="inpaint"

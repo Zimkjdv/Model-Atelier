@@ -84,6 +84,10 @@ for (const [width, height] of [
       await page.screenshot({ path: info.outputPath(`${name}-${width}.png`), fullPage: true })
     }
     await referencePage(ref, 'studio')
+    // Geometry of the empty stage requires an explicitly empty job collection.
+    await page.route('**/api/library/jobs?**', (route) =>
+      route.fulfill({ json: { items: [], next_cursor: null } }),
+    )
     await page.goto('/#/studio/checkpoint')
     await aligned(page.locator('.studio-settings'), ref.locator('.controls'))
     await aligned(page.locator('#draft-prompt'), ref.locator('#vprompt'))

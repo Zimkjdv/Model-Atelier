@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import SizePresets from './SizePresets.vue'
 import StudioPreview from './StudioPreview.vue'
+import type { Job as PreviewJob } from './jobEvents'
+const previewJob = ref<PreviewJob | null>(null)
 import { api } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { useUnsavedChanges } from './unsavedChanges'
@@ -1261,12 +1263,16 @@ watch(
         ><div class="studio-submit" id="studio-submit-checkpoint"></div></div
       ><div class="studio-stage"
         ><StudioPreview
+          :job="previewJob"
+          @gallery="emit('gallery', $event)"
           :title="isImage ? '圖片重繪' : '文字創作'"
           :family="matchingProfile?.architecture?.toUpperCase()"
           :width="form.width"
           :height="form.height"
         /><div
           ><GenerationPanel
+            preview-stage
+            @preview="previewJob = $event"
             submit-target="#studio-submit-checkpoint"
             :experiment="experimentLoad"
             @busy="generationBusy = $event"

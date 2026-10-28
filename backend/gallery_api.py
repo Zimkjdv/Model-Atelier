@@ -57,6 +57,9 @@ MAX_DOWNLOAD_BYTES = 256 * 1024 * 1024
 
 
 def install(app, host):
+    from backend import job_results
+
+    job_results.install(app, host)
     import_lock = asyncio.Lock()
 
     def lookup(artwork_id):

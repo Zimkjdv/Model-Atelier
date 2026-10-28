@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import StudioPreview from './StudioPreview.vue'
+import type { Job as PreviewJob } from './jobEvents'
+const previewJob = ref<PreviewJob | null>(null)
 import {
   computed,
   onActivated,
@@ -417,8 +419,15 @@ watch(
             @items="assets = $event" /></details
         ><div class="studio-submit" id="studio-submit-flux-addon"></div></div
       ><div class="studio-stage"
-        ><StudioPreview title="FLUX 創作" :width="form.width" :height="form.height" /><div
+        ><StudioPreview
+          :job="previewJob"
+          @gallery="emit('gallery', $event)"
+          title="FLUX 創作"
+          :width="form.width"
+          :height="form.height" /><div
           ><GenerationPanel
+            preview-stage
+            @preview="previewJob = $event"
             submit-target="#studio-submit-flux-addon"
             :form="form"
             workflow="flux-addon"

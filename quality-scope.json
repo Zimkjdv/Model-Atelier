@@ -126,7 +126,9 @@
     "scripts/compare_clip_provenance.py",
     "backend/test_clip_provenance.py",
     "backend/test_ui_redesign.py",
-    "backend/test_artwork_downloads.py"
+    "backend/test_artwork_downloads.py",
+    "backend/job_results.py",
+    "backend/test_job_results.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -212,7 +214,11 @@
     "frontend/src/SavedExperimentPlans.vue",
     "frontend/src/outputPresets.ts",
     "frontend/tests/preview-alignment.spec.ts",
-    "frontend/tests/gallery-selection.spec.ts"
+    "frontend/tests/gallery-selection.spec.ts",
+    "frontend/src/LoraLibrary.vue",
+    "frontend/src/ControlLibrary.vue",
+    "frontend/src/FluxComponentLibrary.vue",
+    "frontend/tests/primary-gaps.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css", "frontend/src/redesign.css"]
 }

@@ -45,6 +45,7 @@ const props = defineProps<{
   experiment?: ExperimentLoad | null
   workflow?: 'flux' | 'flux-addon' | 'inpaint' | 'control' | 'reference'
   blockedReason?: string
+  previewStage?: boolean
   submitTarget?: string
   disabled?: boolean
 }>()
@@ -74,15 +75,21 @@ const missingModel = computed(() =>
     : !('diffusion_model' in props.form && props.form.diffusion_model),
 )
 const emit = defineEmits<{
+  preview: [job: Job | null]
   gallery: [jobId: string]
   restoreJob: [jobId: string]
   busy: [value: boolean]
   pending: [value: boolean]
 }>()
+const previewId = ref('')
+const previewJob = computed(
+  () => jobs.value.find((job) => job.id === previewId.value) || jobs.value[0] || null,
+)
 const historyOpen = ref(false)
 const jobs = ref<Job[]>([]),
   busy = ref(false),
   error = ref('')
+watch(previewJob, (value) => emit('preview', value), { immediate: true, deep: true })
 const cancelChoice = ref<string | null>(null)
 const stopChoice = ref<string | null>(null)
 const pending = ref<Record<string, unknown> | null>(null)
@@ -342,6 +349,13 @@ onBeforeUnmount(() => window.clearInterval(timer))
               ? '最近任務的狀態；結果與匯入請查看任務資訊。'
               : '按下「生成」後，進度顯示在這裡。'
         }}</p></div
+      ><label v-if="previewStage && jobs.length" class="stage-job-choice"
+        >舞台任務<select v-model="previewId"
+          ><option value="">最近任務</option
+          ><option v-for="job in jobs" :key="job.id" :value="job.id"
+            >{{ job.id.slice(0, 8) }} · {{ labels[job.status] || job.status }}</option
+          ></select
+        ></label
       ><button class="secondary" type="button" @click="historyOpen = !historyOpen"
         >任務與歷史資訊</button
       ></div

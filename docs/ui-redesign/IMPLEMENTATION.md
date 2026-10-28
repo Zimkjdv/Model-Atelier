@@ -80,6 +80,8 @@
 
 ## 相關文件
 
+- [G01–G04 主要流程補齊及正式環境實圖驗證](PRIMARY-FLOWS-IMPLEMENTATION.md)
+
 - [可互動的獨立示意預覽](preview.html)
 - [設計與分期規劃](PLAN.md)
 - [既有功能盤點](FEATURE-INVENTORY.md)

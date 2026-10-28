@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { apiJson } from './apiClient'
 import { createRequestScope } from './requestScope'
-const emit = defineEmits<{ use: [id: string, purpose: string] }>()
+const emit = defineEmits<{ use: [id: string, purpose: string]; dirty: [value: boolean] }>()
 const uploadOpen = ref(false)
 type Purpose = 'unspecified' | 'style' | 'character' | 'composition'
 type Asset = {
@@ -40,6 +40,51 @@ const items = ref<Asset[]>([]),
   search = ref('')
 const editing = ref<string | null>(null),
   title = ref('')
+const dialog = ref<HTMLDialogElement | null>(null),
+  selected = ref<Asset | null>(null),
+  mutating = ref(false)
+let opener: HTMLElement | null = null
+const dirty = computed(() => {
+  const item =
+    selected.value?.id === editing.value
+      ? selected.value
+      : items.value.find((item) => item.id === editing.value)
+  return !!item && (title.value !== item.title || purpose.value !== item.purpose)
+})
+watch([dirty, mutating], () => emit('dirty', dirty.value || mutating.value), { flush: 'sync' })
+function editAsset(item: Asset) {
+  editing.value = item.id
+  title.value = item.title
+  purpose.value = item.purpose
+}
+async function openAsset(item: Asset, event: Event) {
+  if (editing.value && dirty.value && !window.confirm('素材資料尚未保存，確定放棄編輯？')) return
+  editing.value = null
+  selected.value = item
+  opener = event.currentTarget as HTMLElement
+  error.value = ''
+  await nextTick()
+  dialog.value?.showModal()
+}
+function closeAsset() {
+  if (mutating.value || (dirty.value && !window.confirm('素材資料尚未保存，確定放棄編輯並關閉？')))
+    return
+  const id = selected.value?.id
+  editing.value = null
+  dialog.value?.close()
+  selected.value = null
+  void nextTick(() => {
+    const current = document.querySelector<HTMLButtonElement>('[data-asset-cover="' + id + '"]')
+    if (current) current.focus()
+    else if (opener?.isConnected) opener.focus()
+  })
+}
+function beforeUnload(event: BeforeUnloadEvent) {
+  if (dirty.value || mutating.value) {
+    event.preventDefault()
+    event.returnValue = ''
+  }
+}
 const visible = computed(() => items.value)
 const total = ref(0),
   next = ref<string | null>(null),
@@ -92,6 +137,8 @@ watch([search, archived, filter], () => {
 onBeforeUnmount(() => {
   clearTimeout(timer)
   reads.dispose()
+  window.removeEventListener('beforeunload', beforeUnload)
+  emit('dirty', false)
 })
 async function upload(event: Event) {
   const input = event.target as HTMLInputElement,
@@ -120,6 +167,8 @@ async function upload(event: Event) {
   }
 }
 async function update(item: Asset, archive = item.archived) {
+  if (mutating.value) return
+  mutating.value = true
   busy.value = true
   error.value = ''
   message.value = ''
@@ -135,6 +184,7 @@ async function update(item: Asset, archive = item.archived) {
       }),
     })
     items.value = items.value.map((value) => (value.id === result.id ? result : value))
+    if (selected.value?.id === result.id) selected.value = result
     editing.value = null
     await load()
     message.value = '素材資料已更新。'
@@ -142,9 +192,13 @@ async function update(item: Asset, archive = item.archived) {
     error.value = e instanceof Error ? e.message : '更新失敗'
   } finally {
     busy.value = false
+    mutating.value = false
   }
 }
-onMounted(() => void load())
+onMounted(() => {
+  window.addEventListener('beforeunload', beforeUnload)
+  void load()
+})
 </script>
 
 <template>
@@ -199,8 +253,13 @@ onMounted(() => void load())
   >
   <div class="asset-grid"
     ><article v-for="item in visible" :key="item.id" class="panel asset-card"
-      ><a :href="'/api/assets/' + item.id + '/image'" target="_blank" rel="noopener"
-        ><img :src="'/api/assets/' + item.id + '/image'" :alt="item.title" loading="lazy" /></a
+      ><button
+        class="asset-cover"
+        :data-asset-cover="item.id"
+        :aria-label="'查看素材 ' + item.title"
+        :disabled="busy || editing !== null"
+        @click="openAsset(item, $event)"
+        ><img :src="'/api/assets/' + item.id + '/image'" :alt="item.title" loading="lazy" /></button
       ><template v-if="editing === item.id"
         ><label>素材名稱<input v-model="title" maxlength="100" :disabled="busy" /></label
         ><label
@@ -306,6 +365,91 @@ onMounted(() => void load())
       ></details
     >
   </details>
+  <dialog
+    ref="dialog"
+    class="asset-dialog"
+    aria-labelledby="asset-detail-title"
+    @cancel.prevent="closeAsset"
+  >
+    <template v-if="selected">
+      <div class="asset-detail-heading"
+        ><h2 id="asset-detail-title">{{ selected.title }}</h2
+        ><button class="secondary" :disabled="mutating" autofocus @click="closeAsset"
+          >關閉</button
+        ></div
+      >
+      <div class="asset-detail-grid"
+        ><div class="asset-detail-image"
+          ><img :src="'/api/assets/' + selected.id + '/image'" :alt="selected.title" /><a
+            :href="'/api/assets/' + selected.id + '/image'"
+            target="_blank"
+            rel="noopener"
+            >另開原圖 ↗</a
+          ></div
+        >
+        <div class="asset-detail-info"
+          ><span class="asset-purpose" :class="selected.purpose">{{
+            purposes[selected.purpose]
+          }}</span
+          ><dl
+            ><dt>尺寸</dt><dd>{{ selected.width }} × {{ selected.height }}</dd
+            ><dt>像素量</dt><dd>{{ ((selected.width * selected.height) / 1e6).toFixed(2) }} MP</dd
+            ><dt>檔案大小</dt><dd>{{ (selected.size / 1024 / 1024).toFixed(2) }} MiB</dd
+            ><dt>前處理</dt
+            ><dd>{{
+              selected.preprocessing
+                ? '正規化 v' +
+                  selected.preprocessing.version +
+                  ' · Pillow ' +
+                  selected.preprocessing.library_version
+                : '版本未知'
+            }}</dd
+            ><dt>狀態</dt><dd>{{ selected.archived ? '已封存' : '使用中' }}</dd></dl
+          >
+          <p v-if="error" class="notice warning" role="alert">{{ error }}</p
+          ><p v-if="message" role="status">{{ message }}</p>
+          <form v-if="editing === selected.id" @submit.prevent="update(selected)"
+            ><label
+              >素材名稱<input
+                v-model="title"
+                maxlength="100"
+                required
+                :disabled="mutating" /></label
+            ><label
+              >素材用途<select v-model="purpose" :disabled="mutating"
+                ><option v-for="(label, value) in purposes" :key="value" :value="value">{{
+                  label
+                }}</option></select
+              ></label
+            ><div class="asset-actions"
+              ><button class="primary" :disabled="mutating || !title.trim()">保存素材資料</button
+              ><button type="button" class="secondary" :disabled="mutating" @click="editing = null"
+                >取消編輯</button
+              ></div
+            ></form
+          >
+          <div v-else class="asset-actions"
+            ><button
+              class="primary"
+              :disabled="busy || selected.archived"
+              @click="emit('use', selected.id, selected.purpose)"
+              >用於創作</button
+            ><button class="secondary" :disabled="busy" @click="editAsset(selected)"
+              >編輯素材資料</button
+            ><button
+              class="secondary"
+              :disabled="busy"
+              @click="update(selected, !selected.archived)"
+              >{{ selected.archived ? '還原素材' : '封存素材' }}</button
+            ></div
+          >
+          <p class="footnote"
+            >用途標籤只用於整理。帶入創作後仍需確認模型與流程，不會自動生成或加入訓練。</p
+          >
+        </div></div
+      >
+    </template>
+  </dialog>
 </template>
 
 <style scoped>

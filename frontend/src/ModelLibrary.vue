@@ -40,6 +40,29 @@ const emit = defineEmits<{
 }>()
 const category = ref('checkpoint'),
   view = ref('list')
+const loraLibrary = ref<InstanceType<typeof LoraLibrary> | null>(null)
+const controlLibrary = ref<InstanceType<typeof ControlLibrary> | null>(null)
+const referenceLibrary = ref<InstanceType<typeof ReferenceLibrary> | null>(null)
+const fluxLibrary = ref<InstanceType<typeof FluxComponentLibrary> | null>(null)
+const activeLibrary = computed(
+  () =>
+    ({
+      lora: loraLibrary.value,
+      control: controlLibrary.value,
+      reference: referenceLibrary.value,
+      flux: fluxLibrary.value,
+    })[category.value],
+)
+const syncDisabled = computed(() =>
+  category.value === 'checkpoint'
+    ? busy.value || editing.value !== null
+    : !activeLibrary.value || activeLibrary.value.syncDisabled,
+)
+function syncCategory() {
+  if (syncDisabled.value) return
+  if (category.value === 'checkpoint') void load(true)
+  else void activeLibrary.value?.sync()
+}
 const categories = [
   { id: 'checkpoint', label: 'Checkpoint' },
   { id: 'lora', label: 'LoRA' },
@@ -187,8 +210,10 @@ onMounted(() => load())
   <div class="library">
     <div class="page-intro"
       ><p>每個模型標明架構、輸出尺寸與元件狀態，生成前仍需流程預檢。</p
-      ><button class="primary" :disabled="busy || editing !== null" @click="load(true)">{{
-        busy ? '處理中…' : '同步模型清單'
+      ><button class="primary" :disabled="syncDisabled" @click="syncCategory">{{
+        syncDisabled && (busy || activeLibrary?.syncing)
+          ? '處理中…'
+          : '同步' + (categories.find((item) => item.id === category)?.label || '') + '清單'
       }}</button></div
     >
     <p v-if="error" role="alert" class="notice warning"
@@ -203,7 +228,7 @@ onMounted(() => load())
     <p v-if="feedback" role="status" class="notice success">{{ feedback }}</p>
     <div class="model-browser-tools"
       ><PageTabs id="models" v-model="category" label="模型分類" :items="categories" />
-      <div class="view-switch" v-show="category === 'checkpoint'" role="group" aria-label="模型排版"
+      <div class="view-switch" role="group" aria-label="模型排版"
         ><span>顯示</span
         ><button class="secondary" :aria-pressed="view === 'list'" @click="view = 'list'"
           >清單</button
@@ -473,7 +498,12 @@ onMounted(() => load())
       id="models-panel-control"
       role="tabpanel"
       aria-labelledby="models-tab-control"
-      ><ControlLibrary v-if="catalog" :engine-url="catalog.engine_url"
+      ><ControlLibrary
+        ref="controlLibrary"
+        :view="view"
+        managed
+        v-if="catalog"
+        :engine-url="catalog.engine_url"
     /></section>
     <section
       v-show="category === 'lora'"
@@ -481,6 +511,9 @@ onMounted(() => load())
       role="tabpanel"
       aria-labelledby="models-tab-lora"
       ><LoraLibrary
+        ref="loraLibrary"
+        :view="view"
+        managed
         v-if="catalog"
         :engine-url="catalog.engine_url"
         :checkpoints="catalog.models"
@@ -490,7 +523,7 @@ onMounted(() => load())
       id="models-panel-reference"
       role="tabpanel"
       aria-labelledby="models-tab-reference"
-      ><ReferenceLibrary
+      ><ReferenceLibrary ref="referenceLibrary" :view="view" managed
     /></section>
     <section
       v-show="category === 'flux'"
@@ -498,7 +531,7 @@ onMounted(() => load())
       role="tabpanel"
       aria-labelledby="models-tab-flux"
       ><button class="secondary" @click="emit('create', 'flux')">前往 FLUX 創作</button
-      ><FluxComponentLibrary /><FluxPlan
+      ><FluxComponentLibrary ref="fluxLibrary" :view="view" managed /><FluxPlan
     /></section>
   </div>
 </template>
