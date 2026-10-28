@@ -475,13 +475,28 @@ async function testConnection() {
                   ><h2>外觀與語言</h2><span class="chip">目前預設</span></div
                 ><dl class="appearance-options"
                   ><div class="appearance-option"
-                    ><dt>外觀<small>介面的背景與重點配色</small></dt
-                    ><dd class="appearance-value"
-                      ><span class="appearance-swatch" aria-hidden="true"></span>深色</dd
+                    ><dt
+                      ><label for="appearance-theme">外觀</label
+                      ><small id="appearance-theme-description">介面的背景與重點配色</small></dt
+                    ><dd class="appearance-value appearance-theme"
+                      ><span class="appearance-swatch" aria-hidden="true"></span
+                      ><select id="appearance-theme" aria-describedby="appearance-theme-description"
+                        ><option value="dark">深色</option></select
+                      ></dd
                     ></div
                   ><div class="appearance-option"
-                    ><dt>介面語言<small>平台選單與操作文字的顯示語言</small></dt
-                    ><dd class="appearance-value">繁體中文</dd></div
+                    ><dt
+                      ><label for="appearance-language">介面語言</label
+                      ><small id="appearance-language-description"
+                        >平台選單與操作文字的顯示語言</small
+                      ></dt
+                    ><dd class="appearance-value"
+                      ><select
+                        id="appearance-language"
+                        aria-describedby="appearance-language-description"
+                        ><option value="zh-TW">繁體中文</option></select
+                      ></dd
+                    ></div
                   ></dl
                 ><p class="appearance-note"
                   >目前僅提供深色與繁體中文，其他主題及語言尚未開放。</p

@@ -677,6 +677,11 @@
   font-size: 15px;
   font-weight: 600;
 }
+#app .atelier-shell .appearance-option label {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
 #app .atelier-shell .appearance-option small {
   display: block;
   margin-top: 3px;
@@ -685,29 +690,31 @@
   font-weight: 400;
 }
 #app .atelier-shell .appearance-value {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 46px;
+  position: relative;
   margin: 0;
-  padding: 9px 16px;
-  border: 1px solid var(--line2);
-  border-radius: 10px;
-  background: var(--stage);
-  color: var(--ink);
-  font-size: 15px;
-  font-weight: 500;
   white-space: normal;
 }
+#app .atelier-shell .appearance-value select {
+  width: 100%;
+  min-height: 46px;
+  font-weight: 500;
+  cursor: pointer;
+}
+#app .atelier-shell .appearance-theme select {
+  padding-left: 44px;
+}
 #app .atelier-shell .appearance-swatch {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 20px;
   height: 20px;
-  flex: none;
   border: 1px solid var(--line2);
   border-radius: 5px;
   background: var(--raised);
   box-shadow: inset -6px 0 var(--accent);
+  pointer-events: none;
 }
 #app .atelier-shell .appearance-note {
   margin: 16px 0 0;
