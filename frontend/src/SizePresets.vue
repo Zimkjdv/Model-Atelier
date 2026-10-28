@@ -1,33 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { outputPresets } from './outputPresets'
 const props = defineProps<{ width: number; height: number; family?: string; disabled?: boolean }>()
 const emit = defineEmits<{ select: [width: number, height: number] }>()
-const sizes = computed(() =>
-  props.family === 'sd1'
-    ? [
-        [512, 512],
-        [512, 680],
-        [680, 512],
-        [768, 432],
-      ]
-    : props.family === 'flux'
-      ? [
-          [1024, 1024],
-          [768, 1024],
-          [1024, 768],
-          [1280, 720],
-        ]
-      : [
-          [1024, 1024],
-          [864, 1152],
-          [1152, 864],
-          [1536, 864],
-        ],
-)
+const sizes = computed(() => {
+  const presets = outputPresets(props.family || 'sdxl')
+  return presets.length ? presets : outputPresets('sdxl')
+})
 const labels = ['1:1', '3:4', '4:3', '16:9']
 </script>
 <template>
-  <div class="size-presets" role="group" aria-label="輸出尺寸比例"
+  <p class="size-presets-label">輸出尺寸</p
+  ><div class="size-presets" role="group" aria-label="輸出尺寸比例"
     ><button
       v-for="(size, i) in sizes"
       :key="labels[i]"

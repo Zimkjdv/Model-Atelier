@@ -285,8 +285,7 @@ watch(
 <template>
   <section aria-label="結構參考工作台">
     <div class="studio-workbench"
-      ><div class="studio-settings"
-        ><UnsavedChangesNotice :dirty="dirty" page-only />
+      ><div class="studio-settings">
         <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
         <p v-if="message" class="notice" role="status">{{ message }}</p>
         <div v-if="pendingRestore" class="notice warning"
@@ -543,7 +542,7 @@ watch(
                   :checkpoint="form.checkpoint"
                   @blocked="loraBlock = $event" /></details
             ></details> </fieldset></form
-        ><details class="studio-tools"
+        ><UnsavedChangesNotice :dirty="dirty" page-only /><details class="studio-tools"
           ><summary>草稿、來源與設定交換</summary
           ><div class="toolbar"
             ><strong>Checkpoint 結構參考</strong

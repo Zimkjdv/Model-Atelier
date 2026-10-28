@@ -284,8 +284,7 @@ onBeforeUnmount(() => {
 <template>
   <section aria-label="局部編輯工作台">
     <div class="studio-workbench"
-      ><div class="studio-settings"
-        ><UnsavedChangesNotice :dirty="dirty" :saving="maskBusy" page-only />
+      ><div class="studio-settings">
         <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
         <p v-if="message" class="notice" role="status">{{ message }}</p>
         <div v-if="pendingRestore" class="notice warning"
@@ -491,7 +490,8 @@ onBeforeUnmount(() => {
                   :checkpoint="form.checkpoint"
                   @blocked="loraBlock = $event" /></details
             ></details> </fieldset></form
-        ><details class="studio-tools"
+        ><UnsavedChangesNotice :dirty="dirty" :saving="maskBusy" page-only /><details
+          class="studio-tools"
           ><summary>草稿、來源與設定交換</summary
           ><div class="toolbar"
             ><strong>Checkpoint 局部編輯</strong
@@ -525,6 +525,7 @@ onBeforeUnmount(() => {
         ><div class="studio-submit" id="studio-submit-inpaint"></div></div
       ><div class="studio-stage"
         ><MaskEditor
+          v-model:feather="form.feather_radius"
           :source="source"
           :mask="mask"
           :disabled="busy || generationBusy || generationPending || !!pendingRestore"

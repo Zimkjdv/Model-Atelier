@@ -53,6 +53,24 @@ class SavedExperimentTests(unittest.TestCase):
             self.assertEqual(self.client.get('/api/jobs').json(),[])
             self.assertEqual(self.client.get('/api/drafts').json(),[])
 
+    def test_saved_document_preserves_v1_numeric_hash_without_engine_or_writes(self):
+        original = self.preview(axis='steps')
+        saved = self.save(original).json()
+        before = self.db.read_bytes()
+        with patch('backend.main.httpx.AsyncClient', side_effect=AssertionError('no engine')):
+            response = self.client.get('/api/experiments/plans/' + saved['id'] + '/document')
+            self.assertEqual(response.status_code, 200, response.text)
+            document = response.json()
+            self.assertEqual(document['plan_sha256'], original['plan_sha256'])
+            self.assertEqual(plans.digest(document), original['plan_sha256'])
+            self.assertEqual(document['baseline']['seed'], '18446744073709551615')
+            self.assertIn(b'"cfg": 7.0', response.content)
+            imported = self.client.post('/api/experiments/import-preview', content=response.content)
+            self.assertEqual(imported.status_code, 200, imported.text)
+            self.assertEqual(self.db.read_bytes(), before)
+            self.assertEqual(self.client.get('/api/experiments/plans/' + str(uuid4()) + '/document').status_code, 404)
+        self.assertEqual(self.client.get('/api/jobs').json(), [])
+
     def test_tampered_rehashed_variants_unknown_fields_batch_and_schema_are_rejected(self):
         original=self.preview(cases=['chair','lake']); before=self.db.read_bytes()
         mutations=[]

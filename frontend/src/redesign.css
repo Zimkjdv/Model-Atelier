@@ -199,7 +199,8 @@
 }
 #app
   .atelier-shell
-  :is(input:not([type='checkbox']):not([type='radio']):not([type='file']), select, textarea) {
+  input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']),
+#app .atelier-shell :is(select, textarea) {
   background: var(--stage);
   border: 1px solid var(--line2);
   border-radius: 10px;
@@ -1344,9 +1345,11 @@
   align-self: start;
 }
 #app .atelier-shell .artwork-grid.masonry .artwork-cover {
+  height: auto;
   aspect-ratio: auto;
 }
 #app .atelier-shell .artwork-grid.masonry .artwork-cover img {
+  display: block;
   height: auto;
   object-fit: contain;
 }
@@ -1462,4 +1465,633 @@
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 20px;
+}
+/* Reference alignment: primary content first; secondary operations stay in disclosures. */
+#app .atelier-shell .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+#app .atelier-shell :is(.asset-browser-tools, .gallery-browser-tools, .model-browser-tools) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+  min-height: 44px;
+}
+#app
+  .atelier-shell
+  :is(.asset-browser-tools, .gallery-browser-tools, .model-browser-tools)
+  .purpose-tabs,
+#app .atelier-shell .model-browser-tools .page-tabs,
+#app .atelier-shell :is(.gallery-browser-tools, .model-browser-tools) .view-switch {
+  margin: 0;
+}
+#app .atelier-shell :is(.asset-browser-tools, .gallery-browser-tools) label {
+  margin: 0;
+}
+#app .atelier-shell .asset-search {
+  margin-left: auto;
+  width: 280px;
+  flex: none;
+}
+#app .atelier-shell .asset-search input {
+  width: 100%;
+}
+#app .atelier-shell .gallery-search {
+  width: 280px;
+  flex: none;
+}
+#app .atelier-shell .gallery-model {
+  width: 170px;
+}
+#app .atelier-shell .gallery-browser-tools .view-switch {
+  margin-left: auto;
+}
+#app .atelier-shell .view-switch {
+  align-items: center;
+  gap: 4px;
+}
+#app .atelier-shell :is(.gallery-browser-tools, .model-browser-tools) .view-switch button {
+  min-height: 38px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  padding: 6px 14px;
+  color: var(--ink2);
+}
+#app
+  .atelier-shell
+  :is(.gallery-browser-tools, .model-browser-tools)
+  .view-switch
+  button[aria-pressed='true'] {
+  background: var(--asoft);
+  border-color: #456347;
+  color: var(--accent);
+}
+#app .atelier-shell .gallery-list-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -8px 0 14px;
+  min-height: 30px;
+}
+#app .atelier-shell .gallery-list-meta label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  color: var(--ink3);
+}
+#app .atelier-shell .gallery-list-meta select {
+  min-height: 30px;
+  padding: 2px 8px;
+  font-size: 13px;
+}
+#app .atelier-shell .asset-card > a:first-child {
+  aspect-ratio: 4 / 3;
+}
+#app .atelier-shell .asset-card img {
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+#app .atelier-shell .asset-card .asset-management {
+  margin: 0 14px 10px;
+  padding: 0;
+  border: 0;
+}
+#app .atelier-shell .asset-card .asset-management > summary {
+  min-height: 22px;
+  font-size: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .asset-card .asset-actions {
+  margin-top: 10px;
+}
+#app .atelier-shell .asset-card h2 {
+  margin: 14px 14px 2px;
+}
+#app .atelier-shell .library-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+}
+#app .atelier-shell .library-footer > div {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+#app .atelier-shell .library-management {
+  margin-top: 22px;
+}
+#app .atelier-shell .model-browser-tools {
+  justify-content: space-between;
+}
+#app .atelier-shell .model-browser-tools .page-tabs {
+  border: 0;
+  gap: 4px;
+}
+#app .atelier-shell .model-browser-tools .page-tabs button {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 6px 14px;
+  min-height: 38px;
+}
+#app .atelier-shell .model-browser-tools .page-tabs button[aria-selected='true'] {
+  background: var(--asoft);
+  border-color: #456347;
+}
+#app .atelier-shell .model-list .model-card {
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 0.9fr) auto;
+}
+#app .atelier-shell .model-list .model-card-top .status {
+  display: block;
+  width: 100%;
+  border-radius: 99px;
+}
+#app .atelier-shell .model-size-chips,
+#app .atelier-shell .comparison-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+#app .atelier-shell .model-size-chips {
+  margin-top: 6px;
+}
+#app .atelier-shell :is(.model-size-chips, .comparison-chips) > span {
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 2px 10px;
+  color: var(--ink2);
+  font-size: 12px;
+}
+#app .atelier-shell .model-card:not(.model-list .model-card) .model-card-top {
+  margin: 14px 0;
+}
+#app .atelier-shell .settings-workspace {
+  margin-top: 22px;
+}
+#app .atelier-shell .settings-connection-state {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  margin: 14px 0;
+  padding-top: 14px;
+  font-size: 13px;
+}
+#app .atelier-shell .comparison-summary {
+  padding: 20px;
+  margin-bottom: 16px;
+}
+#app .atelier-shell .comparison-summary h2 {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+#app .atelier-shell .comparison-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  margin: 0 0 22px;
+}
+#app .atelier-shell .comparison-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+#app .atelier-shell .comparison-card-heading h3 {
+  font-size: 20px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+#app .atelier-shell .comparison-waiting {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line2);
+  border-radius: 12px;
+  min-height: 170px;
+  margin-bottom: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .comparison-result-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: var(--stage);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+#app .atelier-shell .experiment-results {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+#app .atelier-shell .experiment-results button {
+  margin: 0;
+}
+#app .atelier-shell .experiment-planner {
+  padding: 20px;
+  font-size: 15px;
+}
+#app .atelier-shell .saved-plan-picker {
+  margin: 16px 0;
+  max-width: 420px;
+}
+#app .atelier-shell .saved-plan-picker label {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+#app .atelier-shell .saved-experiments {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 16px 20px;
+  border-radius: 14px;
+  margin: 22px 0;
+}
+#app .atelier-shell .training-tabs small {
+  display: block;
+  color: var(--ink3);
+  font-size: 12px;
+  font-weight: 400;
+}
+#app .atelier-shell .training-review-content {
+  min-width: 0;
+}
+#app .atelier-shell .training-progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink2);
+  margin: 0 0 16px;
+}
+#app .atelier-shell .training-progress progress {
+  grid-column: 1 / -1;
+  height: 6px;
+  width: 100%;
+  accent-color: var(--accent);
+}
+#app .atelier-shell .training-review-grid {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+#app .atelier-shell .training-review-grid .review-navigation {
+  margin: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+#app .atelier-shell .training-review-grid .image-choices {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin: 0;
+  gap: 12px;
+}
+#app .atelier-shell .training-review-grid .image-choices button {
+  display: block;
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0;
+  overflow: hidden;
+  font-size: 11px;
+  min-height: 0;
+  background: var(--stage);
+  width: 100%;
+}
+#app .atelier-shell .training-review-grid .image-choices button[aria-pressed='true'] {
+  outline: none;
+  border-color: var(--accent);
+}
+#app .atelier-shell .training-review-grid .review-thumb {
+  display: block;
+  width: 100%;
+  height: 136px;
+  object-fit: contain;
+  border-radius: 0;
+}
+#app .atelier-shell .training-review-grid .pending-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  box-shadow: 0 0 0 1px var(--stage);
+  margin: 0;
+}
+#app .atelier-shell .review-navigation-details {
+  font-size: 13px;
+}
+#app .atelier-shell .review-navigation-details > summary {
+  font-size: 12px;
+}
+#app .atelier-shell .training-source-image img {
+  width: 100%;
+  max-height: none;
+  object-fit: contain;
+  display: block;
+}
+#app .atelier-shell .training-source-image .footnote {
+  font-size: 11px;
+  margin-bottom: 0;
+}
+#app .atelier-shell .training-review-grid .training-image-form {
+  padding: 20px;
+  border-radius: 14px;
+  margin: 0;
+}
+#app .atelier-shell .training-image-form legend {
+  font-size: 12px;
+}
+#app .atelier-shell .training-image-form h2 {
+  font-size: 16px;
+}
+#app .atelier-shell .training-image-form textarea {
+  min-height: 110px;
+}
+#app .atelier-shell .training-image-form label {
+  font-size: 13px;
+  margin: 14px 0 6px;
+}
+#app .atelier-shell .training-dataset-management {
+  margin-top: 0;
+}
+#app .atelier-shell .training-version-management {
+  margin: 22px 0;
+}
+#app .atelier-shell .studio-navigation {
+  top: 22px;
+  padding-bottom: 0;
+}
+#app .atelier-shell .workflow-hint {
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+#app .atelier-shell .architecture-switch {
+  position: absolute;
+  right: 0;
+  top: 70px;
+  margin: 0;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: var(--bg);
+}
+#app .atelier-shell .architecture-switch summary {
+  min-height: 22px;
+  font-size: 12px;
+}
+#app .atelier-shell .architecture-switch[open] > div {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+#app .atelier-shell .studio-settings {
+  padding-top: 125px;
+}
+#app .atelier-shell .studio-settings .editor > h2 {
+  display: none;
+}
+#app .atelier-shell .studio-settings textarea {
+  height: 110px;
+}
+#app .atelier-shell .studio-settings .save-state {
+  margin: 0;
+  font-size: 12px;
+}
+#app .atelier-shell .studio-settings .size-presets-label {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  margin: 16px 0 0;
+}
+#app .atelier-shell .size-presets {
+  margin-top: 6px;
+}
+#app .atelier-shell .studio-settings .size-presets i {
+  width: 20px;
+  height: auto;
+  min-height: 8px;
+  min-width: 0;
+}
+#app .atelier-shell .size-presets button {
+  width: 64px;
+  height: 62px;
+  min-width: 0;
+  min-height: 0;
+  padding: 7px 8px;
+  justify-content: space-between;
+}
+#app .atelier-shell .size-presets button:last-child i {
+  width: 24px;
+}
+#app .atelier-shell .studio-preview {
+  min-height: 0;
+  height: calc(100vh - 144px);
+  gap: 12px;
+  margin: 0;
+}
+#app .atelier-shell .stage-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#app .atelier-shell .empty-canvas {
+  width: min(100%, calc((100vh - 246px) * var(--canvas-ratio)));
+  max-height: none;
+  flex: none;
+  padding: 20px;
+}
+#app .atelier-shell .stage-caption {
+  font-size: 13px;
+  text-align: center;
+  margin: 0;
+  color: var(--ink3);
+}
+#app .atelier-shell .studio-validation {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 13px;
+}
+#app .atelier-shell .studio-validation > summary {
+  font-size: 12px;
+}
+#app .atelier-shell .generation-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  margin: 0 -24px;
+  border-top: 1px solid var(--line);
+  background: var(--rail);
+}
+#app .atelier-shell .generation-statusbar p {
+  font-size: 13px;
+  margin: 0;
+  color: var(--ink3);
+}
+#app .atelier-shell .generation-statusbar strong {
+  font-size: 15px;
+}
+#app .atelier-shell .generation-history {
+  margin: 0;
+  padding: 0;
+}
+#app .atelier-shell .generation-records {
+  margin: 0;
+}
+#app .atelier-shell .generation-records:not([open]) {
+  padding: 0;
+  border: 0;
+}
+#app .atelier-shell .generation-records:not([open]) > summary {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+#app .atelier-shell .asset-browser-tools .asset-search {
+  margin-left: auto;
+}
+#app .atelier-shell .studio-preview {
+  height: calc(100vh - 157px);
+}
+#app .atelier-shell .studio-preview .empty-canvas {
+  margin: 0 auto;
+}
+#app .atelier-shell .model-browser-tools {
+  min-height: 38px;
+}
+#app .atelier-shell .model-list .model-card {
+  gap: 4px 16px;
+  padding: 20px 0;
+}
+#app .atelier-shell .model-list .model-details > summary {
+  min-height: 22px;
+}
+#app .atelier-shell .model-summary p {
+  font-size: 13px;
+  margin: 2px 0 0;
+}
+#app .atelier-shell .artwork-grid:not(.masonry) .artwork-cover {
+  height: auto;
+}
+#app .atelier-shell .gallery-card-meta details {
+  border: 0;
+  padding: 0;
+  margin-top: 8px;
+}
+#app .atelier-shell .gallery-card-meta details > summary {
+  font-size: 12px;
+  min-height: 22px;
+  color: var(--ink3);
+}
+#app .atelier-shell .gallery-list-meta select {
+  min-height: 30px;
+  height: 30px;
+  padding: 2px 8px;
+  font-size: 13px;
+}
+#app .atelier-shell .training-review-grid .training-source-image img {
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+#app .atelier-shell .training-review-grid .training-image-form legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+#app .atelier-shell .training-tabs {
+  margin-top: 22px;
+}
+#app .atelier-shell .generation-statusbar button {
+  margin: 0;
+}
+
+#app .atelier-shell .experiment-workspace > .page-intro button {
+  margin: 0;
+}
+#app .atelier-shell .gallery-list-meta {
+  min-height: 34px;
+}
+#app .atelier-shell .training-review-grid > .panel {
+  margin-bottom: 0;
+}
+#app .atelier-shell .mask-primary-tools label {
+  gap: 6px;
+}
+#app .atelier-shell .mask-primary-tools input[type='range'] {
+  width: 90px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  accent-color: var(--accent);
+}
+#app .atelier-shell .mask-primary-tools button[aria-pressed='true'] {
+  background: var(--asoft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+#app .atelier-shell .mask-stage {
+  width: min(100%, calc((100vh - 340px) * var(--canvas-ratio)));
+}
+
+#app .atelier-shell .studio-navigation {
+  z-index: 8;
+}
+
+#app .atelier-shell .training-review-grid .image-choices {
+  max-height: 440px;
+  overflow-y: auto;
+}
+#app .atelier-shell:not(.system-page) :is(h2, h3, h4) {
+  line-height: 1.35;
+}
+#app .atelier-shell .experiment-workspace > .page-intro {
+  margin-bottom: 22px;
+}
+#app .atelier-shell .comparison-summary h2 {
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+#app .atelier-shell .comparison-card-heading h3 {
+  font-weight: 700;
+}
+#app .atelier-shell .training-review-grid .review-navigation-details .filters {
+  grid-template-columns: 1fr;
+  padding: 0;
+  border: 0;
+}
+#app .atelier-shell .training-review-grid .review-navigation-details .filters label {
+  min-width: 0;
+}
+#app .atelier-shell .review-navigation-details .issue-list {
+  padding-left: 16px;
+}
+#app .atelier-shell .review-navigation-details .issue-list li {
+  overflow-wrap: anywhere;
+}
+#app .atelier-shell .model-grid:not(.model-list) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }

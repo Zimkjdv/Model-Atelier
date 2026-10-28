@@ -198,7 +198,7 @@ for (const width of [1440, 390]) {
     const inverted = await pixels(canvas(page))
     expect(inverted.white).toBe(800 * 400 - erased.white)
     expect(inverted.hash).toBe(erased.inverseHash)
-    await mask.getByRole('button', { name: '清空', exact: true }).click()
+    await mask.getByRole('button', { name: '清除遮罩', exact: true }).click()
     expect((await pixels(canvas(page))).white).toBe(0)
     await expect(mask.getByRole('button', { name: '保存遮罩', exact: true })).toBeDisabled()
     await choosePng(page, await png(page, 800, 400, true))

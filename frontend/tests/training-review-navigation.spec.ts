@@ -16,6 +16,7 @@ for (const width of [1440, 1280]) {
     })
     await page.setViewportSize({ width, height: 1000 })
     await page.goto('/#/training')
+    await page.locator('.training-dataset-management > summary').click()
     await page.getByLabel('原圖來源目錄', { exact: true }).fill(fixture.source_root)
     await page.getByLabel('資料清單 JSON', { exact: true }).setInputFiles({
       name: 'dataset.json',
@@ -23,7 +24,12 @@ for (const width of [1440, 1280]) {
       buffer: Buffer.from(fixture.manifest_json),
     })
     await page.getByRole('button', { name: '匯入待審查清單', exact: true }).click()
+    await expect(
+      page.getByRole('status').filter({ hasText: '已匯入待審查資料；原圖與原清單未修改。' }),
+    ).toBeVisible()
     await page.getByLabel('只顯示待補項目', { exact: true }).uncheck()
+    await page.locator('.review-navigation-details > summary').click()
+    await page.getByText(/^符合篩選的圖片缺項（/).click()
     await expect(
       page.getByRole('status').filter({ hasText: '篩選結果 125 / 125 張' }),
     ).toBeVisible()

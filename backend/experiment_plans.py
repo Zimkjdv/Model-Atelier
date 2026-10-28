@@ -429,6 +429,14 @@ def install(app, host):
         except KeyError:
             raise HTTPException(404, '找不到比較方案')
 
+    @app.get('/api/experiments/plans/{identifier}/document')
+    def saved_document(identifier: UUID):
+        try:
+            record = shown(experiment_store.get(host.DB, str(identifier)))
+        except KeyError:
+            raise HTTPException(404, '找不到比較方案')
+        return download(validate_document(record['plan']))
+
     @app.get('/api/experiments/plans/{identifier}/results')
     def results(identifier: UUID):
         try:

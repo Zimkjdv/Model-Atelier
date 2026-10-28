@@ -167,69 +167,37 @@ onMounted(() => void load())
       萬像素。保留原始檔於你的電腦；平台儲存經方向校正、移除中繼資料的 PNG 副本。</p
     ></article
   >
-  <details class="panel"
-    ><summary>參考流程的輸入需求與支援能力</summary
-    ><article v-for="workflow in workflows" :key="workflow.id"
-      ><h3
-        >{{ workflow.name }} ·
-        {{ workflow.implemented ? '已實作，提交仍需引擎驗證' : '尚未整合' }}</h3
-      ><p>{{ workflow.input_requirement }} {{ workflow.control }}</p></article
-    ></details
-  >
   <p v-if="error" class="notice warning" role="alert">{{ error }}</p
   ><p v-if="message" class="notice" role="status">{{ message }}</p>
-  <div class="purpose-tabs" role="group" aria-label="素材用途"
-    ><button :aria-pressed="filter === ''" :disabled="editing !== null" @click="filter = ''"
-      >全部</button
-    ><button
-      v-for="(label, value) in purposes"
-      :key="value"
-      :aria-pressed="filter === value"
-      :disabled="editing !== null"
-      @click="filter = value"
-      >{{ label }}</button
-    ></div
-  >
-  <div class="asset-toolbar"
-    ><label
-      >搜尋素材<input
+  <div class="asset-browser-tools">
+    <div class="purpose-tabs" role="group" aria-label="素材用途">
+      <button :aria-pressed="filter === ''" :disabled="editing !== null" @click="filter = ''"
+        >全部</button
+      >
+      <button
+        v-for="value in ['style', 'composition', 'character'] as const"
+        :key="value"
+        :aria-pressed="filter === value"
+        :disabled="editing !== null"
+        @click="filter = value"
+        >{{ purposes[value] }}</button
+      >
+    </div>
+    <label class="asset-search"
+      ><span class="sr-only">搜尋素材</span
+      ><input
         v-model="search"
         :disabled="editing !== null"
         maxlength="200"
         type="search"
-        placeholder="輸入素材名稱" /></label
-    ><label
-      >參考用途<select v-model="filter" :disabled="editing !== null"
-        ><option value="">全部用途</option
-        ><option v-for="(label, value) in purposes" :key="value" :value="value">{{
-          label
-        }}</option></select
-      ></label
-    ><button class="secondary" :disabled="busy || editing !== null" @click="archived = !archived">{{
-      archived ? '查看使用中素材' : '查看已封存'
-    }}</button
-    ><button class="secondary" :disabled="busy || editing !== null" @click="load()"
-      >重新整理</button
-    ></div
-  >
-  <p class="footnote">{{ archived ? '已封存' : '使用中' }} · {{ total }} 張符合素材</p>
-  <div class="asset-toolbar" role="group" aria-label="素材分頁"
-    ><button
-      class="secondary"
-      :disabled="busy || editing !== null || !previous"
-      @click="load(previous)"
-      >上一頁</button
-    ><button class="secondary" :disabled="busy || editing !== null || !next" @click="load(next)"
-      >下一頁</button
-    ></div
-  >
+        placeholder="搜尋素材名稱…"
+    /></label>
+  </div>
   <article v-if="!visible.length" class="panel placeholder"
     ><h2>{{ busy ? '處理中…' : '目前沒有符合條件的素材' }}</h2
     ><p>上傳圖片，或調整搜尋與封存篩選。</p></article
   >
-  <p role="status" class="footnote"
-    >{{ archived ? '已封存' : '使用中' }}素材：{{ total }} 張符合，本頁 {{ visible.length }} 張</p
-  ><div class="asset-grid"
+  <div class="asset-grid"
     ><article v-for="item in visible" :key="item.id" class="panel asset-card"
       ><a :href="'/api/assets/' + item.id + '/image'" target="_blank" rel="noopener"
         ><img :src="'/api/assets/' + item.id + '/image'" :alt="item.title" loading="lazy" /></a
@@ -248,45 +216,96 @@ onMounted(() => void load())
         ></template
       ><template v-else
         ><h2
-          >{{ item.title }} <span class="asset-purpose">{{ purposes[item.purpose] }}</span></h2
+          >{{ item.title }}
+          <span class="asset-purpose" :class="item.purpose">{{ purposes[item.purpose] }}</span></h2
         ><p>
           {{ item.width }} × {{ item.height }} · {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p
-        ><p class="footnote">{{
-          item.preprocessing
-            ? '正規化 v' +
-              item.preprocessing.version +
-              ' · Pillow ' +
-              item.preprocessing.library_version
-            : '前處理版本未知'
-        }}</p
         ><div class="asset-actions"
           ><button
             class="secondary"
             :disabled="busy || editing !== null || item.archived"
             @click="emit('use', item.id, item.purpose)"
             >用於創作</button
-          ><button
-            class="secondary"
-            :disabled="busy || editing !== null"
-            :aria-label="'編輯素材 ' + item.title"
-            @click="
-              () => {
-                editing = item.id
-                title = item.title
-                purpose = item.purpose
-              }
-            "
-            >編輯資料</button
-          ><button
-            class="secondary"
-            :disabled="busy || editing !== null"
-            @click="update(item, !item.archived)"
-            >{{ item.archived ? '還原素材' : '封存素材' }}</button
           ></div
-        ></template
-      ></article
+        ><details class="asset-management"
+          ><summary>素材管理</summary
+          ><p class="footnote">{{
+            item.preprocessing
+              ? '正規化 v' +
+                item.preprocessing.version +
+                ' · Pillow ' +
+                item.preprocessing.library_version
+              : '前處理版本未知'
+          }}</p>
+          <div class="asset-actions"
+            ><button
+              class="secondary"
+              :disabled="busy || editing !== null"
+              :aria-label="'編輯素材 ' + item.title"
+              @click="
+                () => {
+                  editing = item.id
+                  title = item.title
+                  purpose = item.purpose
+                }
+              "
+              >編輯資料</button
+            ><button
+              class="secondary"
+              :disabled="busy || editing !== null"
+              @click="update(item, !item.archived)"
+              >{{ item.archived ? '還原素材' : '封存素材' }}</button
+            ></div
+          ></details
+        >
+      </template></article
     ></div
   >
+  <div class="library-footer"
+    ><span role="status" class="footnote"
+      >{{ archived ? '已封存' : '使用中' }}素材：{{ total }} 張符合，本頁
+      {{ visible.length }} 張</span
+    >
+    <div v-if="previous || next" role="group" aria-label="素材分頁"
+      ><button
+        class="secondary"
+        :disabled="busy || editing !== null || !previous"
+        @click="load(previous)"
+        >上一頁</button
+      ><button class="secondary" :disabled="busy || editing !== null || !next" @click="load(next)"
+        >下一頁</button
+      ></div
+    >
+  </div>
+  <details class="panel library-management"
+    ><summary>素材篩選、整理與流程能力</summary>
+    <div class="asset-toolbar"
+      ><label
+        >參考用途<select v-model="filter" :disabled="editing !== null"
+          ><option value="">全部用途</option
+          ><option v-for="(label, value) in purposes" :key="value" :value="value">{{
+            label
+          }}</option></select
+        ></label
+      ><button
+        class="secondary"
+        :disabled="busy || editing !== null"
+        @click="archived = !archived"
+        >{{ archived ? '查看使用中素材' : '查看已封存' }}</button
+      ><button class="secondary" :disabled="busy || editing !== null" @click="load()"
+        >重新整理</button
+      ></div
+    >
+    <details class="panel"
+      ><summary>參考流程的輸入需求與支援能力</summary
+      ><article v-for="workflow in workflows" :key="workflow.id"
+        ><h3
+          >{{ workflow.name }} ·
+          {{ workflow.implemented ? '已實作，提交仍需引擎驗證' : '尚未整合' }}</h3
+        ><p>{{ workflow.input_requirement }} {{ workflow.control }}</p></article
+      ></details
+    >
+  </details>
 </template>
 
 <style scoped>

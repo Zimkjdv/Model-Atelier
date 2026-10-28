@@ -4,6 +4,10 @@ import { vMasonry } from './masonry'
 const layout = ref('fixed')
 const importOpen = ref(false)
 const sort = ref('latest')
+function selectCollection(value: 'active' | 'archived', favorites = false) {
+  scope.value = value
+  favoritesOnly.value = favorites
+}
 import { api } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -476,7 +480,61 @@ onBeforeUnmount(() => {
       >{{ failure.source.filename }}：{{ failure.message }}</li
     ></ul
   >
-  <div class="view-switch"
+  <div class="gallery-browser-tools">
+    <label class="gallery-search" for="artwork-search"
+      ><span class="sr-only">搜尋作品</span
+      ><input
+        id="artwork-search"
+        v-model="search"
+        :disabled="saving || importing"
+        maxlength="200"
+        type="search"
+        placeholder="搜尋作品名稱"
+    /></label>
+    <div class="purpose-tabs" role="group" aria-label="作品狀態">
+      <button
+        :aria-pressed="scope === 'active' && !favoritesOnly"
+        :disabled="saving || importing"
+        @click="selectCollection('active')"
+        >全部</button
+      >
+      <button
+        :aria-pressed="favoritesOnly"
+        :disabled="saving || importing"
+        @click="selectCollection('active', true)"
+        >已收藏</button
+      >
+      <button
+        :aria-pressed="scope === 'archived'"
+        :disabled="saving || importing"
+        @click="selectCollection('archived')"
+        >已封存</button
+      >
+    </div>
+    <label class="gallery-model" for="artwork-model"
+      ><span class="sr-only">模型篩選</span
+      ><input
+        id="artwork-model"
+        v-model="modelFilter"
+        :disabled="saving || importing"
+        list="artwork-model-options"
+        maxlength="2048"
+        placeholder="全部模型" /><datalist id="artwork-model-options"
+        ><option v-for="name in modelChoices" :key="name" :value="name" /></datalist
+    ></label>
+    <div class="view-switch" role="group" aria-label="作品排版"
+      ><span>排版</span
+      ><button class="secondary" :aria-pressed="layout === 'masonry'" @click="layout = 'masonry'"
+        >瀑布流</button
+      ><button class="secondary" :aria-pressed="layout === 'fixed'" @click="layout = 'fixed'"
+        >固定</button
+      ></div
+    >
+  </div>
+  <div class="gallery-list-meta"
+    ><span class="footnote" role="status"
+      >{{ total }} 張符合 · 第 {{ Math.floor(offset / 40) + 1 }} 頁 · 本頁
+      {{ items.length }} 張</span
     ><label
       >排序<select v-model="sort" :disabled="saving || importing"
         ><option value="latest">最新</option
@@ -484,61 +542,6 @@ onBeforeUnmount(() => {
         ><option value="rating">評分最高</option
         ><option value="model">模型</option></select
       ></label
-    ><span>排版</span
-    ><button class="secondary" :aria-pressed="layout === 'masonry'" @click="layout = 'masonry'"
-      >瀑布流</button
-    ><button class="secondary" :aria-pressed="layout === 'fixed'" @click="layout = 'fixed'"
-      >固定</button
-    ></div
-  ><div class="artwork-toolbar"
-    ><label for="artwork-search"
-      >搜尋作品<input
-        id="artwork-search"
-        v-model="search"
-        :disabled="saving || importing"
-        maxlength="200"
-        type="search"
-        placeholder="檔名、模型、筆記或畫面描述" /></label
-    ><label for="artwork-scope"
-      >作品狀態<select id="artwork-scope" v-model="scope" :disabled="saving || importing"
-        ><option value="active">使用中</option
-        ><option value="archived">已封存</option
-        ><option value="all">全部作品</option></select
-      ></label
-    ><label for="artwork-model"
-      >模型篩選<input
-        id="artwork-model"
-        v-model="modelFilter"
-        :disabled="saving || importing"
-        list="artwork-model-options"
-        maxlength="2048"
-        placeholder="所有模型；可輸入完整名稱" /><datalist id="artwork-model-options"
-        ><option v-for="name in modelChoices" :key="name" :value="name" /></datalist></label
-    ><label class="favorite-filter"
-      ><input
-        v-model="favoritesOnly"
-        :disabled="saving || importing"
-        type="checkbox"
-      />只看收藏</label
-    ><button class="secondary" :disabled="busy || saving" @click="refresh">重新整理</button
-    ><span class="muted" role="status"
-      >{{ total }} 張符合 · 第 {{ Math.floor(offset / 40) + 1 }} 頁 · 本頁
-      {{ items.length }} 張</span
-    ></div
-  >
-  <div class="artwork-toolbar" role="group" aria-label="作品分頁"
-    ><button
-      class="secondary"
-      :disabled="busy || saving || !previousCursor"
-      @click="changePage(previousCursor)"
-      >上一頁</button
-    ><button
-      class="secondary"
-      :disabled="busy || saving || !nextCursor"
-      @click="changePage(nextCursor)"
-      >下一頁</button
-    ><span class="footnote"
-      >本次清單成員固定；重新整理或變更篩選可取得新增項目。比較選擇跨頁保留。</span
     ></div
   >
   <article v-if="!visible.length" class="panel placeholder"
@@ -642,6 +645,33 @@ onBeforeUnmount(() => {
       ></article
     ></div
   >
+  <div class="library-footer">
+    <div v-if="previousCursor || nextCursor" role="group" aria-label="作品分頁"
+      ><button
+        class="secondary"
+        :disabled="busy || saving || !previousCursor"
+        @click="changePage(previousCursor)"
+        >上一頁</button
+      ><button
+        class="secondary"
+        :disabled="busy || saving || !nextCursor"
+        @click="changePage(nextCursor)"
+        >下一頁</button
+      ></div
+    >
+    <button class="secondary" :disabled="busy || saving" @click="refresh">重新整理</button>
+    <details
+      ><summary>清單與篩選說明</summary
+      ><p class="footnote">本次清單成員固定；重新整理或變更篩選可取得新增項目。比較選擇跨頁保留。</p
+      ><label
+        >作品狀態<select id="artwork-scope" v-model="scope" :disabled="saving || importing"
+          ><option value="active">使用中</option
+          ><option value="archived">已封存</option
+          ><option value="all">全部作品</option></select
+        ></label
+      ></details
+    >
+  </div>
   <dialog
     ref="preview"
     class="artwork-dialog"

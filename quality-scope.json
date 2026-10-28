@@ -206,7 +206,11 @@
     "frontend/src/ModelLibrary.vue",
     "frontend/src/ControlStudio.vue",
     "frontend/src/LocalEnvironmentCheck.vue",
-    "frontend/src/EngineEnvironment.vue"
+    "frontend/src/EngineEnvironment.vue",
+    "frontend/src/ExperimentResults.vue",
+    "frontend/src/SavedExperimentPlans.vue",
+    "frontend/src/outputPresets.ts",
+    "frontend/tests/preview-alignment.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css", "frontend/src/redesign.css"]
 }

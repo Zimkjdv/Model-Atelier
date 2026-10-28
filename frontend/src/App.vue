@@ -313,22 +313,39 @@ async function testConnection() {
                 @click="navigate('創作工作台', 'reference')"
                 ><UiIcon name="reference" />風格參考</button
               ></div
-            ><div
+            ><p class="workflow-hint">{{
+              studioMode === 'inpaint'
+                ? '只修改選定的區域。'
+                : studioMode === 'control'
+                  ? '依照參考圖的結構創作。'
+                  : studioMode === 'reference'
+                    ? '參考一張圖的畫風或角色特徵。'
+                    : imagePurpose
+                      ? '以一張圖片作為創作起點。'
+                      : '從一句描述開始。'
+            }}</p
+            ><details
               v-if="studioMode === 'checkpoint' || studioMode === 'flux'"
               class="architecture-switch"
-              role="group"
-              aria-label="模型執行架構"
-              ><button
-                class="secondary"
-                :aria-pressed="studioMode === 'checkpoint'"
-                @click="navigate('創作工作台', 'checkpoint')"
-                >Checkpoint／SDXL</button
-              ><button
-                class="secondary"
-                :aria-pressed="studioMode === 'flux'"
-                @click="navigate('創作工作台', 'flux')"
-                >FLUX.1 [schnell]</button
-              ></div
+              ><summary>模型架構</summary
+              ><div
+                role="group"
+                aria-label="模型執行架構"
+                @click="
+                  ($event.currentTarget as HTMLElement).closest('details')?.removeAttribute('open')
+                "
+                ><button
+                  class="secondary"
+                  :aria-pressed="studioMode === 'checkpoint'"
+                  @click="navigate('創作工作台', 'checkpoint')"
+                  >Checkpoint／SDXL</button
+                ><button
+                  class="secondary"
+                  :aria-pressed="studioMode === 'flux'"
+                  @click="navigate('創作工作台', 'flux')"
+                  >FLUX.1 [schnell]</button
+                ></div
+              ></details
             ></div
           ></template
         >

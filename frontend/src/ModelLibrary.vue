@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { outputPresets } from './outputPresets'
 import PageTabs from './PageTabs.vue'
 import ReferenceLibrary from './ReferenceLibrary.vue'
 import FluxPlan from './FluxPlan.vue'
@@ -184,45 +185,12 @@ onMounted(() => load())
 
 <template>
   <div class="library">
-    <div class="panel library-intro">
-      <div
-        ><span class="chip">CHECKPOINT LIBRARY</span><h2>你的模型，一目了然</h2>
-        <p>讀取 ComfyUI 已登記的 checkpoint，整理版本、架構、檔案資訊與來源。</p>
-        <code>{{ catalog?.engine_url ?? '正在讀取執行引擎…' }}</code></div
-      >
-      <div class="library-actions"
-        ><button class="primary" :disabled="busy || editing !== null" @click="load(true)">{{
-          busy ? '處理中…' : '↻ 同步模型清單'
-        }}</button
-        ><button class="secondary" :disabled="busy || editing !== null" @click="load()"
-          >重新讀取模型庫</button
-        ><button class="secondary" @click="emit('settings')">連線設定</button></div
-      >
-    </div>
-    <details class="panel engine-version"
-      ><summary>引擎版本與資料來源</summary>
-      <div class="panel-heading"
-        ><h2>ComfyUI 執行引擎</h2><span class="chip">版本 {{ engineVersion }}</span></div
-      >
-      <p
-        >版本來源：{{
-          engineVersion === '未知'
-            ? '尚未取得有效的服務版本回報'
-            : '目前連接的 ComfyUI /system_stats 回報'
-        }}</p
-      >
-      <a
-        class="source-link"
-        href="https://github.com/Comfy-Org/ComfyUI"
-        target="_blank"
-        rel="noopener noreferrer"
-        >官方專案來源：GitHub / Comfy-Org / ComfyUI ↗</a
-      >
-      <p class="footnote"
-        >此為引擎版本，並非 checkpoint 版本。顯示目前服務回報的版本，不以 GitHub
-        最新版代替；官方專案連結不表示遠端服務必定使用未修改的官方程式。</p
-      >
-    </details>
+    <div class="page-intro"
+      ><p>每個模型標明架構、輸出尺寸與元件狀態，生成前仍需流程預檢。</p
+      ><button class="primary" :disabled="busy || editing !== null" @click="load(true)">{{
+        busy ? '處理中…' : '同步模型清單'
+      }}</button></div
+    >
     <p v-if="error" role="alert" class="notice warning"
       >{{ error }}
       <button class="secondary" :disabled="busy || editing !== null" @click="load()"
@@ -233,42 +201,23 @@ onMounted(() => load())
       >{{ catalog.sync_error }} 此處顯示的是歷史紀錄，不代表模型目前可用。</p
     >
     <p v-if="feedback" role="status" class="notice success">{{ feedback }}</p>
-    <PageTabs id="models" v-model="category" label="模型分類" :items="categories" /><section
-      v-show="category === 'checkpoint'"
-      id="models-panel-checkpoint"
-      role="tabpanel"
-      aria-labelledby="models-tab-checkpoint"
-      ><div class="view-switch" role="group" aria-label="模型排版"
+    <div class="model-browser-tools"
+      ><PageTabs id="models" v-model="category" label="模型分類" :items="categories" />
+      <div class="view-switch" v-show="category === 'checkpoint'" role="group" aria-label="模型排版"
+        ><span>顯示</span
         ><button class="secondary" :aria-pressed="view === 'list'" @click="view = 'list'"
           >清單</button
         ><button class="secondary" :aria-pressed="view === 'cards'" @click="view = 'cards'"
           >卡片</button
         ></div
       >
-      <div class="library-toolbar">
-        <label class="search-label"
-          >搜尋模型<input v-model="search" type="search" placeholder="輸入 checkpoint 檔名"
-        /></label>
-        <label
-          >清單狀態<select v-model="filter"
-            ><option value="all">全部紀錄</option
-            ><option value="listed">最近清單內</option
-            ><option value="missing">最近清單未列出</option></select
-          ></label
-        >
-        <span class="muted" role="status">{{ visible.length }} 個模型</span>
-      </div>
-      <p class="footnote"
-        >{{
-          catalog?.synced_at
-            ? '最後成功同步：' + new Date(catalog.synced_at).toLocaleString()
-            : '尚未成功同步'
-        }}
-        · 清單狀態為同步時的快照，並非即時可用性或架構相容性驗證。</p
-      >
-      <p class="footnote"
-        >以下為使用者登記資料，不代表平台已核對對應檔案、完整授權條款或流程相容性。</p
-      >
+    </div>
+    <section
+      v-show="category === 'checkpoint'"
+      id="models-panel-checkpoint"
+      role="tabpanel"
+      aria-labelledby="models-tab-checkpoint"
+    >
       <article v-if="!catalog && busy" class="panel placeholder" role="status"
         ><h2>正在讀取模型紀錄…</h2></article
       >
@@ -303,6 +252,10 @@ onMounted(() => load())
             ><h2>{{ model.name }}</h2
             ><p class="footnote"
               >{{ architectureLabel(model.architecture) }} · 每次生成前仍會檢查完整流程</p
+            ><div class="model-size-chips"
+              ><span v-for="(size, i) in outputPresets(model.architecture || 'unknown')" :key="i"
+                >{{ ['1:1', '3:4', '4:3', '16:9'][i] }} · {{ size[0] }}×{{ size[1] }}</span
+              ></div
             ></div
           >
           <div class="model-card-top"
@@ -460,8 +413,61 @@ onMounted(() => load())
               >套用到創作</button
             ></div
           ></article
+        > </div
+      ><p class="footnote">同步只會讀取清單，不會下載模型檔。實際生成仍需流程預檢。</p>
+      <details class="panel library-management"
+        ><summary>搜尋、模型資料與引擎來源</summary
+        ><div class="library-toolbar"
+          ><label class="search-label"
+            >搜尋模型<input
+              v-model="search"
+              type="search"
+              placeholder="輸入 checkpoint 檔名" /></label
+          ><label
+            >清單狀態<select v-model="filter"
+              ><option value="all">全部紀錄</option
+              ><option value="listed">最近清單內</option
+              ><option value="missing">最近清單未列出</option></select
+            ></label
+          ><span role="status">{{ visible.length }} 個模型</span
+          ><button class="secondary" :disabled="busy || editing !== null" @click="load()"
+            >重新讀取模型庫</button
+          ><button class="secondary" @click="emit('settings')">連線設定</button></div
+        ><p class="footnote"
+          >{{
+            catalog?.synced_at
+              ? '最後成功同步：' + new Date(catalog.synced_at).toLocaleString()
+              : '尚未成功同步'
+          }}
+          · 清單狀態為同步時的快照。</p
+        ><p class="footnote"
+          >以下為使用者登記資料，不代表平台已核對對應檔案、完整授權條款或流程相容性。</p
         >
-      </div> </section
+        <details class="panel engine-version"
+          ><summary>引擎版本與資料來源</summary>
+          <div class="panel-heading"
+            ><h2>ComfyUI 執行引擎</h2><span class="chip">版本 {{ engineVersion }}</span></div
+          >
+          <p
+            >版本來源：{{
+              engineVersion === '未知'
+                ? '尚未取得有效的服務版本回報'
+                : '目前連接的 ComfyUI /system_stats 回報'
+            }}</p
+          >
+          <a
+            class="source-link"
+            href="https://github.com/Comfy-Org/ComfyUI"
+            target="_blank"
+            rel="noopener noreferrer"
+            >官方專案來源：GitHub / Comfy-Org / ComfyUI ↗</a
+          >
+          <p class="footnote"
+            >此為引擎版本，並非 checkpoint 版本。顯示目前服務回報的版本，不以 GitHub
+            最新版代替；官方專案連結不表示遠端服務必定使用未修改的官方程式。</p
+          >
+        </details>
+      </details> </section
     ><section
       v-show="category === 'control'"
       id="models-panel-control"

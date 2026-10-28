@@ -696,9 +696,8 @@ watch(
 <template>
   <div class="studio">
     <div v-show="workspace === 'experiments'" class="experiments-workspace"
-      ><p class="page-description"
-        >固定其他條件，只改變一個設定，並排看差異。每組仍需明確載入並生成。</p
       ><ExperimentPlanner
+        :active="workspace === 'experiments'"
         :settings="form"
         :dirty="dirty"
         :disabled="busy || restoring || !!pending || generationBusy || generationPending"
@@ -706,8 +705,7 @@ watch(
         @gallery="emit('gallery', $event)"
         @state="experimentState" /></div
     ><div class="studio-workbench" v-show="workspace !== 'experiments'"
-      ><div class="studio-settings"
-        ><UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" />
+      ><div class="studio-settings">
         <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
         <p v-if="message" class="notice" role="status">{{ message }}</p>
         <p v-if="restoring" class="notice" role="status">正在讀取原始創作設定…</p>
@@ -1170,8 +1168,23 @@ watch(
               ></details
             >
           </fieldset></form
-        ><details class="studio-tools"
+        ><UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" /><details
+          class="studio-tools"
           ><summary>草稿、來源與設定交換</summary
+          ><details class="studio-validation"
+            ><summary>相容性與實測範圍</summary><GenerationAdvice v-if="!isImage" :form="form" />
+            <article v-else class="panel"
+              ><h3>圖生圖流程驗證範圍</h3
+              ><p class="footnote"
+                >Pony V6 XL／RTX 3060 的單張一般風景流程已驗證；其他 checkpoint、參考圖加
+                LoRA、畫風品質與 RTX 4080 仍待實測。文生圖的驗證紀錄不代表圖生圖結果。</p
+              ><a
+                href="https://github.com/Zimkjdv/Model-Atelier/blob/main/docs/validation/checkpoint-image2image-rtx3060.md"
+                target="_blank"
+                rel="noopener"
+                >查看圖生圖驗收紀錄 ↗</a
+              ></article
+            > </details
           ><div class="studio-toolbar"
             ><span class="chip">創作草稿</span
             ><span class="muted">{{
@@ -1247,21 +1260,13 @@ watch(
           ></details
         ><div class="studio-submit" id="studio-submit-checkpoint"></div></div
       ><div class="studio-stage"
-        ><StudioPreview :width="form.width" :height="form.height" /><div
-          ><GenerationAdvice v-if="!isImage" :form="form" />
-          <article v-else class="panel"
-            ><h3>圖生圖流程驗證範圍</h3
-            ><p class="footnote"
-              >Pony V6 XL／RTX 3060 的單張一般風景流程已驗證；其他 checkpoint、參考圖加
-              LoRA、畫風品質與 RTX 4080 仍待實測。文生圖的驗證紀錄不代表圖生圖結果。</p
-            ><a
-              href="https://github.com/Zimkjdv/Model-Atelier/blob/main/docs/validation/checkpoint-image2image-rtx3060.md"
-              target="_blank"
-              rel="noopener"
-              >查看圖生圖驗收紀錄 ↗</a
-            ></article
-          >
-          <GenerationPanel
+        ><StudioPreview
+          :title="isImage ? '圖片重繪' : '文字創作'"
+          :family="matchingProfile?.architecture?.toUpperCase()"
+          :width="form.width"
+          :height="form.height"
+        /><div
+          ><GenerationPanel
             submit-target="#studio-submit-checkpoint"
             :experiment="experimentLoad"
             @busy="generationBusy = $event"
@@ -1287,27 +1292,30 @@ watch(
               ></div
             ><p>使用「生成圖片」提交目前表單。保存草稿不會啟動 GPU 任務。</p></article
           >
-          <article class="panel"
-            ><h2
-              >已保存草稿 <span class="muted">{{ records.length }}</span></h2
-            ><p v-if="!records.length" class="muted">保存第一份草稿後，可以在這裡接續編輯。</p
-            ><button
-              v-for="record in records"
-              :key="record.id"
-              class="draft-row"
-              :class="{ chosen: id === record.id }"
-              :disabled="busy || restoring"
-              @click="choose(record)"
-              ><strong>{{ record.title }}</strong
-              ><span
-                >{{ record.workflow_mode === 'image2image' ? '圖生圖' : '文生圖' }} ·
-                {{ record.width }} × {{ record.height }} ·
-                {{ new Date(record.updated_at).toLocaleString() }}</span
-              ><small
-                >{{ record.checkpoint || '未選擇模型' }} · 版本
-                {{ record.model_version || '未知' }}</small
-              ></button
-            ></article
+          <details class="panel saved-drafts"
+            ><summary>已保存草稿 · {{ records.length }}</summary
+            ><article
+              ><h2
+                >已保存草稿 <span class="muted">{{ records.length }}</span></h2
+              ><p v-if="!records.length" class="muted">保存第一份草稿後，可以在這裡接續編輯。</p
+              ><button
+                v-for="record in records"
+                :key="record.id"
+                class="draft-row"
+                :class="{ chosen: id === record.id }"
+                :disabled="busy || restoring"
+                @click="choose(record)"
+                ><strong>{{ record.title }}</strong
+                ><span
+                  >{{ record.workflow_mode === 'image2image' ? '圖生圖' : '文生圖' }} ·
+                  {{ record.width }} × {{ record.height }} ·
+                  {{ new Date(record.updated_at).toLocaleString() }}</span
+                ><small
+                  >{{ record.checkpoint || '未選擇模型' }} · 版本
+                  {{ record.model_version || '未知' }}</small
+                ></button
+              ></article
+            ></details
           ></div
         ></div
       ></div

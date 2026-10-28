@@ -272,8 +272,7 @@ watch(
 <template>
   <section aria-label="畫風角色參考工作台">
     <div class="studio-workbench"
-      ><div class="studio-settings"
-        ><UnsavedChangesNotice :dirty="dirty" page-only />
+      ><div class="studio-settings">
         <p v-if="error" role="alert" class="notice warning">{{ error }}</p>
         <p v-if="message" role="status" class="notice">{{ message }}</p>
         <div v-if="pendingRestore" class="notice warning"
@@ -486,7 +485,7 @@ watch(
               ></details
             >
           </fieldset></form
-        ><details class="studio-tools"
+        ><UnsavedChangesNotice :dirty="dirty" page-only /><details class="studio-tools"
           ><summary>草稿、來源與設定交換</summary
           ><div class="toolbar"
             ><strong>SDXL 畫風／角色外觀參考</strong
@@ -519,7 +518,10 @@ watch(
             @items="assets = $event" /></details
         ><div class="studio-submit" id="studio-submit-reference"></div></div
       ><div class="studio-stage"
-        ><StudioPreview :width="form.width" :height="form.height" /><GenerationPanel
+        ><StudioPreview
+          title="風格參考"
+          :width="form.width"
+          :height="form.height" /><GenerationPanel
           submit-target="#studio-submit-reference"
           :form="form"
           workflow="reference"

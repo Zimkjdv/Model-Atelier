@@ -81,11 +81,13 @@ test('workbench purposes, exact seed, cached forms and experiments navigation pr
     }
   })
   await page.locator('#seed').fill('18446744073709551615')
+  await page.locator('.architecture-switch > summary').click()
   await page.getByRole('button', { name: 'FLUX.1 [schnell]', exact: true }).click()
   await page.locator('#flux-prompt').fill('separate flux settings')
   await page.getByRole('navigation').getByRole('button', { name: '作品庫', exact: true }).click()
   await page.goBack()
   await expect(page.locator('#flux-prompt')).toHaveValue('separate flux settings')
+  await page.locator('.architecture-switch > summary').click()
   await page.getByRole('button', { name: 'Checkpoint／SDXL', exact: true }).click()
   await expect(page.locator('#draft-prompt')).toHaveValue('retain my live workbench prompt')
   await expect(page.locator('#seed')).toHaveValue('18446744073709551615')
@@ -213,6 +215,7 @@ test('training export step preserves live annotations and test images remain pro
 }) => {
   const fixture = await (await request.post('/qa/training-review?count=125')).json()
   await page.goto('/#/training')
+  await page.locator('.training-dataset-management > summary').click()
   await page.getByLabel('原圖來源目錄', { exact: true }).fill(fixture.source_root)
   await page.getByLabel('資料清單 JSON', { exact: true }).setInputFiles({
     name: 'dataset.json',

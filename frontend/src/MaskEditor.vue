@@ -11,8 +11,14 @@ import {
 } from 'vue'
 import type { ReferenceAsset } from './referenceSettings'
 import { binaryMask, maskPoint, uploadMaskAsset } from './inpaintSettings'
-const props = defineProps<{ source?: ReferenceAsset; mask?: ReferenceAsset; disabled?: boolean }>()
+const props = defineProps<{
+  source?: ReferenceAsset
+  mask?: ReferenceAsset
+  disabled?: boolean
+  feather?: number
+}>()
 const emit = defineEmits<{
+  'update:feather': [value: number]
   saved: [value: ReferenceAsset]
   dirty: [value: boolean]
   busy: [value: boolean]
@@ -369,56 +375,78 @@ onActivated(() => {
 </script>
 <template>
   <section class="mask-editor" aria-label="遮罩繪製">
-    <h3>標出要修改的範圍</h3>
-    <p class="footnote"
-      >白色範圍會重新生成，黑色保留處理後原圖。筆刷尺寸以原圖像素計算；保存後才能使用新遮罩。</p
+    <div class="stage-heading"
+      ><div class="comparison-chips"><span>局部修補</span></div
+      ><span v-if="source" class="stage-dimensions"
+        >{{ source.width }} × {{ source.height }}</span
+      ></div
     >
-    <div class="tools"
-      ><button
-        type="button"
-        class="secondary"
-        :disabled="!editable || historyIndex <= 0"
-        @click="undo(-1)"
-        >復原</button
-      ><button
-        type="button"
-        class="secondary"
-        :disabled="!editable || historyIndex >= history.length - 1"
-        @click="undo(1)"
-        >重做</button
-      >
+    <div class="tools mask-primary-tools">
       <button
         type="button"
         class="secondary"
         :aria-pressed="!erase"
-        :disabled="disabled || busy || !ready"
+        :disabled="!editable"
         @click="erase = false"
         >筆刷</button
-      ><button
+      >
+      <button
         type="button"
         class="secondary"
         :aria-pressed="erase"
-        :disabled="disabled || busy || !ready"
+        :disabled="!editable"
         @click="erase = true"
         >擦除</button
-      ><label for="mask-brush"
-        >大小
-        <input
+      >
+      <label for="mask-brush"
+        >大小<input
           id="mask-brush"
           v-model.number="brush"
           type="range"
           min="1"
           max="256"
           :disabled="!editable"
-        />
-        {{ brush }} px</label
-      ></div
-    >
+        />{{ brush }} px</label
+      >
+      <label v-if="feather !== undefined" for="mask-feather"
+        >羽化<input
+          id="mask-feather"
+          type="range"
+          min="0"
+          max="64"
+          step="1"
+          :value="feather"
+          :disabled="disabled || busy"
+          @input="emit('update:feather', Number(($event.target as HTMLInputElement).value))"
+        />{{ feather }} px</label
+      >
+      <button type="button" class="secondary" :disabled="!editable" @click="invert">反相</button>
+      <button type="button" class="secondary" :disabled="!editable" @click="clear">清除遮罩</button>
+      <button
+        type="button"
+        class="secondary"
+        :disabled="!editable || historyIndex <= 0"
+        @click="undo(-1)"
+        >復原</button
+      >
+      <button
+        type="button"
+        class="secondary"
+        :disabled="!editable || historyIndex >= history.length - 1"
+        @click="undo(1)"
+        >重做</button
+      >
+    </div>
     <div
       v-if="source && !source.archived"
       class="mask-stage"
-      :style="{ aspectRatio: String(source.width / source.height) }"
-      ><img :src="'/api/assets/' + source.id + '/image'" alt="遮罩繪製用原圖" /><canvas
+      :style="{
+        aspectRatio: String(source.width / source.height),
+        '--canvas-ratio': source.width / source.height,
+      }"
+    >
+      <img :src="'/api/assets/' + source.id + '/image'" alt="遮罩繪製用原圖" />
+      <canvas
         ref="canvas"
         aria-label="在原圖上繪製白色編輯範圍"
         @pointerdown="start"
@@ -426,41 +454,31 @@ onActivated(() => {
         @pointerup="stop"
         @pointercancel="stop"
         @lostpointercapture="stop"
-    /></div>
-    <div class="tools"
-      ><button type="button" class="secondary" :disabled="disabled || busy || !ready" @click="clear"
-        >清空</button
-      ><button
-        type="button"
-        class="secondary"
-        :disabled="disabled || busy || !ready"
-        @click="invert"
-        >反相</button
-      ><button
-        type="button"
-        class="secondary"
-        :disabled="disabled || busy || !ready"
-        @click="file?.click()"
+      />
+    </div>
+    <div class="tools">
+      <button type="button" class="secondary" :disabled="!editable" @click="file?.click()"
         >載入 PNG 遮罩</button
-      ><input
-        ref="file"
-        class="mask-file"
-        type="file"
-        accept="image/png"
-        @change="selectFile"
-      /><button
+      >
+      <input ref="file" class="mask-file" type="file" accept="image/png" @change="selectFile" />
+      <button
         type="button"
         class="primary"
         :disabled="disabled || busy || !ready || !white || !dirty"
         @click="save"
         >{{ busy ? '處理中…' : '保存遮罩' }}</button
-      ></div
-    >
-    <details
-      ><summary>鍵盤區塊選取與快捷鍵</summary
+      >
+    </div>
+    <details>
+      <summary>鍵盤區塊選取與快捷鍵</summary>
+      <h3>標出要修改的範圍</h3
       ><p class="footnote"
+        >白色範圍會重新生成，黑色保留處理後原圖。筆刷尺寸以原圖像素計算；保存後才能使用新遮罩。</p
+      >
+      <p class="footnote"
         >Ctrl/Cmd+Z 復原，Shift+Ctrl/Cmd+Z 或 Ctrl+Y 重做。文字欄位保留原生快捷鍵。</p
-      ><div class="tools"
+      >
+      <div class="tools"
         ><button
           v-for="position in ['中央', '上方', '下方', '左側', '右側']"
           :key="position"
@@ -470,8 +488,8 @@ onActivated(() => {
           @click="region(position)"
           >{{ position }}區塊</button
         ></div
-      ></details
-    >
+      >
+    </details>
     <p class="footnote" role="status"
       >{{ status }} 已標記 {{ white.toLocaleString() }} 個原圖像素。</p
     >

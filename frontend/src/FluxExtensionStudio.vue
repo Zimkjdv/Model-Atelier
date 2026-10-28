@@ -294,7 +294,7 @@ watch(
           >兩個獨立流程：Schnell 模型 LoRA、原生 VAE 圖生圖。固定 512×512／4 步／FP8 e4m3fn／CPU
           編碼器；未知元件及 LoRA＋圖生圖混用保持停用。</p
         >
-        <UnsavedChangesNotice :dirty="dirty" :saving="busy" :saved="!!draftId" />
+
         <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
         <p v-if="message" class="notice" role="status">{{ message }}</p
         ><form
@@ -396,7 +396,8 @@ watch(
               ></details
             >
           </fieldset></form
-        ><details class="studio-tools"
+        ><UnsavedChangesNotice :dirty="dirty" :saving="busy" :saved="!!draftId" /><details
+          class="studio-tools"
           ><summary>草稿、來源與設定交換</summary
           ><div class="extension-actions"
             ><button class="secondary" :disabled="locked" @click="load(true)">同步附加元件</button
@@ -416,7 +417,7 @@ watch(
             @items="assets = $event" /></details
         ><div class="studio-submit" id="studio-submit-flux-addon"></div></div
       ><div class="studio-stage"
-        ><StudioPreview :width="form.width" :height="form.height" /><div
+        ><StudioPreview title="FLUX 創作" :width="form.width" :height="form.height" /><div
           ><GenerationPanel
             submit-target="#studio-submit-flux-addon"
             :form="form"

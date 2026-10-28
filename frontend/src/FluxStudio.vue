@@ -321,13 +321,7 @@ onMounted(() => {
     />
     <div v-show="!showExtensions">
       <div class="studio-workbench"
-        ><div class="studio-settings"
-          ><UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" />
-          <p class="notice warning"
-            >已有 RTX 3060／64 GiB RAM、固定四元件、512×512／4 步／主模型 FP8 e4m3fn／CPU
-            編碼器的生成保存與失敗復原實測。LoRA／VAE
-            圖生圖請使用上方獨立流程；其他配置及目前引擎未自動驗證，負面提示詞保持停用。</p
-          >
+        ><div class="studio-settings">
           <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
           <p v-if="message" class="notice" role="status">{{ message }}</p>
           <div v-if="pending" class="notice warning" role="alert"
@@ -451,9 +445,15 @@ onMounted(() => {
                 </details></details
               >
             </fieldset></form
-          ><details class="studio-tools"
-            ><summary>草稿、來源與設定交換</summary
-            ><div class="flux-toolbar"
+          ><UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" /><details
+            class="studio-tools"
+            ><summary>草稿、來源與設定交換</summary>
+            <p class="footnote"
+              >已有 RTX 3060／64 GiB RAM、固定四元件、512×512／4 步／主模型 FP8 e4m3fn／CPU
+              編碼器的生成保存與失敗復原實測。LoRA／VAE
+              圖生圖請使用上方獨立流程；其他配置及目前引擎未自動驗證，負面提示詞保持停用。</p
+            >
+            <div class="flux-toolbar"
               ><strong>FLUX.1 [schnell]</strong
               ><span class="muted">{{
                 dirty ? '有未保存變更' : id ? '草稿已保存' : '設定僅保留於本頁'
@@ -485,7 +485,7 @@ onMounted(() => {
               @apply="importSettings" /></details
           ><div class="studio-submit" id="studio-submit-flux"></div></div
         ><div class="studio-stage"
-          ><StudioPreview :width="form.width" :height="form.height" /><div
+          ><StudioPreview title="文字創作" :width="form.width" :height="form.height" /><div
             ><GenerationPanel
               submit-target="#studio-submit-flux"
               :form="form"
