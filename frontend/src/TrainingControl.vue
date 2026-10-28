@@ -92,6 +92,29 @@ const statusNames: Record<string, string> = {
   unavailable: '原紀錄不可讀',
 }
 const label = (status: string) => statusNames[status] || status
+const runCheckedAt = ref(''),
+  runReadFailed = ref(false)
+const runProgress = computed(() => {
+  const state = current.value?.state
+  const steps = state?.steps_completed ?? state?.last_checkpoint_step
+  const total = current.value?.configuration.max_steps
+  const validSteps = typeof steps === 'number' && Number.isInteger(steps) && steps >= 0
+  const validTotal = typeof total === 'number' && Number.isInteger(total) && total > 0
+  return {
+    steps: validSteps ? steps : null,
+    total: validTotal ? total : null,
+    percent: validSteps && validTotal && steps <= total ? Math.round((steps / total) * 100) : null,
+    checkpointOnly: state?.steps_completed == null && state?.last_checkpoint_step != null,
+    inconsistent: validSteps && validTotal && steps > total,
+  }
+})
+function showRunSection(id: string) {
+  const target = document.getElementById(id)
+  if (!target) return
+  if (target instanceof HTMLDetailsElement) target.open = true
+  target.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  target.focus({ preventScroll: true })
+}
 const resumable = computed(() =>
   (current.value?.checkpoints || []).filter(
     (v) => v.step < (current.value?.configuration.max_steps || 0),
@@ -112,10 +135,18 @@ async function refresh() {
 }
 async function loadRun(id: string) {
   const request = runScope.begin()
-  const result = await api<Run>('training/runs/' + id, 'GET', undefined, request.signal)
+  let result: Run
+  try {
+    result = await api<Run>('training/runs/' + id, 'GET', undefined, request.signal)
+  } catch (cause) {
+    if (request.isCurrent()) runReadFailed.value = true
+    throw cause
+  }
   if (alive && request.isCurrent()) {
     if (current.value?.run_id !== id) artifact.value = null
     current.value = result
+    runCheckedAt.value = new Date().toISOString()
+    runReadFailed.value = false
     checkpoint.value =
       result.checkpoints.filter((v) => v.step < result.configuration.max_steps)[0]?.id || ''
     if (startPending.value === id) startPending.value = ''
@@ -241,12 +272,16 @@ async function poll() {
         result = await api<Run>('training/runs/' + id, 'GET', undefined, request.signal)
       if (alive && request.isCurrent() && current.value?.run_id === id) {
         current.value = result
+        runCheckedAt.value = new Date().toISOString()
+        runReadFailed.value = false
         startPending.value = ''
       }
     }
   } catch (e) {
-    if (alive && !(e instanceof Error && e.name === 'AbortError'))
+    if (alive && !(e instanceof Error && e.name === 'AbortError')) {
+      runReadFailed.value = true
       error.value = '原狀態暫不可讀，保留上次資料；請明確查回。' + String(e)
+    }
   } finally {
     polling = false
   }
@@ -262,6 +297,8 @@ onMounted(async () => {
   } catch {
     /* Recovery remains available through the durable request list. */
   }
+  if (alive && props.stage === 3 && !current.value && listing.value?.runs.length)
+    await action(() => loadRun(listing.value!.runs[0]!.run_id))
   if (alive)
     timer = setInterval(() => {
       if (document.visibilityState === 'visible') void poll()
@@ -279,6 +316,81 @@ onUnmounted(() => {
 
 <template>
   <div class="training-control">
+    <section
+      v-if="props.stage === 3 && listing?.available"
+      class="training-run-summary"
+      aria-label="訓練執行摘要"
+    >
+      <article class="panel"
+        ><div class="collection-top"
+          ><h2>{{ current?.configuration.label || '尚未選擇訓練紀錄' }}</h2
+          ><span v-if="current" class="chip">{{ label(current.status) }}</span></div
+        >
+        <label v-if="listing.runs.length"
+          >查看 run<select
+            :value="current?.run_id || ''"
+            :disabled="busy"
+            @change="action(() => loadRun(($event.target as HTMLSelectElement).value))"
+            ><option value="" disabled>選擇訓練紀錄</option
+            ><option v-for="item in listing.runs" :key="item.run_id" :value="item.run_id"
+              >{{ item.configuration.label }} · {{ item.run_id.slice(0, 8) }}</option
+            ></select
+          ></label
+        >
+        <template v-if="current"
+          ><div class="training-kpi"
+            ><strong>{{ runProgress.steps ?? '未知' }}</strong
+            ><span>/ {{ runProgress.total ?? '未知' }} steps</span></div
+          ><progress
+            v-if="runProgress.percent !== null"
+            :value="runProgress.steps!"
+            :max="runProgress.total!"
+            aria-label="訓練步數進度"
+          ></progress
+          ><p class="footnote"
+            >{{ runProgress.percent === null ? '進度尚無可靠回報' : runProgress.percent + '%'
+            }}{{ runProgress.checkpointOnly ? ' · 依最後保存 checkpoint 的步數' : '' }}</p
+          ><p
+            v-if="runProgress.inconsistent || runReadFailed"
+            class="notice warning"
+            role="status"
+            >{{
+              runReadFailed
+                ? '狀態更新失敗，保留上次快照；請查回原 run。'
+                : '回報步數超過凍結上限，請查看原 run 與日誌。'
+            }}</p
+          ><p class="footnote"
+            >資料來源：原訓練 run ·
+            {{
+              runCheckedAt
+                ? '讀取於 ' + new Date(runCheckedAt).toLocaleTimeString('zh-TW')
+                : '尚未取得'
+            }}</p
+          ><div class="training-actions"
+            ><button
+              class="secondary"
+              :disabled="busy"
+              @click="action(() => loadRun(current!.run_id))"
+              >更新執行摘要</button
+            ><button class="secondary" @click="showRunSection('training-run-log')"
+              >查看日誌</button
+            ></div
+          ></template
+        >
+        <p v-else>準備訓練後可在此追蹤原 run；目前沒有可顯示的步數。</p> </article
+      ><article class="panel"
+        ><h2>完成後</h2><p>驗證並安裝產物 → 同步模型登記 → 建立固定比較方案。</p
+        ><p class="footnote"
+          >各步驟仍需明確操作。產物與比較入口沿用原 run，不會自動開始訓練或生成圖片。</p
+        ><button
+          class="secondary"
+          :disabled="!current"
+          @click="showRunSection('training-artifacts')"
+          >查看產物與固定比較</button
+        ></article
+      >
+    </section>
+
     <article class="panel"
       ><h2>本機訓練執行</h2
       ><p>準備 run、啟動訓練與續訓是分開的操作；離開頁面不會停止已啟動的 worker。</p
@@ -462,11 +574,6 @@ onUnmounted(() => {
           ><p role="status"
             >狀態：{{ label(current.status) }} ·
             {{ current.resources_released ? '程序與租約已釋放' : '程序或租約尚未釋放' }}</p
-          ><p
-            >更新步數：{{
-              current.state?.steps_completed ?? current.state?.last_checkpoint_step ?? '尚未回報'
-            }}
-            / {{ current.configuration.max_steps }}</p
           ><p v-if="current.state?.message || current.dispatch_error" role="alert">{{
             current.state?.message || current.dispatch_error
           }}</p
@@ -544,7 +651,7 @@ onUnmounted(() => {
             ><summary>資源紀錄（未知保持未知）</summary
             ><p>PyTorch allocator、程序 RAM 與整卡取樣是不同來源，整卡數字包含其他軟體。</p
             ><pre>{{ JSON.stringify(current.resources, null, 2) }}</pre></details
-          ><details
+          ><details id="training-run-log" tabindex="-1"
             ><summary>原 worker 日誌（最後 64 KiB）</summary
             ><pre>{{ current.log_tail || '尚未寫入日誌' }}</pre>
           </details>

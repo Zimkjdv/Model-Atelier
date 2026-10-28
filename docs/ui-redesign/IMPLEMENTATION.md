@@ -80,6 +80,8 @@
 
 ## 相關文件
 
+- [G05／G06／P01–P03 資訊與操作補齊](INFORMATION-OPERATIONS-IMPLEMENTATION.md)
+
 - [G01–G04 主要流程補齊及正式環境實圖驗證](PRIMARY-FLOWS-IMPLEMENTATION.md)
 
 - [可互動的獨立示意預覽](preview.html)

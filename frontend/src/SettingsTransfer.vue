@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import { apiText } from './apiClient'
-import { computed, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  onMounted,
+  ref,
+  watch,
+} from 'vue'
 import type { CreationForm } from './creationSettings'
 import type { FluxForm } from './fluxSettings'
 import type { ImportPreview } from './settingsTransfer'
@@ -8,9 +17,33 @@ const props = defineProps<{
   settings: CreationForm | FluxForm
   family: 'checkpoint' | 'flux'
   dirty: boolean
+  openRequest?: number
   disabled?: boolean
 }>()
 const emit = defineEmits<{ apply: [value: ImportPreview] }>()
+const transferPanel = ref<HTMLDetailsElement | null>(null),
+  exportButton = ref<HTMLButtonElement | null>(null)
+let handledRequest = 0
+async function revealTransfer() {
+  const token = props.openRequest
+  if (!token || token === handledRequest) return
+  handledRequest = token
+  await nextTick()
+  let panel: HTMLDetailsElement | null = transferPanel.value
+  while (panel) {
+    panel.open = true
+    panel = panel.parentElement?.closest('details') || null
+  }
+  transferPanel.value?.scrollIntoView({ block: 'center' })
+  exportButton.value?.focus({ preventScroll: true })
+}
+watch(
+  () => props.openRequest,
+  () => void revealTransfer(),
+  { flush: 'post' },
+)
+onMounted(() => void revealTransfer())
+onActivated(() => void revealTransfer())
 const input = ref(''),
   preview = ref<ImportPreview | null>(null),
   error = ref(''),
@@ -179,13 +212,18 @@ function apply() {
 }
 </script>
 <template>
-  <details class="settings-transfer">
+  <details ref="transferPanel" class="settings-transfer">
     <summary>創作設定匯出／匯入</summary>
     <p class="footnote"
       >設定檔版本 1 · 最多 256
       KiB。只交換參數；不包含模型權重與素材圖片。作品的「匯出創作設定」另包含原來源快照。</p
     >
-    <button type="button" class="secondary" :disabled="blocked" @click="exportSettings"
+    <button
+      ref="exportButton"
+      type="button"
+      class="secondary"
+      :disabled="blocked"
+      @click="exportSettings"
       >匯出目前創作設定</button
     >
     <label :for="family + '-settings-file'">讀取創作設定 JSON 檔</label

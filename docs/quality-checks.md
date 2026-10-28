@@ -6,7 +6,7 @@
 .\.venv\Scripts\python.exe scripts/check_quality.py
 ```
 
-依序執行範圍內格式／靜態檢查、後端 unittest、Vue 型別與正式建置、`npm test` 的四組前端契約檢查、Playwright Chromium。格式與高風險狀態維護見 [維護規則](maintenance.md)。`--skip-browser` 會明列跳過，不表示完整品質通過。
+依序執行範圍內格式／靜態檢查、後端 unittest、Vue 型別與正式建置、`npm test` 的前端契約檢查（API／生命週期、實驗、遮罩、控制與欄位預檢）、Playwright Chromium。格式與高風險狀態維護見 [維護規則](maintenance.md)。`--skip-browser` 會明列跳過，不表示完整品質通過。
 
 2026-10-25 起，完整入口依檔名排序，每六份瀏覽器 spec 為一批，各自啟動新的 Playwright／Chromium 與臨時平台，使用不同埠及 `runtime/quality/browser-results/group-N`、`browser-report/group-N`。截至 2026-10-27，共 25 份 spec、五批（6＋6＋6＋6＋1）；實際批數由 `scripts/check_quality.py` 依檔案清單計算，新檔會自動納入一次。任一批失敗立即停止，單 worker／單案限制及零重試保留。此調整針對 Windows CI 的 Chromium `net::ERR_NO_BUFFER_SPACE` 與單次整套八分鐘截止；降低單程序累積負荷，不宣稱已證明某個產品記憶體洩漏。
 

@@ -85,6 +85,12 @@ function beforeUnload(event: BeforeUnloadEvent) {
     event.returnValue = ''
   }
 }
+const hasFilters = computed(() => !!search.value.trim() || !!filter.value)
+function clearFilters() {
+  if (editing.value || mutating.value) return
+  search.value = ''
+  filter.value = ''
+}
 const visible = computed(() => items.value)
 const total = ref(0),
   next = ref<string | null>(null),
@@ -248,8 +254,32 @@ onMounted(() => {
     /></label>
   </div>
   <article v-if="!visible.length" class="panel placeholder"
-    ><h2>{{ busy ? '處理中…' : '目前沒有符合條件的素材' }}</h2
-    ><p>上傳圖片，或調整搜尋與封存篩選。</p></article
+    ><h2>{{
+      busy
+        ? '處理中…'
+        : hasFilters
+          ? '沒有符合的素材'
+          : archived
+            ? '尚無封存素材'
+            : '收集你的第一張參考圖'
+    }}</h2
+    ><p>{{
+      hasFilters
+        ? '調整搜尋名稱或用途，或清除目前條件。'
+        : archived
+          ? '封存的素材會出現在這裡，可隨時還原。'
+          : '上傳圖片並指定用途，不會自動用於訓練。'
+    }}</p
+    ><button
+      v-if="hasFilters"
+      class="secondary"
+      :disabled="busy || editing !== null"
+      @click="clearFilters"
+      >清除搜尋與用途篩選</button
+    ><p v-if="hasFilters" class="footnote">保留目前的{{ archived ? '已封存' : '使用中' }}範圍。</p
+    ><button v-else-if="!archived && !busy" class="primary" @click="uploadOpen = true"
+      >上傳素材</button
+    ></article
   >
   <div class="asset-grid"
     ><article v-for="item in visible" :key="item.id" class="panel asset-card"

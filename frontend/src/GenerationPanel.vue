@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import {
+  fieldLabels,
+  focusPreflightField,
+  type FieldProblems,
+  type PreflightBlocker,
+} from './generationPreflight'
 import { api as request, ApiError } from './apiClient'
 import { submitOnce } from './generationRequest'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
@@ -44,6 +50,8 @@ const props = defineProps<{
   form: CreationForm | FluxForm | FluxExtensionForm | InpaintForm | ControlForm | ReferenceForm
   experiment?: ExperimentLoad | null
   workflow?: 'flux' | 'flux-addon' | 'inpaint' | 'control' | 'reference'
+  fieldProblems?: FieldProblems
+  blockers?: PreflightBlocker[]
   blockedReason?: string
   previewStage?: boolean
   submitTarget?: string
@@ -76,6 +84,7 @@ const missingModel = computed(() =>
 )
 const emit = defineEmits<{
   preview: [job: Job | null]
+  refreshOptions: []
   gallery: [jobId: string]
   restoreJob: [jobId: string]
   busy: [value: boolean]
@@ -100,10 +109,14 @@ try {
 }
 watch(busy, (value) => emit('busy', value), { immediate: true, flush: 'sync' })
 watch(pending, (value) => emit('pending', !!value), { immediate: true, flush: 'sync' })
+const hasFieldProblems = computed(() => Object.keys(props.fieldProblems || {}).length > 0)
+const displayBlockers = computed(
+  () => props.blockers || (props.blockedReason ? [{ message: props.blockedReason }] : []),
+)
 const submissionAvailability = computed(() => {
   if (pending.value) return '原提交待確認：恢復會沿用原 UUID 與參數。'
   if (busy.value || props.disabled) return '暫不可提交：正在載入、保存或處理中。'
-  if (missingModel.value || props.blockedReason)
+  if (missingModel.value || props.blockedReason || hasFieldProblems.value)
     return '尚缺必要條件：請依下方提示補齊模型、素材或元件。'
   return '表單預檢可提交：按下生成後仍會檢查引擎與元件。'
 })
@@ -227,7 +240,7 @@ function clearConfirmedSubmission() {
 }
 async function generate() {
   if (busy.value || props.disabled) return
-  if (!pending.value && props.blockedReason) return
+  if (!pending.value && (props.blockedReason || hasFieldProblems.value)) return
   busy.value = true
   error.value = ''
   try {
@@ -313,11 +326,44 @@ onBeforeUnmount(() => window.clearInterval(timer))
         ><p class="submission-state" role="status" aria-label="提交能力狀態">{{
           submissionAvailability
         }}</p>
-        <p v-if="blockedReason" class="notice warning"
-          >{{ blockedReason
-          }}<span v-if="/引擎|ComfyUI|連線|元件/.test(blockedReason)" class="preflight-links"
-            ><a href="#/settings">檢查引擎連線</a><a href="#/models">檢查模型與元件</a></span
-          ></p
+        <div
+          v-if="displayBlockers.length"
+          class="notice warning preflight-blockers"
+          aria-label="流程與環境阻擋"
+          ><strong>需先處理</strong
+          ><ul
+            ><li v-for="(item, index) in displayBlockers" :key="index"
+              >{{ item.message }}
+              <a v-if="item.action === 'settings'" href="#/settings">前往引擎設定</a
+              ><a v-if="item.action === 'models'" href="#/models">前往模型與元件</a
+              ><template v-if="item.action === 'refresh'"
+                ><a href="#/settings">檢查引擎連線</a>
+                <button
+                  class="text-button"
+                  :disabled="busy || disabled"
+                  @click="emit('refreshOptions')"
+                  >更新引擎選項</button
+                ></template
+              ><span
+                v-if="!item.action && /引擎|ComfyUI|連線|元件/.test(item.message)"
+                class="preflight-links"
+                ><a href="#/settings">檢查引擎連線</a><a href="#/models">檢查模型與元件</a></span
+              ></li
+            ></ul
+          ></div
+        >
+        <div v-if="hasFieldProblems" class="preflight-fields" aria-label="需修正欄位"
+          ><p>請修正 {{ Object.keys(fieldProblems || {}).length }} 個欄位：</p
+          ><ul
+            ><li v-for="(message, key) in fieldProblems" :key="key"
+              ><button
+                type="button"
+                class="text-button"
+                @click="focusPreflightField(submitTarget, String(key))"
+                >{{ fieldLabels[key] || key }}：{{ message }}</button
+              ></li
+            ></ul
+          ></div
         >
         <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
         <p v-if="pending" class="notice warning"
@@ -329,7 +375,9 @@ onBeforeUnmount(() => window.clearInterval(timer))
         <button
           type="button"
           class="primary"
-          :disabled="busy || disabled || (!pending && (missingModel || !!blockedReason))"
+          :disabled="
+            busy || disabled || (!pending && (missingModel || !!blockedReason || hasFieldProblems))
+          "
           @click="generate"
           >{{ busy ? '處理中…' : pending ? '恢復原提交請求' : '生成圖片' }}</button
         ></div

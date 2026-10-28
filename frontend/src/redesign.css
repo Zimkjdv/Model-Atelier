@@ -2300,3 +2300,126 @@
 #app .atelier-shell .stage-view-switch + .studio-preview {
   height: calc(100vh - 211px);
 }
+
+/* List metadata, actionable preflight and real training progress. */
+#app .atelier-shell .gallery-card-meta .gallery-rating,
+#app .atelier-shell .gallery-card-meta .gallery-date {
+  font-size: 12px;
+  margin: 4px 0 0;
+  color: var(--ink3);
+}
+#app .atelier-shell .page-size-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+#app .atelier-shell .page-size-control select {
+  width: 78px;
+  padding: 6px 10px;
+}
+#app .atelier-shell .field-error {
+  display: block;
+  color: #edb5aa;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 5px 0 9px;
+}
+#app .atelier-shell .field-error[hidden] {
+  display: none;
+}
+#app .atelier-shell [aria-invalid='true'] {
+  border-color: #edb5aa;
+}
+#app .atelier-shell .preflight-fields {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+#app .atelier-shell .preflight-fields p {
+  margin: 4px 0;
+}
+#app .atelier-shell .preflight-fields ul,
+#app .atelier-shell .preflight-blockers ul {
+  max-height: 110px;
+  overflow: auto;
+  margin: 4px 0;
+  padding-left: 18px;
+}
+#app .atelier-shell .preflight-fields .text-button,
+#app .atelier-shell .preflight-blockers .text-button {
+  font-size: 12px;
+  padding: 2px 0;
+  min-height: 28px;
+  text-align: left;
+}
+#app .atelier-shell .training-run-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+#app .atelier-shell .training-run-summary .panel {
+  margin: 0;
+}
+#app .atelier-shell .training-run-summary label {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+#app .atelier-shell .training-kpi {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 24px 0 8px;
+}
+#app .atelier-shell .training-kpi strong {
+  font-size: 36px;
+  line-height: 1.2;
+}
+#app .atelier-shell .training-kpi span {
+  color: var(--ink3);
+}
+#app .atelier-shell .training-run-summary progress {
+  width: 100%;
+  height: 10px;
+  accent-color: var(--accent);
+}
+#app .atelier-shell .settings-export-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+#app .atelier-shell .studio-settings {
+  overflow: hidden;
+}
+#app .atelier-shell .studio-fields-scroll {
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 10px;
+  scrollbar-gutter: stable;
+}
+#app .atelier-shell .studio-fields-scroll > .panel {
+  padding: 0;
+  border: 0;
+  background: none;
+  margin: 0;
+}
+#app .atelier-shell .studio-submit {
+  position: static;
+  flex: none;
+  margin-top: 0;
+}
+
+#app .atelier-shell .studio-fields-scroll {
+  margin-right: -16px;
+  padding-right: 8px;
+}
+#app .atelier-shell .studio-fields-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+#app .atelier-shell .studio-fields-scroll::-webkit-scrollbar-thumb {
+  background: var(--line2);
+  border-radius: 8px;
+}

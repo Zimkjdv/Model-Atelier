@@ -52,4 +52,4 @@
 - [隔離環境模型分類卡片](platform-model-categories-fixture.png)
 - [隔離環境素材詳情及操作](platform-asset-detail-fixture.png)
 
-G05、G06、P01–P03 與分類容量等後續能力仍按落差分析另行處理。本文件不將它們列為本輪完成項目。
+G05、G06、P01–P03 後續已完成，見 [資訊與操作補齊紀錄](INFORMATION-OPERATIONS-IMPLEMENTATION.md)。分類容量等能力仍按落差分析另外處理，不列入本文件的主要流程完成範圍。

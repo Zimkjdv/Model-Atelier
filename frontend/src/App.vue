@@ -186,6 +186,10 @@ const navIcons = [
 ]
 const navLabels = ['創作', '作品庫', '比較', '素材', '模型', '訓練', '系統', '設定']
 const settingsTab = ref('connection')
+const transferRequest = ref<{ family: 'checkpoint' | 'flux'; token: number } | null>(null)
+function openSettingsTransfer(family: 'checkpoint' | 'flux') {
+  if (navigate('創作工作台', family)) transferRequest.value = { family, token: Date.now() }
+}
 const settingsItems = [
   { id: 'connection', label: '引擎連線' },
   { id: 'paths', label: '模型路徑' },
@@ -356,6 +360,9 @@ async function testConnection() {
         >
         <KeepAlive
           ><CreationStudio
+            :transfer-request="
+              transferRequest?.family === 'checkpoint' ? transferRequest.token : undefined
+            "
             v-if="(page === '創作工作台' && studioMode === 'checkpoint') || page === '實驗比較'"
             :workspace="page === '實驗比較' ? 'experiments' : 'studio'"
             :purpose-request="purposeRequest"
@@ -367,6 +374,9 @@ async function testConnection() {
             @assets="navigate('參考素材')"
             @gallery="navigate('作品庫', studioMode, $event)"
             @studio="navigate('創作工作台', 'checkpoint')" /><FluxStudio
+            :transfer-request="
+              transferRequest?.family === 'flux' ? transferRequest.token : undefined
+            "
             :purpose-request="purposeRequest"
             v-else-if="page === '創作工作台' && studioMode === 'flux'"
             :restore-request="fluxRestoreRequest"
@@ -486,6 +496,17 @@ async function testConnection() {
                   >作品、素材與設定保存在平台的資料目錄。使用遠端引擎時，生成需要的提示詞與輸入圖會送往你選定的引擎。</p
                 ><p
                   >封存可隨時還原，不會刪除圖片或釋放容量。完整備份沿用專案的停機備份流程；快取清除尚未開放。</p
+                ><h3>創作設定匯出／匯入</h3
+                ><p>前往工作台查看目前參數，再明確匯出 JSON；進入頁面不會保存、套用或生成。</p
+                ><div class="settings-export-links"
+                  ><button class="secondary" @click="openSettingsTransfer('checkpoint')"
+                    >Checkpoint 設定匯出／匯入</button
+                  ><button class="secondary" @click="openSettingsTransfer('flux')"
+                    >FLUX 設定匯出／匯入</button
+                  ></div
+                ><p class="footnote"
+                  >設定 JSON
+                  會包含創作使用的引擎位址與參數，不包含平台整體設定、作品、素材圖片或模型權重。完整備份請使用專案既有的停機備份流程；附加與局部編輯流程的交換能力以工作台說明為準。</p
                 ><button class="secondary" @click="navigate('系統資訊')"
                   >查看資料位置與磁碟容量</button
                 ></section

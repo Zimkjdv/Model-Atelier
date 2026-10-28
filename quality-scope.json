@@ -128,7 +128,8 @@
     "backend/test_ui_redesign.py",
     "backend/test_artwork_downloads.py",
     "backend/job_results.py",
-    "backend/test_job_results.py"
+    "backend/test_job_results.py",
+    "backend/test_listing_totals.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -218,7 +219,11 @@
     "frontend/src/LoraLibrary.vue",
     "frontend/src/ControlLibrary.vue",
     "frontend/src/FluxComponentLibrary.vue",
-    "frontend/tests/primary-gaps.spec.ts"
+    "frontend/tests/primary-gaps.spec.ts",
+    "frontend/src/generationPreflight.ts",
+    "frontend/src/ImageInput.vue",
+    "frontend/check-preflight.mjs",
+    "frontend/tests/secondary-gaps.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css", "frontend/src/redesign.css"]
 }

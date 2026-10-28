@@ -4,6 +4,28 @@ import { vMasonry } from './masonry'
 const layout = ref('fixed')
 const importOpen = ref(false)
 const sort = ref('latest')
+const pageSize = ref(12)
+function clearFilters() {
+  search.value = ''
+  modelFilter.value = ''
+  favoritesOnly.value = false
+}
+function ratingSummary(ratings: Ratings) {
+  const values = Object.values(ratings || {}).filter(
+    (value): value is number => typeof value === 'number' && Number.isFinite(value),
+  )
+  return values.length
+    ? '平均 ' +
+        (values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1) +
+        ' / 5 · 已評 ' +
+        values.length +
+        ' / 4 項'
+    : '尚未評分'
+}
+function artworkDate(item: Artwork) {
+  const date = new Date(item.created_at || item.imported_at)
+  return Number.isNaN(date.getTime()) ? '日期未知' : date.toLocaleDateString('zh-TW')
+}
 function selectCollection(value: 'active' | 'archived', favorites = false) {
   scope.value = value
   favoritesOnly.value = favorites
@@ -115,13 +137,7 @@ const scope = ref<'active' | 'archived' | 'all'>('active'),
   favoritesOnly = ref(false),
   modelFilter = ref('')
 const hasFilters = computed(
-  () =>
-    !!(
-      search.value.trim() ||
-      modelFilter.value.trim() ||
-      favoritesOnly.value ||
-      scope.value !== 'active'
-    ),
+  () => !!(search.value.trim() || modelFilter.value.trim() || favoritesOnly.value),
 )
 const saving = ref(false),
   notesDraft = ref(''),
@@ -139,6 +155,7 @@ const ratingsDirty = computed(
 type PageResult<T> = {
   items: T[]
   total: number
+  all_total: number
   offset: number
   next_cursor: string | null
   previous_cursor: string | null
@@ -298,6 +315,7 @@ function inspectComparison(item: ComparisonArtwork) {
 }
 const modelChoices = ref<string[]>([]),
   total = ref(0),
+  allTotal = ref<number | null>(null),
   offset = ref(0)
 const nextCursor = ref<string | null>(null),
   previousCursor = ref<string | null>(null),
@@ -312,7 +330,7 @@ async function read(cursor: string | null = null, loadTasks = true) {
   const request = reads.begin()
   busy.value = true
   const query = new URLSearchParams({
-    limit: '40',
+    limit: String(pageSize.value),
     scope: scope.value,
     q: search.value,
     favorites_only: String(favoritesOnly.value),
@@ -335,6 +353,7 @@ async function read(cursor: string | null = null, loadTasks = true) {
     if (!request.isCurrent()) return
     items.value = artworks.items
     total.value = artworks.total
+    allTotal.value = Number.isSafeInteger(artworks.all_total) ? artworks.all_total : null
     offset.value = artworks.offset
     modelChoices.value = artworks.models
     nextCursor.value = artworks.next_cursor
@@ -391,7 +410,7 @@ async function changePage(cursor: string | null) {
   await read(cursor, false)
 }
 let filterTimer: ReturnType<typeof setTimeout>
-watch([search, scope, favoritesOnly, modelFilter, sort], () => {
+watch([search, scope, favoritesOnly, modelFilter, sort, pageSize], () => {
   clearTimeout(filterTimer)
   reads.cancel()
   busy.value = true
@@ -658,8 +677,9 @@ onBeforeUnmount(() => {
     </div>
     <div class="gallery-list-meta"
       ><span class="footnote" role="status"
-        >{{ total }} 張符合 · 第 {{ Math.floor(offset / 40) + 1 }} 頁 · 本頁
-        {{ items.length }} 張</span
+        >{{ total }} 張符合／全部 {{ allTotal ?? '未知' }} 張（含封存） · 第
+        {{ Math.floor(offset / pageSize) + 1 }} / {{ Math.max(1, Math.ceil(total / pageSize)) }} 頁
+        · 本頁 {{ items.length }} 張</span
       ><label
         >排序<select v-model="sort" :disabled="saving || importing"
           ><option value="latest">最新</option
@@ -670,12 +690,31 @@ onBeforeUnmount(() => {
       ></div
     >
     <article v-if="!visible.length" class="panel placeholder"
-      ><h2>{{ busy ? '讀取作品中…' : '沒有符合的作品' }}</h2
+      ><h2>{{
+        busy
+          ? '讀取作品中…'
+          : hasFilters
+            ? '沒有符合的作品'
+            : scope === 'archived'
+              ? '尚無封存作品'
+              : '作品庫還沒有作品'
+      }}</h2
       ><p>{{
         hasFilters
           ? '調整搜尋、模型或收藏篩選；封存作品可在「已封存」中還原。'
-          : '完成生成後，選擇上方任務匯入圖片。作品會保存在這台平台主機。'
-      }}</p></article
+          : scope === 'archived'
+            ? '封存作品會出現在這裡，可隨時還原。'
+            : '完成生成後，選擇上方任務匯入圖片。作品會保存在這台平台主機。'
+      }}</p
+      ><button v-if="hasFilters" class="secondary" :disabled="busy || saving" @click="clearFilters"
+        >清除搜尋與篩選</button
+      ><p v-if="hasFilters" class="footnote"
+        >保留目前的{{
+          scope === 'archived' ? '已封存' : scope === 'all' ? '全部作品' : '使用中'
+        }}範圍。</p
+      ><button v-else-if="!busy" class="primary" @click="emit('studio')"
+        >前往創作工作台</button
+      ></article
     >
     <div
       class="artwork-grid"
@@ -716,6 +755,10 @@ onBeforeUnmount(() => {
             ><span v-if="item.archived" class="archive-badge">已封存</span
             ><span v-if="item.favorite" class="favorite-badge">★ 收藏</span></div
           ><p>{{ item.checkpoint }} · {{ item.width }}×{{ item.height }}</p
+          ><p class="gallery-rating" title="只計入已評項目；未評項目不當作零分">{{
+            ratingSummary(item.ratings)
+          }}</p
+          ><p class="gallery-date">{{ artworkDate(item) }}</p
           ><details
             ><summary>資訊與操作</summary
             ><p
@@ -767,7 +810,15 @@ onBeforeUnmount(() => {
         ></article
       ></div
     >
-    <div class="library-footer">
+    <div class="library-footer"
+      ><label class="page-size-control"
+        >每頁<select
+          v-model.number="pageSize"
+          :disabled="busy || saving || importing"
+          aria-label="每頁作品筆數"
+          ><option v-for="size in [4, 12, 24]" :key="size" :value="size">{{ size }}</option></select
+        >張</label
+      >
       <div v-if="previousCursor || nextCursor" role="group" aria-label="作品分頁"
         ><button
           class="secondary"

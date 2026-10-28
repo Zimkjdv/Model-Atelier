@@ -13,8 +13,9 @@
     "check:inpaint": "node check-inpaint.mjs",
     "check:control": "node check-control.mjs",
     "check:api": "node check-api.mjs && node check-studio-reads.mjs",
-    "test": "npm run check:api && npm run check:experiments && npm run check:inpaint && npm run check:control",
-    "test:browser": "playwright test"
+    "test": "npm run check:api && npm run check:experiments && npm run check:inpaint && npm run check:control && npm run check:preflight",
+    "test:browser": "playwright test",
+    "check:preflight": "node check-preflight.mjs"
   },
   "dependencies": {
     "vue": "^3.5.0"

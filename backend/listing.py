@@ -29,6 +29,7 @@ class Snapshot:
     query: tuple
     expires: float
     models: list[str]
+    all_total: int
 
 
 class Pager:
@@ -107,6 +108,7 @@ class Pager:
             items=items,
             missing_ids=missing,
             total=len(snapshot.keys),
+            all_total=snapshot.all_total,
             offset=offset,
             limit=limit,
             next_cursor=f'{token}:{offset + limit}'
@@ -193,6 +195,9 @@ class Pager:
             )
             # A read transaction fixes membership and metadata at the same point.
             db.execute('BEGIN')
+            all_total = db.execute(
+                'SELECT COUNT(*) FROM settings WHERE key GLOB ?', (prefix + ':*',)
+            ).fetchone()[0]
             rows = db.execute(
                 'SELECT key FROM settings WHERE '
                 + ' AND '.join(clauses)
@@ -213,7 +218,7 @@ class Pager:
                 if kind == 'artworks'
                 else []
             )
-        return Snapshot(tuple(row[0] for row in rows), query, now + TTL, models)
+        return Snapshot(tuple(row[0] for row in rows), query, now + TTL, models, all_total)
 
     def _summaries(self, kind, keys):
         if not keys:
@@ -249,6 +254,12 @@ class Pager:
         }[kind]
         projection = ','.join(f"'{key}',json_extract(value,'$.{key}')" for key in fields)
         if kind == 'artworks':
+            ratings = ['prompt_adherence', 'character_consistency', 'visual_style', 'composition']
+            projection += (
+                ", 'ratings',json_object("
+                + ','.join(f"'{key}',json_extract(value,'$.ratings.{key}')" for key in ratings)
+                + ')'
+            )
             projection += ", 'notes',substr(COALESCE(json_extract(value,'$.notes'),''),1,160)"
             projection += (
                 ", 'notes_truncated',length(COALESCE(json_extract(value,'$.notes'),''))>160"

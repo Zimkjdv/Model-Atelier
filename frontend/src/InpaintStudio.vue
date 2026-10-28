@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { generationFieldProblems, vFieldError, type PreflightBlocker } from './generationPreflight'
 import StudioPreview from './StudioPreview.vue'
 import type { Job as PreviewJob } from './jobEvents'
 const previewJob = ref<PreviewJob | null>(null)
@@ -284,248 +285,308 @@ onBeforeUnmount(() => {
   loads.dispose()
   restores.dispose()
 })
+const fieldProblems = computed(() => generationFieldProblems(form))
+const preflightBlockers = computed(() => {
+  const issues: PreflightBlocker[] = [],
+    c = capabilities.value
+  if (!busy.value && catalog.value?.engine_url !== form.engine_url)
+    issues.push({ message: '原設定的引擎與目前設定不同，請連接原引擎再更新。', action: 'settings' })
+  if (
+    form.checkpoint &&
+    catalog.value &&
+    !catalog.value.models.some((model) => model.listed && model.name === form.checkpoint)
+  )
+    issues.push({ message: '模型清單未確認此 checkpoint，請到模型庫同步。', action: 'models' })
+  if (
+    !busy.value &&
+    (c?.engine_url !== form.engine_url || !c.available || !c.engine_matches || c.stale)
+  )
+    issues.push({ message: '需更新原引擎的取樣選項；歷史快照不能用於生成。', action: 'settings' })
+  if (block.value && !issues.some((item) => item.message === block.value))
+    issues.push({ message: block.value })
+  return issues
+})
 </script>
 <template>
   <section aria-label="局部編輯工作台">
     <div class="studio-workbench"
-      ><div class="studio-settings">
-        <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
-        <p v-if="message" class="notice" role="status">{{ message }}</p>
-        <div v-if="pendingRestore" class="notice warning"
-          ><p>載入將取代目前表單及尚未保存的遮罩。</p
-          ><button class="secondary" @click="pendingRestore = null">繼續編輯</button
-          ><button
-            class="secondary"
-            :disabled="generationBusy || generationPending || maskBusy"
-            @click="apply(pendingRestore)"
-            >捨棄變更並載入</button
-          ></div
-        ><form class="panel editor" @submit.prevent
-          ><fieldset :disabled="locked">
-            <label for="inpaint-source">原圖</label
-            ><select id="inpaint-source" :value="form.image_asset_id ?? ''" @change="selectSource"
-              ><option value="">選擇原圖素材</option
-              ><option v-if="form.image_asset_id && !source" :value="form.image_asset_id"
-                >原素材不存在（{{ form.image_asset_id }}）</option
-              ><option
-                v-for="asset in assets.filter((a) => !a.archived || a.id === form.image_asset_id)"
-                :key="asset.id"
-                :value="asset.id"
-                :disabled="asset.archived"
-                >{{ asset.title }} · {{ asset.width }} × {{ asset.height
-                }}{{ asset.archived ? '（已封存）' : '' }}</option
-              ></select
-            >
-            <label for="inpaint-prompt">提示詞</label
-            ><textarea
-              id="inpaint-prompt"
-              v-model="form.prompt"
-              maxlength="20000"
-              rows="5"
-              placeholder="描述編輯範圍內的新物件、動作或場景"
-            />
-            <label for="inpaint-checkpoint">Checkpoint</label
-            ><select id="inpaint-checkpoint" v-model="form.checkpoint"
-              ><option value="">選擇模型</option
-              ><option
-                v-if="form.checkpoint && !catalog?.models.some((m) => m.name === form.checkpoint)"
-                :value="form.checkpoint"
-                >{{ form.checkpoint }}（清單未確認）</option
-              ><option
-                v-for="model in catalog?.models"
-                :key="model.name"
-                :value="model.name"
-                :disabled="
-                  !model.listed || ['flux', 'sd3', 'other'].includes(model.architecture || '')
-                "
-                >{{ model.name
-                }}{{
-                  !model.listed
-                    ? '（已不在清單）'
-                    : ['flux', 'sd3', 'other'].includes(model.architecture || '')
-                      ? '（此流程不支援）'
-                      : ''
-                }}</option
-              ></select
-            >
-            <p class="size-summary">輸出沿用原圖：{{ form.width }} × {{ form.height }} 像素</p
-            ><details class="studio-advanced"
-              ><summary>進階設定、草稿名稱與模型能力</summary><h2>原圖與生成設定</h2
-              ><label for="inpaint-title">名稱</label
-              ><input id="inpaint-title" v-model="form.title" required maxlength="100" />
-
-              <label for="inpaint-mask">已保存遮罩</label
-              ><select id="inpaint-mask" :value="form.mask_asset_id ?? ''" @change="selectMask"
-                ><option value="">繪製新遮罩或選擇素材</option
+      ><div class="studio-settings"
+        ><div class="studio-fields-scroll">
+          <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
+          <p v-if="message" class="notice" role="status">{{ message }}</p>
+          <div v-if="pendingRestore" class="notice warning"
+            ><p>載入將取代目前表單及尚未保存的遮罩。</p
+            ><button class="secondary" @click="pendingRestore = null">繼續編輯</button
+            ><button
+              class="secondary"
+              :disabled="generationBusy || generationPending || maskBusy"
+              @click="apply(pendingRestore)"
+              >捨棄變更並載入</button
+            ></div
+          ><form class="panel editor" @submit.prevent
+            ><fieldset :disabled="locked">
+              <label for="inpaint-source">原圖</label
+              ><select
+                v-field-error:image_asset_id="fieldProblems.image_asset_id"
+                id="inpaint-source"
+                :value="form.image_asset_id ?? ''"
+                @change="selectSource"
+                ><option value="">選擇原圖素材</option
+                ><option v-if="form.image_asset_id && !source" :value="form.image_asset_id"
+                  >原素材不存在（{{ form.image_asset_id }}）</option
                 ><option
-                  v-if="form.mask_asset_id && !masks.some((m) => m.id === form.mask_asset_id)"
-                  :value="form.mask_asset_id"
-                  >原遮罩目前不可用（{{ form.mask_asset_id }}）</option
-                ><option v-for="asset in masks" :key="asset.id" :value="asset.id"
-                  >{{ asset.title }} · {{ asset.width }} × {{ asset.height }}</option
+                  v-for="asset in assets.filter((a) => !a.archived || a.id === form.image_asset_id)"
+                  :key="asset.id"
+                  :value="asset.id"
+                  :disabled="asset.archived"
+                  >{{ asset.title }} · {{ asset.width }} × {{ asset.height
+                  }}{{ asset.archived ? '（已封存）' : '' }}</option
                 ></select
               >
-
-              <label for="inpaint-model">修補模型</label
-              ><select
-                id="inpaint-model"
-                :value="form.inpaint_model ?? 'general'"
-                @change="selectInpaintModel(($event.target as HTMLSelectElement).value)"
-                ><option value="general">一般 checkpoint＋內側羽化 v2</option
-                ><option value="fooocus-v2.6">Fooocus SDXL 專用修補 v3</option></select
-              ><p class="footnote"
-                >Fooocus 為實驗選項，本次有限比較未優於一般修補。首版只支援固定 Animagine 4.0
-                Opt，需額外 head／patch 與節點；denoise 1，不組合 LoRA。切換不會生成或替換基底。</p
-              >
-              <label for="inpaint-negative">負面提示詞</label
+              <label for="inpaint-prompt">提示詞</label
               ><textarea
-                id="inpaint-negative"
-                v-model="form.negative_prompt"
+                v-field-error:prompt="fieldProblems.prompt"
+                id="inpaint-prompt"
+                v-model="form.prompt"
                 maxlength="20000"
-                rows="3" />
-              <details class="custom-size"
-                ><summary>自訂像素尺寸</summary
-                ><div class="fields"
-                  ><label for="inpaint-width"
-                    >寬度<input
-                      id="inpaint-width"
-                      v-model.number="form.width"
-                      type="number"
-                      min="64"
-                      max="8192"
-                      step="8" /></label
-                  ><label for="inpaint-height"
-                    >高度<input
-                      id="inpaint-height"
-                      v-model.number="form.height"
-                      type="number"
-                      min="64"
-                      max="8192"
-                      step="8" /></label></div
-              ></details>
-              <label for="inpaint-resize">原圖與遮罩縮放</label
-              ><select id="inpaint-resize" v-model="form.reference_resize"
-                ><option value="fit">等比縮放；原圖補白、遮罩補黑</option
-                ><option value="stretch">拉伸至輸出尺寸</option></select
-              >
-              <label for="inpaint-seed">Seed（精確整數）</label
-              ><input
-                id="inpaint-seed"
-                v-model="form.seed"
-                inputmode="numeric"
-                maxlength="20"
-                pattern="[0-9]{1,20}" />
-              <div class="fields"
-                ><label for="inpaint-steps"
-                  >Steps<input
-                    id="inpaint-steps"
-                    v-model.number="form.steps"
-                    type="number"
-                    min="1"
-                    max="150"
-                    step="1" /></label
-                ><label for="inpaint-cfg"
-                  >CFG<input
-                    id="inpaint-cfg"
-                    v-model.number="form.cfg"
-                    type="number"
-                    min="0"
-                    max="30"
-                    step="any" /></label
-              ></div>
-              <label for="inpaint-sampler">取樣器</label
-              ><select id="inpaint-sampler" v-model="form.sampler_name"
+                rows="5"
+                placeholder="描述編輯範圍內的新物件、動作或場景"
+              />
+              <label for="inpaint-checkpoint">Checkpoint</label
+              ><select
+                v-field-error:checkpoint="fieldProblems.checkpoint"
+                id="inpaint-checkpoint"
+                v-model="form.checkpoint"
+                ><option value="">選擇模型</option
                 ><option
-                  v-if="!capabilities?.sampler_names.includes(form.sampler_name)"
-                  :value="form.sampler_name"
-                  >{{ form.sampler_name }}（未確認）</option
-                ><option v-for="name in capabilities?.sampler_names" :key="name" :value="name">{{
-                  name
-                }}</option></select
-              >
-              <label for="inpaint-scheduler">Scheduler</label
-              ><select id="inpaint-scheduler" v-model="form.scheduler"
+                  v-if="form.checkpoint && !catalog?.models.some((m) => m.name === form.checkpoint)"
+                  :value="form.checkpoint"
+                  >{{ form.checkpoint }}（清單未確認）</option
                 ><option
-                  v-if="!capabilities?.schedulers.includes(form.scheduler)"
-                  :value="form.scheduler"
-                  >{{ form.scheduler }}（未確認）</option
-                ><option v-for="name in capabilities?.schedulers" :key="name" :value="name">{{
-                  name
-                }}</option></select
+                  v-for="model in catalog?.models"
+                  :key="model.name"
+                  :value="model.name"
+                  :disabled="
+                    !model.listed || ['flux', 'sd3', 'other'].includes(model.architecture || '')
+                  "
+                  >{{ model.name
+                  }}{{
+                    !model.listed
+                      ? '（已不在清單）'
+                      : ['flux', 'sd3', 'other'].includes(model.architecture || '')
+                        ? '（此流程不支援）'
+                        : ''
+                  }}</option
+                ></select
               >
-              <div class="fields"
-                ><label for="inpaint-denoise"
-                  >改動幅度<input
-                    id="inpaint-denoise"
-                    v-model.number="form.denoise"
-                    type="number"
-                    min="0"
-                    max="1"
-                    step="any" /></label
-                ><label for="inpaint-grow"
-                  >遮罩擴張<input
-                    id="inpaint-grow"
-                    v-model.number="form.grow_mask_by"
+              <p class="size-summary">輸出沿用原圖：{{ form.width }} × {{ form.height }} 像素</p
+              ><details class="studio-advanced"
+                ><summary>進階設定、草稿名稱與模型能力</summary><h2>原圖與生成設定</h2
+                ><label for="inpaint-title">名稱</label
+                ><input
+                  v-field-error:title="fieldProblems.title"
+                  id="inpaint-title"
+                  v-model="form.title"
+                  required
+                  maxlength="100" />
+
+                <label for="inpaint-mask">已保存遮罩</label
+                ><select
+                  v-field-error:mask_asset_id="fieldProblems.mask_asset_id"
+                  id="inpaint-mask"
+                  :value="form.mask_asset_id ?? ''"
+                  @change="selectMask"
+                  ><option value="">繪製新遮罩或選擇素材</option
+                  ><option
+                    v-if="form.mask_asset_id && !masks.some((m) => m.id === form.mask_asset_id)"
+                    :value="form.mask_asset_id"
+                    >原遮罩目前不可用（{{ form.mask_asset_id }}）</option
+                  ><option v-for="asset in masks" :key="asset.id" :value="asset.id"
+                    >{{ asset.title }} · {{ asset.width }} × {{ asset.height }}</option
+                  ></select
+                >
+
+                <label for="inpaint-model">修補模型</label
+                ><select
+                  id="inpaint-model"
+                  :value="form.inpaint_model ?? 'general'"
+                  @change="selectInpaintModel(($event.target as HTMLSelectElement).value)"
+                  ><option value="general">一般 checkpoint＋內側羽化 v2</option
+                  ><option value="fooocus-v2.6">Fooocus SDXL 專用修補 v3</option></select
+                ><p class="footnote"
+                  >Fooocus 為實驗選項，本次有限比較未優於一般修補。首版只支援固定 Animagine 4.0
+                  Opt，需額外 head／patch 與節點；denoise 1，不組合
+                  LoRA。切換不會生成或替換基底。</p
+                >
+                <label for="inpaint-negative">負面提示詞</label
+                ><textarea
+                  v-field-error:negative_prompt="fieldProblems.negative_prompt"
+                  id="inpaint-negative"
+                  v-model="form.negative_prompt"
+                  maxlength="20000"
+                  rows="3" />
+                <details class="custom-size"
+                  ><summary>自訂像素尺寸</summary
+                  ><div class="fields"
+                    ><label for="inpaint-width"
+                      >寬度<input
+                        v-field-error:width="fieldProblems.width"
+                        id="inpaint-width"
+                        v-model.number="form.width"
+                        type="number"
+                        min="64"
+                        max="8192"
+                        step="8" /></label
+                    ><label for="inpaint-height"
+                      >高度<input
+                        v-field-error:height="fieldProblems.height"
+                        id="inpaint-height"
+                        v-model.number="form.height"
+                        type="number"
+                        min="64"
+                        max="8192"
+                        step="8" /></label></div
+                ></details>
+                <label for="inpaint-resize">原圖與遮罩縮放</label
+                ><select
+                  v-field-error:reference_resize="fieldProblems.reference_resize"
+                  id="inpaint-resize"
+                  v-model="form.reference_resize"
+                  ><option value="fit">等比縮放；原圖補白、遮罩補黑</option
+                  ><option value="stretch">拉伸至輸出尺寸</option></select
+                >
+                <label for="inpaint-seed">Seed（精確整數）</label
+                ><input
+                  v-field-error:seed="fieldProblems.seed"
+                  id="inpaint-seed"
+                  v-model="form.seed"
+                  inputmode="numeric"
+                  maxlength="20"
+                  pattern="[0-9]{1,20}" />
+                <div class="fields"
+                  ><label for="inpaint-steps"
+                    >Steps<input
+                      v-field-error:steps="fieldProblems.steps"
+                      id="inpaint-steps"
+                      v-model.number="form.steps"
+                      type="number"
+                      min="1"
+                      max="150"
+                      step="1" /></label
+                  ><label for="inpaint-cfg"
+                    >CFG<input
+                      v-field-error:cfg="fieldProblems.cfg"
+                      id="inpaint-cfg"
+                      v-model.number="form.cfg"
+                      type="number"
+                      min="0"
+                      max="30"
+                      step="any" /></label
+                ></div>
+                <label for="inpaint-sampler">取樣器</label
+                ><select
+                  v-field-error:sampler_name="fieldProblems.sampler_name"
+                  id="inpaint-sampler"
+                  v-model="form.sampler_name"
+                  ><option
+                    v-if="!capabilities?.sampler_names.includes(form.sampler_name)"
+                    :value="form.sampler_name"
+                    >{{ form.sampler_name }}（未確認）</option
+                  ><option v-for="name in capabilities?.sampler_names" :key="name" :value="name">{{
+                    name
+                  }}</option></select
+                >
+                <label for="inpaint-scheduler">Scheduler</label
+                ><select
+                  v-field-error:scheduler="fieldProblems.scheduler"
+                  id="inpaint-scheduler"
+                  v-model="form.scheduler"
+                  ><option
+                    v-if="!capabilities?.schedulers.includes(form.scheduler)"
+                    :value="form.scheduler"
+                    >{{ form.scheduler }}（未確認）</option
+                  ><option v-for="name in capabilities?.schedulers" :key="name" :value="name">{{
+                    name
+                  }}</option></select
+                >
+                <div class="fields"
+                  ><label for="inpaint-denoise"
+                    >改動幅度<input
+                      v-field-error:denoise="fieldProblems.denoise"
+                      id="inpaint-denoise"
+                      v-model.number="form.denoise"
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="any" /></label
+                  ><label for="inpaint-grow"
+                    >遮罩擴張<input
+                      v-field-error:grow_mask_by="fieldProblems.grow_mask_by"
+                      id="inpaint-grow"
+                      v-model.number="form.grow_mask_by"
+                      type="number"
+                      min="0"
+                      max="64"
+                      step="1" /></label
+                ></div>
+                <label for="inpaint-feather"
+                  >內側羽化半徑（輸出像素）<input
+                    v-field-error:feather_radius="fieldProblems.feather_radius"
+                    id="inpaint-feather"
+                    v-model.number="form.feather_radius"
                     type="number"
                     min="0"
                     max="64"
-                    step="1" /></label
-              ></div>
-              <label for="inpaint-feather"
-                >內側羽化半徑（輸出像素）<input
-                  id="inpaint-feather"
-                  v-model.number="form.feather_radius"
-                  type="number"
-                  min="0"
-                  max="64"
-                  step="1"
-              /></label>
-              <p class="footnote"
-                >透明遮罩先合成白底，灰階 128
-                以上為編輯範圍。擴張供二值遮罩去噪使用；羽化只改最後灰階合成，原黑色範圍不擴散。0
-                保留二值行為；過大可能讓細小白色區域消失，不保證接縫改善。</p
-              >
+                    step="1"
+                /></label>
+                <p class="footnote"
+                  >透明遮罩先合成白底，灰階 128
+                  以上為編輯範圍。擴張供二值遮罩去噪使用；羽化只改最後灰階合成，原黑色範圍不擴散。0
+                  保留二值行為；過大可能讓細小白色區域消失，不保證接縫改善。</p
+                >
 
-              <details class="advanced-controls"
-                ><summary>LoRA 與有序組合</summary
-                ><LoraControls
-                  v-model="form.loras"
-                  :engine-url="form.engine_url"
-                  :checkpoint="form.checkpoint"
-                  @blocked="loraBlock = $event" /></details
-            ></details> </fieldset></form
-        ><UnsavedChangesNotice :dirty="dirty" :saving="maskBusy" page-only /><details
-          class="studio-tools"
-          ><summary>草稿、來源與設定交換</summary
-          ><div class="toolbar"
-            ><strong>Checkpoint 局部編輯</strong
-            ><button class="secondary" :disabled="locked" @click="load(true)"
-              >更新清單與引擎選項</button
-            ><button class="secondary" @click="emit('assets')">管理原圖／遮罩素材 →</button
-            ><button class="secondary" @click="emit('models')">模型版本與來源 →</button></div
-          >
-          <p class="footnote"
-            >表單在工作台切換時保留；重新整理會清除未提交的表單。保存遮罩會寫入素材庫，生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新生成使用
-            v2；載入 v1 原設定時，羽化設為 0，不回填原任務。</p
-          >
-          <p class="footnote"
-            >原引擎 {{ form.engine_url || '讀取中' }} · 模型版本
-            {{
-              catalog?.engine_url === form.engine_url
-                ? catalog.models.find((m) => m.name === form.checkpoint)?.version || '未知'
-                : '未知'
-            }}。一般 checkpoint 的修補品質依模型與遮罩而異。</p
-          >
-          <template v-if="origin"
-            ><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{ warning }}</p
-            ><ReferenceSnapshot :items="origin.reference_metadata" /><RuntimeSnapshot
-              :item="origin.runtime_metadata"
-          /></template>
-          <AssetChoices
-            :selected-ids="
-              [form.image_asset_id, form.mask_asset_id].filter((v): v is string => !!v)
-            "
-            @items="assets = $event" /></details
+                <details class="advanced-controls"
+                  ><summary>LoRA 與有序組合</summary
+                  ><LoraControls
+                    v-model="form.loras"
+                    :engine-url="form.engine_url"
+                    :checkpoint="form.checkpoint"
+                    @blocked="loraBlock = $event" /></details
+              ></details> </fieldset></form
+          ><UnsavedChangesNotice :dirty="dirty" :saving="maskBusy" page-only /><details
+            class="studio-tools"
+            ><summary>草稿、來源與設定交換</summary
+            ><div class="toolbar"
+              ><strong>Checkpoint 局部編輯</strong
+              ><button class="secondary" :disabled="locked" @click="load(true)"
+                >更新清單與引擎選項</button
+              ><button class="secondary" @click="emit('assets')">管理原圖／遮罩素材 →</button
+              ><button class="secondary" @click="emit('models')">模型版本與來源 →</button></div
+            >
+            <p class="footnote"
+              >表單在工作台切換時保留；重新整理會清除未提交的表單。保存遮罩會寫入素材庫，生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新生成使用
+              v2；載入 v1 原設定時，羽化設為 0，不回填原任務。</p
+            >
+            <p class="footnote"
+              >原引擎 {{ form.engine_url || '讀取中' }} · 模型版本
+              {{
+                catalog?.engine_url === form.engine_url
+                  ? catalog.models.find((m) => m.name === form.checkpoint)?.version || '未知'
+                  : '未知'
+              }}。一般 checkpoint 的修補品質依模型與遮罩而異。</p
+            >
+            <template v-if="origin"
+              ><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{
+                warning
+              }}</p
+              ><ReferenceSnapshot :items="origin.reference_metadata" /><RuntimeSnapshot
+                :item="origin.runtime_metadata"
+            /></template>
+            <AssetChoices
+              :selected-ids="
+                [form.image_asset_id, form.mask_asset_id].filter((v): v is string => !!v)
+              "
+              @items="assets = $event" /></details></div
         ><div class="studio-submit" id="studio-submit-inpaint"></div></div
       ><div class="studio-stage"
         ><div class="stage-view-switch" role="group" aria-label="舞台內容"
@@ -569,6 +630,8 @@ onBeforeUnmount(() => {
           submit-target="#studio-submit-inpaint"
           :form="form"
           workflow="inpaint"
+          :blockers="preflightBlockers"
+          :field-problems="fieldProblems"
           :blocked-reason="block"
           :disabled="busy || maskBusy || !!pendingRestore"
           @busy="generationBusy = $event"
