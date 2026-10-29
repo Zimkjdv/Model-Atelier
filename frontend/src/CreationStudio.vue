@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError } from './generationPreflight'
 import SizePresets from './SizePresets.vue'
 import StudioPreview from './StudioPreview.vue'
@@ -744,9 +745,22 @@ watch(
             @submit.prevent="save()"
             ><h2>創作設定</h2
             ><fieldset :disabled="busy || restoring">
+              <ImageInput
+                part="source"
+                :errors="fieldProblems"
+                v-if="isImage"
+                :model-value="form.image_asset_id"
+                v-model:resize="form.reference_resize"
+                v-model:denoise="form.denoise"
+                :assets="references"
+                :width="form.width"
+                :height="form.height"
+                @update:model-value="chooseImage"
+              />
               <template v-if="editableWorkflow"
                 ><label for="draft-prompt"
-                  >畫面描述 <small>{{ form.prompt.length }} / 20000</small></label
+                  >描述你想創作的畫面
+                  <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
                 ><textarea
                   v-field-error:prompt="fieldProblems.prompt"
                   id="draft-prompt"
@@ -756,7 +770,7 @@ watch(
                   placeholder="描述角色、場景、光線與你想呈現的畫面…"
                 ></textarea>
               </template>
-              <label for="draft-model">Checkpoint 模型</label
+              <label for="draft-model">模型</label
               ><select
                 v-field-error:checkpoint="fieldProblems.checkpoint"
                 id="draft-model"
@@ -780,17 +794,7 @@ watch(
                   }}</option
                 ></select
               >
-              <ImageInput
-                :errors="fieldProblems"
-                v-if="isImage"
-                :model-value="form.image_asset_id"
-                v-model:resize="form.reference_resize"
-                v-model:denoise="form.denoise"
-                :assets="references"
-                :width="form.width"
-                :height="form.height"
-                @update:model-value="chooseImage"
-              />
+
               <SizePresets
                 :family="matchingProfile?.architecture"
                 :width="form.width"
@@ -802,8 +806,7 @@ watch(
                   }
                 "
               /><details class="studio-advanced"
-                ><summary>進階設定、草稿名稱與模型能力</summary
-                ><label for="draft-title">草稿名稱</label
+                ><summary>進階設定</summary><label for="draft-title">草稿名稱</label
                 ><input
                   v-field-error:title="fieldProblems.title"
                   id="draft-title"
@@ -811,6 +814,20 @@ watch(
                   required
                   maxlength="100"
                 />
+                <details v-if="isImage" class="image-input-settings"
+                  ><summary>重繪設定與輸入預覽</summary
+                  ><ImageInput
+                    part="settings"
+                    :errors="fieldProblems"
+                    v-if="isImage"
+                    :model-value="form.image_asset_id"
+                    v-model:resize="form.reference_resize"
+                    v-model:denoise="form.denoise"
+                    :assets="references"
+                    :width="form.width"
+                    :height="form.height"
+                    @update:model-value="chooseImage"
+                /></details>
                 <label for="checkpoint-workflow">Checkpoint 工作流程</label
                 ><select
                   v-field-error:workflow_mode="fieldProblems.workflow_mode"
@@ -1228,8 +1245,11 @@ watch(
                 ></details
               >
             </fieldset></form
-          ><UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" /><details
-            class="studio-tools"
+          ><StudioUtilityBar /><UnsavedChangesNotice
+            :dirty="dirty"
+            :saving="savingDraft"
+            :saved="!!id"
+          /><details class="studio-tools"
             ><summary>草稿、來源與設定交換</summary
             ><details class="studio-validation"
               ><summary>相容性與實測範圍</summary><GenerationAdvice v-if="!isImage" :form="form" />

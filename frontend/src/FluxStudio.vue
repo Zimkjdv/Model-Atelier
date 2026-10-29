@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError, type PreflightBlocker } from './generationPreflight'
 import SizePresets from './SizePresets.vue'
 import StudioPreview from './StudioPreview.vue'
@@ -349,7 +350,9 @@ const preflightBlockers = computed(() => {
               <button class="secondary" @click="apply(pending)">捨棄變更並載入 FLUX</button></div
             ><form class="panel flux-editor" aria-label="FLUX 創作設定" @submit.prevent="save()"
               ><fieldset :disabled="busy">
-                <label for="flux-prompt">FLUX 提示詞</label
+                <label for="flux-prompt"
+                  >描述你想創作的畫面
+                  <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
                 ><textarea
                   v-field-error:prompt="fieldProblems.prompt"
                   id="flux-prompt"
@@ -357,9 +360,36 @@ const preflightBlockers = computed(() => {
                   maxlength="20000"
                   rows="5"
                   placeholder="例如：A peaceful mountain lake, soft morning light"
-                /><details class="studio-advanced"
-                  ><summary>進階設定、草稿名稱與模型能力</summary
-                  ><label for="flux-title">FLUX 草稿名稱</label
+                />
+                <p class="size-presets-label">模型</p>
+                <div class="studio-model-summary"
+                  ><span>FLUX.1 [schnell] · 四元件</span
+                  ><button
+                    type="button"
+                    class="text-button"
+                    @click="
+                      ($event.currentTarget as HTMLElement)
+                        .closest('form')
+                        ?.querySelector('details')
+                        ?.setAttribute('open', '')
+                    "
+                    >元件設定</button
+                  ></div
+                >
+                <SizePresets
+                  family="flux"
+                  :width="form.width"
+                  :height="form.height"
+                  :disabled="busy"
+                  @select="
+                    (w, h) => {
+                      form.width = w
+                      form.height = h
+                    }
+                  "
+                />
+                <details class="studio-advanced"
+                  ><summary>進階設定</summary><label for="flux-title">FLUX 草稿名稱</label
                   ><input
                     v-field-error:title="fieldProblems.title"
                     id="flux-title"
@@ -482,13 +512,18 @@ const preflightBlockers = computed(() => {
                   </details></details
                 >
               </fieldset></form
-            ><UnsavedChangesNotice :dirty="dirty" :saving="savingDraft" :saved="!!id" /><details
-              class="studio-tools"
+            ><StudioUtilityBar /><UnsavedChangesNotice
+              :dirty="dirty"
+              :saving="savingDraft"
+              :saved="!!id" /><details class="studio-tools"
               ><summary>草稿、來源與設定交換</summary>
-              <p class="footnote"
-                >已有 RTX 3060／64 GiB RAM、固定四元件、512×512／4 步／主模型 FP8 e4m3fn／CPU
-                編碼器的生成保存與失敗復原實測。LoRA／VAE
-                圖生圖請使用上方獨立流程；其他配置及目前引擎未自動驗證，負面提示詞保持停用。</p
+              <details class="studio-validation"
+                ><summary>相容性與實測範圍</summary
+                ><p class="footnote"
+                  >已有 RTX 3060／64 GiB RAM、固定四元件、512×512／4 步／主模型 FP8 e4m3fn／CPU
+                  編碼器的生成保存與失敗復原實測。LoRA／VAE
+                  圖生圖請使用上方獨立流程；其他配置及目前引擎未自動驗證，負面提示詞保持停用。</p
+                ></details
               >
               <div class="flux-toolbar"
                 ><strong>FLUX.1 [schnell]</strong

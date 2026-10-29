@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError, type PreflightBlocker } from './generationPreflight'
 import StudioPreview from './StudioPreview.vue'
 import type { Job as PreviewJob } from './jobEvents'
@@ -325,7 +326,7 @@ const preflightBlockers = computed(() => {
             ></div
           ><form class="panel editor" @submit.prevent
             ><fieldset :disabled="locked">
-              <label for="inpaint-source">原圖</label
+              <label for="inpaint-source">原圖與遮罩</label
               ><select
                 v-field-error:image_asset_id="fieldProblems.image_asset_id"
                 id="inpaint-source"
@@ -343,7 +344,9 @@ const preflightBlockers = computed(() => {
                   }}{{ asset.archived ? '（已封存）' : '' }}</option
                 ></select
               >
-              <label for="inpaint-prompt">提示詞</label
+              <label for="inpaint-prompt"
+                >描述你想創作的畫面
+                <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
               ><textarea
                 v-field-error:prompt="fieldProblems.prompt"
                 id="inpaint-prompt"
@@ -352,7 +355,7 @@ const preflightBlockers = computed(() => {
                 rows="5"
                 placeholder="描述編輯範圍內的新物件、動作或場景"
               />
-              <label for="inpaint-checkpoint">Checkpoint</label
+              <label for="inpaint-checkpoint">模型</label
               ><select
                 v-field-error:checkpoint="fieldProblems.checkpoint"
                 id="inpaint-checkpoint"
@@ -381,7 +384,7 @@ const preflightBlockers = computed(() => {
               >
               <p class="size-summary">輸出沿用原圖：{{ form.width }} × {{ form.height }} 像素</p
               ><details class="studio-advanced"
-                ><summary>進階設定、草稿名稱與模型能力</summary><h2>原圖與生成設定</h2
+                ><summary>進階設定</summary><h2>原圖與生成設定</h2
                 ><label for="inpaint-title">名稱</label
                 ><input
                   v-field-error:title="fieldProblems.title"
@@ -553,8 +556,10 @@ const preflightBlockers = computed(() => {
                     :checkpoint="form.checkpoint"
                     @blocked="loraBlock = $event" /></details
               ></details> </fieldset></form
-          ><UnsavedChangesNotice :dirty="dirty" :saving="maskBusy" page-only /><details
-            class="studio-tools"
+          ><StudioUtilityBar :drafts="false" /><UnsavedChangesNotice
+            :dirty="dirty"
+            :saving="maskBusy"
+            page-only /><details class="studio-tools"
             ><summary>草稿、來源與設定交換</summary
             ><div class="toolbar"
               ><strong>Checkpoint 局部編輯</strong
@@ -563,17 +568,20 @@ const preflightBlockers = computed(() => {
               ><button class="secondary" @click="emit('assets')">管理原圖／遮罩素材 →</button
               ><button class="secondary" @click="emit('models')">模型版本與來源 →</button></div
             >
-            <p class="footnote"
-              >表單在工作台切換時保留；重新整理會清除未提交的表單。保存遮罩會寫入素材庫，生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新生成使用
-              v2；載入 v1 原設定時，羽化設為 0，不回填原任務。</p
-            >
-            <p class="footnote"
-              >原引擎 {{ form.engine_url || '讀取中' }} · 模型版本
-              {{
-                catalog?.engine_url === form.engine_url
-                  ? catalog.models.find((m) => m.name === form.checkpoint)?.version || '未知'
-                  : '未知'
-              }}。一般 checkpoint 的修補品質依模型與遮罩而異。</p
+            <details class="studio-validation"
+              ><summary>相容性與流程限制</summary
+              ><p class="footnote"
+                >表單在工作台切換時保留；重新整理會清除未提交的表單。保存遮罩會寫入素材庫，生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新生成使用
+                v2；載入 v1 原設定時，羽化設為 0，不回填原任務。</p
+              >
+              <p class="footnote"
+                >原引擎 {{ form.engine_url || '讀取中' }} · 模型版本
+                {{
+                  catalog?.engine_url === form.engine_url
+                    ? catalog.models.find((m) => m.name === form.checkpoint)?.version || '未知'
+                    : '未知'
+                }}。一般 checkpoint 的修補品質依模型與遮罩而異。</p
+              ></details
             >
             <template v-if="origin"
               ><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{
@@ -588,7 +596,7 @@ const preflightBlockers = computed(() => {
               "
               @items="assets = $event" /></details></div
         ><div class="studio-submit" id="studio-submit-inpaint"></div></div
-      ><div class="studio-stage"
+      ><div class="studio-stage inpaint-stage"
         ><div class="stage-view-switch" role="group" aria-label="舞台內容"
           ><button
             class="secondary"
@@ -616,15 +624,17 @@ const preflightBlockers = computed(() => {
           @saved="savedMask"
           @dirty="maskDirty = $event"
           @busy="maskBusy = $event" />
-        <InpaintBlendPreview
-          v-show="stageView === 'source'"
-          :form="form"
-          :blocked="
-            maskDirty
-              ? '新遮罩尚未保存。'
-              : inpaintProblem(form, source, mask) || featherProblem(form)
-          "
-          :disabled="locked" /><GenerationPanel
+        <details class="stage-supplement" v-show="stageView === 'source'"
+          ><summary>合成遮罩預覽（CPU）</summary
+          ><InpaintBlendPreview
+            :form="form"
+            :blocked="
+              maskDirty
+                ? '新遮罩尚未保存。'
+                : inpaintProblem(form, source, mask) || featherProblem(form)
+            "
+            :disabled="locked" /></details
+        ><GenerationPanel
           preview-stage
           @preview="previewJob = $event"
           submit-target="#studio-submit-inpaint"

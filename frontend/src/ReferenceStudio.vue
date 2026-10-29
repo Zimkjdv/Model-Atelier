@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError, type PreflightBlocker } from './generationPreflight'
 import SizePresets from './SizePresets.vue'
 import StudioPreview from './StudioPreview.vue'
@@ -311,7 +312,7 @@ const preflightBlockers = computed(() => {
             ></div
           ><form class="panel editor" @submit.prevent
             ><fieldset :disabled="locked">
-              <label for="reference-source">參考素材</label
+              <label for="reference-source">參考圖片</label
               ><select
                 v-field-error:image_asset_id="fieldProblems.image_asset_id"
                 id="reference-source"
@@ -329,7 +330,9 @@ const preflightBlockers = computed(() => {
                   }}{{ a.archived ? '（已封存）' : '' }}</option
                 ></select
               >
-              <label for="reference-prompt">提示詞</label
+              <label for="reference-prompt"
+                >描述你想創作的畫面
+                <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
               ><textarea
                 v-field-error:prompt="fieldProblems.prompt"
                 id="reference-prompt"
@@ -337,7 +340,7 @@ const preflightBlockers = computed(() => {
                 rows="5"
                 maxlength="20000"
               />
-              <label for="reference-checkpoint">SDXL Checkpoint</label
+              <label for="reference-checkpoint">模型 · SDXL</label
               ><select
                 v-field-error:checkpoint="fieldProblems.checkpoint"
                 id="reference-checkpoint"
@@ -365,8 +368,16 @@ const preflightBlockers = computed(() => {
                     form.height = h
                   }
                 "
-              /><details class="studio-advanced"
-                ><summary>進階設定、草稿名稱與模型能力</summary><h2>參考圖與生成設定</h2>
+              /><label for="reference-mode">參考目的</label
+              ><select
+                v-field-error:reference_mode="fieldProblems.reference_mode"
+                id="reference-mode"
+                v-model="form.reference_mode"
+                ><option value="style">畫風參考</option
+                ><option value="character">角色外觀參考</option></select
+              >
+              <details class="studio-advanced"
+                ><summary>進階設定</summary><h2>參考圖與生成設定</h2>
                 <label for="reference-title">名稱</label
                 ><input
                   v-field-error:title="fieldProblems.title"
@@ -375,15 +386,6 @@ const preflightBlockers = computed(() => {
                   maxlength="100"
                   required
                 />
-
-                <label for="reference-mode">參考模式</label
-                ><select
-                  v-field-error:reference_mode="fieldProblems.reference_mode"
-                  id="reference-mode"
-                  v-model="form.reference_mode"
-                  ><option value="style">畫風參考</option
-                  ><option value="character">角色外觀參考</option></select
-                >
 
                 <figure v-if="source" class="source-preview"
                   ><img
@@ -547,7 +549,9 @@ const preflightBlockers = computed(() => {
                 ></details
               >
             </fieldset></form
-          ><UnsavedChangesNotice :dirty="dirty" page-only /><details class="studio-tools"
+          ><StudioUtilityBar :drafts="false" /><UnsavedChangesNotice
+            :dirty="dirty"
+            page-only /><details class="studio-tools"
             ><summary>草稿、來源與設定交換</summary
             ><div class="toolbar"
               ><strong>SDXL 畫風／角色外觀參考</strong
@@ -558,14 +562,17 @@ const preflightBlockers = computed(() => {
                 >Checkpoint 版本與來源 →</button
               ></div
             >
-            <p class="footnote"
-              >單張參考圖，兩種模式分開驗收。畫風模式使用 style transfer；角色外觀模式使用
-              linear。相似外觀不代表身份鎖定，構圖與服裝也可能被帶入。首版不組合 LoRA。</p
-            >
-            <p class="footnote"
-              >參考圖等比補白至 224 × 224，再由原引擎編碼；輸出尺寸獨立。單次一張、空
-              latent、denoise
-              1。表單僅在本次工作台切換時保留，提交後可從任務／作品載入完整原設定。</p
+            <details class="studio-validation"
+              ><summary>相容性與流程限制</summary
+              ><p class="footnote"
+                >單張參考圖，兩種模式分開驗收。畫風模式使用 style transfer；角色外觀模式使用
+                linear。相似外觀不代表身份鎖定，構圖與服裝也可能被帶入。首版不組合 LoRA。</p
+              >
+              <p class="footnote"
+                >參考圖等比補白至 224 × 224，再由原引擎編碼；輸出尺寸獨立。單次一張、空
+                latent、denoise
+                1。表單僅在本次工作台切換時保留，提交後可從任務／作品載入完整原設定。</p
+              ></details
             >
             <template v-if="origin"
               ><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{

@@ -326,52 +326,54 @@ onBeforeUnmount(() => window.clearInterval(timer))
         ><p class="submission-state" role="status" aria-label="提交能力狀態">{{
           submissionAvailability
         }}</p>
-        <div
-          v-if="displayBlockers.length"
-          class="notice warning preflight-blockers"
-          aria-label="流程與環境阻擋"
-          ><strong>需先處理</strong
-          ><ul
-            ><li v-for="(item, index) in displayBlockers" :key="index"
-              >{{ item.message }}
-              <a v-if="item.action === 'settings'" href="#/settings">前往引擎設定</a
-              ><a v-if="item.action === 'models'" href="#/models">前往模型與元件</a
-              ><template v-if="item.action === 'refresh'"
-                ><a href="#/settings">檢查引擎連線</a>
-                <button
+        <div class="preflight-feedback">
+          <div
+            v-if="displayBlockers.length"
+            class="notice warning preflight-blockers"
+            aria-label="流程與環境阻擋"
+            ><strong>需先處理</strong
+            ><ul
+              ><li v-for="(item, index) in displayBlockers" :key="index"
+                >{{ item.message }}
+                <a v-if="item.action === 'settings'" href="#/settings">前往引擎設定</a
+                ><a v-if="item.action === 'models'" href="#/models">前往模型與元件</a
+                ><template v-if="item.action === 'refresh'"
+                  ><a href="#/settings">檢查引擎連線</a>
+                  <button
+                    class="text-button"
+                    :disabled="busy || disabled"
+                    @click="emit('refreshOptions')"
+                    >更新引擎選項</button
+                  ></template
+                ><span
+                  v-if="!item.action && /引擎|ComfyUI|連線|元件/.test(item.message)"
+                  class="preflight-links"
+                  ><a href="#/settings">檢查引擎連線</a><a href="#/models">檢查模型與元件</a></span
+                ></li
+              ></ul
+            ></div
+          >
+          <div v-if="hasFieldProblems" class="preflight-fields" aria-label="需修正欄位"
+            ><p>請修正 {{ Object.keys(fieldProblems || {}).length }} 個欄位：</p
+            ><ul
+              ><li v-for="(message, key) in fieldProblems" :key="key"
+                ><button
+                  type="button"
                   class="text-button"
-                  :disabled="busy || disabled"
-                  @click="emit('refreshOptions')"
-                  >更新引擎選項</button
-                ></template
-              ><span
-                v-if="!item.action && /引擎|ComfyUI|連線|元件/.test(item.message)"
-                class="preflight-links"
-                ><a href="#/settings">檢查引擎連線</a><a href="#/models">檢查模型與元件</a></span
-              ></li
-            ></ul
-          ></div
-        >
-        <div v-if="hasFieldProblems" class="preflight-fields" aria-label="需修正欄位"
-          ><p>請修正 {{ Object.keys(fieldProblems || {}).length }} 個欄位：</p
-          ><ul
-            ><li v-for="(message, key) in fieldProblems" :key="key"
-              ><button
-                type="button"
-                class="text-button"
-                @click="focusPreflightField(submitTarget, String(key))"
-                >{{ fieldLabels[key] || key }}：{{ message }}</button
-              ></li
-            ></ul
-          ></div
-        >
-        <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
-        <p v-if="pending" class="notice warning"
-          >尚有未確認的提交
-          {{
-            pending.request_id
-          }}。恢復時使用原始參數，重複請求不會再次入列。請先確認原提交，再載入失敗任務的設定。</p
-        >
+                  @click="focusPreflightField(submitTarget, String(key))"
+                  >{{ fieldLabels[key] || key }}：{{ message }}</button
+                ></li
+              ></ul
+            ></div
+          >
+          <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
+          <p v-if="pending" class="notice warning"
+            >尚有未確認的提交
+            {{
+              pending.request_id
+            }}。恢復時使用原始參數，重複請求不會再次入列。請先確認原提交，再載入失敗任務的設定。</p
+          >
+        </div>
         <button
           type="button"
           class="primary"

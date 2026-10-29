@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError, type PreflightBlocker } from './generationPreflight'
 import SizePresets from './SizePresets.vue'
 import StudioPreview from './StudioPreview.vue'
@@ -325,7 +326,7 @@ const preflightBlockers = computed(() => {
             ></div
           ><form class="panel editor" @submit.prevent
             ><fieldset :disabled="locked">
-              <label for="control-source">原圖</label
+              <label for="control-source">結構來源圖</label
               ><select
                 v-field-error:image_asset_id="fieldProblems.image_asset_id"
                 id="control-source"
@@ -343,7 +344,9 @@ const preflightBlockers = computed(() => {
                   }}{{ asset.archived ? '（已封存）' : '' }}</option
                 ></select
               >
-              <label for="control-prompt">提示詞</label
+              <label for="control-prompt"
+                >描述你想創作的畫面
+                <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
               ><textarea
                 v-field-error:prompt="fieldProblems.prompt"
                 id="control-prompt"
@@ -352,7 +355,7 @@ const preflightBlockers = computed(() => {
                 rows="5"
                 placeholder="描述希望生成的物件、動作或場景"
               />
-              <label for="control-checkpoint">Checkpoint</label
+              <label for="control-checkpoint">模型</label
               ><select
                 v-field-error:checkpoint="fieldProblems.checkpoint"
                 id="control-checkpoint"
@@ -389,8 +392,17 @@ const preflightBlockers = computed(() => {
                     form.height = h
                   }
                 "
-              /><details class="studio-advanced"
-                ><summary>進階設定、草稿名稱與模型能力</summary><h2>原圖與生成設定</h2
+              /><label for="control-kind">結構方式</label
+              ><select
+                id="control-kind"
+                :value="form.control_kind ?? 'canny'"
+                @change="changeKind(($event.target as HTMLSelectElement).value)"
+                ><option value="canny">Canny 輪廓</option
+                ><option value="pose">Pose 姿勢（SDXL）</option
+                ><option value="depth">Depth 相對深度（SDXL）</option></select
+              >
+              <details class="studio-advanced"
+                ><summary>進階設定</summary><h2>原圖與生成設定</h2
                 ><label for="control-title">名稱</label
                 ><input
                   v-field-error:title="fieldProblems.title"
@@ -407,15 +419,7 @@ const preflightBlockers = computed(() => {
                     >原素材預覽；生成時先縮放／補白，再由原引擎計算所選條件。此處是原圖。</figcaption
                   ></figure
                 >
-                <label for="control-kind">結構類型</label
-                ><select
-                  id="control-kind"
-                  :value="form.control_kind ?? 'canny'"
-                  @change="changeKind(($event.target as HTMLSelectElement).value)"
-                  ><option value="canny">Canny 輪廓</option
-                  ><option value="pose">Pose 姿勢（SDXL）</option
-                  ><option value="depth">Depth 相對深度（SDXL）</option></select
-                ><p class="footnote"
+                <p class="footnote"
                   >Pose／Depth
                   需額外前處理節點與匹配控制權重；同次實際條件圖在任務完成後保存。動漫偵測可能遺漏手部或臉部。</p
                 ><label for="control-model">ControlNet</label
@@ -601,7 +605,9 @@ const preflightBlockers = computed(() => {
                     :checkpoint="form.checkpoint"
                     @blocked="loraBlock = $event" /></details
               ></details> </fieldset></form
-          ><UnsavedChangesNotice :dirty="dirty" page-only /><details class="studio-tools"
+          ><StudioUtilityBar :drafts="false" /><UnsavedChangesNotice
+            :dirty="dirty"
+            page-only /><details class="studio-tools"
             ><summary>草稿、來源與設定交換</summary
             ><div class="toolbar"
               ><strong>Checkpoint 結構參考</strong
@@ -610,18 +616,21 @@ const preflightBlockers = computed(() => {
               ><button class="secondary" @click="emit('assets')">管理結構素材 →</button
               ><button class="secondary" @click="emit('models')">模型版本與來源 →</button></div
             >
-            <p class="footnote"
-              >表單在工作台切換時保留；重新整理會清除未提交的表單。生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新提交使用
-              Canny v2，完成後可在任務與作品明確保存／查看實際邊緣圖；舊設定重新生成會建立新的 v2
-              任務。</p
-            >
-            <p class="footnote"
-              >原引擎 {{ form.engine_url || '讀取中' }} · 模型版本
-              {{
-                catalog?.engine_url === form.engine_url
-                  ? catalog.models.find((m) => m.name === form.checkpoint)?.version || '未知'
-                  : '未知'
-              }}。Canny 引導輪廓／構圖，不保證畫風、角色或逐像素相同。</p
+            <details class="studio-validation"
+              ><summary>相容性與流程限制</summary
+              ><p class="footnote"
+                >表單在工作台切換時保留；重新整理會清除未提交的表單。生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新提交使用
+                Canny v2，完成後可在任務與作品明確保存／查看實際邊緣圖；舊設定重新生成會建立新的 v2
+                任務。</p
+              >
+              <p class="footnote"
+                >原引擎 {{ form.engine_url || '讀取中' }} · 模型版本
+                {{
+                  catalog?.engine_url === form.engine_url
+                    ? catalog.models.find((m) => m.name === form.checkpoint)?.version || '未知'
+                    : '未知'
+                }}。Canny 引導輪廓／構圖，不保證畫風、角色或逐像素相同。</p
+              ></details
             >
             <template v-if="origin"
               ><p v-for="warning in origin.warnings" :key="warning" class="footnote">{{
@@ -635,7 +644,7 @@ const preflightBlockers = computed(() => {
               :selected-ids="[form.image_asset_id || '', assetRequest?.id || '']"
               @items="assets = $event" /></details></div
         ><div class="studio-submit" id="studio-submit-control"></div></div
-      ><div class="studio-stage"
+      ><div class="studio-stage control-stage"
         ><div class="stage-view-switch" role="group" aria-label="舞台內容"
           ><button
             class="secondary"
@@ -656,7 +665,6 @@ const preflightBlockers = computed(() => {
           title="結構引導"
           @gallery="emit('gallery', $event)" /><CannyPreview
           v-show="stageView === 'source'"
-          v-if="!form.control_kind"
           :form="form"
           :source="source"
           :disabled="locked" /><GenerationPanel

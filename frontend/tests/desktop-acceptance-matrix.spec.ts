@@ -525,6 +525,26 @@ for (const [width, height] of dimensions) {
         workflow.getByRole('button', { name: purposes[index], exact: true }),
       ).toHaveAttribute('aria-pressed', 'true')
       await page.locator(input).fill('matrix preserve ' + purposes[index])
+      const promptBox = await geometry(page.locator(input))
+      const refPrompt = await geometry(ref.locator('#vprompt'))
+      expect(Math.abs(promptBox.width - refPrompt.width)).toBeLessThanOrEqual(3)
+      expect(Math.abs(promptBox.height - refPrompt.height)).toBeLessThanOrEqual(3)
+      if (index > 0) {
+        const source = ['#image-asset', '#inpaint-source', '#control-source', '#reference-source'][
+          index - 1
+        ]!
+        expect((await geometry(page.locator(source))).y).toBeLessThan(promptBox.y)
+      }
+      if (index === 3 || index === 4) {
+        const selector = index === 3 ? '#control-kind' : '#reference-mode'
+        expect(
+          await page.locator(selector).evaluate((element) => !!element.closest('.studio-advanced')),
+        ).toBe(false)
+      }
+      const statusBox = await geometry(
+        page.locator('.generation-statusbar').filter({ visible: true }),
+      )
+      expect(statusBox.y + statusBox.height).toBeLessThanOrEqual(height + 1)
       if (index < 2)
         await expect(page.locator('#checkpoint-workflow')).toHaveValue(
           index ? 'image2image' : 'text2image',
@@ -584,6 +604,12 @@ for (const [width, height] of dimensions) {
     await workflow.getByRole('button', { name: purposes[0], exact: true }).click()
     await expect(page.locator('#flux-prompt')).toBeVisible()
     await page.locator('#flux-prompt').fill('independent flux text form')
+    await expect(
+      page
+        .getByRole('group', { name: '輸出尺寸比例' })
+        .filter({ visible: true })
+        .getByRole('button'),
+    ).toHaveCount(4)
     rows.push({
       family: 'FLUX',
       purpose: purposes[0],

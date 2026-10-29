@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError, type PreflightBlocker } from './generationPreflight'
 import StudioPreview from './StudioPreview.vue'
 import type { Job as PreviewJob } from './jobEvents'
@@ -304,12 +305,7 @@ const preflightBlockers = computed(() => {
   <section aria-label="FLUX LoRA 與圖生圖工作台">
     <div class="studio-workbench"
       ><div class="studio-settings"
-        ><div class="studio-fields-scroll"
-          ><p class="notice"
-            >兩個獨立流程：Schnell 模型 LoRA、原生 VAE 圖生圖。固定 512×512／4 步／FP8 e4m3fn／CPU
-            編碼器；未知元件及 LoRA＋圖生圖混用保持停用。</p
-          >
-
+        ><div class="studio-fields-scroll">
           <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
           <p v-if="message" class="notice" role="status">{{ message }}</p
           ><form
@@ -322,14 +318,6 @@ const preflightBlockers = computed(() => {
                 ><option value="lora">Schnell PVC LoRA</option
                 ><option value="image">VAE 圖生圖（構圖重繪）</option></select
               >
-              <label for="flux-extension-prompt">附加流程提示詞</label>
-              <textarea
-                v-field-error:prompt="fieldProblems.prompt"
-                id="flux-extension-prompt"
-                v-model="base.prompt"
-                rows="5"
-                maxlength="20000"
-              />
               <template v-if="kind === 'image'"
                 ><label for="flux-extension-image">FLUX 原圖素材</label
                 ><select
@@ -343,30 +331,53 @@ const preflightBlockers = computed(() => {
                     :value="item.id"
                     >{{ item.title }}</option
                   ></select
-                ><label for="flux-extension-denoise">FLUX 重繪強度</label
-                ><input
-                  v-field-error:denoise="fieldProblems.denoise"
-                  id="flux-extension-denoise"
-                  v-model.number="denoise"
-                  type="number"
-                  min="0.05"
-                  max="0.99"
-                  step="0.05" /><label for="flux-extension-resize">原圖縮放</label
-                ><select id="flux-extension-resize" v-model="resize"
-                  ><option value="fit">等比完整放入，白色補邊</option
-                  ><option value="stretch">拉伸至輸出尺寸</option></select
-                ><p class="footnote"
-                  >VAE 由原圖建立 latent，會保留部分構圖；這不是
-                  Redux／IP-Adapter，也不保證畫風或角色身份一致。輸入
-                  PNG、來源與前處理雜湊會隨任務保存。</p
-                ><img
-                  v-if="imageId"
-                  :src="'/api/assets/' + imageId + '/image'"
-                  alt="目前選擇的 FLUX 原圖"
-                  class="extension-image"
-              /></template>
-              <details class="studio-advanced"
-                ><summary>進階設定、草稿名稱與模型能力</summary>
+                ></template
+              >
+              <label for="flux-extension-prompt"
+                >描述你想創作的畫面
+                <small>{{ base.prompt.length.toLocaleString() }} / 20,000</small></label
+              >
+              <textarea
+                v-field-error:prompt="fieldProblems.prompt"
+                id="flux-extension-prompt"
+                v-model="base.prompt"
+                rows="5"
+                maxlength="20000"
+              />
+
+              <p class="size-presets-label">輸出尺寸</p
+              ><p class="fixed-output-size">512 × 512 <small>固定實測配置</small></p
+              ><details class="studio-advanced"
+                ><summary>進階設定</summary
+                ><details class="studio-validation"
+                  ><summary>固定配置與流程限制</summary
+                  ><p class="notice"
+                    >兩個獨立流程：Schnell 模型 LoRA、原生 VAE 圖生圖。固定 512×512／4 步／FP8
+                    e4m3fn／CPU 編碼器；未知元件及 LoRA＋圖生圖混用保持停用。</p
+                  ></details
+                ><template v-if="kind === 'image'"
+                  ><label for="flux-extension-denoise">FLUX 重繪強度</label
+                  ><input
+                    v-field-error:denoise="fieldProblems.denoise"
+                    id="flux-extension-denoise"
+                    v-model.number="denoise"
+                    type="number"
+                    min="0.05"
+                    max="0.99"
+                    step="0.05" /><label for="flux-extension-resize">原圖縮放</label
+                  ><select id="flux-extension-resize" v-model="resize"
+                    ><option value="fit">等比完整放入，白色補邊</option
+                    ><option value="stretch">拉伸至輸出尺寸</option></select
+                  ><p class="footnote"
+                    >VAE 由原圖建立 latent，會保留部分構圖；這不是
+                    Redux／IP-Adapter，也不保證畫風或角色身份一致。輸入
+                    PNG、來源與前處理雜湊會隨任務保存。</p
+                  ><img
+                    v-if="imageId"
+                    :src="'/api/assets/' + imageId + '/image'"
+                    alt="目前選擇的 FLUX 原圖"
+                    class="extension-image"
+                /></template>
                 <label for="flux-extension-title">附加草稿名稱</label
                 ><input
                   v-field-error:title="fieldProblems.title"
@@ -433,8 +444,10 @@ const preflightBlockers = computed(() => {
                 ></details
               >
             </fieldset></form
-          ><UnsavedChangesNotice :dirty="dirty" :saving="busy" :saved="!!draftId" /><details
-            class="studio-tools"
+          ><StudioUtilityBar /><UnsavedChangesNotice
+            :dirty="dirty"
+            :saving="busy"
+            :saved="!!draftId" /><details class="studio-tools"
             ><summary>草稿、來源與設定交換</summary
             ><div class="extension-actions"
               ><button class="secondary" :disabled="locked" @click="load(true)">同步附加元件</button
