@@ -9,6 +9,7 @@ for (const width of [1440, 390]) {
     const fixture = await (await request.post('/qa/training-review')).json()
     await page.setViewportSize({ width, height: 1000 })
     await page.goto('/#/training')
+    await page.locator('.training-dataset-management > summary').click()
     await page.getByLabel('原圖來源目錄', { exact: true }).fill(fixture.source_root)
     await page.getByLabel('資料清單 JSON', { exact: true }).setInputFiles({
       name: 'dataset.json',
@@ -17,10 +18,13 @@ for (const width of [1440, 390]) {
     })
     await page.getByRole('button', { name: '匯入待審查清單', exact: true }).click()
     await expect(page.getByRole('img', { name: '審查原圖 img-0001' })).toBeVisible()
+    await page.getByRole('button', { name: '2 匯出資料包 建立固定版本', exact: true }).click()
     await expect(page.getByText('仍有待審查項目', { exact: true })).toBeVisible()
     await expect(
       page.getByRole('button', { name: '匯出已審查訓練資料包', exact: true }),
     ).toBeDisabled()
+    await page.getByRole('button', { name: '1 審查資料 補齊描述與來源', exact: true }).click()
+    await page.locator('.review-extra-fields > summary').click()
     await page.getByLabel('內容標註', { exact: true }).fill('flat red geometric illustration')
     await page.getByLabel('標註狀態', { exact: true }).selectOption('approved')
     await page.getByLabel('標註審查人', { exact: true }).fill('synthetic reviewer')
@@ -32,10 +36,15 @@ for (const width of [1440, 390]) {
     page.once('dialog', (dialog) => dialog.dismiss())
     await page.getByRole('button', { name: '設定', exact: true }).click()
     await expect(page).toHaveURL(/#\/training$/)
+    await page.locator('.training-version-management > summary').click()
     await page.getByRole('button', { name: '保存新版本', exact: true }).click()
     await expect(page.getByText('已保存 · 修訂 2', { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: '2 匯出資料包 建立固定版本', exact: true }).click()
     await expect(page.getByText('資料出口檢查通過', { exact: true })).toBeVisible()
-    await expect(page.getByText(/缺少獨立最終評估圖/)).toBeVisible()
+    await page.locator('.training-export-details > summary').click()
+    await expect(
+      page.locator('.training-export-details').getByText(/缺少獨立最終評估圖/),
+    ).toBeVisible()
     let exports = 0
     await page.route('**/api/training/datasets/*/exports', async (route) => {
       exports++
@@ -51,6 +60,7 @@ for (const width of [1440, 390]) {
     const item = list.find((v: { id: string }) => page.url().includes(v.id)) || list[0]
     const old = await (await request.get(`/api/training/datasets/${item.id}?revision=1`)).json()
     expect(old.dataset.images[0].caption.status).toBe('pending')
+    await page.getByRole('button', { name: '1 審查資料 補齊描述與來源', exact: true }).click()
     await page.getByLabel('內容標註', { exact: true }).fill('keep local edit')
     await page.route('**/api/training/datasets/*', async (route) => {
       if (route.request().method() === 'PUT')

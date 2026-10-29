@@ -10,6 +10,8 @@ const props = defineProps<{
   busy: boolean
   dirty: boolean
   revision: number
+  candidateCount: number
+  pendingCandidates: number | null
 }>()
 const emit = defineEmits<{ select: [id: string, focus: boolean] }>()
 const onlyPending = ref(true)
@@ -124,7 +126,17 @@ function nextIssue() {
         type="button"
         :disabled="busy"
         :aria-label="`${row.id} · ${row.split}`"
-        :aria-description="byImage.has(row.id) ? '待補資料' : '已檢查'"
+        :aria-description="
+          byImage.has(row.id)
+            ? '有檢查缺項或提醒'
+            : row.split === 'train'
+              ? report
+                ? '已保存版本無逐圖阻擋'
+                : '尚未檢查'
+              : row.split === 'test'
+                ? '最終評估圖，保留不預覽'
+                : '不屬於訓練候選'
+        "
         :aria-pressed="selected === row.id"
         @click="emit('select', row.id, false)"
         ><span v-if="byImage.has(row.id)" class="pending-dot" aria-hidden="true"></span
@@ -149,13 +161,10 @@ function nextIssue() {
       ><summary>圖片篩選與完整缺項</summary> <h3>圖片與缺項導覽</h3
       ><div class="review-progress"
         ><span
-          >{{ images.length - blockingImages.length }} / {{ images.length }} 已通過阻擋項檢查</span
-        ><progress
-          :max="images.length || 1"
-          :value="images.length - blockingImages.length"
-          aria-label="資料檢查進度"
-        ></progress
-      ></div>
+          >已保存訓練候選 {{ candidateCount }} 張 · 待處理
+          {{ pendingCandidates ?? '未知' }} 張</span
+        ></div
+      >
       <p class="footnote"
         >缺項依已保存修訂 {{ revision }} 的後端檢查；{{
           dirty ? '目前編輯尚未保存，缺項不會隨輸入消失。' : '來源變更後仍需重新檢查。'

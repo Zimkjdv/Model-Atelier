@@ -43,16 +43,29 @@ const dirty = computed(
 const protectedState = computed(() => dirty.value || busy.value || readingFile.value)
 useUnsavedChanges(protectedState)
 watch(protectedState, (v) => emit('dirty', v), { immediate: true })
-const reviewedCount = computed(
-  () =>
-    current.value?.dataset.images.filter((item) => item.caption.status !== 'pending').length || 0,
-)
-const pendingCount = computed(
-  () =>
-    new Set(
-      readiness.value?.issues.filter((issue) => issue.image_id).map((issue) => issue.image_id),
-    ).size,
-)
+const reviewSummary = computed(() => {
+  const images = current.value?.dataset.images || []
+  const counts = { train: 0, validation: 0, test: 0, excluded: 0 }
+  for (const image of images) counts[image.split]++
+  const candidates = new Set(
+    images.filter((image) => image.split === 'train').map((image) => image.id),
+  )
+  const report = readiness.value
+  if (!report) return { counts, captionReady: null, pending: null, otherIssues: null }
+  const candidateIssues = report.issues.filter((issue) => candidates.has(issue.image_id || ''))
+  const pending = new Set(candidateIssues.map((issue) => issue.image_id)).size
+  const captionPending = new Set(
+    candidateIssues
+      .filter((issue) => issue.code === 'caption_review_required')
+      .map((issue) => issue.image_id),
+  ).size
+  return {
+    counts,
+    captionReady: candidates.size - captionPending,
+    pending,
+    otherIssues: report.issues.length - candidateIssues.length,
+  }
+})
 const exportChecks = computed(() => {
   const groups = [
     { label: '圖片描述與標註審查', codes: ['caption_review_required'] },
@@ -284,17 +297,53 @@ onUnmounted(() => {
     <template v-if="current && edited">
       <section v-show="props.stage !== 1" class="training-review-content">
         <div class="training-progress"
-          ><span>{{ reviewedCount }} / {{ edited.dataset.images.length }} 已審查</span
-          ><span>{{ pendingCount }} 張待補</span
+          ><span v-if="reviewSummary.counts.train"
+            >訓練候選標註：{{ reviewSummary.captionReady ?? '未知' }} /
+            {{ reviewSummary.counts.train }} 通過</span
+          ><span v-else>尚無訓練候選標註可審查</span
+          ><span>待處理候選 {{ reviewSummary.pending ?? '未知' }} 張</span
           ><progress
-            :max="edited.dataset.images.length || 1"
-            :value="reviewedCount"
-            aria-label="資料審查進度"
+            v-if="reviewSummary.counts.train && reviewSummary.captionReady !== null"
+            :max="reviewSummary.counts.train"
+            :value="reviewSummary.captionReady"
+            aria-label="訓練候選標註審查進度"
           ></progress
         ></div>
-        <p v-if="pendingCount" class="notice warning"
-          >{{ edited.dataset.images.length }} 張候選圖，已審查 {{ reviewedCount }} 張，還有
-          {{ pendingCount }} 張待補項目。</p
+        <div class="review-split-counts" role="group" aria-label="已保存版本的圖片分組"
+          ><span>訓練候選 {{ reviewSummary.counts.train }} 張</span
+          ><span>開發評估 {{ reviewSummary.counts.validation }} 張</span
+          ><span>最終評估 {{ reviewSummary.counts.test }} 張</span
+          ><span>排除 {{ reviewSummary.counts.excluded }} 張</span></div
+        >
+        <p class="review-export-status" role="status"
+          >資料出口：{{
+            dirty
+              ? '有未保存變更，請先保存再檢查'
+              : !readiness
+                ? '尚未檢查'
+                : readiness.data_ready
+                  ? '檢查通過'
+                  : '未通過檢查'
+          }}</p
+        >
+        <p class="footnote"
+          >統計依已保存修訂 {{ current.revision }}；{{
+            dirty ? '目前編輯尚未保存，進度不會隨輸入更新。' : ''
+          }}標註通過不代表來源、角色或原圖完整性通過，匯出仍依完整檢查。</p
+        >
+        <p v-if="!reviewSummary.counts.train" class="notice warning"
+          >尚無訓練候選；請先核對資料分組，不將保留或排除圖當成已審查候選。</p
+        >
+        <p v-if="reviewSummary.pending" class="notice warning"
+          >{{
+            reviewSummary.pending
+          }}
+          張訓練候選仍有阻擋項目；請檢查描述、來源、角色及原圖完整性。</p
+        >
+        <p v-if="reviewSummary.otherIssues" class="notice warning"
+          >另有
+          {{ reviewSummary.otherIssues }}
+          項保留圖或資料集層級阻擋；請至「匯出資料包」查看完整缺項。</p
         >
         <div class="training-review-grid">
           <TrainingReviewNavigator
@@ -306,6 +355,8 @@ onUnmounted(() => {
             :busy="busy"
             :dirty="dirty"
             :revision="current.revision"
+            :candidate-count="reviewSummary.counts.train"
+            :pending-candidates="reviewSummary.pending"
             @select="selectImage"
           />
           <template v-if="image">
@@ -480,7 +531,13 @@ onUnmounted(() => {
             }}</span></div
           >
           <template v-if="readiness"
-            ><p role="status">{{ readiness.data_ready ? '資料出口檢查通過' : '仍有待審查項目' }}</p
+            ><p role="status">{{
+              dirty
+                ? '有未保存變更，保存後重新檢查才能匯出'
+                : readiness.data_ready
+                  ? '資料出口檢查通過'
+                  : '仍有待審查項目'
+            }}</p
             ><details class="training-export-details"
               ><summary>完整缺項與檢查版本</summary
               ><p
@@ -637,6 +694,18 @@ onUnmounted(() => {
   flex-wrap: wrap;
   gap: 12px;
   margin: 16px 0;
+}
+.review-split-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 12px;
+  color: var(--ink3);
+  margin-bottom: 10px;
+}
+.review-export-status {
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 .training-actions span {
   overflow-wrap: anywhere;
