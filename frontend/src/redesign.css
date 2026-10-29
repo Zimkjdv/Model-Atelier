@@ -2131,13 +2131,12 @@
 #app .atelier-shell .asset-card-heading > h2 {
   min-width: 0;
   margin: 0;
-  line-height: 1.5;
-  height: 3em;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  line-height: 1.35;
+  height: 1.35em;
+  display: block;
   overflow: hidden;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 #app .atelier-shell .asset-card-heading > .asset-purpose {
   float: none;

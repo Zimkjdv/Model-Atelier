@@ -44,6 +44,57 @@ const editing = ref<string | null>(null),
 const dialog = ref<HTMLDialogElement | null>(null),
   selected = ref<Asset | null>(null),
   mutating = ref(false)
+const nameTooltip = ref<{ id: string; text: string; left: number; top: number } | null>(null)
+const nameTooltipElement = ref<HTMLElement | null>(null)
+let nameTooltipAnchor: HTMLElement | null = null
+let nameTooltipTimer: ReturnType<typeof setTimeout> | undefined
+let nameTooltipHovered = false
+function hideAssetName() {
+  clearTimeout(nameTooltipTimer)
+  nameTooltip.value = null
+  nameTooltipAnchor = null
+  nameTooltipHovered = false
+}
+function keepAssetName() {
+  clearTimeout(nameTooltipTimer)
+  nameTooltipHovered = true
+}
+function leaveAssetName() {
+  clearTimeout(nameTooltipTimer)
+  nameTooltipTimer = setTimeout(() => {
+    if (!nameTooltipHovered && document.activeElement !== nameTooltipAnchor) hideAssetName()
+  }, 120)
+}
+function leaveNameTooltip() {
+  nameTooltipHovered = false
+  leaveAssetName()
+}
+async function showAssetName(item: Asset, event: Event) {
+  const anchor = event.currentTarget as HTMLElement
+  clearTimeout(nameTooltipTimer)
+  if (anchor.scrollWidth <= anchor.clientWidth) return hideAssetName()
+  nameTooltipAnchor = anchor
+  nameTooltipHovered = false
+  const bounds = anchor.getBoundingClientRect()
+  nameTooltip.value = { id: item.id, text: item.title, left: bounds.left, top: bounds.top }
+  await nextTick()
+  if (nameTooltip.value?.id !== item.id || !nameTooltipElement.value || !anchor.isConnected) return
+  const tooltip = nameTooltipElement.value.getBoundingClientRect()
+  nameTooltip.value.left = Math.max(
+    12,
+    Math.min(bounds.left, window.innerWidth - tooltip.width - 12),
+  )
+  nameTooltip.value.top =
+    bounds.top >= tooltip.height + 20
+      ? bounds.top - tooltip.height - 8
+      : Math.min(bounds.bottom + 8, window.innerHeight - tooltip.height - 12)
+}
+function dismissAssetName(event: KeyboardEvent) {
+  if (event.key === 'Escape' && nameTooltip.value) {
+    event.preventDefault()
+    hideAssetName()
+  }
+}
 let opener: HTMLElement | null = null
 const dirty = computed(() => {
   const item =
@@ -60,6 +111,7 @@ function editAsset(item: Asset) {
 }
 async function openAsset(item: Asset, event: Event) {
   if (editing.value && dirty.value && !window.confirm('素材資料尚未保存，確定放棄編輯？')) return
+  hideAssetName()
   editing.value = null
   selected.value = item
   opener = event.currentTarget as HTMLElement
@@ -93,6 +145,7 @@ function clearFilters() {
   filter.value = ''
 }
 const visible = computed(() => items.value)
+watch([items, editing, search, filter, archived], hideAssetName)
 const total = ref(0),
   next = ref<string | null>(null),
   previous = ref<string | null>(null)
@@ -145,6 +198,10 @@ onBeforeUnmount(() => {
   clearTimeout(timer)
   reads.dispose()
   window.removeEventListener('beforeunload', beforeUnload)
+  window.removeEventListener('keydown', dismissAssetName)
+  window.removeEventListener('scroll', hideAssetName, true)
+  window.removeEventListener('resize', hideAssetName)
+  hideAssetName()
   emit('dirty', false)
 })
 async function upload(event: Event) {
@@ -204,6 +261,9 @@ async function update(item: Asset, archive = item.archived) {
 }
 onMounted(() => {
   window.addEventListener('beforeunload', beforeUnload)
+  window.addEventListener('keydown', dismissAssetName)
+  window.addEventListener('scroll', hideAssetName, true)
+  window.addEventListener('resize', hideAssetName)
   void load()
 })
 </script>
@@ -306,7 +366,15 @@ onMounted(() => {
         ></template
       ><template v-else
         ><div class="asset-card-heading"
-          ><h2 :title="item.title">{{ item.title }}</h2>
+          ><h2
+            tabindex="0"
+            :aria-describedby="nameTooltip?.id === item.id ? 'asset-name-tooltip' : undefined"
+            @mouseenter="showAssetName(item, $event)"
+            @mouseleave="leaveAssetName"
+            @focus="showAssetName(item, $event)"
+            @blur="leaveAssetName"
+            >{{ item.title }}</h2
+          >
           <span class="asset-purpose" :class="item.purpose">{{ purposes[item.purpose] }}</span></div
         ><p>
           {{ item.width }} × {{ item.height }} · {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p
@@ -516,9 +584,39 @@ onMounted(() => {
       >
     </template>
   </dialog>
+  <Teleport to="body"
+    ><div
+      v-if="nameTooltip"
+      id="asset-name-tooltip"
+      ref="nameTooltipElement"
+      role="tooltip"
+      class="asset-name-tooltip"
+      :style="{ left: nameTooltip.left + 'px', top: nameTooltip.top + 'px' }"
+      @mouseenter="keepAssetName"
+      @mouseleave="leaveNameTooltip"
+      >{{ nameTooltip.text }}</div
+    ></Teleport
+  >
 </template>
 
 <style scoped>
+.asset-name-tooltip {
+  position: fixed;
+  z-index: 1000;
+  width: max-content;
+  max-width: min(420px, calc(100vw - 24px));
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  box-shadow: 0 8px 24px #0005;
+}
 .upload-panel {
   background: linear-gradient(120deg, #253b2d, #191d20);
 }

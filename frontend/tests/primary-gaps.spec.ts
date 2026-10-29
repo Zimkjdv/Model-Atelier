@@ -67,9 +67,50 @@ test('asset names keep card rows aligned and action icons visually centered', as
     )
     expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(1)
     for (let i = 0; i < names.length; i++) {
-      await expect(cards.nth(i).locator('h2')).toHaveText(names[i])
-      await expect(cards.nth(i).locator('h2')).toHaveAttribute('title', names[i])
+      const title = cards.nth(i).locator('h2')
+      await expect(title).toHaveText(names[i])
+      await expect(title).not.toHaveAttribute('title')
+      const layout = await title.evaluate((element) => {
+        const style = getComputedStyle(element)
+        return {
+          height: element.getBoundingClientRect().height,
+          lineHeight: parseFloat(style.lineHeight),
+          whiteSpace: style.whiteSpace,
+          overflow: style.textOverflow,
+          clipped: element.scrollWidth > element.clientWidth,
+        }
+      })
+      expect(layout.height).toBeLessThanOrEqual(layout.lineHeight + 1)
+      expect(layout.whiteSpace).toBe('nowrap')
+      expect(layout.overflow).toBe('ellipsis')
+      if (i === 2) expect(layout.clipped).toBe(true)
     }
+    await cards.nth(0).locator('h2').hover()
+    await expect(page.getByRole('tooltip')).toHaveCount(0)
+    const longTitle = cards.nth(2).locator('h2')
+    await longTitle.hover()
+    const tooltip = page.getByRole('tooltip')
+    await expect(tooltip).toHaveText(names[2])
+    await expect(longTitle).toHaveAttribute('aria-describedby', 'asset-name-tooltip')
+    const tooltipBounds = (await tooltip.boundingBox())!
+    expect(tooltipBounds.x).toBeGreaterThanOrEqual(12)
+    expect(tooltipBounds.x + tooltipBounds.width).toBeLessThanOrEqual(width - 12)
+    expect(tooltipBounds.y).toBeGreaterThanOrEqual(12)
+    expect(tooltipBounds.y + tooltipBounds.height).toBeLessThanOrEqual(height - 12)
+    await tooltip.hover()
+    await expect(tooltip).toBeVisible()
+    await page.screenshot({ path: info.outputPath('asset-name-tooltip-' + width + '.png') })
+    await page.mouse.move(0, 0)
+    await expect(tooltip).toHaveCount(0)
+    await longTitle.hover()
+    await expect(tooltip).toHaveText(names[2])
+    await page.keyboard.press('Escape')
+    await expect(tooltip).toHaveCount(0)
+    await page.mouse.move(0, 0)
+    await longTitle.focus()
+    await expect(tooltip).toHaveText(names[2])
+    await page.getByRole('searchbox', { name: '搜尋素材', exact: true }).focus()
+    await expect(tooltip).toHaveCount(0)
     await page.screenshot({ path: info.outputPath('asset-card-names-' + width + '.png') })
     await cards.nth(1).locator('.asset-cover').click()
     const dialog = page.getByRole('dialog')
