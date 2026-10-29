@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import UiIcon from './UiIcon.vue'
+import { presetEvidence } from './presetEvidence'
 import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError } from './generationPreflight'
 import SizePresets from './SizePresets.vue'
@@ -211,13 +212,7 @@ const profileMessage = computed(() =>
       ? '適用目前文生圖流程；登記架構尚未驗證實際檔案。'
       : (matchingProfile.value?.compatibility.message ?? ''),
 )
-const presetValidationLabel = computed(() =>
-  activeLora.value
-    ? '基礎模型預設；其實測不包含目前啟用的 LoRA'
-    : matchingProfile.value?.preset?.id === 'pony-v6-xl-rtx3060-landscape'
-      ? '已驗：RTX 3060 單張風景'
-      : '起始參數，尚未逐模型實測',
-)
+const presetValidation = computed(() => presetEvidence(matchingProfile.value?.preset, form))
 const presetReferenceUrl = computed(() =>
   matchingProfile.value?.preset?.reference === 'docs/validation/pony-v6-xl-rtx3060.md'
     ? 'https://github.com/Zimkjdv/Model-Atelier/blob/main/docs/validation/pony-v6-xl-rtx3060.md'
@@ -956,11 +951,21 @@ watch(
                       >
                       <template v-if="matchingProfile.preset && !isImage"
                         ><h3>{{ matchingProfile.preset.name }}</h3>
-                        <p class="footnote">{{ presetValidationLabel }}</p>
+                        <p class="footnote preset-evidence-summary">{{
+                          presetValidation.summary
+                        }}</p>
+                        <ul class="footnote preset-evidence-changes"
+                          ><li v-for="note in presetValidation.changes" :key="note">{{
+                            note
+                          }}</li></ul
+                        >
                         <details class="preset-reference"
                           ><summary>預設來源與提示詞參考</summary>
                           <p>{{ matchingProfile.preset.description }}</p
-                          ><p class="footnote">{{ matchingProfile.preset.validation }}</p>
+                          ><p class="footnote preset-evidence-detail">{{
+                            presetValidation.summary
+                          }}</p>
+                          <p class="footnote">{{ presetValidation.changes.join(' ') }}</p>
                           <p v-if="presetReferenceUrl"
                             ><a :href="presetReferenceUrl" target="_blank" rel="noopener noreferrer"
                               >查看預設來源與驗證狀態 ↗</a

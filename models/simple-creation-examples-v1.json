@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "examples": [
+    {
+      "template_id": "animagine",
+      "template_version": 1,
+      "recipe_sha256": "9628b7c17a504bb4b989490ecf24c5c1a9ed0278d60654a11f8bc461c6664925",
+      "image_sha256": "b35c3f27a8cf3bbb51700ffbf201401d79f6947a76ad477b6b149f40c2575196",
+      "generated_at": "2026-10-29T21:41:10.533307+00:00",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 1024²／28 steps",
+      "observations": [
+        "單人半身、藍色短髮、白衣與花園背景可見，線條與髮部高光清楚。",
+        "手部未入鏡，無法據此檢驗手指；近距離裁切也未驗證全身比例。",
+        "這是原創人物描述，沒有指定角色參考，不能判定角色身份一致或指定作者相似度。"
+      ]
+    },
+    {
+      "template_id": "pony",
+      "template_version": 1,
+      "recipe_sha256": "6cf80d7190fbab185c43c08854fa29f4f336e5ef265980e5c33c984025ed911e",
+      "image_sha256": "3b6193a927709b9d28479c839eed00247ffcb788e583ac43291463cac05d8ed7",
+      "generated_at": "2026-10-29T21:42:12.623916+00:00",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 768²／20 steps",
+      "observations": [
+        "山脈、湖面與樹林可見，畫面偏繪畫筆觸，並非固定賽璐珞線條。",
+        "天空與樹葉偏暖黃、橙色，沒有完全遵從 blue sky／peaceful daylight 的冷暖預期。",
+        "此卡只驗看風景；沒有藉此認列人物、手部或特定角色品質。"
+      ]
+    },
+    {
+      "template_id": "flux",
+      "template_version": 1,
+      "recipe_sha256": "7890e8d4e60c8b17805c56512449cedf94f5ecb31b9caa5983f58a70f1207660",
+      "image_sha256": "9efca63df273babf2849968cb1c2ff1c1413e8a0c043fcfa6c5360e1a6685da6",
+      "generated_at": "2026-10-29T21:46:03.755872+00:00",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 512²／4 steps／FP8／CPU 編碼器",
+      "observations": [
+        "小木屋、湖面倒影、針葉林與山景可見，呈現清楚的背景插畫構圖。",
+        "僅 512×512、四步的固定配置；細部木構、遠景紋理及其他解析度未另外驗證。",
+        "使用 Schnell，並非 Kontext；此風景不證明人物、多人構圖或指定畫風能力。"
+      ]
+    }
+  ]
+}

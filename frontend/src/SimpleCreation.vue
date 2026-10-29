@@ -33,6 +33,9 @@ import {
 import GenerationPanel from './GenerationPanel.vue'
 import StudioPreview from './StudioPreview.vue'
 import TemplateSnapshot from './TemplateSnapshot.vue'
+import SimpleExample from './SimpleExample.vue'
+import { simpleExamples } from './simpleExamples'
+import { presetEvidence } from './presetEvidence'
 import { templateSelection, type TemplateSelection, type TemplateContext } from './templateContext'
 
 const emit = defineEmits<{
@@ -527,6 +530,11 @@ onBeforeUnmount(() => {
         :disabled="loading || locked"
         @click="selectTemplate(item.id)"
       >
+        <img
+          class="simple-card-image"
+          :src="simpleExamples[item.id].image"
+          :alt="item.title + ' 原配方實際成果'"
+        />
         <span class="simple-card-model">{{ item.model }}</span
         ><strong>{{ item.title }}</strong> <span>{{ item.description }}</span
         ><small>{{ availability(item.id) }}</small>
@@ -537,8 +545,8 @@ onBeforeUnmount(() => {
     <div class="simple-workbench">
       <section class="simple-editor panel" aria-label="簡易創作設定">
         <h3>{{ selected.title }}</h3
-        ><p>{{ selected.note }}</p>
-        <p class="footnote">本版提供起始配方，尚未附真實範例圖；載入不會下載模型或自動生成。</p>
+        ><p>原配方 v{{ selected.version }}；{{ simpleExamples[selectedId].environment }}</p>
+        <p class="footnote">範例附有實測紀錄與限制。載入不會下載模型或自動生成。</p>
         <button class="primary" :disabled="!canLoad || loading" @click="loadTemplate(false)">
           {{ loadedId ? '還原配方設定' : '載入起始配方' }}
         </button>
@@ -605,10 +613,18 @@ onBeforeUnmount(() => {
         </fieldset>
         <details v-if="loadedId" class="simple-recipe"
           ><summary>查看完整設定</summary>
-          <p class="footnote">配方版本 v1 · {{ selected.note }} · 登記匹配不代表目前權重已驗檔。</p>
-          <p v-if="profile?.preset" class="footnote">{{ profile.preset.validation }}</p>
+          <p class="footnote"
+            >配方版本 v1 · 登記匹配不代表目前權重已驗檔；新增範例的觀察另見下方紀錄。</p
+          >
+          <template v-if="profile?.preset && selected.family === 'checkpoint'">
+            <p class="footnote">{{ presetEvidence(profile.preset, checkpoint).summary }}</p>
+            <p class="footnote">{{
+              presetEvidence(profile.preset, checkpoint).changes.join(' ')
+            }}</p>
+          </template>
           <pre>{{ JSON.stringify(form, null, 2) }}</pre>
         </details>
+        <SimpleExample :id="selectedId" :modified="modified" />
         <p v-if="loadedId" class="footnote"
           >設定會在站內切頁時保留；重新整理前可帶到進階工作台保存草稿。</p
         >
@@ -749,6 +765,13 @@ onBeforeUnmount(() => {
 }
 .simple-card strong {
   font-size: 18px;
+}
+.simple-card-image {
+  width: 100%;
+  height: 128px;
+  object-fit: contain;
+  background: var(--bg);
+  border-radius: 8px;
 }
 .simple-card-model,
 .simple-card small {

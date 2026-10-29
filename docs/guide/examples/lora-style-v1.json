@@ -1,0 +1,366 @@
+{
+  "schema_version": 1,
+  "id": "guide-lora-style-v1",
+  "date": "2026-10-23",
+  "source": "historical_real_local_comfyui_generation",
+  "publication_date": "2026-10-30",
+  "reviewer": "Codex visual reinspection; not user approval",
+  "settings": {
+    "title": "L01 / anime-portrait / pixel / 9007199254740993",
+    "engine_url": "http://127.0.0.1:3300",
+    "checkpoint": "animagine-xl-4.0-opt.safetensors",
+    "prompt": "pixel art, anime illustration, one adult traveler, short black hair, round glasses, blue coat, red scarf, waist-up portrait, holding a closed red book, soft daylight, plain pale background",
+    "negative_prompt": "blurry, low quality, text, watermark",
+    "seed": "9007199254740993",
+    "width": 1024,
+    "height": 1024,
+    "steps": 28,
+    "cfg": 5.0,
+    "sampler_name": "euler_ancestral",
+    "scheduler": "normal",
+    "denoise": 1.0,
+    "reference_ids": [],
+    "loras": [
+      {
+        "name": "pixel_art_lora_sdxl_comfy_v1.safetensors",
+        "enabled": true,
+        "strength_model": 1.0,
+        "strength_clip": 1.0
+      }
+    ]
+  },
+  "workflow": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "animagine-xl-4.0-opt.safetensors"
+      }
+    },
+    "2": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "pixel art, anime illustration, one adult traveler, short black hair, round glasses, blue coat, red scarf, waist-up portrait, holding a closed red book, soft daylight, plain pale background",
+        "clip": [
+          "8",
+          1
+        ]
+      }
+    },
+    "3": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "blurry, low quality, text, watermark",
+        "clip": [
+          "8",
+          1
+        ]
+      }
+    },
+    "4": {
+      "class_type": "EmptyLatentImage",
+      "inputs": {
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1
+      }
+    },
+    "5": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "8",
+          0
+        ],
+        "positive": [
+          "2",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "latent_image": [
+          "4",
+          0
+        ],
+        "seed": 9007199254740993,
+        "steps": 28,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "6": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "5",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "7": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "6",
+          0
+        ],
+        "filename_prefix": "ModelAtelier"
+      }
+    },
+    "8": {
+      "class_type": "LoraLoader",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ],
+        "clip": [
+          "1",
+          1
+        ],
+        "lora_name": "pixel_art_lora_sdxl_comfy_v1.safetensors",
+        "strength_model": 1.0,
+        "strength_clip": 1.0
+      }
+    }
+  },
+  "job_id": "475aca33-cba6-4582-991e-52cc2c200d5d",
+  "artwork_id": "4cf61188-63f0-5144-888c-ecd5de5939a9",
+  "runtime_metadata": {
+    "schema_version": 1,
+    "captured_at": "2026-10-23T09:38:45.568488+00:00",
+    "workflow": {
+      "id": "checkpoint-text2image-v1",
+      "sha256": "824da3400ef43050454ea5e3630340a485be727aeb01ec19f7549860358aafe8",
+      "nodes": [
+        "CLIPTextEncode",
+        "CheckpointLoaderSimple",
+        "EmptyLatentImage",
+        "KSampler",
+        "LoraLoader",
+        "SaveImage",
+        "VAEDecode"
+      ],
+      "node_versions": null,
+      "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+    },
+    "platform": {
+      "source": "platform Python process",
+      "python": "3.12.10",
+      "packages": [
+        {
+          "name": "fastapi",
+          "version": "0.141.1"
+        },
+        {
+          "name": "starlette",
+          "version": "1.6.0"
+        },
+        {
+          "name": "pydantic",
+          "version": "2.13.5"
+        },
+        {
+          "name": "httpx",
+          "version": "0.28.1"
+        },
+        {
+          "name": "Pillow",
+          "version": "12.3.0"
+        },
+        {
+          "name": "uvicorn",
+          "version": "0.52.4"
+        },
+        {
+          "name": "websockets",
+          "version": "17.1"
+        }
+      ]
+    },
+    "engine": {
+      "status": "reported",
+      "source": "http://127.0.0.1:3300/system_stats",
+      "comfyui": "0.34.0",
+      "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+      "pytorch": "2.14.0+cu130",
+      "packages": [
+        {
+          "name": "comfyui-frontend-package",
+          "installed": "1.51.9",
+          "required": "1.51.9"
+        },
+        {
+          "name": "comfyui-workflow-templates",
+          "installed": "0.11.55",
+          "required": "0.11.55"
+        },
+        {
+          "name": "comfyui-embedded-docs",
+          "installed": "0.5.11",
+          "required": "0.5.11"
+        },
+        {
+          "name": "comfy-kitchen",
+          "installed": "0.2.33",
+          "required": "0.2.33"
+        },
+        {
+          "name": "comfy-aimdo",
+          "installed": "0.5.2",
+          "required": "0.5.2"
+        }
+      ],
+      "cuda": null,
+      "driver": null,
+      "git_revision": null,
+      "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+    },
+    "execution_context": {
+      "schema_version": 1,
+      "workload": "inference",
+      "workflow_id": "checkpoint-text2image-v1",
+      "geometry": {
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1,
+        "source": "workflow node 4"
+      },
+      "parameters": [
+        {
+          "node_id": "5",
+          "class_type": "KSampler",
+          "settings": {
+            "steps": 28,
+            "cfg": 5.0,
+            "sampler_name": "euler_ancestral",
+            "scheduler": "normal",
+            "denoise": 1.0,
+            "seed": "9007199254740993"
+          }
+        }
+      ],
+      "models": [
+        {
+          "role": "checkpoint",
+          "name": "animagine-xl-4.0-opt.safetensors",
+          "version": "4.0 Opt",
+          "architecture": "sdxl",
+          "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac"
+        }
+      ],
+      "loras": [
+        {
+          "name": "pixel_art_lora_sdxl_comfy_v1.safetensors",
+          "version": "key-map-v1 / upstream 5440ac9c42ab",
+          "source_url": "https://huggingface.co/Hadimeeee/pixel-art-lora-sdxl/blob/5440ac9c42ab16fea0d65e25bd149fc0f21b1271/README.md",
+          "architecture": "sdxl",
+          "size_bytes": 185969440,
+          "sha256": "eef9b71806b7715760af4f8ab5a038b29daf41272ab30782f38381aee096f1be",
+          "license_name": "Apache-2.0 (author metadata; dependency chain unverified)",
+          "license_url": "https://huggingface.co/Hadimeeee/pixel-art-lora-sdxl/blob/5440ac9c42ab16fea0d65e25bd149fc0f21b1271/README.md",
+          "metadata_updated_at": "2026-10-23T09:36:09.600049+00:00",
+          "origin": "user_registered",
+          "captured_at": "2026-10-23T09:38:45.362559+00:00",
+          "enabled": true,
+          "strength_model": 1.0,
+          "strength_clip": 1.0
+        }
+      ],
+      "launch_policy": {
+        "source": "http://127.0.0.1:3300/system_stats.system.argv",
+        "reported": true,
+        "precision_flags": [],
+        "memory_flags": []
+      },
+      "actual_precision": null,
+      "actual_offload": null,
+      "cache_state": "unknown",
+      "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+    },
+    "execution_device": {
+      "schema_version": 1,
+      "engine_url": "http://127.0.0.1:3300",
+      "source": "http://127.0.0.1:3300/model_atelier/execution-device",
+      "checked_at": "2026-10-23T09:38:45.592711+00:00",
+      "probe_id": "eb36122b-8add-45d4-a26d-085320f0344e",
+      "status": "available",
+      "reason": "device_selected",
+      "device": {
+        "type": "cuda",
+        "index": 0
+      },
+      "backend_available": true
+    }
+  },
+  "weight_snapshots": {
+    "model_metadata": {
+      "name": "animagine-xl-4.0-opt.safetensors",
+      "version": "4.0 Opt",
+      "source_url": "https://huggingface.co/cagliostrolab/animagine-xl-4.0/blob/2b7c1b397761bf5bd3cc42e5b39ec99314a75a96/README.md",
+      "architecture": "sdxl",
+      "size_bytes": 6938350040,
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "license_name": "CreativeML Open RAIL++-M",
+      "license_url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
+      "metadata_updated_at": "2026-10-23T09:36:09.591049+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-23T09:38:45.362559+00:00"
+    },
+    "lora_metadata": [
+      {
+        "name": "pixel_art_lora_sdxl_comfy_v1.safetensors",
+        "version": "key-map-v1 / upstream 5440ac9c42ab",
+        "source_url": "https://huggingface.co/Hadimeeee/pixel-art-lora-sdxl/blob/5440ac9c42ab16fea0d65e25bd149fc0f21b1271/README.md",
+        "architecture": "sdxl",
+        "size_bytes": 185969440,
+        "sha256": "eef9b71806b7715760af4f8ab5a038b29daf41272ab30782f38381aee096f1be",
+        "license_name": "Apache-2.0 (author metadata; dependency chain unverified)",
+        "license_url": "https://huggingface.co/Hadimeeee/pixel-art-lora-sdxl/blob/5440ac9c42ab16fea0d65e25bd149fc0f21b1271/README.md",
+        "metadata_updated_at": "2026-10-23T09:36:09.600049+00:00",
+        "origin": "user_registered",
+        "captured_at": "2026-10-23T09:38:45.362559+00:00",
+        "enabled": true,
+        "strength_model": 1.0,
+        "strength_clip": 1.0
+      }
+    ]
+  },
+  "local_weights_verified": [
+    {
+      "name": "animagine-xl-4.0-opt.safetensors",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "size_bytes": 6938350040
+    },
+    {
+      "name": "pixel_art_lora_sdxl_comfy_v1.safetensors",
+      "sha256": "eef9b71806b7715760af4f8ab5a038b29daf41272ab30782f38381aee096f1be",
+      "size_bytes": 185969440
+    }
+  ],
+  "source_report_sha256": "539bf573c9c810d0aa12f75de7bc1e6492c7b778cd9f1f58086c9ad7290e5d7b",
+  "evidence": "docs/validation/style-matrix-20261023.json",
+  "image": {
+    "file": "images/examples/lora-style.png",
+    "sha256": "06bea83bbd15a1bde0c210dfdf3502300134073b3f25c499add80f9732b3289b",
+    "bytes": 672428,
+    "width": 1024,
+    "height": 1024
+  },
+  "observations": [
+    "pixel art 已存在於兩組相同提示詞，因此未掛 LoRA 的基準也呈現像素風。",
+    "啟用後臉部色塊與髮部高光簡化，但眼鏡、臉型及眼色亦改變，不能當作身份鎖定。",
+    "兩圖都未嚴格遵從 closed red book，手部／書本連接仍有不自然處；不是品質全面提升。"
+  ],
+  "limits": [
+    "Use converted native ComfyUI LoRA keys, not the original incompatible file.",
+    "No target artist or character identity approval; no LoRA/IP-Adapter combination."
+  ]
+}

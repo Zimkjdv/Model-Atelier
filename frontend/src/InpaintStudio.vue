@@ -385,7 +385,8 @@ const preflightBlockers = computed(() => {
                   }}</option
                 ></select
               >
-              <p class="size-summary">輸出沿用原圖：{{ form.width }} × {{ form.height }} 像素</p
+              <p class="size-summary"
+                >輸出尺寸：{{ form.width }} × {{ form.height }} 像素（可在進階設定調整）</p
               ><details class="studio-advanced"
                 ><summary>進階設定</summary><h2>原圖與生成設定</h2
                 ><label for="inpaint-title">名稱</label

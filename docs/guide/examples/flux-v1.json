@@ -1,0 +1,482 @@
+{
+  "schema_version": 1,
+  "id": "flux-example-v1",
+  "date": "2026-10-30",
+  "source": "real_local_comfyui_generation",
+  "reviewer": "Codex visual inspection; not user quality approval",
+  "template_context": {
+    "schema_version": 1,
+    "origin": "builtin_recipe",
+    "selection": {
+      "template_id": "flux",
+      "template_version": 1
+    },
+    "title": "FLUX 插畫實驗",
+    "model": "FLUX.1 [schnell]",
+    "family": "flux",
+    "source": "models/simple-creation-templates-v1.json",
+    "reference": "docs/models/flux-workflow.md",
+    "quality_note": "Schnell，非 Kontext；插畫畫質待驗收。512²／FP8／CPU 編碼器。",
+    "workflow_id": "flux1-schnell-text2image-v1",
+    "baseline": {
+      "prompt": "An anime background illustration of a small wooden cabin beside a peaceful mountain lake, pine forest, soft morning sunlight, clean lines, gentle colors, no people.",
+      "seed": "9007199254740993",
+      "width": 512,
+      "height": 512,
+      "steps": 4,
+      "weight_dtype": "fp8_e4m3fn",
+      "encoder_device": "cpu"
+    },
+    "requirements": [
+      {
+        "role": "diffusion_model",
+        "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+      },
+      {
+        "role": "vae",
+        "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
+      },
+      {
+        "role": "clip_l",
+        "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
+      },
+      {
+        "role": "t5xxl",
+        "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a"
+      }
+    ],
+    "recipe_sha256": "7890e8d4e60c8b17805c56512449cedf94f5ecb31b9caa5983f58a70f1207660",
+    "modified": false,
+    "changed_fields": []
+  },
+  "settings": {
+    "prompt": "An anime background illustration of a small wooden cabin beside a peaceful mountain lake, pine forest, soft morning sunlight, clean lines, gentle colors, no people.",
+    "seed": "9007199254740993",
+    "width": 512,
+    "height": 512,
+    "steps": 4,
+    "weight_dtype": "fp8_e4m3fn",
+    "encoder_device": "cpu",
+    "engine_url": "http://127.0.0.1:8188",
+    "title": "Simple v1 flux",
+    "diffusion_model": "flux1-schnell.safetensors",
+    "vae": "ae.safetensors",
+    "clip_l": "clip_l.safetensors",
+    "t5xxl": "t5xxl_fp8_e4m3fn_scaled.safetensors"
+  },
+  "workflow": {
+    "1": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "flux1-schnell.safetensors",
+        "weight_dtype": "fp8_e4m3fn"
+      }
+    },
+    "2": {
+      "class_type": "DualCLIPLoader",
+      "inputs": {
+        "clip_name1": "clip_l.safetensors",
+        "clip_name2": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "type": "flux",
+        "device": "cpu"
+      }
+    },
+    "3": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "ae.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "An anime background illustration of a small wooden cabin beside a peaceful mountain lake, pine forest, soft morning sunlight, clean lines, gentle colors, no people.",
+        "clip": [
+          "2",
+          0
+        ]
+      }
+    },
+    "5": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "",
+        "clip": [
+          "2",
+          0
+        ]
+      }
+    },
+    "6": {
+      "class_type": "EmptySD3LatentImage",
+      "inputs": {
+        "width": 512,
+        "height": 512,
+        "batch_size": 1
+      }
+    },
+    "7": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 9007199254740993,
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1.0
+      }
+    },
+    "8": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "7",
+          0
+        ],
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    },
+    "9": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "8",
+          0
+        ],
+        "filename_prefix": "ModelAtelier"
+      }
+    }
+  },
+  "job_id": "0f1e4621-4acb-403e-b375-00d20235e5ab",
+  "artwork_id": "139896a7-2553-55fd-a1f2-a977400d7d38",
+  "model_metadata": {
+    "role": "diffusion_model",
+    "category": "diffusion_models",
+    "name": "flux1-schnell.safetensors",
+    "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+    "source_url": "",
+    "architecture": "flux",
+    "size_bytes": 23782506688,
+    "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+    "license_name": "",
+    "license_url": "",
+    "metadata_updated_at": "2026-10-29T21:45:07.023394+00:00",
+    "origin": "user_registered",
+    "captured_at": "2026-10-29T21:45:07.041396+00:00"
+  },
+  "component_metadata": [
+    {
+      "role": "diffusion_model",
+      "category": "diffusion_models",
+      "name": "flux1-schnell.safetensors",
+      "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "source_url": "",
+      "architecture": "flux",
+      "size_bytes": 23782506688,
+      "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-29T21:45:07.023394+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-29T21:45:07.041396+00:00"
+    },
+    {
+      "role": "clip_l",
+      "category": "text_encoders",
+      "name": "clip_l.safetensors",
+      "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "source_url": "",
+      "architecture": "flux",
+      "size_bytes": 246144152,
+      "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-29T21:45:07.031394+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-29T21:45:07.041396+00:00"
+    },
+    {
+      "role": "t5xxl",
+      "category": "text_encoders",
+      "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "source_url": "",
+      "architecture": "flux",
+      "size_bytes": 5157348688,
+      "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-29T21:45:07.035393+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-29T21:45:07.041396+00:00"
+    },
+    {
+      "role": "vae",
+      "category": "vae",
+      "name": "ae.safetensors",
+      "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "source_url": "",
+      "architecture": "flux",
+      "size_bytes": 335304388,
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-29T21:45:07.027394+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-29T21:45:07.041396+00:00"
+    }
+  ],
+  "runtime_metadata": {
+    "schema_version": 1,
+    "captured_at": "2026-10-29T21:45:07.252569+00:00",
+    "workflow": {
+      "id": "flux1-schnell-text2image-v1",
+      "sha256": "4331e5a2879291620117af203acf2495f59ec73f82dd2b1846c92bb21d06656a",
+      "nodes": [
+        "CLIPTextEncode",
+        "DualCLIPLoader",
+        "EmptySD3LatentImage",
+        "KSampler",
+        "SaveImage",
+        "UNETLoader",
+        "VAEDecode",
+        "VAELoader"
+      ],
+      "node_versions": null,
+      "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+    },
+    "platform": {
+      "source": "platform Python process",
+      "python": "3.12.10",
+      "packages": [
+        {
+          "name": "fastapi",
+          "version": "0.141.1"
+        },
+        {
+          "name": "starlette",
+          "version": "1.6.0"
+        },
+        {
+          "name": "pydantic",
+          "version": "2.13.5"
+        },
+        {
+          "name": "httpx",
+          "version": "0.28.1"
+        },
+        {
+          "name": "Pillow",
+          "version": "12.3.0"
+        },
+        {
+          "name": "uvicorn",
+          "version": "0.52.4"
+        },
+        {
+          "name": "websockets",
+          "version": "17.1"
+        }
+      ]
+    },
+    "engine": {
+      "status": "reported",
+      "source": "http://127.0.0.1:8188/system_stats",
+      "comfyui": "0.34.0",
+      "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+      "pytorch": "2.14.0+cu130",
+      "packages": [
+        {
+          "name": "comfyui-frontend-package",
+          "installed": "1.51.9",
+          "required": "1.51.9"
+        },
+        {
+          "name": "comfyui-workflow-templates",
+          "installed": "0.11.55",
+          "required": "0.11.55"
+        },
+        {
+          "name": "comfyui-embedded-docs",
+          "installed": "0.5.11",
+          "required": "0.5.11"
+        },
+        {
+          "name": "comfy-kitchen",
+          "installed": "0.2.33",
+          "required": "0.2.33"
+        },
+        {
+          "name": "comfy-aimdo",
+          "installed": "0.5.2",
+          "required": "0.5.2"
+        }
+      ],
+      "cuda": null,
+      "driver": null,
+      "git_revision": null,
+      "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+    },
+    "execution_context": {
+      "schema_version": 1,
+      "workload": "inference",
+      "workflow_id": "flux1-schnell-text2image-v1",
+      "geometry": {
+        "width": 512,
+        "height": 512,
+        "batch_size": 1,
+        "source": "workflow node 6"
+      },
+      "parameters": [
+        {
+          "node_id": "1",
+          "class_type": "UNETLoader",
+          "settings": {
+            "weight_dtype": "fp8_e4m3fn"
+          }
+        },
+        {
+          "node_id": "2",
+          "class_type": "DualCLIPLoader",
+          "settings": {
+            "device": "cpu"
+          }
+        },
+        {
+          "node_id": "7",
+          "class_type": "KSampler",
+          "settings": {
+            "steps": 4,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 1.0,
+            "seed": "9007199254740993"
+          }
+        }
+      ],
+      "models": [
+        {
+          "role": "checkpoint",
+          "name": "flux1-schnell.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "architecture": "flux",
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+        },
+        {
+          "role": "diffusion_model",
+          "name": "flux1-schnell.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "architecture": "flux",
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+        },
+        {
+          "role": "clip_l",
+          "name": "clip_l.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "architecture": "flux",
+          "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
+        },
+        {
+          "role": "t5xxl",
+          "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "architecture": "flux",
+          "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a"
+        },
+        {
+          "role": "vae",
+          "name": "ae.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "architecture": "flux",
+          "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
+        }
+      ],
+      "loras": [],
+      "launch_policy": {
+        "source": "http://127.0.0.1:8188/system_stats.system.argv",
+        "reported": true,
+        "precision_flags": [],
+        "memory_flags": []
+      },
+      "actual_precision": null,
+      "actual_offload": null,
+      "cache_state": "unknown",
+      "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+    },
+    "execution_device": {
+      "schema_version": 1,
+      "engine_url": "http://127.0.0.1:8188",
+      "source": "http://127.0.0.1:8188/model_atelier/execution-device",
+      "checked_at": "2026-10-29T21:45:07.284599+00:00",
+      "probe_id": "5d9759b4-c5ca-4941-bc9e-3a864deb15ce",
+      "status": "available",
+      "reason": "device_selected",
+      "device": {
+        "type": "cuda",
+        "index": 0
+      },
+      "backend_available": true
+    }
+  },
+  "local_weights_verified": [
+    {
+      "filename": "flux1-schnell.safetensors",
+      "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+      "size_bytes": 23782506688
+    },
+    {
+      "filename": "ae.safetensors",
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "size_bytes": 335304388
+    },
+    {
+      "filename": "clip_l.safetensors",
+      "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+      "size_bytes": 246144152
+    },
+    {
+      "filename": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+      "size_bytes": 5157348688
+    }
+  ],
+  "image": {
+    "file": "images/examples/flux.png",
+    "sha256": "9efca63df273babf2849968cb1c2ff1c1413e8a0c043fcfa6c5360e1a6685da6",
+    "bytes": 393482,
+    "width": 512,
+    "height": 512
+  },
+  "observations": [
+    "小木屋、湖面倒影、針葉林與山景可見，呈現清楚的背景插畫構圖。",
+    "僅 512×512、四步的固定配置；細部木構、遠景紋理及其他解析度未另外驗證。",
+    "使用 Schnell，並非 Kontext；此風景不證明人物、多人構圖或指定畫風能力。"
+  ],
+  "limits": [
+    "One fixed seed and environment; no general quality ranking or target-artist/character approval.",
+    "Settings JSON is an evidence record, not a general settings exchange envelope."
+  ],
+  "elapsed_seconds": 56.45299999997951,
+  "timing_scope": "Submission through confirmed history; includes loading, queue, polling and network. Not a GPU benchmark.",
+  "generated_at": "2026-10-29T21:46:03.755872+00:00"
+}

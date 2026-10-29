@@ -18,7 +18,7 @@
       <nav aria-label="教學章節"
         ><p class="nav-group">開始使用</p><a href="#choose">選擇操作路線</a
         ><a href="#start">01 啟動與認識介面</a> <p class="nav-group">日常創作</p
-        ><a href="#generate">02 五種創作目的</a><a href="#models">03 模型庫</a
+        ><a href="#generate">02 簡易創作與進階目的</a><a href="#models">03 模型庫</a
         ><a href="#reference">04 參考素材</a><a href="#gallery">05 作品與並排比較</a
         ><a href="#experiments">06 實驗比較方案</a> <p class="nav-group">訓練自己的 LoRA</p
         ><a href="#review">07 審查與匯出資料</a><a href="#train">08 準備與執行訓練</a
@@ -35,7 +35,7 @@
         ><span class="version-badge">新版桌面介面 · 操作指南</span
         ><h1>把想法變成圖片，<br />再留下可比較的成果。</h1>
         <p class="lead"
-          >從五種創作目的開始，逐步學會整理作品、管理模型與素材，以及完成四階段的 LoRA
+          >從三張簡易配方開始，逐步學會進階創作、整理作品、管理模型與素材，以及完成四階段的 LoRA
           訓練。按你的需求選一條路線，不必一次讀完。</p
         >
         <div class="hero-links"
@@ -44,8 +44,7 @@
           ><a class="button" href="#review">查看訓練流程</a></div
         >
         <p class="meta"
-          >本文採用目前正式前端重新截圖。畫面中的色塊、模型、任務與路徑是隔離示範資料，並非 GPU
-          生成或訓練成果；實際數字以你的平台為準。點擊圖片可放大。</p
+          >介面截圖採隔離示範資料，色塊不是品質證據。另標示「真實生成」的範例保留原圖、配方與實測觀察；兩者分開標示。實際數字以你的平台為準。點擊圖片可放大。</p
         ></header
       >
       <div id="choose" class="route-cards" role="group" aria-label="選擇操作路線"
@@ -177,7 +176,7 @@
           <code>.\start-local.ps1</code>；生成則需要獨立引擎。</p
         ></section
       ><section id="generate" aria-labelledby="generate-title"
-        ><p class="section-number">02</p><h2 id="generate-title">創作工作台：先選目的，再填設定</h2
+        ><p class="section-number">02</p><h2 id="generate-title">創作：從簡易配方到進階目的</h2
         ><div class="callout"
           ><strong>第一次使用：先選「簡易創作」</strong
           ><p
@@ -189,10 +188,479 @@
           ><p
             >四步進度協助確認目前步驟；修改表單後，右側舊圖仍屬於原任務，需要再次按生成才會得到新成果。結果與作品庫的「生成與來源」可展開「起始模板」，查看版本、原配方、配方摘要及修改欄位；舊作品沒有記錄時不會推測來源。</p
           ><p
-            >目前提供固定正方形配方，尚未附真實成果圖；人物與插畫畫質仍待驗收。中文是配方說明，描述欄沒有自動翻譯。需要其他比例、LoRA
-            或圖片功能，可按「帶到進階工作台」保留配方參數繼續操作。以下截圖與五種目的說明為進階工作台；截圖尚未補上新的模式分頁。</p
+            >三張卡都有固定正方形原配方與<a href="#examples">真實生成成果</a
+            >。中文是配方說明，描述欄沒有自動翻譯。需要其他比例、LoRA
+            或圖片功能，可按「帶到進階工作台」保留配方參數繼續操作；<a href="#style-tasks"
+              >兩份畫風練習模板</a
+            >提供有／無作用的對照與限制。</p
           ></div
-        ><p class="section-lead"
+        ><figure>
+          <a
+            class="zoom"
+            href="images/simple-creation.png"
+            aria-label="放大截圖：簡易創作三卡與四步進度"
+            ><img
+              src="images/simple-creation.png"
+              width="1440"
+              height="900"
+              alt="簡易創作：三張真實範例卡、四步進度與描述輸入"
+              loading="lazy"
+            /><span class="zoom-label">點擊放大 ↗</span></a
+          >
+          <figcaption
+            >正式簡易介面的隔離示範：三張卡使用下列真實成果，右側是未生成的空舞台。選卡與載入不會自動生成。</figcaption
+          >
+        </figure>
+        <!-- examples-begin --><div id="examples"
+          ><h3>三張卡的真實生成範例</h3
+          ><p
+            >2026-10-30，RTX 3060 12GB、ComfyUI 0.34.0／PyTorch 2.14.0+cu130。每卡一個原配方
+            v1／固定 Seed <code>9007199254740993</code>；當次讀取完整權重核對大小與
+            SHA256。以下為未改圖的原始 PNG，檢視者是開發助手 Codex，不代表使用者品質簽核。</p
+          ><article
+            ><h4>日系人物插畫 · Animagine XL 4.0 Opt</h4
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/animagine.png"
+                aria-label="放大真實生成：真實生成｜日系人物插畫 · Animagine XL 4.0 Opt"
+                ><img
+                  src="images/examples/animagine.png"
+                  width="1024"
+                  height="1024"
+                  alt="真實生成｜日系人物插畫 · Animagine XL 4.0 Opt"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>真實生成｜日系人物插畫 · Animagine XL 4.0 Opt</figcaption></figure
+            ><ul
+              ><li>單人半身、藍色短髮、白衣與花園背景可見，線條與髮部高光清楚。</li
+              ><li>手部未入鏡，無法據此檢驗手指；近距離裁切也未驗證全身比例。</li
+              ><li
+                >這是原創人物描述，沒有指定角色參考，不能判定角色身份一致或指定作者相似度。</li
+              ></ul
+            ><p
+              >模板 v1；配方
+              SHA256：<code>9628b7c17a504bb4b989490ecf24c5c1a9ed0278d60654a11f8bc461c6664925</code>。修改描述、尺寸、模型、元件或精度後，請按已修改設定解讀，不沿用此圖的驗收結論。</p
+            ><details class="sample-recipe"
+              ><summary>配方 v1：完整英文提示詞與參數</summary
+              ><p
+                >以下是實際送出的設定。Seed 是字串；你的模型／素材名稱須對應本機已驗證清單。素材 ID
+                屬於原測試資料庫；請在工作台選擇自己剛上傳的素材，不要照抄
+                ID。引擎網址依本機設定。這是紀錄，不是一般設定交換格式。</p
+              ><pre>
+{
+  &quot;prompt&quot;: &quot;1girl, solo, adult woman, blue hair, short hair, white shirt, looking at viewer, upper body, smile, outdoors, garden, daylight, masterpiece, high score, great score, absurdres&quot;,
+  &quot;seed&quot;: &quot;9007199254740993&quot;,
+  &quot;width&quot;: 1024,
+  &quot;height&quot;: 1024,
+  &quot;steps&quot;: 28,
+  &quot;cfg&quot;: 5.0,
+  &quot;sampler_name&quot;: &quot;euler_ancestral&quot;,
+  &quot;scheduler&quot;: &quot;normal&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: null,
+  &quot;reference_ids&quot;: [],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;Simple v1 animagine&quot;,
+  &quot;checkpoint&quot;: &quot;animagine-xl-4.0-opt.safetensors&quot;
+}</pre
+              ><p
+                ><a href="examples/animagine-v1.json" download
+                  >下載原 workflow、來源雜湊與環境 JSON</a
+                ></p
+              ></details
+            ></article
+          ><article
+            ><h4>動漫場景 · Pony V6 XL</h4
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/pony.png"
+                aria-label="放大真實生成：真實生成｜動漫場景 · Pony V6 XL"
+                ><img
+                  src="images/examples/pony.png"
+                  width="768"
+                  height="768"
+                  alt="真實生成｜動漫場景 · Pony V6 XL"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>真實生成｜動漫場景 · Pony V6 XL</figcaption></figure
+            ><ul
+              ><li>山脈、湖面與樹林可見，畫面偏繪畫筆觸，並非固定賽璐珞線條。</li
+              ><li>天空與樹葉偏暖黃、橙色，沒有完全遵從 blue sky／peaceful daylight 的冷暖預期。</li
+              ><li>此卡只驗看風景；沒有藉此認列人物、手部或特定角色品質。</li></ul
+            ><p
+              >模板 v1；配方
+              SHA256：<code>6cf80d7190fbab185c43c08854fa29f4f336e5ef265980e5c33c984025ed911e</code>。修改描述、尺寸、模型、元件或精度後，請按已修改設定解讀，不沿用此圖的驗收結論。</p
+            ><details class="sample-recipe"
+              ><summary>配方 v1：完整英文提示詞與參數</summary
+              ><p
+                >以下是實際送出的設定。Seed 是字串；你的模型／素材名稱須對應本機已驗證清單。素材 ID
+                屬於原測試資料庫；請在工作台選擇自己剛上傳的素材，不要照抄
+                ID。引擎網址依本機設定。這是紀錄，不是一般設定交換格式。</p
+              ><pre>
+{
+  &quot;prompt&quot;: &quot;score_9,score_8_up,score_7_up,rating_safe,source_anime,landscape,mountain lake,pine forest,blue sky,peaceful daylight,scenery,no humans&quot;,
+  &quot;seed&quot;: &quot;9007199254740993&quot;,
+  &quot;width&quot;: 768,
+  &quot;height&quot;: 768,
+  &quot;steps&quot;: 20,
+  &quot;cfg&quot;: 5.5,
+  &quot;sampler_name&quot;: &quot;dpmpp_2m&quot;,
+  &quot;scheduler&quot;: &quot;karras&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: null,
+  &quot;reference_ids&quot;: [],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;Simple v1 pony&quot;,
+  &quot;checkpoint&quot;: &quot;pony-v6-xl.safetensors&quot;
+}</pre
+              ><p
+                ><a href="examples/pony-v1.json" download
+                  >下載原 workflow、來源雜湊與環境 JSON</a
+                ></p
+              ></details
+            ></article
+          ><article
+            ><h4>FLUX 插畫實驗 · Schnell（非 Kontext）</h4
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/flux.png"
+                aria-label="放大真實生成：真實生成｜FLUX 插畫實驗 · Schnell（非 Kontext）"
+                ><img
+                  src="images/examples/flux.png"
+                  width="512"
+                  height="512"
+                  alt="真實生成｜FLUX 插畫實驗 · Schnell（非 Kontext）"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>真實生成｜FLUX 插畫實驗 · Schnell（非 Kontext）</figcaption></figure
+            ><ul
+              ><li>小木屋、湖面倒影、針葉林與山景可見，呈現清楚的背景插畫構圖。</li
+              ><li>僅 512×512、四步的固定配置；細部木構、遠景紋理及其他解析度未另外驗證。</li
+              ><li>使用 Schnell，並非 Kontext；此風景不證明人物、多人構圖或指定畫風能力。</li></ul
+            ><p
+              >模板 v1；配方
+              SHA256：<code>7890e8d4e60c8b17805c56512449cedf94f5ecb31b9caa5983f58a70f1207660</code>。修改描述、尺寸、模型、元件或精度後，請按已修改設定解讀，不沿用此圖的驗收結論。</p
+            ><details class="sample-recipe"
+              ><summary>配方 v1：完整英文提示詞與參數</summary
+              ><p
+                >以下是實際送出的設定。Seed 是字串；你的模型／素材名稱須對應本機已驗證清單。素材 ID
+                屬於原測試資料庫；請在工作台選擇自己剛上傳的素材，不要照抄
+                ID。引擎網址依本機設定。這是紀錄，不是一般設定交換格式。</p
+              ><pre>
+{
+  &quot;prompt&quot;: &quot;An anime background illustration of a small wooden cabin beside a peaceful mountain lake, pine forest, soft morning sunlight, clean lines, gentle colors, no people.&quot;,
+  &quot;seed&quot;: &quot;9007199254740993&quot;,
+  &quot;width&quot;: 512,
+  &quot;height&quot;: 512,
+  &quot;steps&quot;: 4,
+  &quot;weight_dtype&quot;: &quot;fp8_e4m3fn&quot;,
+  &quot;encoder_device&quot;: &quot;cpu&quot;,
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;Simple v1 flux&quot;,
+  &quot;diffusion_model&quot;: &quot;flux1-schnell.safetensors&quot;,
+  &quot;vae&quot;: &quot;ae.safetensors&quot;,
+  &quot;clip_l&quot;: &quot;clip_l.safetensors&quot;,
+  &quot;t5xxl&quot;: &quot;t5xxl_fp8_e4m3fn_scaled.safetensors&quot;
+}</pre
+              ><p
+                ><a href="examples/flux-v1.json" download
+                  >下載原 workflow、來源雜湊與環境 JSON</a
+                ></p
+              ></details
+            ></article
+          ><div class="callout"
+            ><strong>結果與範例不同時</strong
+            ><p
+              >先核對模型與元件版本／雜湊，再核對模板是否修改、實際英文提示詞、Seed、尺寸、取樣及精度／節點環境。固定
+              Seed 不保證跨環境像素一致；中文描述不會自動翻譯。</p
+            ></div
+          ></div
+        ><!-- examples-end -->
+        <!-- style-tasks-begin --><div id="style-tasks"
+          ><h3>兩份畫風練習模板 v1</h3
+          ><p
+            >請在進階工作台使用以下完整配方。三張簡易卡示範不同模型，以下兩份練習示範畫風作用；相容組合仍依各流程限制。</p
+          ><h4>風格 LoRA：固定基底，有／無 LoRA</h4
+          ><ol class="steps"
+            ><li
+              ><h3>準備相符元件</h3
+              ><p
+                >基底使用 Animagine XL 4.0 Opt。LoRA 必須是
+                <code>pixel_art_lora_sdxl_comfy_v1.safetensors</code> 的固定原生鍵名轉換版本；詳見<a
+                  href="../models/lora-library.md"
+                  >LoRA 文件</a
+                >及<a href="../../models/pixel-art-lora-sdxl-comfy-v1.json">完整 manifest</a
+                >。原始未轉換檔曾未載入成功，不以同名或出圖當作成功套用。</p
+              ></li
+            ><li
+              ><h3>填入共同配方並建立對照</h3
+              ><p
+                >進階工作台 → 文字創作 → Checkpoint／SDXL。展開設定，依下列 JSON 填入共同提示詞與
+                Seed；先不掛 LoRA 生成保存，再加入單一 LoRA，MODEL 1、CLIP
+                1，其他參數不變後生成保存。觸發文字
+                <code>pixel art</code>
+                兩組都保留；這只是一個固定強度的已觀察案例，不推定低／中／高檔位。</p
+              ></li
+            ></ol
+          ><div class="sample-grid"
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/lora-baseline.png"
+                aria-label="放大真實生成：真實歷史對照｜不掛 LoRA，提示詞含 pixel art"
+                ><img
+                  src="images/examples/lora-baseline.png"
+                  width="1024"
+                  height="1024"
+                  alt="真實歷史對照｜不掛 LoRA，提示詞含 pixel art"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>真實歷史對照｜不掛 LoRA，提示詞含 pixel art</figcaption></figure
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/lora-style.png"
+                aria-label="放大真實生成：真實歷史對照｜單一原生像素 LoRA，MODEL 1／CLIP 1"
+                ><img
+                  src="images/examples/lora-style.png"
+                  width="1024"
+                  height="1024"
+                  alt="真實歷史對照｜單一原生像素 LoRA，MODEL 1／CLIP 1"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>真實歷史對照｜單一原生像素 LoRA，MODEL 1／CLIP 1</figcaption></figure
+            ></div
+          ><p
+            >這兩張是 2026-10-23 RTX 3060 實測，2026-10-30
+            重新檢視；不是本輪重新生成。基準本來就有像素風；掛 LoRA
+            後色塊與高光簡化，也改變了臉型與眼色。兩張都未嚴格符合合上的紅書，手部／書本連接仍不自然。這不代表品質全面提高、身份鎖定或完整複製作者畫風。</p
+          ><details class="sample-recipe"
+            ><summary>LoRA 練習 v1：共同設定與無 LoRA 基準：完整英文提示詞與參數</summary
+            ><p
+              >以下是實際送出的設定。Seed 是字串；你的模型／素材名稱須對應本機已驗證清單。素材 ID
+              屬於原測試資料庫；請在工作台選擇自己剛上傳的素材，不要照抄
+              ID。引擎網址依本機設定。這是紀錄，不是一般設定交換格式。</p
+            ><pre>
+{
+  &quot;title&quot;: &quot;L01 / anime-portrait / baseline / 9007199254740993&quot;,
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:3300&quot;,
+  &quot;checkpoint&quot;: &quot;animagine-xl-4.0-opt.safetensors&quot;,
+  &quot;prompt&quot;: &quot;pixel art, anime illustration, one adult traveler, short black hair, round glasses, blue coat, red scarf, waist-up portrait, holding a closed red book, soft daylight, plain pale background&quot;,
+  &quot;negative_prompt&quot;: &quot;blurry, low quality, text, watermark&quot;,
+  &quot;seed&quot;: &quot;9007199254740993&quot;,
+  &quot;width&quot;: 1024,
+  &quot;height&quot;: 1024,
+  &quot;steps&quot;: 28,
+  &quot;cfg&quot;: 5.0,
+  &quot;sampler_name&quot;: &quot;euler_ancestral&quot;,
+  &quot;scheduler&quot;: &quot;normal&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;reference_ids&quot;: [],
+  &quot;loras&quot;: []
+}</pre
+            ><p
+              ><a href="examples/lora-baseline-v1.json" download
+                >下載原 workflow、來源雜湊與環境 JSON</a
+              ></p
+            ></details
+          ><details class="sample-recipe"
+            ><summary>LoRA 練習 v1：啟用單一 LoRA：完整英文提示詞與參數</summary
+            ><p
+              >以下是實際送出的設定。Seed 是字串；你的模型／素材名稱須對應本機已驗證清單。素材 ID
+              屬於原測試資料庫；請在工作台選擇自己剛上傳的素材，不要照抄
+              ID。引擎網址依本機設定。這是紀錄，不是一般設定交換格式。</p
+            ><pre>
+{
+  &quot;title&quot;: &quot;L01 / anime-portrait / pixel / 9007199254740993&quot;,
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:3300&quot;,
+  &quot;checkpoint&quot;: &quot;animagine-xl-4.0-opt.safetensors&quot;,
+  &quot;prompt&quot;: &quot;pixel art, anime illustration, one adult traveler, short black hair, round glasses, blue coat, red scarf, waist-up portrait, holding a closed red book, soft daylight, plain pale background&quot;,
+  &quot;negative_prompt&quot;: &quot;blurry, low quality, text, watermark&quot;,
+  &quot;seed&quot;: &quot;9007199254740993&quot;,
+  &quot;width&quot;: 1024,
+  &quot;height&quot;: 1024,
+  &quot;steps&quot;: 28,
+  &quot;cfg&quot;: 5.0,
+  &quot;sampler_name&quot;: &quot;euler_ancestral&quot;,
+  &quot;scheduler&quot;: &quot;normal&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;reference_ids&quot;: [],
+  &quot;loras&quot;: [
+    {
+      &quot;name&quot;: &quot;pixel_art_lora_sdxl_comfy_v1.safetensors&quot;,
+      &quot;enabled&quot;: true,
+      &quot;strength_model&quot;: 1.0,
+      &quot;strength_clip&quot;: 1.0
+    }
+  ]
+}</pre
+            ><p
+              ><a href="examples/lora-style-v1.json" download
+                >下載原 workflow、來源雜湊與環境 JSON</a
+              ></p
+            ></details
+          ><h4>單張圖片畫風參考：同流程的權重 0／0.6</h4
+          ><ol class="steps"
+            ><li
+              ><h3>使用自產圖片作參考</h3
+              ><p
+                >下載下圖原始 PNG，到「素材」上傳。進階工作台 →「風格參考」，選 Animagine XL 4.0 Opt
+                與這張素材；這是本輪自行生成的原創人物圖，不含使用者或作者原圖。</p
+              ></li
+            ><li
+              ><h3>固定 SDXL Plus ViT-H 組合</h3
+              ><p
+                >同步並核對 <code>ip-adapter-plus_sdxl_vit-h.safetensors</code> 與
+                <code>CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors</code
+                >。參考模式選「畫風參考」，fit、作用起始 0／結束 1；先以權重 0 生成保存，再只改成
+                0.6。這兩組都走同一個 IP-Adapter 流程，權重 0 是未施加參考作用的對照。</p
+              ></li
+            ></ol
+          ><figure
+            ><a
+              class="zoom"
+              href="images/examples/reference-source.png"
+              aria-label="放大真實生成：實際參考素材｜本輪自行生成並正規化的人物圖"
+              ><img
+                src="images/examples/reference-source.png"
+                width="1024"
+                height="1024"
+                alt="實際參考素材｜本輪自行生成並正規化的人物圖"
+                loading="lazy"
+              /><span class="zoom-label">點擊放大 ↗</span></a
+            ><figcaption>實際參考素材｜本輪自行生成並正規化的人物圖</figcaption></figure
+          ><div class="sample-grid"
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/reference-zero.png"
+                aria-label="放大真實生成：真實生成對照｜同流程參考權重 0"
+                ><img
+                  src="images/examples/reference-zero.png"
+                  width="1024"
+                  height="1024"
+                  alt="真實生成對照｜同流程參考權重 0"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>真實生成對照｜同流程參考權重 0</figcaption></figure
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/reference-style.png"
+                aria-label="放大真實生成：真實生成對照｜畫風參考權重 0.6"
+                ><img
+                  src="images/examples/reference-style.png"
+                  width="1024"
+                  height="1024"
+                  alt="真實生成對照｜畫風參考權重 0.6"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>真實生成對照｜畫風參考權重 0.6</figcaption></figure
+            ></div
+          ><ul
+            ><li
+              >權重 0 保留紅長髮、白衣與書店；權重 0.6
+              的人物增加藍色髮束，畫面上方也混入戶外葉片。</li
+            ><li
+              >參考作用連帶改變髮色、背景、臉型及構圖，並非只抽取線條或配色；提高權重不等於更符合文字描述。</li
+            ><li
+              >這是原創人物與自產參考圖的單組比較，不認列指定角色身份、作者畫風或任意參考圖的品質通過。</li
+            ></ul
+          ><p
+            >固定單張 SDXL Plus ViT-H；此模板不組合 LoRA、多圖、FaceID、Canny
+            或局部修補。參考程度增高可能連帶帶入服裝、髮色、姿勢或背景，不能保證只抽取畫風，也不能保證角色身份。</p
+          ><details class="sample-recipe"
+            ><summary>圖片參考練習 v1：共同設定與權重 0：完整英文提示詞與參數</summary
+            ><p
+              >以下是實際送出的設定。Seed 是字串；你的模型／素材名稱須對應本機已驗證清單。素材 ID
+              屬於原測試資料庫；請在工作台選擇自己剛上傳的素材，不要照抄
+              ID。引擎網址依本機設定。這是紀錄，不是一般設定交換格式。</p
+            ><pre>
+{
+  &quot;prompt&quot;: &quot;1girl, solo, adult woman, red hair, long hair, white shirt, looking at viewer, upper body, smile, indoors, bookshop, bookshelf, masterpiece, high score, great score, absurdres&quot;,
+  &quot;seed&quot;: &quot;9007199254740993&quot;,
+  &quot;width&quot;: 1024,
+  &quot;height&quot;: 1024,
+  &quot;steps&quot;: 28,
+  &quot;cfg&quot;: 5.0,
+  &quot;sampler_name&quot;: &quot;euler_ancestral&quot;,
+  &quot;scheduler&quot;: &quot;normal&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: &quot;19c1158f-de81-4dc4-84bf-800fbe7aa6ff&quot;,
+  &quot;reference_ids&quot;: [
+    &quot;19c1158f-de81-4dc4-84bf-800fbe7aa6ff&quot;
+  ],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;Simple v1 reference-zero&quot;,
+  &quot;checkpoint&quot;: &quot;animagine-xl-4.0-opt.safetensors&quot;,
+  &quot;reference_resize&quot;: &quot;fit&quot;,
+  &quot;reference_mode&quot;: &quot;style&quot;,
+  &quot;reference_weight&quot;: 0.0,
+  &quot;reference_start&quot;: 0.0,
+  &quot;reference_end&quot;: 1.0,
+  &quot;ipadapter_name&quot;: &quot;ip-adapter-plus_sdxl_vit-h.safetensors&quot;,
+  &quot;clip_vision_name&quot;: &quot;CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors&quot;
+}</pre
+            ><p
+              ><a href="examples/reference-zero-v1.json" download
+                >下載原 workflow、來源雜湊與環境 JSON</a
+              ></p
+            ></details
+          ><details class="sample-recipe"
+            ><summary>圖片參考練習 v1：權重 0.6：完整英文提示詞與參數</summary
+            ><p
+              >以下是實際送出的設定。Seed 是字串；你的模型／素材名稱須對應本機已驗證清單。素材 ID
+              屬於原測試資料庫；請在工作台選擇自己剛上傳的素材，不要照抄
+              ID。引擎網址依本機設定。這是紀錄，不是一般設定交換格式。</p
+            ><pre>
+{
+  &quot;prompt&quot;: &quot;1girl, solo, adult woman, red hair, long hair, white shirt, looking at viewer, upper body, smile, indoors, bookshop, bookshelf, masterpiece, high score, great score, absurdres&quot;,
+  &quot;seed&quot;: &quot;9007199254740993&quot;,
+  &quot;width&quot;: 1024,
+  &quot;height&quot;: 1024,
+  &quot;steps&quot;: 28,
+  &quot;cfg&quot;: 5.0,
+  &quot;sampler_name&quot;: &quot;euler_ancestral&quot;,
+  &quot;scheduler&quot;: &quot;normal&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: &quot;19c1158f-de81-4dc4-84bf-800fbe7aa6ff&quot;,
+  &quot;reference_ids&quot;: [
+    &quot;19c1158f-de81-4dc4-84bf-800fbe7aa6ff&quot;
+  ],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;Simple v1 reference-style&quot;,
+  &quot;checkpoint&quot;: &quot;animagine-xl-4.0-opt.safetensors&quot;,
+  &quot;reference_resize&quot;: &quot;fit&quot;,
+  &quot;reference_mode&quot;: &quot;style&quot;,
+  &quot;reference_weight&quot;: 0.6,
+  &quot;reference_start&quot;: 0.0,
+  &quot;reference_end&quot;: 1.0,
+  &quot;ipadapter_name&quot;: &quot;ip-adapter-plus_sdxl_vit-h.safetensors&quot;,
+  &quot;clip_vision_name&quot;: &quot;CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors&quot;
+}</pre
+            ><p
+              ><a href="examples/reference-style-v1.json" download
+                >下載原 workflow、來源雜湊與環境 JSON</a
+              ></p
+            ></details
+          ></div
+        ><!-- style-tasks-end -->
+        <p class="section-lead"
           >上方五個目的決定要準備哪些輸入。左邊編輯、底部生成，右邊看原圖、遮罩或真實任務結果。</p
         >
         <figure
@@ -208,7 +676,7 @@
               loading="lazy"
             /><span class="zoom-label">點擊放大 ↗</span></a
           ><figcaption
-            >文字創作｜右側可以保留最近任務的已存圖片；目前表單的尺寸與提示詞不會改寫舊結果。示範結果是隔離色塊。</figcaption
+            >進階工作台｜上方保留簡易／進階分頁，依目的選擇輸入。此隔離示範的右側尚未生成；目前表單不會改寫舊任務結果。</figcaption
           ></figure
         >
         <ol class="steps"
@@ -220,7 +688,8 @@
               LoRA 時展開「進階設定」。</p
             ><div class="example"
               ><strong>描述範例</strong
-              ><p>mountain landscape, soft afternoon sunlight, a winding path, illustration</p> ><p
+              ><p>mountain landscape, soft afternoon sunlight, a winding path, illustration</p
+              ><p
                 >中文解說：層疊山巒、午後柔光與蜿蜒小徑。實際使用時依模型選擇英文標籤或句子；平台不會自動翻譯。</p
               ></div
             ></li
@@ -275,7 +744,7 @@
                   局部修補</th
                 ><td
                   >選來源 → 描述與相容模型 → 繪製遮罩 → 保存遮罩 →
-                  生成。沿用原圖像素，不用輸出比例變更遮罩幾何。專用修補流程另有元件與格式限制。</td
+                  生成。遮罩以原圖像素繪製，輸出尺寸另在進階設定調整；影像與遮罩會使用相同縮放幾何。專用修補流程另有元件與格式限制。</td
                 ></tr
               >
               <tr

@@ -1,0 +1,344 @@
+{
+  "schema_version": 1,
+  "id": "animagine-example-v1",
+  "date": "2026-10-30",
+  "source": "real_local_comfyui_generation",
+  "reviewer": "Codex visual inspection; not user quality approval",
+  "template_context": {
+    "schema_version": 1,
+    "origin": "builtin_recipe",
+    "selection": {
+      "template_id": "animagine",
+      "template_version": 1
+    },
+    "title": "日系人物插畫",
+    "model": "Animagine XL 4.0 Opt",
+    "family": "checkpoint",
+    "source": "models/simple-creation-templates-v1.json",
+    "reference": "docs/models/animagine-xl-4.0-opt.md",
+    "quality_note": "人物起始配方，畫質待驗收；既有實測為固定風景配置。",
+    "workflow_id": "checkpoint-text2image-v1",
+    "baseline": {
+      "prompt": "1girl, solo, adult woman, blue hair, short hair, white shirt, looking at viewer, upper body, smile, outdoors, garden, daylight, masterpiece, high score, great score, absurdres",
+      "seed": "9007199254740993",
+      "width": 1024,
+      "height": 1024,
+      "steps": 28,
+      "cfg": 5.0,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "negative_prompt": "lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature",
+      "loras": [],
+      "workflow_mode": "text2image",
+      "image_asset_id": null,
+      "reference_ids": []
+    },
+    "requirements": [
+      {
+        "role": "checkpoint",
+        "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+        "architecture": "sdxl"
+      }
+    ],
+    "recipe_sha256": "9628b7c17a504bb4b989490ecf24c5c1a9ed0278d60654a11f8bc461c6664925",
+    "modified": false,
+    "changed_fields": []
+  },
+  "settings": {
+    "prompt": "1girl, solo, adult woman, blue hair, short hair, white shirt, looking at viewer, upper body, smile, outdoors, garden, daylight, masterpiece, high score, great score, absurdres",
+    "seed": "9007199254740993",
+    "width": 1024,
+    "height": 1024,
+    "steps": 28,
+    "cfg": 5.0,
+    "sampler_name": "euler_ancestral",
+    "scheduler": "normal",
+    "denoise": 1.0,
+    "negative_prompt": "lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature",
+    "loras": [],
+    "workflow_mode": "text2image",
+    "image_asset_id": null,
+    "reference_ids": [],
+    "engine_url": "http://127.0.0.1:8188",
+    "title": "Simple v1 animagine",
+    "checkpoint": "animagine-xl-4.0-opt.safetensors"
+  },
+  "workflow": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "animagine-xl-4.0-opt.safetensors"
+      }
+    },
+    "2": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "1girl, solo, adult woman, blue hair, short hair, white shirt, looking at viewer, upper body, smile, outdoors, garden, daylight, masterpiece, high score, great score, absurdres",
+        "clip": [
+          "1",
+          1
+        ]
+      }
+    },
+    "3": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature",
+        "clip": [
+          "1",
+          1
+        ]
+      }
+    },
+    "4": {
+      "class_type": "EmptyLatentImage",
+      "inputs": {
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1
+      }
+    },
+    "5": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ],
+        "positive": [
+          "2",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "latent_image": [
+          "4",
+          0
+        ],
+        "seed": 9007199254740993,
+        "steps": 28,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "6": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "5",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "7": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "6",
+          0
+        ],
+        "filename_prefix": "ModelAtelier"
+      }
+    }
+  },
+  "job_id": "f931a31d-1922-4c2d-a326-918c94defc10",
+  "artwork_id": "6f01dfe5-ba19-533c-afd4-fa888c60fe46",
+  "model_metadata": {
+    "name": "animagine-xl-4.0-opt.safetensors",
+    "version": "4.0 Opt",
+    "source_url": "",
+    "architecture": "sdxl",
+    "size_bytes": 6938350040,
+    "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+    "license_name": "",
+    "license_url": "",
+    "metadata_updated_at": "2026-10-29T21:40:44.237036+00:00",
+    "origin": "user_registered",
+    "captured_at": "2026-10-29T21:40:44.244037+00:00"
+  },
+  "component_metadata": null,
+  "runtime_metadata": {
+    "schema_version": 1,
+    "captured_at": "2026-10-29T21:40:44.454238+00:00",
+    "workflow": {
+      "id": "checkpoint-text2image-v1",
+      "sha256": "2409c467194115d8f0af00f5f9756b2611b45919e3021532c87a9c3c6c890a75",
+      "nodes": [
+        "CLIPTextEncode",
+        "CheckpointLoaderSimple",
+        "EmptyLatentImage",
+        "KSampler",
+        "SaveImage",
+        "VAEDecode"
+      ],
+      "node_versions": null,
+      "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+    },
+    "platform": {
+      "source": "platform Python process",
+      "python": "3.12.10",
+      "packages": [
+        {
+          "name": "fastapi",
+          "version": "0.141.1"
+        },
+        {
+          "name": "starlette",
+          "version": "1.6.0"
+        },
+        {
+          "name": "pydantic",
+          "version": "2.13.5"
+        },
+        {
+          "name": "httpx",
+          "version": "0.28.1"
+        },
+        {
+          "name": "Pillow",
+          "version": "12.3.0"
+        },
+        {
+          "name": "uvicorn",
+          "version": "0.52.4"
+        },
+        {
+          "name": "websockets",
+          "version": "17.1"
+        }
+      ]
+    },
+    "engine": {
+      "status": "reported",
+      "source": "http://127.0.0.1:8188/system_stats",
+      "comfyui": "0.34.0",
+      "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+      "pytorch": "2.14.0+cu130",
+      "packages": [
+        {
+          "name": "comfyui-frontend-package",
+          "installed": "1.51.9",
+          "required": "1.51.9"
+        },
+        {
+          "name": "comfyui-workflow-templates",
+          "installed": "0.11.55",
+          "required": "0.11.55"
+        },
+        {
+          "name": "comfyui-embedded-docs",
+          "installed": "0.5.11",
+          "required": "0.5.11"
+        },
+        {
+          "name": "comfy-kitchen",
+          "installed": "0.2.33",
+          "required": "0.2.33"
+        },
+        {
+          "name": "comfy-aimdo",
+          "installed": "0.5.2",
+          "required": "0.5.2"
+        }
+      ],
+      "cuda": null,
+      "driver": null,
+      "git_revision": null,
+      "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+    },
+    "execution_context": {
+      "schema_version": 1,
+      "workload": "inference",
+      "workflow_id": "checkpoint-text2image-v1",
+      "geometry": {
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1,
+        "source": "workflow node 4"
+      },
+      "parameters": [
+        {
+          "node_id": "5",
+          "class_type": "KSampler",
+          "settings": {
+            "steps": 28,
+            "cfg": 5.0,
+            "sampler_name": "euler_ancestral",
+            "scheduler": "normal",
+            "denoise": 1.0,
+            "seed": "9007199254740993"
+          }
+        }
+      ],
+      "models": [
+        {
+          "role": "checkpoint",
+          "name": "animagine-xl-4.0-opt.safetensors",
+          "version": "4.0 Opt",
+          "architecture": "sdxl",
+          "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac"
+        }
+      ],
+      "loras": [],
+      "launch_policy": {
+        "source": "http://127.0.0.1:8188/system_stats.system.argv",
+        "reported": true,
+        "precision_flags": [],
+        "memory_flags": []
+      },
+      "actual_precision": null,
+      "actual_offload": null,
+      "cache_state": "unknown",
+      "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+    },
+    "execution_device": {
+      "schema_version": 1,
+      "engine_url": "http://127.0.0.1:8188",
+      "source": "http://127.0.0.1:8188/model_atelier/execution-device",
+      "checked_at": "2026-10-29T21:40:44.484209+00:00",
+      "probe_id": "0f68e306-b79e-41a3-9592-29f1c8c042ca",
+      "status": "available",
+      "reason": "device_selected",
+      "device": {
+        "type": "cuda",
+        "index": 0
+      },
+      "backend_available": true
+    }
+  },
+  "local_weights_verified": [
+    {
+      "filename": "animagine-xl-4.0-opt.safetensors",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "size_bytes": 6938350040
+    }
+  ],
+  "image": {
+    "file": "images/examples/animagine.png",
+    "sha256": "b35c3f27a8cf3bbb51700ffbf201401d79f6947a76ad477b6b149f40c2575196",
+    "bytes": 1650540,
+    "width": 1024,
+    "height": 1024
+  },
+  "observations": [
+    "單人半身、藍色短髮、白衣與花園背景可見，線條與髮部高光清楚。",
+    "手部未入鏡，無法據此檢驗手指；近距離裁切也未驗證全身比例。",
+    "這是原創人物描述，沒有指定角色參考，不能判定角色身份一致或指定作者相似度。"
+  ],
+  "limits": [
+    "One fixed seed and environment; no general quality ranking or target-artist/character approval.",
+    "Settings JSON is an evidence record, not a general settings exchange envelope."
+  ],
+  "elapsed_seconds": 25.98499999998603,
+  "timing_scope": "Submission through confirmed history; includes loading, queue, polling and network. Not a GPU benchmark.",
+  "generated_at": "2026-10-29T21:41:10.533307+00:00"
+}

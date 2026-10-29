@@ -132,7 +132,8 @@
     "backend/test_listing_totals.py",
     "backend/template_context.py",
     "backend/test_template_context.py",
-    "backend/gallery.py"
+    "backend/gallery.py",
+    "backend/test_simple_examples.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -242,7 +243,13 @@
     "frontend/src/templateContext.ts",
     "frontend/src/TemplateSnapshot.vue",
     "frontend/src/creationSettings.ts",
-    "frontend/tests/simple-creation-acceptance.spec.ts"
+    "frontend/tests/simple-creation-acceptance.spec.ts",
+    "frontend/src/presetEvidence.ts",
+    "frontend/src/simpleExamples.ts",
+    "frontend/src/SimpleExample.vue",
+    "frontend/tests/simple-content.spec.ts",
+    "frontend/check-preset-evidence.mjs",
+    "frontend/tests/simple-guide.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css", "frontend/src/redesign.css"]
 }

@@ -6,7 +6,7 @@ defineProps<{ item?: TemplateContext | null }>()
   <details v-if="item" class="template-snapshot">
     <summary>起始模板：{{ item.title }} · v{{ item.selection.template_version }}</summary>
     <p
-      >{{ item.modified ? '從此模板修改後生成' : '符合提交時的原配方設定' }}。{{
+      >{{ item.modified ? '從此模板修改後生成' : '符合提交時的原配方設定' }}。模板發佈時說明：{{
         item.quality_note
       }}</p
     >

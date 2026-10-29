@@ -1,0 +1,500 @@
+{
+  "schema_version": 1,
+  "id": "guide-reference-zero-v1",
+  "date": "2026-10-30",
+  "source": "real_local_comfyui_generation",
+  "reviewer": "Codex visual inspection; not user quality approval",
+  "workflow_id": "checkpoint-ipadapter-reference-v1",
+  "settings": {
+    "prompt": "1girl, solo, adult woman, red hair, long hair, white shirt, looking at viewer, upper body, smile, indoors, bookshop, bookshelf, masterpiece, high score, great score, absurdres",
+    "seed": "9007199254740993",
+    "width": 1024,
+    "height": 1024,
+    "steps": 28,
+    "cfg": 5.0,
+    "sampler_name": "euler_ancestral",
+    "scheduler": "normal",
+    "denoise": 1.0,
+    "negative_prompt": "lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature",
+    "loras": [],
+    "workflow_mode": "text2image",
+    "image_asset_id": "19c1158f-de81-4dc4-84bf-800fbe7aa6ff",
+    "reference_ids": [
+      "19c1158f-de81-4dc4-84bf-800fbe7aa6ff"
+    ],
+    "engine_url": "http://127.0.0.1:8188",
+    "title": "Simple v1 reference-zero",
+    "checkpoint": "animagine-xl-4.0-opt.safetensors",
+    "reference_resize": "fit",
+    "reference_mode": "style",
+    "reference_weight": 0.0,
+    "reference_start": 0.0,
+    "reference_end": 1.0,
+    "ipadapter_name": "ip-adapter-plus_sdxl_vit-h.safetensors",
+    "clip_vision_name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
+  },
+  "workflow": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "animagine-xl-4.0-opt.safetensors"
+      }
+    },
+    "2": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "1girl, solo, adult woman, red hair, long hair, white shirt, looking at viewer, upper body, smile, indoors, bookshop, bookshelf, masterpiece, high score, great score, absurdres",
+        "clip": [
+          "1",
+          1
+        ]
+      }
+    },
+    "3": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature",
+        "clip": [
+          "1",
+          1
+        ]
+      }
+    },
+    "4": {
+      "class_type": "EmptyLatentImage",
+      "inputs": {
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1
+      }
+    },
+    "5": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "15",
+          0
+        ],
+        "positive": [
+          "2",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "latent_image": [
+          "4",
+          0
+        ],
+        "seed": 9007199254740993,
+        "steps": 28,
+        "cfg": 5.0,
+        "sampler_name": "euler_ancestral",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "6": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "5",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "7": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "6",
+          0
+        ],
+        "filename_prefix": "ModelAtelier"
+      }
+    },
+    "12": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "model_atelier/ba910217-c3fb-4d04-9b63-973cb9dae99f/reference.png"
+      }
+    },
+    "13": {
+      "class_type": "IPAdapterModelLoader",
+      "inputs": {
+        "ipadapter_file": "ip-adapter-plus_sdxl_vit-h.safetensors"
+      }
+    },
+    "14": {
+      "class_type": "CLIPVisionLoader",
+      "inputs": {
+        "clip_name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
+      }
+    },
+    "15": {
+      "class_type": "IPAdapterAdvanced",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ],
+        "ipadapter": [
+          "13",
+          0
+        ],
+        "image": [
+          "12",
+          0
+        ],
+        "clip_vision": [
+          "14",
+          0
+        ],
+        "weight": 0.0,
+        "weight_type": "style transfer",
+        "combine_embeds": "concat",
+        "embeds_scaling": "V only",
+        "start_at": 0.0,
+        "end_at": 1.0
+      }
+    }
+  },
+  "job_id": "ba910217-c3fb-4d04-9b63-973cb9dae99f",
+  "artwork_id": "676c0810-4679-5024-8dc3-92679e83b375",
+  "model_metadata": {
+    "name": "animagine-xl-4.0-opt.safetensors",
+    "version": "4.0 Opt",
+    "source_url": "",
+    "architecture": "sdxl",
+    "size_bytes": 6938350040,
+    "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+    "license_name": "",
+    "license_url": "",
+    "metadata_updated_at": "2026-10-29T21:48:26.841596+00:00",
+    "origin": "user_registered",
+    "captured_at": "2026-10-29T21:48:27.306065+00:00"
+  },
+  "component_metadata": [
+    {
+      "name": "ip-adapter-plus_sdxl_vit-h.safetensors",
+      "version": "h94 revision 018e402774ae",
+      "source_url": "",
+      "architecture": "sdxl",
+      "size_bytes": 847517512,
+      "sha256": "3f5062b8400c94b7159665b21ba5c62acdcd7682262743d7f2aefedef00e6581",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-29T21:48:27.038844+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-29T21:48:27.227235+00:00",
+      "role": "ipadapter",
+      "family": "sdxl-plus-vit-h"
+    },
+    {
+      "name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors",
+      "version": "h94 revision 018e402774ae",
+      "source_url": "",
+      "architecture": "other",
+      "size_bytes": 2528373448,
+      "sha256": "6ca9667da1ca9e0b0f75e46bb030f7e011f44f86cbfb8d5a36590fcd7507b030",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-29T21:48:27.043845+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-29T21:48:27.227235+00:00",
+      "role": "clip_vision",
+      "family": "clip-vit-h-14"
+    }
+  ],
+  "reference_metadata": [
+    {
+      "id": "19c1158f-de81-4dc4-84bf-800fbe7aa6ff",
+      "title": "Self-generated-Animagine-reference.png",
+      "width": 1024,
+      "height": 1024,
+      "size": 1866163,
+      "sha256": "711d8c3616425325e297fb2c35e193178f1618c36fd05dc0d4f3103ae5e214ac",
+      "archived": false,
+      "purpose": "unspecified",
+      "revision": 1,
+      "preprocessing": {
+        "id": "asset-normalize",
+        "version": 1,
+        "library": "Pillow",
+        "library_version": "12.3.0",
+        "source_format": "PNG",
+        "source_size": [
+          1024,
+          1024
+        ],
+        "source_sha256": "b35c3f27a8cf3bbb51700ffbf201401d79f6947a76ad477b6b149f40c2575196",
+        "operations": [
+          "exif_transpose",
+          "convert_rgba",
+          "remove_metadata",
+          "encode_png"
+        ]
+      },
+      "created_at": "2026-10-29T21:48:27.217236+00:00",
+      "generation_preprocessing": {
+        "id": "ipadapter-square-input",
+        "version": 1,
+        "library": "Pillow",
+        "library_version": "12.3.0",
+        "resize": "fit",
+        "resampling": "LANCZOS",
+        "background": "#ffffff",
+        "output_mode": "RGB",
+        "output_format": "PNG",
+        "width": 224,
+        "height": 224,
+        "sha256": "9824c0699cd3597a54e4cac2eb2631cf9f15dd16f98722f12d9050ccc7f8592f",
+        "size": 101032
+      },
+      "input_role": "source",
+      "adapter_preprocessing": {
+        "id": "ipadapter-plus-vit-h",
+        "version": 1,
+        "mode": "style",
+        "weight_type": "style transfer",
+        "combine_embeds": "concat",
+        "embeds_scaling": "V only",
+        "image_size": 224,
+        "encoder_preprocessing": "original-engine comfy.clip_vision.clip_preprocess",
+        "node_version": null
+      }
+    }
+  ],
+  "runtime_metadata": {
+    "schema_version": 1,
+    "captured_at": "2026-10-29T21:48:27.548063+00:00",
+    "workflow": {
+      "id": "checkpoint-ipadapter-reference-v1",
+      "sha256": "5501495a274b73498124d83527b637192690a4539e12b63f500a82cc7d69fad2",
+      "nodes": [
+        "CLIPTextEncode",
+        "CLIPVisionLoader",
+        "CheckpointLoaderSimple",
+        "EmptyLatentImage",
+        "IPAdapterAdvanced",
+        "IPAdapterModelLoader",
+        "KSampler",
+        "LoadImage",
+        "SaveImage",
+        "VAEDecode"
+      ],
+      "node_versions": null,
+      "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+    },
+    "platform": {
+      "source": "platform Python process",
+      "python": "3.12.10",
+      "packages": [
+        {
+          "name": "fastapi",
+          "version": "0.141.1"
+        },
+        {
+          "name": "starlette",
+          "version": "1.6.0"
+        },
+        {
+          "name": "pydantic",
+          "version": "2.13.5"
+        },
+        {
+          "name": "httpx",
+          "version": "0.28.1"
+        },
+        {
+          "name": "Pillow",
+          "version": "12.3.0"
+        },
+        {
+          "name": "uvicorn",
+          "version": "0.52.4"
+        },
+        {
+          "name": "websockets",
+          "version": "17.1"
+        }
+      ]
+    },
+    "engine": {
+      "status": "reported",
+      "source": "http://127.0.0.1:8188/system_stats",
+      "comfyui": "0.34.0",
+      "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+      "pytorch": "2.14.0+cu130",
+      "packages": [
+        {
+          "name": "comfyui-frontend-package",
+          "installed": "1.51.9",
+          "required": "1.51.9"
+        },
+        {
+          "name": "comfyui-workflow-templates",
+          "installed": "0.11.55",
+          "required": "0.11.55"
+        },
+        {
+          "name": "comfyui-embedded-docs",
+          "installed": "0.5.11",
+          "required": "0.5.11"
+        },
+        {
+          "name": "comfy-kitchen",
+          "installed": "0.2.33",
+          "required": "0.2.33"
+        },
+        {
+          "name": "comfy-aimdo",
+          "installed": "0.5.2",
+          "required": "0.5.2"
+        }
+      ],
+      "cuda": null,
+      "driver": null,
+      "git_revision": null,
+      "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+    },
+    "execution_context": {
+      "schema_version": 1,
+      "workload": "inference",
+      "workflow_id": "checkpoint-ipadapter-reference-v1",
+      "geometry": {
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1,
+        "source": "workflow node 4"
+      },
+      "parameters": [
+        {
+          "node_id": "5",
+          "class_type": "KSampler",
+          "settings": {
+            "steps": 28,
+            "cfg": 5.0,
+            "sampler_name": "euler_ancestral",
+            "scheduler": "normal",
+            "denoise": 1.0,
+            "seed": "9007199254740993"
+          }
+        }
+      ],
+      "models": [
+        {
+          "role": "checkpoint",
+          "name": "animagine-xl-4.0-opt.safetensors",
+          "version": "4.0 Opt",
+          "architecture": "sdxl",
+          "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac"
+        },
+        {
+          "role": "ipadapter",
+          "name": "ip-adapter-plus_sdxl_vit-h.safetensors",
+          "version": "h94 revision 018e402774ae",
+          "architecture": "sdxl",
+          "sha256": "3f5062b8400c94b7159665b21ba5c62acdcd7682262743d7f2aefedef00e6581"
+        },
+        {
+          "role": "clip_vision",
+          "name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors",
+          "version": "h94 revision 018e402774ae",
+          "architecture": "other",
+          "sha256": "6ca9667da1ca9e0b0f75e46bb030f7e011f44f86cbfb8d5a36590fcd7507b030"
+        }
+      ],
+      "loras": [],
+      "launch_policy": {
+        "source": "http://127.0.0.1:8188/system_stats.system.argv",
+        "reported": true,
+        "precision_flags": [],
+        "memory_flags": []
+      },
+      "actual_precision": null,
+      "actual_offload": null,
+      "cache_state": "unknown",
+      "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+    },
+    "execution_device": {
+      "schema_version": 1,
+      "engine_url": "http://127.0.0.1:8188",
+      "source": "http://127.0.0.1:8188/model_atelier/execution-device",
+      "checked_at": "2026-10-29T21:48:27.579094+00:00",
+      "probe_id": "59e60be2-09ad-4408-bcb7-69e05e86faa4",
+      "status": "available",
+      "reason": "device_selected",
+      "device": {
+        "type": "cuda",
+        "index": 0
+      },
+      "backend_available": true
+    }
+  },
+  "local_weights_verified": [
+    {
+      "filename": "animagine-xl-4.0-opt.safetensors",
+      "sha256": "6327eca98bfb6538dd7a4edce22484a1bbc57a8cff6b11d075d40da1afb847ac",
+      "size_bytes": 6938350040
+    },
+    {
+      "filename": "ip-adapter-plus_sdxl_vit-h.safetensors",
+      "sha256": "3f5062b8400c94b7159665b21ba5c62acdcd7682262743d7f2aefedef00e6581",
+      "size_bytes": 847517512
+    },
+    {
+      "filename": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors",
+      "sha256": "6ca9667da1ca9e0b0f75e46bb030f7e011f44f86cbfb8d5a36590fcd7507b030",
+      "size_bytes": 2528373448
+    }
+  ],
+  "source_image": {
+    "file": "images/examples/reference-source.png",
+    "sha256": "711d8c3616425325e297fb2c35e193178f1618c36fd05dc0d4f3103ae5e214ac",
+    "bytes": 1866163,
+    "origin": "Self-generated Animagine simple v1 image, normalized by platform asset upload",
+    "generation_evidence": "examples/animagine-v1.json",
+    "original_generation_image_sha256": "b35c3f27a8cf3bbb51700ffbf201401d79f6947a76ad477b6b149f40c2575196",
+    "preprocessing": {
+      "id": "asset-normalize",
+      "version": 1,
+      "library": "Pillow",
+      "library_version": "12.3.0",
+      "source_format": "PNG",
+      "source_size": [
+        1024,
+        1024
+      ],
+      "source_sha256": "b35c3f27a8cf3bbb51700ffbf201401d79f6947a76ad477b6b149f40c2575196",
+      "operations": [
+        "exif_transpose",
+        "convert_rgba",
+        "remove_metadata",
+        "encode_png"
+      ]
+    }
+  },
+  "image": {
+    "file": "images/examples/reference-zero.png",
+    "sha256": "16c577ba30be6302e9e3aba664273a4f5de3a74764cc429e4d28ab753822f89a",
+    "bytes": 1399744,
+    "width": 1024,
+    "height": 1024
+  },
+  "observations": [
+    "權重 0 保留紅長髮、白衣與書店；權重 0.6 的人物增加藍色髮束，畫面上方也混入戶外葉片。",
+    "參考作用連帶改變髮色、背景、臉型及構圖，並非只抽取線條或配色；提高權重不等於更符合文字描述。",
+    "這是原創人物與自產參考圖的單組比較，不認列指定角色身份、作者畫風或任意參考圖的品質通過。"
+  ],
+  "limits": [
+    "Only reference_weight changes between the two cases; both use the IP-Adapter graph.",
+    "No LoRA, multi-reference, FaceID, structure control or inpainting combination."
+  ],
+  "generated_at": "2026-10-29T21:49:19.488629+00:00"
+}
