@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { apiJson } from './apiClient'
 import { createRequestScope } from './requestScope'
+import UiIcon from './UiIcon.vue'
 const emit = defineEmits<{ use: [id: string, purpose: string]; dirty: [value: boolean] }>()
 const uploadOpen = ref(false)
 type Purpose = 'unspecified' | 'style' | 'character' | 'composition'
@@ -421,11 +422,14 @@ onMounted(() => {
             ><img :src="'/api/assets/' + selected.id + '/image'" :alt="selected.title" /></div
           ><div class="asset-image-footer"
             ><span>保留原始比例</span
-            ><a :href="'/api/assets/' + selected.id + '/image'" target="_blank" rel="noopener"
-              >另開原圖 ↗</a
-            ></div
-          ></div
-        >
+            ><a
+              class="asset-original-link"
+              :href="'/api/assets/' + selected.id + '/image'"
+              target="_blank"
+              rel="noopener"
+              title="另開分頁檢視原圖"
+              >另開原圖<UiIcon name="external" :size="16" /></a></div
+        ></div>
         <div class="asset-detail-info"
           ><div class="asset-detail-labels"
             ><span class="asset-purpose" :class="selected.purpose">{{
@@ -496,9 +500,9 @@ onMounted(() => {
                 class="primary"
                 :disabled="busy || selected.archived"
                 @click="emit('use', selected.id, selected.purpose)"
-                >用於創作</button
+                ><UiIcon name="studio" :size="18" />用於創作</button
               ><button class="secondary" :disabled="busy" @click="editAsset(selected)"
-                >編輯素材資料</button
+                ><UiIcon name="edit" :size="18" />編輯素材資料</button
               ></div
             ></div
           >

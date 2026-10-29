@@ -2942,6 +2942,25 @@
   font-size: 12px;
   color: var(--ink3);
 }
+#app .atelier-shell .asset-original-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  background: var(--raised);
+  color: var(--ink2);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+#app .atelier-shell .asset-original-link:hover {
+  background: var(--asoft);
+  border-color: #456347;
+  color: var(--accent);
+}
 #app .atelier-shell .asset-detail-info {
   min-width: 0;
   min-height: 0;
@@ -3026,17 +3045,22 @@
 }
 #app .atelier-shell .asset-detail-create {
   margin-top: auto;
-  padding-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 #app .atelier-shell .asset-detail-create .asset-actions {
   margin: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 10px;
 }
 #app .atelier-shell .asset-detail-info .asset-actions button {
-  min-height: 44px;
+  min-height: 46px;
   font-size: 14px;
-  padding: 9px 14px;
+  padding: 10px 12px;
+}
+#app .atelier-shell .asset-detail-create .secondary:hover {
+  background: var(--raised);
 }
 #app .atelier-shell .asset-detail-info > .footnote {
   font-size: 12px;

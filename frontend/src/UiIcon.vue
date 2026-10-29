@@ -23,6 +23,9 @@ Object.assign(paths, {
     '<circle cx="12" cy="12" r="8"/><circle cx="9" cy="10" r="1"/><circle cx="14" cy="9" r="1"/>',
   refresh: '<path d="M20 12a8 8 0 11-2.3-5.7M20 4v5h-5"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  external:
+    '<path d="M15 3h6v6M10 14 21 3"/><path d="M21 14v5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5"/>',
+  edit: '<path d="M16 4a2.1 2.1 0 013 3L8 18l-4 1 1-4L16 4zM14 6l3 3"/>',
 })
 const markup = computed(() => paths[props.name] || paths.studio)
 </script>
