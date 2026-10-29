@@ -1824,60 +1824,11 @@
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 12px 20px;
+  padding: 20px;
 }
 #app .atelier-shell .model-card {
   background: var(--panel);
   padding: 20px;
-}
-#app .atelier-shell .model-list .model-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 12px 24px;
-  align-items: center;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
-  padding: 20px 0;
-  margin: 0;
-}
-#app .atelier-shell .model-list .model-card:last-child {
-  border-bottom: 0;
-}
-#app .atelier-shell .model-list .model-summary {
-  grid-column: 1;
-  grid-row: 1;
-}
-#app .atelier-shell .model-list .model-card-top {
-  grid-column: 2;
-  grid-row: 1;
-}
-#app .atelier-shell .model-list .model-details {
-  grid-column: 1/-1;
-}
-#app .atelier-shell .model-list .model-footer {
-  grid-column: 3;
-  grid-row: 1;
-  margin: 0;
-  border: 0;
-  padding: 0;
-  justify-content: flex-end;
-}
-#app .atelier-shell .model-summary h2 {
-  font-size: 15px;
-  margin: 0;
-}
-#app .atelier-shell .model-summary p {
-  margin: 6px 0 0;
-}
-#app .atelier-shell .model-list .model-details {
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-#app .atelier-shell .model-list .model-details > summary {
-  font-size: 12px;
-  color: var(--ink3);
 }
 #app .atelier-shell .model-card .model-footer button {
   margin: 0;
@@ -2186,6 +2137,7 @@
 }
 #app .atelier-shell .model-browser-tools {
   justify-content: space-between;
+  margin-bottom: 20px;
 }
 #app .atelier-shell .model-browser-tools .page-tabs {
   border: 0;
@@ -2193,21 +2145,19 @@
 }
 #app .atelier-shell .model-browser-tools .page-tabs button {
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: 99px;
   padding: 6px 14px;
   min-height: 38px;
 }
 #app .atelier-shell .model-browser-tools .page-tabs button[aria-selected='true'] {
   background: var(--asoft);
   border-color: #456347;
+  font-weight: 400;
 }
-#app .atelier-shell .model-list .model-card {
-  grid-template-columns: minmax(0, 1fr) minmax(160px, 0.9fr) auto;
-}
-#app .atelier-shell .model-list .model-card-top .status {
-  display: block;
-  width: 100%;
-  border-radius: 99px;
+#app .atelier-shell .model-browser-tools .view-switch > span {
+  font-size: 13px;
+  color: var(--ink3);
+  margin-right: 4px;
 }
 #app .atelier-shell .model-size-chips,
 #app .atelier-shell .comparison-chips {
@@ -2217,6 +2167,7 @@
 }
 #app .atelier-shell .model-size-chips {
   margin-top: 6px;
+  gap: 6px;
 }
 #app .atelier-shell :is(.model-size-chips, .comparison-chips) > span {
   border: 1px solid var(--line);
@@ -2224,9 +2175,6 @@
   padding: 2px 10px;
   color: var(--ink2);
   font-size: 12px;
-}
-#app .atelier-shell .model-card:not(.model-list .model-card) .model-card-top {
-  margin: 14px 0;
 }
 #app .atelier-shell .settings-workspace {
   margin-top: 22px;
@@ -2573,17 +2521,6 @@
 #app .atelier-shell .model-browser-tools {
   min-height: 38px;
 }
-#app .atelier-shell .model-list .model-card {
-  gap: 4px 16px;
-  padding: 20px 0;
-}
-#app .atelier-shell .model-list .model-details > summary {
-  min-height: 22px;
-}
-#app .atelier-shell .model-summary p {
-  font-size: 13px;
-  margin: 2px 0 0;
-}
 #app .atelier-shell .artwork-grid:not(.masonry) .artwork-cover {
   height: auto;
 }
@@ -2745,11 +2682,11 @@
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 0 20px;
+  padding: 20px;
 }
 #app .atelier-shell .collection-list > article {
   margin: 0;
-  padding: 20px 0;
+  padding: 14px 0;
   border: 0;
   border-bottom: 1px solid var(--line);
   border-radius: 0;
@@ -2769,40 +2706,134 @@
   border-radius: 14px;
   background: var(--panel);
 }
-#app .atelier-shell .model-collection h3,
-#app .atelier-shell .model-collection strong {
+#app .atelier-shell .model-entry-info > :is(h2, h3) {
   font-size: 15px;
-  margin: 0 0 6px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.65;
   overflow-wrap: anywhere;
 }
-#app .atelier-shell .model-collection .lora-top,
-#app .atelier-shell .model-collection .control-top {
-  float: right;
-  margin: 0 0 8px 14px;
+#app .atelier-shell :is(.model-list, .collection-list) > .model-entry {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
 }
-#app .atelier-shell .model-collection .lora-top > .chip,
-#app .atelier-shell .model-collection .control-top > .chip {
-  display: none;
+#app .atelier-shell :is(.model-list, .collection-list) > .model-entry:first-child {
+  border-top: 0;
 }
-#app .atelier-shell .model-collection p {
+#app .atelier-shell .model-entry-info {
+  flex: 1;
+  min-width: 0;
+}
+#app .atelier-shell .model-entry-info > p {
   font-size: 13px;
   color: var(--ink3);
-  margin: 6px 0;
+  margin: 0;
+  line-height: 1.65;
 }
-#app .atelier-shell .model-collection .collection-details {
-  clear: both;
-  margin-top: 12px;
+#app .atelier-shell .model-entry-info > details {
+  margin: 8px 0 0;
+  padding: 0;
+  border: 0;
   font-size: 13px;
 }
-#app .atelier-shell .model-collection .collection-details summary {
+#app .atelier-shell .model-entry-info > details > summary {
+  font-size: 13px;
+  font-weight: 400;
+  min-height: 0;
   cursor: pointer;
   color: var(--ink2);
 }
-#app .atelier-shell .collection-top {
+#app .atelier-shell .model-entry-info > details[open] {
+  padding-bottom: 4px;
+}
+#app .atelier-shell .model-entry-info > details p {
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+#app .atelier-shell .model-entry .model-entry-status {
+  display: flex;
+  float: none;
+  margin: 0;
+}
+#app .atelier-shell :is(.model-list, .collection-list) .model-entry-status:has(.connected) {
+  flex: 1;
+}
+#app .atelier-shell .model-entry-status > .status {
+  display: block;
+  width: 100%;
+  padding: 2px 10px;
+  border: 1px solid #6b5638;
+  border-radius: 99px;
+  background: var(--wsoft);
+  color: var(--warm);
+  font-size: 12px;
+  line-height: 1.65;
+  white-space: nowrap;
+}
+#app .atelier-shell .model-entry-status > .status.connected {
+  background: var(--asoft);
+  border-color: #456347;
+  color: var(--accent);
+}
+#app .atelier-shell .model-entry-status > .status::before {
+  content: none;
+}
+#app .atelier-shell .model-entry .model-entry-action {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+#app .atelier-shell .model-card .model-entry-action > button {
+  padding: 10px 15px;
+  background: var(--panel);
+  border-color: var(--line);
+}
+#app .atelier-shell :is(.model-grid:not(.model-list), .collection-cards) > .model-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+#app .atelier-shell :is(.model-grid:not(.model-list), .collection-cards) .model-entry-info {
+  flex: initial;
+  width: 100%;
+}
+#app
+  .atelier-shell
+  :is(.model-grid:not(.model-list), .collection-cards)
+  .model-entry-info
+  > :is(h2, h3) {
+  font-size: 16px;
+}
+#app .atelier-shell :is(.model-grid:not(.model-list), .collection-cards) .model-entry-action {
+  margin-top: auto;
+}
+#app .atelier-shell .component-library {
+  margin-top: 0;
+}
+#app .atelier-shell .model-category-actions {
+  margin-top: 16px;
+}
+#app .atelier-shell .library .placeholder {
+  background: #18211c;
+  border: 1px dashed #9aaa9a;
+  padding: 65px 25px;
+}
+#app .atelier-shell .library .placeholder > :is(h2, h3) {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0 0 12px;
 }
 #app .atelier-shell .model-collection dd {
   margin: 0 0 8px;

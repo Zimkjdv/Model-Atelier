@@ -246,14 +246,13 @@ onMounted(() => load())
       <article v-if="!catalog && busy" class="panel placeholder" role="status"
         ><h2>正在讀取模型紀錄…</h2></article
       >
-      <article v-else-if="!catalog?.models.length" class="panel placeholder"
-        ><span class="outline-icon">▦</span
-        ><h2>{{ catalog?.synced_at ? 'ComfyUI 尚未列出 checkpoint' : '建立你的第一份模型清單' }}</h2
+      <article v-else-if="catalog && !catalog.models.length" class="panel placeholder"
+        ><h2>{{ catalog.synced_at ? 'ComfyUI 尚未列出 checkpoint' : '尚未同步模型清單' }}</h2
         ><p
           >先啟動 ComfyUI 並確認其中已登記 checkpoint，<br />再按「同步模型清單」。平台不會自動下載模型。</p
-        ></article
+        ><button class="primary" @click="emit('settings')">查看準備方式</button></article
       >
-      <article v-else-if="!visible.length" class="panel placeholder"
+      <article v-else-if="catalog && !visible.length" class="panel placeholder"
         ><h2>沒有符合條件的模型</h2
         ><button
           class="secondary"
@@ -266,171 +265,180 @@ onMounted(() => load())
           >清除篩選</button
         ></article
       >
-      <div class="model-grid" :class="{ 'model-list': view === 'list' }">
+      <div v-if="visible.length" class="model-grid" :class="{ 'model-list': view === 'list' }">
         <article
           v-for="model in visible"
           :key="model.name"
-          class="panel model-card"
+          class="panel model-card model-entry"
           :class="{ preferred: catalog?.selected === model.name }"
         >
-          <div class="model-summary"
+          <div class="model-summary model-entry-info"
             ><h2>{{ model.name }}</h2
             ><p class="footnote"
-              >{{ architectureLabel(model.architecture) }} · 每次生成前仍會檢查完整流程</p
+              >{{ architectureLabel(model.architecture)
+              }}{{
+                outputPresets(model.architecture || 'unknown').length
+                  ? ' · 寬高需為 ' +
+                    (model.architecture === 'flux' ? 16 : 8) +
+                    ' 的倍數；下列為尺寸預設示例'
+                  : ' · 尚無可用的尺寸預設，請核對登記架構'
+              }}</p
             ><div class="model-size-chips"
               ><span v-for="(size, i) in outputPresets(model.architecture || 'unknown')" :key="i"
                 >{{ ['1:1', '3:4', '4:3', '16:9'][i] }} · {{ size[0] }}×{{ size[1] }}</span
               ></div
-            ></div
-          >
-          <div class="model-card-top"
-            ><span class="status" :class="{ connected: model.listed }">{{
-              model.listed ? '可使用' : '最近清單未列出'
-            }}</span></div
-          >
-          <details
-            class="model-details"
-            :open="editing === model.name || validationName === model.name"
-            ><summary>模型資料、授權與驗證紀錄</summary
-            ><p
-              >模型版本：{{ model.version?.trim() || '未知'
-              }}<span v-if="model.version?.trim()" class="muted">（使用者登記）</span></p
             >
-            <p class="footnote">檔案大小：{{ fileSize(model.size_bytes) }}</p>
-            <p v-if="!safeMetadataUrl(model.source_url)" class="footnote">模型來源：未知</p>
-            <form
-              v-if="editing === model.name"
-              class="model-form"
-              @submit.prevent="update(model, true)"
-            >
-              <label :for="'version-' + model.name">模型版本</label
-              ><input
-                :id="'version-' + model.name"
-                v-model="version"
-                maxlength="100"
-                placeholder="未填寫時顯示未知"
-              />
-              <label :for="'architecture-' + model.name">模型架構（使用者登記）</label
-              ><select :id="'architecture-' + model.name" v-model="architecture"
-                ><option
-                  v-for="option in architectures"
-                  :key="option.value"
-                  :value="option.value"
-                  >{{ option.label }}</option
-                ></select
+            <details
+              class="model-details"
+              :open="editing === model.name || validationName === model.name"
+              ><summary>來源、授權與檔案資訊</summary
+              ><p
+                >模型版本：{{ model.version?.trim() || '未知'
+                }}<span v-if="model.version?.trim()" class="muted">（使用者登記）</span></p
               >
-              <label :for="'size-' + model.name">檔案大小（bytes）</label
-              ><input
-                :id="'size-' + model.name"
-                v-model="sizeBytes"
-                inputmode="numeric"
-                maxlength="16"
-                placeholder="正整數；留空表示未知"
-              />
-              <label :for="'hash-' + model.name">模型檔案 SHA-256</label
-              ><input
-                aria-describedby="model-hash-help"
-                :id="'hash-' + model.name"
-                v-model="sha256"
-                maxlength="64"
-                autocomplete="off"
-                spellcheck="false"
-                placeholder="完整 64 位十六進位值；留空表示未知"
-              /><p id="model-hash-help" class="footnote"
-                >請填完整 64 位十六進位 SHA256；留空為未知，登記不代表已驗證檔案。</p
+              <p class="footnote">檔案大小：{{ fileSize(model.size_bytes) }}</p>
+              <p v-if="!safeMetadataUrl(model.source_url)" class="footnote">模型來源：未知</p>
+              <form
+                v-if="editing === model.name"
+                class="model-form"
+                @submit.prevent="update(model, true)"
               >
-              <label :for="'source-' + model.name">來源網址</label
-              ><input
-                :id="'source-' + model.name"
-                v-model="source"
-                type="url"
-                maxlength="2048"
-                placeholder="https://…"
-              />
-              <label :for="'license-name-' + model.name">授權名稱／標記</label
-              ><input
-                :id="'license-name-' + model.name"
-                v-model="licenseName"
-                maxlength="200"
-                placeholder="依上游登記；留空表示未知"
-              />
-              <label :for="'license-url-' + model.name">授權條款網址</label
-              ><input
-                :id="'license-url-' + model.name"
-                v-model="licenseUrl"
-                type="url"
-                maxlength="2048"
-                placeholder="https://…"
-              />
-              <label :for="'notes-' + model.name">備註</label
-              ><textarea
-                :id="'notes-' + model.name"
-                v-model="notes"
-                maxlength="4000"
-                rows="4"
-                placeholder="版本、用途、授權說明或待驗證事項"
-              ></textarea>
-              <div class="library-actions"
-                ><button class="primary" :disabled="busy">保存資料</button
-                ><button type="button" class="secondary" :disabled="busy" @click="editing = null"
-                  >取消</button
+                <label :for="'version-' + model.name">模型版本</label
+                ><input
+                  :id="'version-' + model.name"
+                  v-model="version"
+                  maxlength="100"
+                  placeholder="未填寫時顯示未知"
+                />
+                <label :for="'architecture-' + model.name">模型架構（使用者登記）</label
+                ><select :id="'architecture-' + model.name" v-model="architecture"
+                  ><option
+                    v-for="option in architectures"
+                    :key="option.value"
+                    :value="option.value"
+                    >{{ option.label }}</option
+                  ></select
+                >
+                <label :for="'size-' + model.name">檔案大小（bytes）</label
+                ><input
+                  :id="'size-' + model.name"
+                  v-model="sizeBytes"
+                  inputmode="numeric"
+                  maxlength="16"
+                  placeholder="正整數；留空表示未知"
+                />
+                <label :for="'hash-' + model.name">模型檔案 SHA-256</label
+                ><input
+                  aria-describedby="model-hash-help"
+                  :id="'hash-' + model.name"
+                  v-model="sha256"
+                  maxlength="64"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="完整 64 位十六進位值；留空表示未知"
+                /><p id="model-hash-help" class="footnote"
+                  >請填完整 64 位十六進位 SHA256；留空為未知，登記不代表已驗證檔案。</p
+                >
+                <label :for="'source-' + model.name">來源網址</label
+                ><input
+                  :id="'source-' + model.name"
+                  v-model="source"
+                  type="url"
+                  maxlength="2048"
+                  placeholder="https://…"
+                />
+                <label :for="'license-name-' + model.name">授權名稱／標記</label
+                ><input
+                  :id="'license-name-' + model.name"
+                  v-model="licenseName"
+                  maxlength="200"
+                  placeholder="依上游登記；留空表示未知"
+                />
+                <label :for="'license-url-' + model.name">授權條款網址</label
+                ><input
+                  :id="'license-url-' + model.name"
+                  v-model="licenseUrl"
+                  type="url"
+                  maxlength="2048"
+                  placeholder="https://…"
+                />
+                <label :for="'notes-' + model.name">備註</label
+                ><textarea
+                  :id="'notes-' + model.name"
+                  v-model="notes"
+                  maxlength="4000"
+                  rows="4"
+                  placeholder="版本、用途、授權說明或待驗證事項"
+                ></textarea>
+                <div class="library-actions"
+                  ><button class="primary" :disabled="busy">保存資料</button
+                  ><button type="button" class="secondary" :disabled="busy" @click="editing = null"
+                    >取消</button
+                  ></div
+                >
+              </form>
+              <template v-else>
+                <p class="model-notes">{{ model.notes || '尚未加入備註。' }}</p>
+                <a
+                  v-if="safeMetadataUrl(model.source_url)"
+                  :href="safeMetadataUrl(model.source_url)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="source-link"
+                  >查看登記來源 ↗</a
+                >
+                <details class="metadata-details"
+                  ><summary>檔案識別與授權資料</summary
+                  ><dl>
+                    <dt>模型檔案 SHA-256</dt><dd class="file-hash">{{ fileHash(model.sha256) }}</dd>
+                    <dt>授權名稱／標記</dt><dd>{{ model.license_name?.trim() || '未知' }}</dd>
+                    <dt>授權條款網址</dt
+                    ><dd
+                      ><a
+                        v-if="safeMetadataUrl(model.license_url)"
+                        :href="safeMetadataUrl(model.license_url)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="source-link"
+                        >查看登記條款 ↗</a
+                      ><span v-else>未知</span></dd
+                    >
+                    <dt>資料最後更新</dt><dd>{{ metadataTime(model.metadata_updated_at) }}</dd>
+                  </dl></details
+                >
+                <button
+                  type="button"
+                  class="secondary"
+                  @click="validationName = validationName === model.name ? '' : model.name"
+                  >{{ validationName === model.name ? '收合驗證紀錄' : '查看流程驗證紀錄' }}</button
+                >
+                <ModelValidation
+                  v-if="validationName === model.name && catalog"
+                  :engine-url="catalog.engine_url"
+                  :name="model.name"
+                  :refresh-key="validationModel?.metadata_updated_at || ''"
+                /> </template
+              ><div class="library-actions"
+                ><button class="secondary" :disabled="busy || editing !== null" @click="edit(model)"
+                  >編輯資料</button
+                ><button
+                  class="primary"
+                  :disabled="
+                    busy || !model.listed || editing !== null || catalog?.selected === model.name
+                  "
+                  @click="update(model)"
+                  >{{ catalog?.selected === model.name ? '✓ 偏好模型' : '設為偏好' }}</button
                 ></div
-              >
-            </form>
-            <template v-else>
-              <p class="model-notes">{{ model.notes || '尚未加入備註。' }}</p>
-              <a
-                v-if="safeMetadataUrl(model.source_url)"
-                :href="safeMetadataUrl(model.source_url)"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="source-link"
-                >查看登記來源 ↗</a
-              >
-              <details class="metadata-details"
-                ><summary>檔案識別與授權資料</summary
-                ><dl>
-                  <dt>模型檔案 SHA-256</dt><dd class="file-hash">{{ fileHash(model.sha256) }}</dd>
-                  <dt>授權名稱／標記</dt><dd>{{ model.license_name?.trim() || '未知' }}</dd>
-                  <dt>授權條款網址</dt
-                  ><dd
-                    ><a
-                      v-if="safeMetadataUrl(model.license_url)"
-                      :href="safeMetadataUrl(model.license_url)"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="source-link"
-                      >查看登記條款 ↗</a
-                    ><span v-else>未知</span></dd
-                  >
-                  <dt>資料最後更新</dt><dd>{{ metadataTime(model.metadata_updated_at) }}</dd>
-                </dl></details
-              >
-              <button
-                type="button"
-                class="secondary"
-                @click="validationName = validationName === model.name ? '' : model.name"
-                >{{ validationName === model.name ? '收合驗證紀錄' : '查看流程驗證紀錄' }}</button
-              >
-              <ModelValidation
-                v-if="validationName === model.name && catalog"
-                :engine-url="catalog.engine_url"
-                :name="model.name"
-                :refresh-key="validationModel?.metadata_updated_at || ''"
-              /> </template
-            ><div class="library-actions"
-              ><button class="secondary" :disabled="busy || editing !== null" @click="edit(model)"
-                >編輯資料</button
-              ><button
-                class="primary"
-                :disabled="
-                  busy || !model.listed || editing !== null || catalog?.selected === model.name
-                "
-                @click="update(model)"
-                >{{ catalog?.selected === model.name ? '✓ 偏好模型' : '設為偏好' }}</button
-              ></div
-            ></details
-          ><div class="model-footer"
+              ></details
+            ></div
+          ><div class="model-card-top model-entry-status"
+            ><span
+              class="status"
+              :class="{ connected: model.listed }"
+              title="清單登記狀態；實際生成仍需提交前預檢"
+              >{{ model.listed ? '可使用' : '最近清單未列出' }}</span
+            ></div
+          ><div class="model-footer model-entry-action"
             ><button
               class="secondary"
               :disabled="busy || !model.listed || editing !== null"
@@ -530,8 +538,10 @@ onMounted(() => load())
       id="models-panel-flux"
       role="tabpanel"
       aria-labelledby="models-tab-flux"
-      ><button class="secondary" @click="emit('create', 'flux')">前往 FLUX 創作</button
-      ><FluxComponentLibrary ref="fluxLibrary" :view="view" managed /><FluxPlan
+      ><FluxComponentLibrary ref="fluxLibrary" :view="view" managed />
+      <div class="model-category-actions"
+        ><button class="secondary" @click="emit('create', 'flux')">前往 FLUX 創作</button></div
+      ><FluxPlan
     /></section>
   </div>
 </template>

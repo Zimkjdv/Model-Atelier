@@ -195,141 +195,147 @@ defineExpose({ sync: () => load(true), syncDisabled, syncing: busy })
     >
     <p v-if="feedback" class="notice success" role="status">{{ feedback }}</p>
     <article v-if="!catalog && busy" class="panel" role="status">正在讀取 ControlNet…</article>
-    <article v-else-if="catalog && !catalog.controlnets.length" class="panel"
+    <article v-else-if="catalog && !catalog.controlnets.length" class="panel placeholder"
       ><h3>尚無 ControlNet 登記</h3
       ><p
         >將已有的 ControlNet 放入 ComfyUI 的 controlnet
         目錄或其額外路徑，啟動引擎後同步。平台不會自動下載模型。</p
       ></article
     >
-    <p v-else-if="catalog && !visible.length" class="notice"
-      >沒有符合篩選的 ControlNet。<button class="secondary" @click="clearFilters"
-        >清除 ControlNet 篩選</button
-      ></p
+    <article v-else-if="catalog && !visible.length" class="panel placeholder"
+      ><h3>沒有符合篩選的 ControlNet</h3
+      ><button class="secondary" @click="clearFilters">清除 ControlNet 篩選</button></article
     >
     <div
+      v-if="visible.length"
       class="control-grid model-collection"
       :class="view === 'cards' ? 'collection-cards' : 'collection-list'"
     >
-      <article v-for="item in visible" :key="item.name" class="panel control-card">
-        <div class="control-top"
-          ><span class="chip">CONTROLNET</span
-          ><span class="status" :class="{ connected: item.listed }">{{
-            item.listed ? '可使用' : '最近清單未列出'
-          }}</span></div
+      <article v-for="item in visible" :key="item.name" class="panel control-card model-entry">
+        <div class="model-entry-info"
+          ><h3>{{ item.name }}</h3
+          ><p class="footnote"
+            >{{ architectureLabel(item.architecture) }} · 控制類型：{{ item.kind }}</p
+          >
+          <details class="collection-details" :open="editing === item.name"
+            ><summary>來源、授權與檔案資訊</summary><p>版本：{{ item.version.trim() || '未知' }}</p
+            ><form v-if="editing === item.name" class="control-form" @submit.prevent="save">
+              <label
+                >控制類型<select v-model="kind"
+                  ><option value="unknown">未知</option
+                  ><option value="canny">Canny</option
+                  ><option value="depth">Depth（尚未接入）</option
+                  ><option value="pose">Pose（尚未接入）</option
+                  ><option value="other">其他</option></select
+                ></label
+              >
+              <label
+                >ControlNet 版本<input v-model="version" maxlength="100" placeholder="留空表示未知"
+              /></label>
+              <label
+                >ControlNet 基礎架構（使用者登記）<select v-model="architecture"
+                  ><option
+                    v-for="option in architectures"
+                    :key="option.value"
+                    :value="option.value"
+                    >{{ option.label }}</option
+                  ></select
+                ></label
+              >
+              <label
+                >ControlNet 來源網址<input
+                  v-model="source"
+                  type="url"
+                  maxlength="2048"
+                  placeholder="https://…"
+              /></label>
+              <label
+                >ControlNet 檔案大小（bytes）<input
+                  v-model="sizeBytes"
+                  inputmode="numeric"
+                  maxlength="16"
+                  placeholder="留空表示未知"
+              /></label>
+              <label
+                >ControlNet SHA256<input
+                  v-model="sha256"
+                  aria-describedby="control-hash-help"
+                  maxlength="64"
+                  autocomplete="off"
+                  spellcheck="false"
+              /></label>
+              <p id="control-hash-help" class="footnote"
+                >完整 64 位十六進位雜湊；登記不代表平台已驗證實際檔案。</p
+              >
+              <label>ControlNet 授權名稱<input v-model="licenseName" maxlength="200" /></label>
+              <label
+                >ControlNet 授權網址<input
+                  v-model="licenseUrl"
+                  type="url"
+                  maxlength="2048"
+                  placeholder="https://…"
+              /></label>
+              <label
+                >ControlNet 備註<textarea v-model="notes" rows="3" maxlength="4000"></textarea>
+              </label>
+              <div class="control-actions"
+                ><button class="primary" :disabled="busy">保存 ControlNet 資料</button
+                ><button type="button" class="secondary" :disabled="busy" @click="editing = null"
+                  >取消 ControlNet 編輯</button
+                ></div
+              >
+            </form>
+            <template v-else>
+              <p class="control-notes">{{ item.notes || '尚未加入備註。' }}</p>
+              <a
+                v-if="safeMetadataUrl(item.source_url)"
+                :href="safeMetadataUrl(item.source_url)"
+                target="_blank"
+                rel="noopener noreferrer"
+                >查看 ControlNet 登記來源 ↗</a
+              ><p v-else class="footnote">來源：未知</p>
+              <details
+                ><summary>ControlNet 檔案與授權資料</summary
+                ><dl>
+                  <dt>大小</dt><dd>{{ fileSize(item.size_bytes) }}</dd
+                  ><dt>SHA256</dt><dd>{{ fileHash(item.sha256) }}</dd> <dt>授權名稱</dt
+                  ><dd>{{ item.license_name?.trim() || '未知' }}</dd
+                  ><dt>授權條款</dt
+                  ><dd
+                    ><a
+                      v-if="safeMetadataUrl(item.license_url)"
+                      :href="safeMetadataUrl(item.license_url)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >查看 ControlNet 登記條款 ↗</a
+                    ><span v-else>未知</span></dd
+                  >
+                  <dt>登記更新時間</dt><dd>{{ metadataTime(item.metadata_updated_at) }}</dd>
+                </dl></details
+              >
+            </template></details
+          ></div
         >
-        <h3>{{ item.name }}</h3
-        ><p>版本：{{ item.version.trim() || '未知' }}</p
-        ><p class="footnote"
-          >控制類型：{{ item.kind }} · 登記基礎架構：{{ architectureLabel(item.architecture) }}</p
+        <div class="control-top model-entry-status"
+          ><span
+            class="status"
+            :class="{ connected: item.listed }"
+            title="清單登記狀態；實際控制流程仍需預檢"
+            >{{ item.listed ? '可使用' : '最近清單未列出' }}</span
+          ></div
         >
-        <details class="collection-details" :open="editing === item.name"
-          ><summary>資料與授權</summary
-          ><form v-if="editing === item.name" class="control-form" @submit.prevent="save">
-            <label
-              >控制類型<select v-model="kind"
-                ><option value="unknown">未知</option
-                ><option value="canny">Canny</option
-                ><option value="depth">Depth（尚未接入）</option
-                ><option value="pose">Pose（尚未接入）</option
-                ><option value="other">其他</option></select
-              ></label
-            >
-            <label
-              >ControlNet 版本<input v-model="version" maxlength="100" placeholder="留空表示未知"
-            /></label>
-            <label
-              >ControlNet 基礎架構（使用者登記）<select v-model="architecture"
-                ><option
-                  v-for="option in architectures"
-                  :key="option.value"
-                  :value="option.value"
-                  >{{ option.label }}</option
-                ></select
-              ></label
-            >
-            <label
-              >ControlNet 來源網址<input
-                v-model="source"
-                type="url"
-                maxlength="2048"
-                placeholder="https://…"
-            /></label>
-            <label
-              >ControlNet 檔案大小（bytes）<input
-                v-model="sizeBytes"
-                inputmode="numeric"
-                maxlength="16"
-                placeholder="留空表示未知"
-            /></label>
-            <label
-              >ControlNet SHA256<input
-                v-model="sha256"
-                aria-describedby="control-hash-help"
-                maxlength="64"
-                autocomplete="off"
-                spellcheck="false"
-            /></label>
-            <p id="control-hash-help" class="footnote"
-              >完整 64 位十六進位雜湊；登記不代表平台已驗證實際檔案。</p
-            >
-            <label>ControlNet 授權名稱<input v-model="licenseName" maxlength="200" /></label>
-            <label
-              >ControlNet 授權網址<input
-                v-model="licenseUrl"
-                type="url"
-                maxlength="2048"
-                placeholder="https://…"
-            /></label>
-            <label
-              >ControlNet 備註<textarea v-model="notes" rows="3" maxlength="4000"></textarea>
-            </label>
-            <div class="control-actions"
-              ><button class="primary" :disabled="busy">保存 ControlNet 資料</button
-              ><button type="button" class="secondary" :disabled="busy" @click="editing = null"
-                >取消 ControlNet 編輯</button
-              ></div
-            >
-          </form>
-          <template v-else>
-            <p class="control-notes">{{ item.notes || '尚未加入備註。' }}</p>
-            <a
-              v-if="safeMetadataUrl(item.source_url)"
-              :href="safeMetadataUrl(item.source_url)"
-              target="_blank"
-              rel="noopener noreferrer"
-              >查看 ControlNet 登記來源 ↗</a
-            ><p v-else class="footnote">來源：未知</p>
-            <details
-              ><summary>ControlNet 檔案與授權資料</summary
-              ><dl>
-                <dt>大小</dt><dd>{{ fileSize(item.size_bytes) }}</dd
-                ><dt>SHA256</dt><dd>{{ fileHash(item.sha256) }}</dd> <dt>授權名稱</dt
-                ><dd>{{ item.license_name?.trim() || '未知' }}</dd
-                ><dt>授權條款</dt
-                ><dd
-                  ><a
-                    v-if="safeMetadataUrl(item.license_url)"
-                    :href="safeMetadataUrl(item.license_url)"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >查看 ControlNet 登記條款 ↗</a
-                  ><span v-else>未知</span></dd
-                >
-                <dt>登記更新時間</dt><dd>{{ metadataTime(item.metadata_updated_at) }}</dd>
-              </dl></details
-            >
-            <button
-              type="button"
-              class="secondary"
-              :disabled="busy || editing !== null"
-              @click="edit(item)"
-              >編輯 ControlNet 資料</button
-            >
-          </template></details
+        <div class="model-entry-action"
+          ><button
+            type="button"
+            class="secondary"
+            :disabled="busy || editing !== null"
+            @click="edit(item)"
+            >編輯 ControlNet 資料</button
+          ></div
         >
       </article>
     </div>
+    <p class="footnote">同步只會讀取清單，不會下載模型檔。結構控制仍需相容模型與預處理器。</p>
     <details class="panel library-management"
       ><summary>搜尋與引擎來源</summary>
       <p class="footnote"

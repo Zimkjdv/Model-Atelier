@@ -117,13 +117,7 @@ for (const [width, height] of dimensions) {
             ? panel.locator('.model-grid')
             : panel.locator('.model-collection').first()
         await expect(collection.locator(':scope > article').first()).toBeVisible()
-        const beforeNames = await panel
-          .locator(
-            category === 'Checkpoint'
-              ? '.model-card h2'
-              : '.model-collection > article > h3, .model-collection > article > strong, .model-collection .collection-top h3',
-          )
-          .allTextContents()
+        const beforeNames = await panel.locator('.model-entry-info > :is(h2, h3)').allTextContents()
         const sync = page.getByRole('button', {
           name: '同步' + category + '清單',
           exact: true,
@@ -143,11 +137,49 @@ for (const [width, height] of dimensions) {
         const syncResponse = await synced
         expect(syncResponse.ok(), await syncResponse.text()).toBe(true)
         expect(beforeNames.length).toBeGreaterThan(0)
+        // Reload the saved inventory before geometric comparison; transient sync feedback
+        // deliberately occupies space and must remain available to the user.
+        await page.reload()
+        await page.getByRole('tab', { name: category, exact: true }).click()
+        await expect(collection.locator(':scope > article').first()).toBeVisible()
         for (const layout of ['清單', '卡片']) {
           await page.getByRole('button', { name: layout, exact: true }).click()
           await ref.locator('[data-model-view="' + layout + '"]').click()
           const baseline = ref.locator(layout === '清單' ? '.model-list' : '.model-cards')
-          const measured = await aligned(collection, baseline)
+          const measured = await aligned(collection, baseline, ['x', 'y', 'width'])
+          const entry = collection.locator(':scope > article').first()
+          const referenceEntry = baseline.locator(':scope > article').first()
+          // The row contents must follow the reference, not only its outer width.
+          await expect(entry.locator(':scope > .model-entry-info > details')).toHaveCount(1)
+          await expect(entry.locator(':scope > .model-entry-status > .status')).toBeVisible()
+          await expect(entry.locator(':scope > .model-entry-action > button')).toBeVisible()
+          const appearance = (locator: Locator) =>
+            locator.evaluate((element) => {
+              const s = getComputedStyle(element)
+              return { font: s.fontSize, weight: s.fontWeight, color: s.color, margin: s.marginTop }
+            })
+          expect(await appearance(entry.locator('.model-entry-info > :is(h2, h3)'))).toEqual(
+            await appearance(referenceEntry.locator('.model-info > strong')),
+          )
+          expect(await appearance(entry.locator('.model-entry-info > details > summary'))).toEqual(
+            await appearance(referenceEntry.locator('.model-metadata > summary')),
+          )
+          expect(await style(entry.locator('.status'))).toEqual(
+            await style(referenceEntry.locator('.model-status')),
+          )
+          expect(await style(entry.locator('.model-entry-action > button'))).toEqual(
+            await style(referenceEntry.locator('.model-entry-action > button')),
+          )
+          expect(await appearance(page.getByRole('tab', { name: category, exact: true }))).toEqual(
+            await appearance(ref.locator('[data-modeltype="' + category + '"]')),
+          )
+          if (layout === '清單') {
+            const top = await geometry(entry.locator('.model-entry-status'))
+            const action = await geometry(entry.locator('.model-entry-action'))
+            expect(
+              Math.abs(top.y + top.height / 2 - action.y - action.height / 2),
+            ).toBeLessThanOrEqual(1)
+          }
           if (layout === '卡片') {
             expect(
               await collection.evaluate(
@@ -177,15 +209,9 @@ for (const [width, height] of dimensions) {
             fullPage: true,
           })
         }
-        expect(
-          await panel
-            .locator(
-              category === 'Checkpoint'
-                ? '.model-card h2'
-                : '.model-collection > article > h3, .model-collection > article > strong, .model-collection .collection-top h3',
-            )
-            .allTextContents(),
-        ).toEqual(beforeNames)
+        expect(await panel.locator('.model-entry-info > :is(h2, h3)').allTextContents()).toEqual(
+          beforeNames,
+        )
         const edit = {
           Checkpoint: ['編輯資料', '模型版本', '取消', '.model-details > summary'],
           LoRA: ['編輯 LoRA 資料', 'LoRA 版本', '取消 LoRA 編輯', '.collection-details > summary'],

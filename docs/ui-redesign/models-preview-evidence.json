@@ -1,0 +1,710 @@
+{
+  "date": "2026-10-29",
+  "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+  "matrices": [
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "rows": [
+        {
+          "category": "Checkpoint",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 209.21875
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 482.0625
+            }
+          }
+        },
+        {
+          "category": "Checkpoint",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 283.40625
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 283.765625
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 145.625
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 217.8125
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 250.25
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 217.8125
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 250.25
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 250.25
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 217.8125
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "清單",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 459.5
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 459.5
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "卡片",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 451.625
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1144,
+              "height": 452.34375
+            }
+          }
+        }
+      ]
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "rows": [
+        {
+          "category": "Checkpoint",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 177.421875
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 450.265625
+            }
+          }
+        },
+        {
+          "category": "Checkpoint",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 283.40625
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 283.765625
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 145.625
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 217.8125
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 250.25
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 217.8125
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 250.25
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 250.25
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 217.8125
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "清單",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 459.5
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 459.5
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "卡片",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 451.625
+            },
+            "preview": {
+              "x": 104,
+              "y": 211.5,
+              "width": 1304,
+              "height": 452.34375
+            }
+          }
+        }
+      ]
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "rows": [
+        {
+          "category": "Checkpoint",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 177.421875
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 450.265625
+            }
+          }
+        },
+        {
+          "category": "Checkpoint",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 283.40625
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 283.765625
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "清單",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 145.625
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "LoRA",
+          "layout": "卡片",
+          "count": 1,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 217.8125
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 250.25
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 354.875
+            }
+          }
+        },
+        {
+          "category": "結構控制",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 217.8125
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "清單",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 250.25
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 250.25
+            }
+          }
+        },
+        {
+          "category": "元件",
+          "layout": "卡片",
+          "count": 2,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 217.8125
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 218.171875
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "清單",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 459.5
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 459.5
+            }
+          }
+        },
+        {
+          "category": "FLUX 元件",
+          "layout": "卡片",
+          "count": 4,
+          "geometry": {
+            "actual": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 451.625
+            },
+            "preview": {
+              "x": 278,
+              "y": 211.5,
+              "width": 1436,
+              "height": 452.34375
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "capture": {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "identities": [
+      {
+        "category": "Checkpoint",
+        "names": [
+          "demo.safetensors"
+        ]
+      },
+      {
+        "category": "LoRA",
+        "names": [
+          "flux-schnell-pvc-style.safetensors"
+        ]
+      },
+      {
+        "category": "結構控制",
+        "names": [
+          "depth.safetensors",
+          "pose.safetensors"
+        ]
+      },
+      {
+        "category": "元件",
+        "names": [
+          "vision.safetensors",
+          "plus.safetensors"
+        ]
+      },
+      {
+        "category": "FLUX 元件",
+        "names": [
+          "flux1-schnell.safetensors",
+          "clip_l.safetensors",
+          "t5xxl_fp8_e4m3fn_scaled.safetensors",
+          "ae.safetensors"
+        ]
+      }
+    ],
+    "screenshots": [
+      {
+        "category": "Checkpoint",
+        "layout": "清單",
+        "platform": "models-platform-checkpoint-list.png",
+        "reference": "models-reference-checkpoint-list.png"
+      },
+      {
+        "category": "Checkpoint",
+        "layout": "卡片",
+        "platform": "models-platform-checkpoint-cards.png",
+        "reference": "models-reference-checkpoint-cards.png"
+      },
+      {
+        "category": "LoRA",
+        "layout": "清單",
+        "platform": "models-platform-lora-list.png",
+        "reference": "models-reference-lora-list.png"
+      },
+      {
+        "category": "LoRA",
+        "layout": "卡片",
+        "platform": "models-platform-lora-cards.png",
+        "reference": "models-reference-lora-cards.png"
+      },
+      {
+        "category": "結構控制",
+        "layout": "清單",
+        "platform": "models-platform-control-list.png",
+        "reference": "models-reference-control-list.png"
+      },
+      {
+        "category": "結構控制",
+        "layout": "卡片",
+        "platform": "models-platform-control-cards.png",
+        "reference": "models-reference-control-cards.png"
+      },
+      {
+        "category": "元件",
+        "layout": "清單",
+        "platform": "models-platform-reference-list.png",
+        "reference": "models-reference-reference-list.png"
+      },
+      {
+        "category": "元件",
+        "layout": "卡片",
+        "platform": "models-platform-reference-cards.png",
+        "reference": "models-reference-reference-cards.png"
+      },
+      {
+        "category": "FLUX 元件",
+        "layout": "清單",
+        "platform": "models-platform-flux-list.png",
+        "reference": "models-reference-flux-list.png"
+      },
+      {
+        "category": "FLUX 元件",
+        "layout": "卡片",
+        "platform": "models-platform-flux-cards.png",
+        "reference": "models-reference-flux-cards.png"
+      }
+    ],
+    "api_writes": 0,
+    "automatic_prompts": 0
+  }
+}

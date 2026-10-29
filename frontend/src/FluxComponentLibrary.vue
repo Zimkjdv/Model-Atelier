@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { fluxRoles, type FluxCatalog, type FluxComponent } from './fluxSettings'
-import { fileSize, safeMetadataUrl, parseFileSize, architectures } from './modelMetadata'
+import {
+  fileSize,
+  fileHash,
+  metadataTime,
+  safeMetadataUrl,
+  parseFileSize,
+  architectures,
+  architectureLabel,
+} from './modelMetadata'
 const props = defineProps<{ view?: string; managed?: boolean }>()
 const catalog = ref<FluxCatalog | null>(null),
   busy = ref(false),
@@ -34,12 +42,20 @@ async function api(path: string, options?: RequestInit) {
   return value
 }
 const entries = computed(() =>
-  groups.map((group) => ({
-    ...group,
-    items: (catalog.value?.groups[group.key] || []).filter((item) =>
+  groups
+    .flatMap((group) =>
+      (catalog.value?.groups[group.key] || []).map((item) => ({
+        category: group.key,
+        role: group.label,
+        item,
+      })),
+    )
+    .filter(({ item }) =>
       (item.name + item.version + item.notes).toLowerCase().includes(search.value.toLowerCase()),
     ),
-  })),
+)
+const total = computed(() =>
+  groups.reduce((count, group) => count + (catalog.value?.groups[group.key]?.length || 0), 0),
 )
 async function load(sync = false) {
   if (busy.value || editing.value) return
@@ -162,31 +178,69 @@ defineExpose({ sync: () => load(true), syncDisabled, syncing: busy })
         ></fieldset
       ></form
     >
-    <template v-for="group in entries" :key="group.key"
-      ><h3>{{ group.label }}</h3
-      ><p v-if="!group.items.length" class="footnote">目前沒有符合的元件；請安裝後同步。</p
-      ><div
-        class="model-collection"
-        :class="props.view === 'cards' ? 'collection-cards' : 'collection-list'"
-        ><article v-for="item in group.items" :key="item.name" class="component-row panel"
-          ><strong>{{ item.name }}</strong
-          ><p
-            >版本 {{ item.version || '未知' }} · {{ item.listed ? '可使用' : '最近同步未列出' }} ·
-            {{ fileSize(item.size_bytes) }}</p
-          ><p v-if="safeMetadataUrl(item.source_url)"
-            ><a :href="safeMetadataUrl(item.source_url)!" target="_blank" rel="noopener"
-              >登記來源 ↗</a
-            ></p
-          ><p v-if="item.notes">{{ item.notes }}</p
+    <article v-if="!catalog && busy" class="panel placeholder" role="status"
+      ><h3>正在讀取 FLUX 元件…</h3></article
+    >
+    <article v-else-if="catalog && !total" class="panel placeholder"
+      ><h3>尚未同步 FLUX 元件清單</h3
+      ><p>先準備引擎與既有元件，再同步清單。平台不會自動下載模型檔。</p></article
+    >
+    <article v-else-if="catalog && !entries.length" class="panel placeholder"
+      ><h3>沒有符合的 FLUX 元件</h3
+      ><button class="secondary" @click="search = ''">清除 FLUX 篩選</button></article
+    >
+    <div
+      v-if="entries.length"
+      class="model-collection"
+      :class="props.view === 'cards' ? 'collection-cards' : 'collection-list'"
+      ><article
+        v-for="{ category, role, item } in entries"
+        :key="category + ':' + item.name"
+        class="component-row panel model-entry"
+        ><div class="model-entry-info"
+          ><h3>{{ item.name }}</h3
+          ><p>{{ architectureLabel(item.architecture) }} · {{ role }}</p>
+          <details class="collection-details"
+            ><summary>來源、授權與檔案資訊</summary
+            ><dl
+              ><dt>版本</dt><dd>{{ item.version || '未知' }}</dd
+              ><dt>大小</dt><dd>{{ fileSize(item.size_bytes) }}</dd
+              ><dt>SHA256</dt><dd>{{ fileHash(item.sha256) }}</dd
+              ><dt>授權</dt
+              ><dd
+                >{{ item.license_name || '未知' }}
+                <a
+                  v-if="safeMetadataUrl(item.license_url)"
+                  :href="safeMetadataUrl(item.license_url)!"
+                  target="_blank"
+                  rel="noopener"
+                  >查看條款</a
+                ></dd
+              ><dt>更新時間</dt><dd>{{ metadataTime(item.metadata_updated_at) }}</dd></dl
+            >
+            <p v-if="safeMetadataUrl(item.source_url)"
+              ><a :href="safeMetadataUrl(item.source_url)!" target="_blank" rel="noopener"
+                >登記來源 ↗</a
+              ></p
+            ><p v-else>來源：未知</p><p v-if="item.notes">{{ item.notes }}</p></details
+          ></div
+        ><div class="model-entry-status"
+          ><span
+            class="status"
+            :class="{ connected: item.listed }"
+            title="元件清單登記狀態；不代表四元件配置已驗證"
+            >{{ item.listed ? '可使用' : '最近清單未列出' }}</span
+          ></div
+        ><div class="model-entry-action"
           ><button
             class="secondary"
             :disabled="busy || !!editing"
             :aria-label="'編輯 FLUX 元件：' + item.name"
-            @click="edit(group.key, item)"
-            >登記版本與來源</button
-          ></article
-        ></div
-      ></template
+            @click="edit(category, item)"
+            >編輯 FLUX 元件</button
+          ></div
+        ></article
+      ></div
     >
     <p class="footnote"
       >四個生成角色：{{

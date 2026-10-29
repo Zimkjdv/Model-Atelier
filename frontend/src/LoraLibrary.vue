@@ -316,165 +316,172 @@ defineExpose({ sync: () => load(true), syncDisabled, syncing: busy })
     >
     <p v-if="feedback" class="notice success" role="status">{{ feedback }}</p>
     <article v-if="!catalog && busy" class="panel" role="status">正在讀取 LoRA…</article>
-    <article v-else-if="catalog && !catalog.loras.length" class="panel"
+    <article v-else-if="catalog && !catalog.loras.length" class="panel placeholder"
       ><h3>尚無 LoRA 登記</h3
       ><p
         >將已有的 LoRA 放入 ComfyUI 的 loras
         目錄或其額外路徑，啟動引擎後同步。平台不會自動下載模型。</p
       ></article
     >
-    <p v-else-if="catalog && !visible.length" class="notice"
-      >沒有符合篩選的 LoRA。<button class="secondary" @click="clearFilters"
-        >清除 LoRA 篩選</button
-      ></p
+    <article v-else-if="catalog && !visible.length" class="panel placeholder"
+      ><h3>沒有符合篩選的 LoRA</h3
+      ><button class="secondary" @click="clearFilters">清除 LoRA 篩選</button></article
     >
     <div
+      v-if="visible.length"
       class="lora-grid model-collection"
       :class="view === 'cards' ? 'collection-cards' : 'collection-list'"
     >
-      <article v-for="item in visible" :key="item.name" class="panel lora-card">
-        <div class="lora-top"
-          ><span class="chip">LORA</span
-          ><span class="status" :class="{ connected: item.listed }">{{
-            item.listed ? '可使用' : '最近清單未列出'
-          }}</span></div
-        >
-        <h3>{{ item.name }}</h3
-        ><p>版本：{{ item.version.trim() || '未知' }}</p
-        ><p class="footnote">登記基礎架構：{{ architectureLabel(item.architecture) }}</p>
-        <details
-          class="collection-details"
-          :open="editing === item.name || evidenceName === item.name"
-          ><summary>資料、授權與相容性</summary
-          ><template v-if="compared.get(item.name)">
-            <p class="compatibility-label" :class="compared.get(item.name)!.status">{{
-              compared.get(item.name)!.label
+      <article v-for="item in visible" :key="item.name" class="panel lora-card model-entry">
+        <div class="model-entry-info"
+          ><h3>{{ item.name }}</h3
+          ><p class="footnote">{{ architectureLabel(item.architecture) }} · LoRA</p>
+          <details
+            class="collection-details"
+            :open="editing === item.name || evidenceName === item.name"
+            ><summary>來源、授權與檔案資訊</summary><p>版本：{{ item.version.trim() || '未知' }}</p
+            ><template v-if="compared.get(item.name)">
+              <p class="compatibility-label" :class="compared.get(item.name)!.status">{{
+                compared.get(item.name)!.label
+              }}</p>
+              <details class="compatibility-reason"
+                ><summary>相容性判定說明</summary
+                ><p class="footnote">{{ compared.get(item.name)!.message }}</p></details
+              >
+            </template>
+            <p v-else class="footnote">{{
+              assessing
+                ? '正在比較架構…'
+                : checkpointChoice
+                  ? '相容性尚未取得'
+                  : '尚未選擇比較用 checkpoint'
             }}</p>
-            <details class="compatibility-reason"
-              ><summary>相容性判定說明</summary
-              ><p class="footnote">{{ compared.get(item.name)!.message }}</p></details
-            >
-          </template>
-          <p v-else class="footnote">{{
-            assessing
-              ? '正在比較架構…'
-              : checkpointChoice
-                ? '相容性尚未取得'
-                : '尚未選擇比較用 checkpoint'
-          }}</p>
-          <form v-if="editing === item.name" class="lora-form" @submit.prevent="save">
-            <label
-              >LoRA 版本<input v-model="version" maxlength="100" placeholder="留空表示未知"
-            /></label>
-            <label
-              >LoRA 基礎架構（使用者登記）<select v-model="architecture"
-                ><option
-                  v-for="option in architectures"
-                  :key="option.value"
-                  :value="option.value"
-                  >{{ option.label }}</option
-                ></select
-              ></label
-            >
-            <label
-              >LoRA 來源網址<input
-                v-model="source"
-                type="url"
-                maxlength="2048"
-                placeholder="https://…"
-            /></label>
-            <label
-              >LoRA 檔案大小（bytes）<input
-                v-model="sizeBytes"
-                inputmode="numeric"
-                maxlength="16"
-                placeholder="留空表示未知"
-            /></label>
-            <label
-              >LoRA SHA256<input
-                v-model="sha256"
-                aria-describedby="lora-hash-help"
-                maxlength="64"
-                autocomplete="off"
-                spellcheck="false"
-            /></label>
-            <p id="lora-hash-help" class="footnote"
-              >完整 64 位十六進位雜湊；登記不代表平台已驗證實際檔案。</p
-            >
-            <label>LoRA 授權名稱<input v-model="licenseName" maxlength="200" /></label>
-            <label
-              >LoRA 授權網址<input
-                v-model="licenseUrl"
-                type="url"
-                maxlength="2048"
-                placeholder="https://…"
-            /></label>
-            <label>LoRA 備註<textarea v-model="notes" rows="3" maxlength="4000"></textarea></label>
-            <div class="lora-actions"
-              ><button class="primary" :disabled="busy">保存 LoRA 資料</button
-              ><button type="button" class="secondary" :disabled="busy" @click="editing = null"
-                >取消 LoRA 編輯</button
-              ></div
-            >
-          </form>
-          <template v-else>
-            <p class="lora-notes">{{ item.notes || '尚未加入備註。' }}</p>
-            <a
-              v-if="safeMetadataUrl(item.source_url)"
-              :href="safeMetadataUrl(item.source_url)"
-              target="_blank"
-              rel="noopener noreferrer"
-              >查看 LoRA 登記來源 ↗</a
-            ><p v-else class="footnote">來源：未知</p>
-            <details
-              ><summary>LoRA 檔案與授權資料</summary
-              ><dl>
-                <dt>大小</dt><dd>{{ fileSize(item.size_bytes) }}</dd
-                ><dt>SHA256</dt><dd>{{ fileHash(item.sha256) }}</dd> <dt>授權名稱</dt
-                ><dd>{{ item.license_name?.trim() || '未知' }}</dd
-                ><dt>授權條款</dt
-                ><dd
-                  ><a
-                    v-if="safeMetadataUrl(item.license_url)"
-                    :href="safeMetadataUrl(item.license_url)"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >查看 LoRA 登記條款 ↗</a
-                  ><span v-else>未知</span></dd
-                >
-                <dt>登記更新時間</dt><dd>{{ metadataTime(item.metadata_updated_at) }}</dd>
-              </dl></details
-            >
-            <button
-              type="button"
-              class="secondary"
-              :disabled="busy || editing !== null"
-              @click="edit(item)"
-              >編輯 LoRA 資料</button
-            >
-            <button
-              type="button"
-              class="secondary"
-              :disabled="!checkpointChoice || busy"
-              @click="evidenceName = evidenceName === item.name ? '' : item.name"
-              >{{ evidenceName === item.name ? '收合組合實測' : '查看組合實測' }}</button
-            >
-            <LoraValidation
-              v-if="evidenceName === item.name && checkpointChoice"
-              :engine-url="engineUrl"
-              :checkpoint="checkpointChoice"
-              :lora="{ name: item.name, enabled: true, strength_model: 1, strength_clip: 1 }"
-              :refresh-key="
-                JSON.stringify([
-                  item.metadata_updated_at,
-                  checkpoints.find((v) => v.name === checkpointChoice)?.metadata_updated_at,
-                  catalog?.synced_at,
-                ])
-              "
-            /> </template
-        ></details>
+            <form v-if="editing === item.name" class="lora-form" @submit.prevent="save">
+              <label
+                >LoRA 版本<input v-model="version" maxlength="100" placeholder="留空表示未知"
+              /></label>
+              <label
+                >LoRA 基礎架構（使用者登記）<select v-model="architecture"
+                  ><option
+                    v-for="option in architectures"
+                    :key="option.value"
+                    :value="option.value"
+                    >{{ option.label }}</option
+                  ></select
+                ></label
+              >
+              <label
+                >LoRA 來源網址<input
+                  v-model="source"
+                  type="url"
+                  maxlength="2048"
+                  placeholder="https://…"
+              /></label>
+              <label
+                >LoRA 檔案大小（bytes）<input
+                  v-model="sizeBytes"
+                  inputmode="numeric"
+                  maxlength="16"
+                  placeholder="留空表示未知"
+              /></label>
+              <label
+                >LoRA SHA256<input
+                  v-model="sha256"
+                  aria-describedby="lora-hash-help"
+                  maxlength="64"
+                  autocomplete="off"
+                  spellcheck="false"
+              /></label>
+              <p id="lora-hash-help" class="footnote"
+                >完整 64 位十六進位雜湊；登記不代表平台已驗證實際檔案。</p
+              >
+              <label>LoRA 授權名稱<input v-model="licenseName" maxlength="200" /></label>
+              <label
+                >LoRA 授權網址<input
+                  v-model="licenseUrl"
+                  type="url"
+                  maxlength="2048"
+                  placeholder="https://…"
+              /></label>
+              <label
+                >LoRA 備註<textarea v-model="notes" rows="3" maxlength="4000"></textarea>
+              </label>
+              <div class="lora-actions"
+                ><button class="primary" :disabled="busy">保存 LoRA 資料</button
+                ><button type="button" class="secondary" :disabled="busy" @click="editing = null"
+                  >取消 LoRA 編輯</button
+                ></div
+              >
+            </form>
+            <template v-else>
+              <p class="lora-notes">{{ item.notes || '尚未加入備註。' }}</p>
+              <a
+                v-if="safeMetadataUrl(item.source_url)"
+                :href="safeMetadataUrl(item.source_url)"
+                target="_blank"
+                rel="noopener noreferrer"
+                >查看 LoRA 登記來源 ↗</a
+              ><p v-else class="footnote">來源：未知</p>
+              <details
+                ><summary>LoRA 檔案與授權資料</summary
+                ><dl>
+                  <dt>大小</dt><dd>{{ fileSize(item.size_bytes) }}</dd
+                  ><dt>SHA256</dt><dd>{{ fileHash(item.sha256) }}</dd> <dt>授權名稱</dt
+                  ><dd>{{ item.license_name?.trim() || '未知' }}</dd
+                  ><dt>授權條款</dt
+                  ><dd
+                    ><a
+                      v-if="safeMetadataUrl(item.license_url)"
+                      :href="safeMetadataUrl(item.license_url)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >查看 LoRA 登記條款 ↗</a
+                    ><span v-else>未知</span></dd
+                  >
+                  <dt>登記更新時間</dt><dd>{{ metadataTime(item.metadata_updated_at) }}</dd>
+                </dl></details
+              >
+              <button
+                type="button"
+                class="secondary"
+                :disabled="!checkpointChoice || busy"
+                @click="evidenceName = evidenceName === item.name ? '' : item.name"
+                >{{ evidenceName === item.name ? '收合組合實測' : '查看組合實測' }}</button
+              >
+              <LoraValidation
+                v-if="evidenceName === item.name && checkpointChoice"
+                :engine-url="engineUrl"
+                :checkpoint="checkpointChoice"
+                :lora="{ name: item.name, enabled: true, strength_model: 1, strength_clip: 1 }"
+                :refresh-key="
+                  JSON.stringify([
+                    item.metadata_updated_at,
+                    checkpoints.find((v) => v.name === checkpointChoice)?.metadata_updated_at,
+                    catalog?.synced_at,
+                  ])
+                "
+              /> </template></details
+        ></div>
+        <div class="lora-top model-entry-status"
+          ><span
+            class="status"
+            :class="{ connected: item.listed }"
+            title="清單登記狀態；實際組合仍需流程預檢"
+            >{{ item.listed ? '可使用' : '最近清單未列出' }}</span
+          ></div
+        >
+        <div class="model-entry-action"
+          ><button
+            type="button"
+            class="secondary"
+            :disabled="busy || editing !== null"
+            @click="edit(item)"
+            >編輯 LoRA 資料</button
+          ></div
+        >
       </article>
     </div>
+    <p class="footnote">同步只會讀取清單，不會下載模型檔。實際 LoRA 組合仍需流程預檢。</p>
     <details class="panel library-management"
       ><summary>搜尋、架構比較與引擎來源</summary>
       <p class="footnote"

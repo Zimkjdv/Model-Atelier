@@ -2,6 +2,165 @@ import { test, expect, type Page, type Locator } from '@playwright/test'
 import { randomUUID } from 'node:crypto'
 import AxeBuilder from '@axe-core/playwright'
 
+test('model categories retain empty, search, stale and failed-edit states in both layouts', async ({
+  page,
+  request,
+  context,
+}) => {
+  const paths = [
+    '/api/models',
+    '/api/loras',
+    '/api/controlnets',
+    '/api/reference-components',
+    '/api/flux/components',
+  ]
+  const original = await Promise.all(paths.map(async (path) => (await request.get(path)).json()))
+  const engine = original[0].engine_url
+  const record = {
+    name: 'alignment-check.safetensors',
+    listed: true,
+    architecture: 'sdxl',
+    version: 'fixture-v1',
+    notes: '',
+    source_url: '',
+    kind: 'canny',
+    sha256: 'a'.repeat(64),
+  }
+  const held = { ...record, name: 'history-only.safetensors', listed: false }
+  let state: 'empty' | 'populated' | 'stale' = 'empty'
+  let failedWrites = 0
+  await page.route('**/api/**', async (route) => {
+    const path = new URL(route.request().url()).pathname
+    const index = paths.findIndex(
+      (base) =>
+        path === base ||
+        path === base + '/sync' ||
+        path === base + '/metadata' ||
+        path === base + '/selection',
+    )
+    if (index < 0) return route.continue()
+    if (route.request().method() !== 'GET') {
+      failedWrites++
+      return route.fulfill({
+        status: 503,
+        json: { detail: 'alignment fixture offline; edits retained' },
+      })
+    }
+    const items = state === 'empty' ? [] : [record, held]
+    const common = {
+      engine_url: engine,
+      synced_at: null,
+      sync_error: state === 'stale' ? 'fixture 引擎離線；保留歷史紀錄' : null,
+    }
+    const result = [
+      { ...common, models: items, selected: null },
+      { ...common, loras: items },
+      { ...common, controlnets: items },
+      {
+        ...common,
+        components: items.map((item) => ({
+          ...item,
+          role: 'ipadapter',
+          family: 'sdxl-plus-vit-h',
+        })),
+      },
+      { ...common, groups: { diffusion_models: items, text_encoders: [], vae: [] } },
+    ][index]
+    await route.fulfill({ json: result })
+  })
+  const categories = ['Checkpoint', 'LoRA', '結構控制', '元件', 'FLUX 元件']
+  const panel = page.getByRole('tabpanel').filter({ visible: true })
+  const ref = await context.newPage()
+  await ref.goto(preview + '#models')
+  await ref.locator('#scenario').selectOption('empty')
+  const emptyStyle = (locator: Locator) =>
+    locator.evaluate((element) => {
+      const s = getComputedStyle(element)
+      return {
+        background: s.backgroundColor,
+        border: s.borderColor,
+        style: s.borderStyle,
+        padding: s.padding,
+        radius: s.borderRadius,
+      }
+    })
+  await page.goto('/#/models')
+  for (const category of categories) {
+    await page.getByRole('tab', { name: category, exact: true }).click()
+    await ref.locator('[data-modeltype="' + category + '"]').click()
+    for (const layout of ['清單', '卡片']) {
+      await page.getByRole('button', { name: layout, exact: true }).click()
+      await expect(panel.locator('.model-entry')).toHaveCount(0)
+      await expect(panel.locator('.placeholder')).toBeVisible()
+      expect(await emptyStyle(panel.locator('.placeholder'))).toEqual(
+        await emptyStyle(ref.locator('.empty')),
+      )
+      await expect(panel.locator('.model-grid, .model-collection')).toHaveCount(0)
+    }
+  }
+  await ref.close()
+  state = 'populated'
+  await page.reload()
+  const filters = [
+    ['搜尋模型', '清除篩選'],
+    ['搜尋 LoRA', '清除 LoRA 篩選'],
+    ['搜尋 ControlNet', '清除 ControlNet 篩選'],
+    [],
+    ['搜尋 FLUX 元件', '清除 FLUX 篩選'],
+  ]
+  for (let i = 0; i < categories.length; i++) {
+    await page.getByRole('tab', { name: categories[i], exact: true }).click()
+    await expect(panel.locator('.model-entry')).toHaveCount(2)
+    await expect(panel.locator('.model-entry-status').last()).toHaveText('最近清單未列出')
+    if (i === 0)
+      await expect(
+        panel.locator('.model-entry').last().getByRole('button', { name: '套用到創作' }),
+      ).toBeDisabled()
+    const input = filters[i][0]
+    if (input) {
+      await panel.locator('.library-management > summary').click()
+      await panel.getByLabel(input, { exact: true }).fill('no matching model')
+      for (const layout of ['清單', '卡片']) {
+        await page.getByRole('button', { name: layout, exact: true }).click()
+        await expect(panel.locator('.model-entry')).toHaveCount(0)
+        await expect(panel.locator('.model-grid, .model-collection')).toHaveCount(0)
+      }
+      await panel.getByRole('button', { name: filters[i][1], exact: true }).click()
+      await expect(panel.locator('.model-entry')).toHaveCount(2)
+    }
+    const accessibility = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze()
+    expect(accessibility.violations, categories[i]).toEqual([])
+  }
+  await panel
+    .getByRole('button', { name: '編輯 FLUX 元件：alignment-check.safetensors', exact: true })
+    .click()
+  await panel.getByLabel('元件版本', { exact: true }).fill('keep failed edit')
+  await panel.getByRole('button', { name: '保存元件資料', exact: true }).click()
+  await expect(panel.getByRole('alert')).toContainText('alignment fixture offline')
+  await expect(panel.getByLabel('元件版本', { exact: true })).toHaveValue('keep failed edit')
+  await expect(page.getByRole('button', { name: '同步FLUX 元件清單', exact: true })).toBeDisabled()
+  await page.getByRole('tab', { name: 'LoRA', exact: true }).click()
+  await page.getByRole('tab', { name: 'FLUX 元件', exact: true }).click()
+  await expect(panel.getByLabel('元件版本', { exact: true })).toHaveValue('keep failed edit')
+  await panel.getByRole('button', { name: '取消元件編輯', exact: true }).click()
+  state = 'stale'
+  await page.reload()
+  for (const category of categories) {
+    await page.getByRole('tab', { name: category, exact: true }).click()
+    await expect(panel.locator('.model-entry')).toHaveCount(2)
+    await expect(
+      page.getByRole('alert').filter({ hasText: 'fixture 引擎離線' }).first(),
+    ).toBeVisible()
+  }
+  expect(failedWrites).toBe(1)
+  // Browser-only fixture responses must not alter the actual isolated catalogs.
+  expect(await Promise.all(paths.map(async (path) => (await request.get(path)).json()))).toEqual(
+    original,
+  )
+})
+
 test('training empty stages keep extra controls and explicit experiment navigation', async ({
   page,
 }) => {

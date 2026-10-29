@@ -75,7 +75,7 @@ for (const width of [1440, 1280]) test(`${width}px: first connection, model, exp
     await page.getByRole('button', { name: '模型庫', exact: true }).click()
     await page.getByRole('button', { name: '↻ 同步模型清單', exact: true }).click()
     await expect(page.getByText('清單已同步。模型尚未載入 GPU。', { exact: true })).toBeVisible()
-    await page.getByText('模型資料、授權與驗證紀錄', { exact: true }).click()
+    await page.locator('.model-card').first().getByText('來源、授權與檔案資訊', { exact: true }).click()
     await page.getByRole('button', { name: '設為偏好', exact: true }).click()
     await expect(page.getByRole('button', { name: '✓ 偏好模型', exact: true })).toBeDisabled()
     await page.getByRole('button', { name: '創作工作台', exact: true }).click()
