@@ -404,41 +404,72 @@ onMounted(() => {
     <template v-if="selected">
       <div class="asset-detail-heading"
         ><h2 id="asset-detail-title">{{ selected.title }}</h2
-        ><button class="secondary" :disabled="mutating" autofocus @click="closeAsset"
-          >關閉</button
+        ><div class="asset-detail-tools"
+          ><button
+            class="secondary"
+            :disabled="busy || editing !== null"
+            @click="update(selected, !selected.archived)"
+            >{{ selected.archived ? '還原素材' : '封存素材' }}</button
+          ><button class="secondary" :disabled="mutating" autofocus @click="closeAsset"
+            >關閉</button
+          ></div
         ></div
       >
       <div class="asset-detail-grid"
         ><div class="asset-detail-image"
-          ><img :src="'/api/assets/' + selected.id + '/image'" :alt="selected.title" /><a
-            :href="'/api/assets/' + selected.id + '/image'"
-            target="_blank"
-            rel="noopener"
-            >另開原圖 ↗</a
+          ><div class="asset-detail-canvas"
+            ><img :src="'/api/assets/' + selected.id + '/image'" :alt="selected.title" /></div
+          ><div class="asset-image-footer"
+            ><span>保留原始比例</span
+            ><a :href="'/api/assets/' + selected.id + '/image'" target="_blank" rel="noopener"
+              >另開原圖 ↗</a
+            ></div
           ></div
         >
         <div class="asset-detail-info"
-          ><span class="asset-purpose" :class="selected.purpose">{{
-            purposes[selected.purpose]
-          }}</span
-          ><dl
-            ><dt>尺寸</dt><dd>{{ selected.width }} × {{ selected.height }}</dd
-            ><dt>像素量</dt><dd>{{ ((selected.width * selected.height) / 1e6).toFixed(2) }} MP</dd
-            ><dt>檔案大小</dt><dd>{{ (selected.size / 1024 / 1024).toFixed(2) }} MiB</dd
-            ><dt>前處理</dt
-            ><dd>{{
-              selected.preprocessing
-                ? '正規化 v' +
-                  selected.preprocessing.version +
-                  ' · Pillow ' +
-                  selected.preprocessing.library_version
-                : '版本未知'
-            }}</dd
-            ><dt>狀態</dt><dd>{{ selected.archived ? '已封存' : '使用中' }}</dd></dl
+          ><div class="asset-detail-labels"
+            ><span class="asset-purpose" :class="selected.purpose">{{
+              purposes[selected.purpose]
+            }}</span
+            ><span class="asset-state" :class="{ archived: selected.archived }"
+              ><span aria-hidden="true"></span>{{ selected.archived ? '已封存' : '使用中' }}</span
+            ></div
+          ><dl class="asset-detail-facts"
+            ><div class="asset-dimensions"
+              ><dt>尺寸</dt
+              ><dd
+                >{{ selected.width }} <span>×</span> {{ selected.height }} <small>px</small></dd
+              ></div
+            ><div
+              ><dt>像素量</dt
+              ><dd
+                >{{ ((selected.width * selected.height) / 1e6).toFixed(2) }} <small>MP</small></dd
+              ></div
+            ><div
+              ><dt>檔案大小</dt
+              ><dd>{{ (selected.size / 1024 / 1024).toFixed(2) }} <small>MiB</small></dd></div
+            ></dl
+          ><details class="asset-technical-details"
+            ><summary>前處理資訊</summary
+            ><dl
+              ><dt>圖片正規化</dt
+              ><dd>{{
+                selected.preprocessing
+                  ? '正規化 v' +
+                    selected.preprocessing.version +
+                    ' · Pillow ' +
+                    selected.preprocessing.library_version
+                  : '版本未知'
+              }}</dd></dl
+            ></details
           >
           <p v-if="error" class="notice warning" role="alert">{{ error }}</p
           ><p v-if="message" role="status">{{ message }}</p>
-          <form v-if="editing === selected.id" @submit.prevent="update(selected)"
+          <form
+            v-if="editing === selected.id"
+            class="asset-detail-edit"
+            @submit.prevent="update(selected)"
+            ><h3>編輯素材資料</h3
             ><label
               >素材名稱<input
                 v-model="title"
@@ -458,19 +489,17 @@ onMounted(() => {
               ></div
             ></form
           >
-          <div v-else class="asset-actions"
-            ><button
-              class="primary"
-              :disabled="busy || selected.archived"
-              @click="emit('use', selected.id, selected.purpose)"
-              >用於創作</button
-            ><button class="secondary" :disabled="busy" @click="editAsset(selected)"
-              >編輯素材資料</button
-            ><button
-              class="secondary"
-              :disabled="busy"
-              @click="update(selected, !selected.archived)"
-              >{{ selected.archived ? '還原素材' : '封存素材' }}</button
+          <div v-else class="asset-detail-create"
+            ><p v-if="selected.archived" class="footnote">素材已封存，還原後即可帶入創作。</p
+            ><div class="asset-actions"
+              ><button
+                class="primary"
+                :disabled="busy || selected.archived"
+                @click="emit('use', selected.id, selected.purpose)"
+                >用於創作</button
+              ><button class="secondary" :disabled="busy" @click="editAsset(selected)"
+                >編輯素材資料</button
+              ></div
             ></div
           >
           <p class="footnote"
