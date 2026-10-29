@@ -270,11 +270,18 @@ for (const [width, height] of dimensions) {
         .evaluate((e) => getComputedStyle(e).gridTemplateColumns),
     )
     await expect(page.getByLabel('只顯示待補項目', { exact: true })).toBeChecked()
-    await page.getByRole('button', { name: '2 匯出資料包', exact: true }).click()
+    await aligned(page.locator('.training-tabs'), ref.locator('.stagebar'), ['height'])
+    await page.getByRole('button', { name: '2 匯出資料包 建立固定版本', exact: true }).click()
     await expect(
       page.getByRole('button', { name: '匯出已審查訓練資料包', exact: true }),
     ).toBeDisabled()
-    await page.getByRole('button', { name: '1 審查資料', exact: true }).click()
+    await expect(page.locator('.training-check-row')).toHaveCount(4)
+    await expect(page.locator('.training-check-row .warning').first()).toBeVisible()
+    await page.getByRole('button', { name: '回到待補項目', exact: true }).click()
+    await expect(
+      page.getByRole('button', { name: '1 審查資料 補齊描述與來源', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true')
+    await page.getByRole('button', { name: '1 審查資料 補齊描述與來源', exact: true }).click()
     await page.getByLabel('內容標註', { exact: true }).fill('matrix self-authored illustration')
     await page.locator('.review-extra-fields > summary').click()
     await page.getByLabel('標註狀態', { exact: true }).selectOption('approved')
@@ -285,17 +292,16 @@ for (const [width, height] of dimensions) {
       .fill('Self-authored synthetic test image')
     await page.getByLabel('來源審查人', { exact: true }).fill('matrix reviewer')
     // Stage 1 -> 2 -> 1 must retain the unsaved review; moving to control requires a decision.
-    await page.getByRole('button', { name: '2 匯出資料包', exact: true }).click()
-    await page.getByRole('button', { name: '1 審查資料', exact: true }).click()
+    await page.getByRole('button', { name: '2 匯出資料包 建立固定版本', exact: true }).click()
+    await page.getByRole('button', { name: '1 審查資料 補齊描述與來源', exact: true }).click()
     await expect(page.getByLabel('內容標註', { exact: true })).toHaveValue(
       'matrix self-authored illustration',
     )
     page.once('dialog', (event) => event.dismiss())
-    await page.getByRole('button', { name: '3 準備訓練', exact: true }).click()
-    await expect(page.getByRole('button', { name: '1 審查資料', exact: true })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    await page.getByRole('button', { name: '3 準備訓練 凍結設定', exact: true }).click()
+    await expect(
+      page.getByRole('button', { name: '1 審查資料 補齊描述與來源', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true')
     await page.getByRole('button', { name: '保存並看下一張', exact: true }).click()
     await expect
       .poll(
@@ -304,11 +310,16 @@ for (const [width, height] of dimensions) {
       )
       .toBe(2)
     await page.evaluate(() => window.scrollTo(0, 0))
+    await page.locator('.review-extra-fields > summary').click()
+    await page.locator('.training-dataset-management > summary').click()
+    await page.evaluate(() => window.scrollTo(0, 0))
     await page.screenshot({ path: info.outputPath('stage-1.png'), fullPage: true })
     rows.push({ stage: 1, dataset_id: dataset.id, revision: 2, stagebar: bar, dirty_guard: true })
-    await page.getByRole('button', { name: '2 匯出資料包', exact: true }).click()
+    await page.getByRole('button', { name: '2 匯出資料包 建立固定版本', exact: true }).click()
     await ref.locator('[data-stage="1"]').click()
     await expect(page.getByRole('status').filter({ hasText: '資料出口檢查通過' })).toBeVisible()
+    await expect(page.locator('.training-check-row .warning')).toHaveCount(0)
+    await aligned(page.locator('.training-export-check'), ref.locator('.training-export'))
     const exporting = page.waitForResponse(
       (r) =>
         /\/api\/training\/datasets\/[^/]+\/exports$/.test(new URL(r.url()).pathname) &&
@@ -387,19 +398,31 @@ for (const [width, height] of dimensions) {
       starts++
       return route.fulfill({ status: 500 })
     })
-    await page.getByRole('button', { name: '3 準備訓練', exact: true }).click()
+    await page.getByRole('button', { name: '3 準備訓練 凍結設定', exact: true }).click()
     await ref.locator('[data-stage="2"]').click()
+    await page.locator('.training-runtime-check > summary').click()
     await page.getByRole('button', { name: '檢查獨立訓練環境', exact: true }).click()
     await page.getByLabel('已封存資料包', { exact: true }).selectOption(bundle.request_id)
     await page.getByLabel('訓練名稱', { exact: true }).fill('Synthetic stage matrix')
+    await expect(page.getByLabel('基礎模型（固定）')).toHaveValue('Animagine XL 4.0 Opt')
+    await expect(page.getByLabel('基礎模型（固定）')).toHaveAttribute('readonly', '')
+    await page.locator('.training-prepare-parameters > summary').click()
     await page.getByLabel('訓練 seed', { exact: true }).fill('4294967295')
     await page.getByLabel('總更新步數', { exact: true }).fill('12')
     await page.getByLabel('保存間隔（步）', { exact: true }).fill('4')
-    await page.getByRole('button', { name: '4 執行與產物', exact: true }).click()
-    await page.getByRole('button', { name: '3 準備訓練', exact: true }).click()
+    await page.getByLabel('總更新步數', { exact: true }).fill('0')
+    await page.locator('.training-prepare-parameters > summary').click()
+    await page.getByRole('button', { name: '準備新 run（不開始訓練）', exact: true }).click()
+    await expect(page.getByLabel('總更新步數', { exact: true })).toBeVisible()
+    expect(prepares).toBe(0)
+    await page.getByLabel('總更新步數', { exact: true }).fill('12')
+    await page.getByRole('button', { name: '4 執行與產物 追蹤結果', exact: true }).click()
+    await page.getByRole('button', { name: '3 準備訓練 凍結設定', exact: true }).click()
     await expect(page.getByLabel('訓練 seed', { exact: true })).toHaveValue('4294967295')
     await page.getByRole('button', { name: '準備新 run（不開始訓練）', exact: true }).click()
     await page.getByRole('button', { name: '開啟新 run', exact: true }).click()
+    await page.locator('.training-prepare-parameters > summary').click()
+    await page.evaluate(() => window.scrollTo(0, 0))
     await page.screenshot({ path: info.outputPath('stage-3.png'), fullPage: true })
     rows.push({
       stage: 3,
@@ -408,11 +431,18 @@ for (const [width, height] of dimensions) {
       explicit_prepares: prepares,
       starts,
     })
-    await page.getByRole('button', { name: '4 執行與產物', exact: true }).click()
+    await page.getByRole('button', { name: '4 執行與產物 追蹤結果', exact: true }).click()
     await ref.locator('[data-stage="3"]').click()
     const summary = page.getByRole('region', { name: '訓練執行摘要', exact: true })
     await expect(summary.locator('.training-kpi strong')).toHaveText('0')
     await aligned(summary, ref.locator('.training-run-grid'))
+    await expect(page.locator('.training-run-management')).not.toHaveAttribute('open', '')
+    await summary.getByRole('button', { name: '查看日誌', exact: true }).click()
+    await expect(page.locator('#training-run-log')).toHaveAttribute('open', '')
+    await expect(page.locator('.training-run-management')).toHaveAttribute('open', '')
+    await summary.getByRole('button', { name: '查看產物與固定比較', exact: true }).click()
+    await expect(page.locator('#training-artifacts')).toBeFocused()
+    await page.locator('.training-run-management > summary').click()
     run.state = { steps_completed: 5 }
     await summary.getByRole('button', { name: '更新執行摘要', exact: true }).click()
     await expect(summary.getByRole('progressbar')).toHaveAttribute('value', '5')

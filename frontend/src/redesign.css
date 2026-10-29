@@ -2973,8 +2973,117 @@
 }
 #app .atelier-shell .training-run-summary progress {
   width: 100%;
-  height: 10px;
+  height: 6px;
   accent-color: var(--accent);
+}
+#app .atelier-shell .training-tabs button {
+  min-height: 64px;
+  padding: 12px 14px;
+  font-size: 15px;
+}
+#app .atelier-shell .training-tabs .step-number {
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+}
+#app .atelier-shell .training-tabs small {
+  font-size: 12px;
+}
+#app .atelier-shell .review-thumb-caption {
+  display: block;
+  padding: 4px 6px;
+  font-size: 11px;
+  color: var(--ink3);
+}
+#app .atelier-shell .review-held-image {
+  display: block;
+  padding: 24px 8px;
+  color: var(--ink3);
+  font-size: 12px;
+}
+#app .atelier-shell .review-image-metadata {
+  margin-top: 12px;
+}
+#app .atelier-shell .review-image-metadata code,
+#app .atelier-shell .review-image-metadata p {
+  overflow-wrap: anywhere;
+}
+#app .atelier-shell .training-export-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+#app .atelier-shell .training-export-heading h2 {
+  margin: 0;
+  font-size: 16px;
+}
+#app .atelier-shell .training-export-check > p {
+  font-size: 13px;
+  color: var(--ink3);
+}
+#app .atelier-shell .training-check-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+#app .atelier-shell .training-check-row strong {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+#app .atelier-shell .training-export-actions {
+  margin-top: 16px;
+}
+#app .atelier-shell .training-export-details {
+  font-size: 13px;
+}
+#app .atelier-shell .training-prepare-form fieldset {
+  padding: 0;
+  border: 0;
+}
+#app .atelier-shell .training-prepare-form legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+#app .atelier-shell .training-prepare-form label {
+  font-size: 13px;
+  margin: 0 0 16px;
+  gap: 6px;
+}
+#app .atelier-shell .training-prepare-primary input[readonly] {
+  color: var(--ink2);
+  border-style: dashed;
+}
+#app .atelier-shell .training-prepare-parameters {
+  margin: 0 0 16px;
+}
+#app .atelier-shell .training-prepare-parameters .training-fields {
+  margin-top: 14px;
+}
+#app .atelier-shell .training-control > .panel {
+  margin-bottom: 0;
+}
+#app .atelier-shell .training-control > details.panel {
+  margin: 0;
+}
+#app .atelier-shell .training-run-summary .training-kpi strong {
+  font-size: 28px;
+}
+#app .atelier-shell .training-run-summary .training-kpi {
+  margin: 18px 0 8px;
+}
+#app .atelier-shell .training-run-summary .training-actions {
+  gap: 8px;
+  margin-top: 16px;
+}
+#app .atelier-shell .training-run-summary > .panel:last-child > button {
+  margin: 8px 8px 0 0;
 }
 #app .atelier-shell .settings-export-links {
   display: flex;

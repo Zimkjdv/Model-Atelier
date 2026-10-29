@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { api } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { useUnsavedChanges } from './unsavedChanges'
@@ -38,7 +38,7 @@ type Listing = {
   exports: { request_id: string; dataset_label: string; revision: number; kind: string }[]
 }
 const props = defineProps<{ stage?: number }>()
-const emit = defineEmits<{ dirty: [value: boolean] }>()
+const emit = defineEmits<{ dirty: [value: boolean]; experiments: [] }>()
 const listing = ref<Listing | null>(null),
   current = ref<Run | null>(null),
   requestRecord = ref<RequestRecord | null>(null)
@@ -111,7 +111,9 @@ const runProgress = computed(() => {
 function showRunSection(id: string) {
   const target = document.getElementById(id)
   if (!target) return
-  if (target instanceof HTMLDetailsElement) target.open = true
+  for (let ancestor: HTMLElement | null = target; ancestor; ancestor = ancestor.parentElement) {
+    if (ancestor instanceof HTMLDetailsElement) ancestor.open = true
+  }
   target.scrollIntoView({ block: 'start', behavior: 'smooth' })
   target.focus({ preventScroll: true })
 }
@@ -120,6 +122,12 @@ const resumable = computed(() =>
     (v) => v.step < (current.value?.configuration.max_steps || 0),
   ),
 )
+async function openHistory() {
+  if (!listing.value) await refresh()
+  await nextTick()
+  showRunSection('training-run-history')
+}
+defineExpose({ openHistory })
 async function refresh() {
   if (refreshing.value) return
   const request = scope.begin()
@@ -316,6 +324,8 @@ onUnmounted(() => {
 
 <template>
   <div class="training-control">
+    <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
+    <p v-if="message" role="status">{{ message }}</p>
     <section
       v-if="props.stage === 3 && listing?.available"
       class="training-run-summary"
@@ -369,6 +379,11 @@ onUnmounted(() => {
           ><div class="training-actions"
             ><button
               class="secondary"
+              :disabled="busy || current.resources_released"
+              @click="runAction('stop')"
+              >停止訓練</button
+            ><button
+              class="secondary"
               :disabled="busy"
               @click="action(() => loadRun(current!.run_id))"
               >更新執行摘要</button
@@ -382,6 +397,7 @@ onUnmounted(() => {
         ><h2>完成後</h2><p>驗證並安裝產物 → 同步模型登記 → 建立固定比較方案。</p
         ><p class="footnote"
           >各步驟仍需明確操作。產物與比較入口沿用原 run，不會自動開始訓練或生成圖片。</p
+        ><button class="secondary" @click="emit('experiments')">前往實驗比較</button
         ><button
           class="secondary"
           :disabled="!current"
@@ -391,56 +407,34 @@ onUnmounted(() => {
       >
     </section>
 
-    <article class="panel"
-      ><h2>本機訓練執行</h2
-      ><p>準備 run、啟動訓練與續訓是分開的操作；離開頁面不會停止已啟動的 worker。</p
-      ><p v-if="error" class="notice warning" role="alert">{{ error }}</p
-      ><p role="status">{{ message }}</p>
-      <p v-if="listing && !listing.available"
-        >僅支援 Windows 原生訓練環境；容器與其他 OS 不提供啟動操作。</p
-      >
-      <template v-if="listing?.available"
-        ><div class="training-actions"
-          ><button
-            class="secondary"
-            type="button"
-            :disabled="checking || busy"
-            @click="checkEnvironment"
-            >{{ checking ? '檢查中…' : '檢查獨立訓練環境' }}</button
-          ><button class="secondary" type="button" :disabled="busy || refreshing" @click="refresh"
-            >更新訓練清單</button
-          ></div
-        ><p v-if="environment" role="status">{{
-          environment.ready ? '獨立環境檢查通過；不代表已開始訓練' : '訓練環境尚未就緒'
-        }}</p
-        ><ul v-if="environment"
-          ><li v-for="issue in environment.issues" :key="issue">{{ issue }}</li></ul
-        ></template
-      >
-    </article>
-    <template v-if="listing?.available">
-      <form v-show="props.stage !== 3" class="panel" @submit.prevent="prepare('new')"
-        ><h2>建立凍結訓練設定</h2
-        ><p class="footnote"
-          >固定基底為 Animagine XL 4.0 Opt；只接受 T05
-          已封存資料包。準備階段會驗證環境、資料與實際基底 hash，不開始訓練。</p
-        ><fieldset :disabled="busy || !!requestId"
-          ><legend>新 run 設定</legend
+    <form
+      v-if="listing?.available"
+      v-show="props.stage !== 3"
+      class="panel training-prepare-form"
+      @invalid.capture="($event.target as HTMLElement).closest('details')?.setAttribute('open', '')"
+      @submit.prevent="prepare('new')"
+      ><h2>準備新的訓練</h2
+      ><p class="footnote"
+        >固定基底為 Animagine XL 4.0 Opt；只接受 T05
+        已封存資料包。準備階段會驗證環境、資料與實際基底 hash，不開始訓練。</p
+      ><fieldset :disabled="busy || !!requestId"
+        ><legend>新 run 設定</legend
+        ><div class="training-fields training-prepare-primary"
+          ><label>訓練名稱<input v-model="form.label" required maxlength="120" /></label
+          ><label>基礎模型（固定）<input value="Animagine XL 4.0 Opt" readonly /></label></div
+        ><label
+          >已封存資料包<select v-model="form.export_id" required aria-label="已封存資料包"
+            ><option value="">請選擇</option
+            ><option v-for="item in listing.exports" :key="item.request_id" :value="item.request_id"
+              >{{ item.dataset_label }} · {{ item.kind }} · 修訂 {{ item.revision }} ·
+              {{ item.request_id.slice(0, 8) }}</option
+            ></select
+          ></label
+        >
+        <details class="training-prepare-parameters"
+          ><summary>訓練參數與裝置設定</summary
           ><div class="training-fields">
             <label
-              >已封存資料包<select v-model="form.export_id" required aria-label="已封存資料包"
-                ><option value="">請選擇</option
-                ><option
-                  v-for="item in listing.exports"
-                  :key="item.request_id"
-                  :value="item.request_id"
-                  >{{ item.dataset_label }} · {{ item.kind }} · 修訂 {{ item.revision }} ·
-                  {{ item.request_id.slice(0, 8) }}</option
-                ></select
-              ></label
-            >
-            <label>訓練名稱<input v-model="form.label" required maxlength="120" /></label
-            ><label
               >用途<select v-model="form.purpose" aria-label="用途"
                 ><option value="development-training">開發試訓；品質未評估</option
                 ><option value="technical-smoke">自製技術測試；不作畫風品質證據</option></select
@@ -494,14 +488,41 @@ onUnmounted(() => {
                 min="0"
                 max="15"
                 required
-            /></label> </div
-          ><button type="submit" class="primary" :disabled="!form.export_id || !form.label"
-            >準備新 run（不開始訓練）</button
-          ></fieldset
-        ><p v-if="!listing.exports.length">尚無完成的資料包，先到資料審查完成標註並匯出。</p></form
+            /></label> </div></details
+        ><button type="submit" class="primary" :disabled="!form.export_id || !form.label"
+          >準備新 run（不開始訓練）</button
+        ></fieldset
+      ><p v-if="!listing.exports.length">尚無完成的資料包，先到資料審查完成標註並匯出。</p></form
+    >
+    <details class="panel training-runtime-check"
+      ><summary>訓練環境與資料清單</summary><h2>本機訓練執行</h2
+      ><p>準備 run、啟動訓練與續訓是分開的操作；離開頁面不會停止已啟動的 worker。</p>
+      <p v-if="listing && !listing.available"
+        >僅支援 Windows 原生訓練環境；容器與其他 OS 不提供啟動操作。</p
       >
-      <article class="panel"
-        ><h2>原訓練請求</h2><p class="footnote">回應不明時只查回原 UUID，不自動重做準備或啟動。</p
+      <template v-if="listing?.available"
+        ><div class="training-actions"
+          ><button
+            class="secondary"
+            type="button"
+            :disabled="checking || busy"
+            @click="checkEnvironment"
+            >{{ checking ? '檢查中…' : '檢查獨立訓練環境' }}</button
+          ><button class="secondary" type="button" :disabled="busy || refreshing" @click="refresh"
+            >更新訓練清單</button
+          ></div
+        ><p v-if="environment" role="status">{{
+          environment.ready ? '獨立環境檢查通過；不代表已開始訓練' : '訓練環境尚未就緒'
+        }}</p
+        ><ul v-if="environment"
+          ><li v-for="issue in environment.issues" :key="issue">{{ issue }}</li></ul
+        ></template
+      >
+    </details>
+    <template v-if="listing?.available">
+      <details class="panel training-request-management" :open="props.stage !== 3 && !!requestId"
+        ><summary>原訓練請求與 UUID 恢復</summary><h2>原訓練請求</h2
+        ><p class="footnote">回應不明時只查回原 UUID，不自動重做準備或啟動。</p
         ><p>請求 UUID：{{ requestId || '尚未建立' }}</p
         ><div class="training-actions"
           ><button
@@ -546,9 +567,9 @@ onUnmounted(() => {
             ></ul
           ></details
         >
-      </article>
-      <article class="panel"
-        ><h2>原 run 與狀態</h2
+      </details>
+      <details class="panel training-run-management" :open="props.stage !== 3 && !!current"
+        ><summary>原 run、停止續訓與產物管理</summary><h2>原 run 與狀態</h2
         ><form class="training-actions" @submit.prevent="importExisting"
           ><label>既有 CLI run UUID<input v-model="imported" required maxlength="36" /></label
           ><button class="secondary" type="submit" :disabled="busy"
@@ -567,7 +588,9 @@ onUnmounted(() => {
             {{ label(item.status) }}</button
           ></div
         >
-        <TrainingReport :runs="listing.runs" :current-id="current?.run_id || ''" />
+        <section id="training-run-history" tabindex="-1"
+          ><TrainingReport :runs="listing.runs" :current-id="current?.run_id || ''"
+        /></section>
         <template v-if="current"
           ><h3>{{ current.configuration.label }}</h3
           ><p>Run UUID：{{ current.run_id }}</p
@@ -655,7 +678,7 @@ onUnmounted(() => {
             ><summary>原 worker 日誌（最後 64 KiB）</summary
             ><pre>{{ current.log_tail || '尚未寫入日誌' }}</pre>
           </details>
-          <h3>訓練產物與固定比較</h3
+          <h3 id="training-artifacts" tabindex="-1">訓練產物與固定比較</h3
           ><p class="footnote"
             >只接受完成且資源已釋放的
             run。安裝不等於模型庫已同步，登記不代表畫風／角色品質通過；比較方案只保存設定，不生成。</p
@@ -689,7 +712,7 @@ onUnmounted(() => {
             ><pre>{{ JSON.stringify(artifact || current.artifacts, null, 2) }}</pre>
           </details>
         </template>
-      </article>
+      </details>
     </template>
   </div>
 </template>

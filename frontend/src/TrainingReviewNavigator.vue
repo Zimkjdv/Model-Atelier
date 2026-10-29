@@ -123,6 +123,8 @@ function nextIssue() {
         class="secondary"
         type="button"
         :disabled="busy"
+        :aria-label="`${row.id} · ${row.split}`"
+        :aria-description="byImage.has(row.id) ? '待補資料' : '已檢查'"
         :aria-pressed="selected === row.id"
         @click="emit('select', row.id, false)"
         ><span v-if="byImage.has(row.id)" class="pending-dot" aria-hidden="true"></span
@@ -134,7 +136,10 @@ function nextIssue() {
           alt=""
           loading="lazy"
           class="review-thumb"
-        />{{ row.id }} · {{ row.split }}</button
+        /><span class="review-thumb-caption">{{ row.id }} · {{ row.split }}</span
+        ><span v-if="row.split === 'test'" class="review-held-image"
+          >最終評估圖<br />保留不預覽</span
+        ></button
       ></div
     >
     <label class="pending-filter"

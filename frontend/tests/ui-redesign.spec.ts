@@ -229,12 +229,12 @@ test('training export step preserves live annotations and test images remain pro
   await page.getByRole('button', { name: '匯入待審查清單', exact: true }).click()
   await page.getByLabel('內容標註', { exact: true }).fill('preserved across export sub-step')
   await expect(page.getByRole('heading', { name: '資料出口檢查', exact: true })).toBeHidden()
-  await page.getByRole('button', { name: '2 匯出資料包', exact: true }).click()
+  await page.getByRole('button', { name: '2 匯出資料包 建立固定版本', exact: true }).click()
   await expect(page.getByRole('heading', { name: '資料出口檢查', exact: true })).toBeVisible()
   await expect(
     page.getByRole('button', { name: '匯出已審查訓練資料包', exact: true }),
   ).toBeDisabled()
-  await page.getByRole('button', { name: '1 審查資料', exact: true }).click()
+  await page.getByRole('button', { name: '1 審查資料 補齊描述與來源', exact: true }).click()
   await expect(page.getByLabel('內容標註', { exact: true })).toHaveValue(
     'preserved across export sub-step',
   )

@@ -76,7 +76,7 @@ for (const width of [1440, 1280]) {
     await page.getByRole('button', { name: 'img-0001 · train', exact: true }).click()
     await expect(page.getByLabel('內容標註', { exact: true })).toHaveValue('unsaved first image')
     expect(writes).toBe(0)
-    await page.getByRole('button', { name: '2 匯出資料包', exact: true }).click()
+    await page.getByRole('button', { name: '2 匯出資料包 建立固定版本', exact: true }).click()
     await expect(
       page.getByRole('button', { name: '匯出已審查訓練資料包', exact: true }),
     ).toBeDisabled()

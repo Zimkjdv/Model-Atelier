@@ -539,7 +539,11 @@ async function testConnection() {
           @use="useAsset"
           @dirty="assetDirty = $event"
         />
-        <TrainingWorkspace v-else-if="page === '訓練工作區'" @dirty="trainingDirty = $event" />
+        <TrainingWorkspace
+          v-else-if="page === '訓練工作區'"
+          @dirty="trainingDirty = $event"
+          @experiments="navigate('實驗比較')"
+        />
         <ArtworkLibrary
           v-else-if="page === '作品庫'"
           :job-id="galleryJob"

@@ -1,0 +1,190 @@
+{
+  "matrix": [
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "rows": [
+        {
+          "stage": 1,
+          "dataset_id": "397a2760-f147-42f9-90f9-007a51c9a6e8",
+          "revision": 2,
+          "stagebar": {
+            "actual": {
+              "x": 104,
+              "y": 152.75,
+              "width": 1144,
+              "height": 70.546875
+            },
+            "preview": {
+              "x": 104,
+              "y": 152.75,
+              "width": 1144,
+              "height": 70.546875
+            }
+          },
+          "dirty_guard": true
+        },
+        {
+          "stage": 2,
+          "export_id": "749cba30-12f7-4db8-a781-5459ee82edb0",
+          "status": "completed",
+          "dataset_id": "397a2760-f147-42f9-90f9-007a51c9a6e8",
+          "report": {
+            "bundle_verified": true,
+            "manifest_sha256": "59296d019136f9606c55a24960281d71e6ab845f4d9ab1efdc867ceb8fcdb98f",
+            "train_count": 1,
+            "training_started": false
+          }
+        },
+        {
+          "stage": 3,
+          "export_id": "749cba30-12f7-4db8-a781-5459ee82edb0",
+          "synthetic_run_id": "a2f18a46-9c24-4470-b726-3684446e30bd",
+          "explicit_prepares": 1,
+          "starts": 0
+        },
+        {
+          "stage": 4,
+          "synthetic_run_id": "a2f18a46-9c24-4470-b726-3684446e30bd",
+          "progress": [
+            0,
+            5,
+            "unknown"
+          ],
+          "stale_snapshot_guard": true,
+          "starts": 0
+        }
+      ]
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "rows": [
+        {
+          "stage": 1,
+          "dataset_id": "61748d7e-797f-4c64-873e-d627affd1dca",
+          "revision": 2,
+          "stagebar": {
+            "actual": {
+              "x": 104,
+              "y": 152.75,
+              "width": 1304,
+              "height": 70.546875
+            },
+            "preview": {
+              "x": 104,
+              "y": 152.75,
+              "width": 1304,
+              "height": 70.546875
+            }
+          },
+          "dirty_guard": true
+        },
+        {
+          "stage": 2,
+          "export_id": "1582955f-23d1-44c9-bf08-056d0a6a2279",
+          "status": "completed",
+          "dataset_id": "61748d7e-797f-4c64-873e-d627affd1dca",
+          "report": {
+            "bundle_verified": true,
+            "manifest_sha256": "59296d019136f9606c55a24960281d71e6ab845f4d9ab1efdc867ceb8fcdb98f",
+            "train_count": 1,
+            "training_started": false
+          }
+        },
+        {
+          "stage": 3,
+          "export_id": "1582955f-23d1-44c9-bf08-056d0a6a2279",
+          "synthetic_run_id": "e1d47dee-aedc-4281-b2e0-adbf8fb39eee",
+          "explicit_prepares": 1,
+          "starts": 0
+        },
+        {
+          "stage": 4,
+          "synthetic_run_id": "e1d47dee-aedc-4281-b2e0-adbf8fb39eee",
+          "progress": [
+            0,
+            5,
+            "unknown"
+          ],
+          "stale_snapshot_guard": true,
+          "starts": 0
+        }
+      ]
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "rows": [
+        {
+          "stage": 1,
+          "dataset_id": "8e407252-1334-4648-88d4-c3cc337d6dff",
+          "revision": 2,
+          "stagebar": {
+            "actual": {
+              "x": 278,
+              "y": 152.75,
+              "width": 1436,
+              "height": 70.546875
+            },
+            "preview": {
+              "x": 278,
+              "y": 152.75,
+              "width": 1436,
+              "height": 70.546875
+            }
+          },
+          "dirty_guard": true
+        },
+        {
+          "stage": 2,
+          "export_id": "b6a54a67-0906-4f95-9575-839548d5b547",
+          "status": "completed",
+          "dataset_id": "8e407252-1334-4648-88d4-c3cc337d6dff",
+          "report": {
+            "bundle_verified": true,
+            "manifest_sha256": "59296d019136f9606c55a24960281d71e6ab845f4d9ab1efdc867ceb8fcdb98f",
+            "train_count": 1,
+            "training_started": false
+          }
+        },
+        {
+          "stage": 3,
+          "export_id": "b6a54a67-0906-4f95-9575-839548d5b547",
+          "synthetic_run_id": "291ad6a0-3ac2-446d-9550-a2f0e1304d17",
+          "explicit_prepares": 1,
+          "starts": 0
+        },
+        {
+          "stage": 4,
+          "synthetic_run_id": "291ad6a0-3ac2-446d-9550-a2f0e1304d17",
+          "progress": [
+            0,
+            5,
+            "unknown"
+          ],
+          "stale_snapshot_guard": true,
+          "starts": 0
+        }
+      ]
+    }
+  ],
+  "screenshot_data": {
+    "datasetId": "61748d7e-797f-4c64-873e-d627affd1dca",
+    "review_revision": 1,
+    "export_revision": 2,
+    "exportId": "1582955f-23d1-44c9-bf08-056d0a6a2279",
+    "synthetic_run": "e1d47dee-aedc-4281-b2e0-adbf8fb39eee",
+    "actual_trainer_starts": 0,
+    "capture_writes": []
+  }
+}

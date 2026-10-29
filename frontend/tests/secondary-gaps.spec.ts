@@ -200,7 +200,7 @@ test('training summary uses reported progress, unknowns and failed-read snapshot
     await route.continue()
   })
   await page.goto('/#/training')
-  await page.getByRole('button', { name: '4 執行與產物', exact: true }).click()
+  await page.getByRole('button', { name: '4 執行與產物 追蹤結果', exact: true }).click()
   const summary = page.getByRole('region', { name: '訓練執行摘要', exact: true })
   await expect(summary.locator('.training-kpi strong')).toHaveText('43')
   await expect(summary.getByRole('progressbar')).toHaveAttribute('value', '43')

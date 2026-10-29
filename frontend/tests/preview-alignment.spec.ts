@@ -1,5 +1,61 @@
 import { test, expect, type Page, type Locator } from '@playwright/test'
 import { randomUUID } from 'node:crypto'
+import AxeBuilder from '@axe-core/playwright'
+
+test('training empty stages keep extra controls and explicit experiment navigation', async ({
+  page,
+}) => {
+  let writes = 0
+  let offline = false
+  await page.route('**/api/training/**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      writes++
+      return route.fulfill({ status: 500 })
+    }
+    const path = new URL(route.request().url()).pathname
+    if (offline)
+      return route.fulfill({ status: 503, json: { detail: 'training verification offline' } })
+    if (path.endsWith('/datasets'))
+      return route.fulfill({ json: { available: true, datasets: [] } })
+    if (path.endsWith('/control'))
+      return route.fulfill({ json: { available: true, exports: [], runs: [], requests: [] } })
+    await route.continue()
+  })
+  await page.goto('/#/training')
+  await expect(page.getByRole('heading', { name: '尚未選擇審查資料', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: '2 匯出資料包 建立固定版本', exact: true }).click()
+  await expect(page.getByRole('button', { name: '匯出已審查訓練資料包', exact: true })).toHaveCount(
+    0,
+  )
+  await page.getByRole('button', { name: '3 準備訓練 凍結設定', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '準備新的訓練', exact: true })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: '準備新 run（不開始訓練）', exact: true }),
+  ).toBeDisabled()
+  await expect(page.locator('.training-prepare-parameters')).not.toHaveAttribute('open', '')
+  await page.getByRole('button', { name: '4 執行與產物 追蹤結果', exact: true }).click()
+  await expect(
+    page.getByText('準備訓練後可在此追蹤原 run；目前沒有可顯示的步數。', { exact: true }),
+  ).toBeVisible()
+  await expect(page.locator('.training-run-summary progress')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '查看產物與固定比較', exact: true })).toBeDisabled()
+  await page.locator('.training-run-management > summary').click()
+  await expect(
+    page.getByRole('button', { name: '登記既有 run（不啟動）', exact: true }),
+  ).toBeVisible()
+  const accessibility = await new AxeBuilder({ page }).analyze()
+  expect(accessibility.violations).toEqual([])
+  await page.locator('.training-run-management > summary').click()
+  await page.getByRole('button', { name: '查看歷史報告', exact: true }).click()
+  await expect(page.locator('#training-run-history')).toBeFocused()
+  await expect(page.locator('.training-run-management')).toHaveAttribute('open', '')
+  await page.getByRole('button', { name: '前往實驗比較', exact: true }).click()
+  await expect(page).toHaveURL(/#\/experiments$/)
+  offline = true
+  await page.goto('/#/training')
+  await expect(page.getByRole('alert')).toContainText('training verification offline')
+  expect(writes).toBe(0)
+})
 
 const preview = new URL('../../docs/ui-redesign/preview.html', import.meta.url).href
 async function box(locator: Locator) {
@@ -236,8 +292,8 @@ test('populated review keeps three columns and protects saved state while using 
   await expect(page.getByLabel('只顯示待補項目')).toBeChecked()
   await expect(page.locator('.review-navigation-details')).not.toHaveAttribute('open')
   await page.getByLabel('內容標註', { exact: true }).fill('keep live review')
-  await page.getByRole('button', { name: '2 匯出資料包', exact: true }).click()
-  await page.getByRole('button', { name: '1 審查資料', exact: true }).click()
+  await page.getByRole('button', { name: '2 匯出資料包 建立固定版本', exact: true }).click()
+  await page.getByRole('button', { name: '1 審查資料 補齊描述與來源', exact: true }).click()
   await expect(page.getByLabel('內容標註', { exact: true })).toHaveValue('keep live review')
   expect((await (await request.get('/api/training/datasets/' + record.id)).json()).revision).toBe(
     record.revision,

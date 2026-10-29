@@ -9,10 +9,11 @@ import {
   type DatasetSummary,
   type Readiness,
   type TrainingExport,
+  trainingIssue,
 } from './trainingTypes'
 
 const props = defineProps<{ stage?: number }>()
-const emit = defineEmits<{ dirty: [value: boolean] }>()
+const emit = defineEmits<{ dirty: [value: boolean]; review: [] }>()
 const list = ref<DatasetSummary[]>([]),
   current = ref<DatasetReview | null>(null),
   edited = ref<DatasetReview | null>(null)
@@ -52,6 +53,32 @@ const pendingCount = computed(
       readiness.value?.issues.filter((issue) => issue.image_id).map((issue) => issue.image_id),
     ).size,
 )
+const exportChecks = computed(() => {
+  const groups = [
+    { label: '圖片描述與標註審查', codes: ['caption_review_required'] },
+    { label: '來源與訓練用途依據', codes: ['source_use_record_required'] },
+    {
+      label: '分組與角色身分',
+      codes: [
+        'target_character_review_required',
+        'final_test_previously_exposed',
+        'multiple_training_variants',
+        'no_training_candidates',
+      ],
+    },
+  ]
+  const known = new Set(groups.flatMap((group) => group.codes))
+  return [
+    ...groups.map((group) => ({
+      label: group.label,
+      issues: readiness.value?.issues.filter((issue) => group.codes.includes(issue.code)) || [],
+    })),
+    {
+      label: '原圖與其他完整性',
+      issues: readiness.value?.issues.filter((issue) => !known.has(issue.code)) || [],
+    },
+  ]
+})
 async function saveNext() {
   const previous = selected.value
   await save()
@@ -292,8 +319,11 @@ onUnmounted(() => {
                 :alt="`審查原圖 ${image.id}`"
                 @error="imageFailed = true"
               /><p v-else role="alert">原圖預覽無法載入；請重新檢查來源，不能以舊預覽認定完整性。</p
-              ><p class="footnote">{{ image.path }} · {{ image.width }} × {{ image.height }}</p
-              ><p class="footnote">SHA256 {{ image.sha256 }}</p></div
+              ><details class="review-image-metadata"
+                ><summary>來源圖片資訊</summary
+                ><p class="footnote">{{ image.path }} · {{ image.width }} × {{ image.height }}</p
+                ><p class="footnote">SHA256 {{ image.sha256 }}</p></details
+              ></div
             >
             <fieldset
               class="panel training-image-form"
@@ -426,30 +456,56 @@ onUnmounted(() => {
           >
         </details>
       </section>
-      <article v-show="props.stage === 1 || props.stage === undefined" class="panel">
-        <h2>資料出口檢查</h2
-        ><p
-          >{{
-            dirty ? '目前有未保存標註，以下仍為已保存版本的檢查。' : '檢查對象為已保存版本。'
-          }}
-          資料出口通過不代表品質通過。</p
-        >
-        <button class="secondary" type="button" :disabled="busy || dirty" @click="check"
-          >重新檢查原圖與標註</button
-        >
-        <template v-if="readiness"
+      <section v-show="props.stage === 1 || props.stage === undefined" class="training-export">
+        <div class="panel training-export-check"
+          ><div class="training-export-heading"
+            ><h2>匯出前檢查</h2
+            ><button class="secondary" type="button" :disabled="busy || dirty" @click="check"
+              >重新檢查原圖與標註</button
+            ></div
           ><p
-            >訓練候選 {{ readiness.counts.train }} · 開發評估 {{ readiness.counts.validation }} ·
-            最終評估 {{ readiness.counts.test }} · 排除 {{ readiness.counts.excluded }}</p
-          ><p role="status">{{ readiness.data_ready ? '資料出口檢查通過' : '仍有待審查項目' }}</p>
-          <p class="footnote"
-            >上次檢查：{{
-              readiness.checked_at || current.updated_at
-            }}；來源變更後需重新檢查，匯出時也會重驗。</p
+            >{{
+              dirty ? '目前有未保存標註，以下仍為已保存版本的檢查。' : '檢查對象為已保存版本。'
+            }}
+            資料出口通過不代表品質通過。</p
           >
-          <p class="footnote">完整缺項與圖片定位請見上方「圖片與缺項導覽」。</p>
-        </template>
-        <div class="training-actions"
+          <div v-for="item in exportChecks" :key="item.label" class="training-check-row"
+            ><strong>{{ item.label }}</strong
+            ><span class="chip" :class="{ warning: !!item.issues.length }">{{
+              !readiness
+                ? '尚未檢查'
+                : item.issues.length
+                  ? item.issues.length + ' 項需處理'
+                  : '通過'
+            }}</span></div
+          >
+          <template v-if="readiness"
+            ><p role="status">{{ readiness.data_ready ? '資料出口檢查通過' : '仍有待審查項目' }}</p
+            ><details class="training-export-details"
+              ><summary>完整缺項與檢查版本</summary
+              ><p
+                >訓練候選 {{ readiness.counts.train }} · 開發評估
+                {{ readiness.counts.validation }} · 最終評估 {{ readiness.counts.test }} · 排除
+                {{ readiness.counts.excluded }}</p
+              >
+              <p class="footnote"
+                >上次檢查：{{
+                  readiness.checked_at || current.updated_at
+                }}；來源變更後需重新檢查，匯出時也會重驗。</p
+              >
+              <ul
+                ><li
+                  v-for="(issue, index) in [...readiness.issues, ...readiness.warnings]"
+                  :key="index"
+                  >{{ issue.image_id ? issue.image_id + '：' : ''
+                  }}{{ trainingIssue[issue.code] || issue.code }}</li
+                ></ul
+              ></details
+            >
+          </template></div
+        >
+        <div class="training-actions training-export-actions"
+          ><button class="secondary" type="button" @click="emit('review')">回到待補項目</button
           ><button
             type="button"
             class="primary"
@@ -474,7 +530,7 @@ onUnmounted(() => {
           >只複製 train 圖與
           caption，保留圖不進資料包。開始作者試訓前請逐張確認來源、角色及涵蓋範圍；最終品質比較前，另需未參與調參的不同原作評估圖。</p
         >
-      </article>
+      </section>
     </template>
     <details
       class="panel training-dataset-management"
