@@ -3199,6 +3199,31 @@
 #app .atelier-shell .review-navigation-details .issue-list li {
   overflow-wrap: anywhere;
 }
+
+/* Keep the source image and editor usable when three columns no longer fit. */
+@media (max-width: 1000px) {
+  #app .atelier-shell .training-review-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #app .atelier-shell .training-review-grid > * {
+    min-width: 0;
+  }
+  #app .atelier-shell .training-review-grid .image-choices {
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    max-height: 224px;
+    align-items: stretch;
+  }
+  #app .atelier-shell .training-review-grid .review-thumb {
+    height: 80px;
+  }
+  #app .atelier-shell .training-review-grid > :is(.review-navigation, .panel) {
+    padding: 16px;
+  }
+  #app .atelier-shell .training-progress {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 #app .atelier-shell .model-grid:not(.model-list) {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
