@@ -1602,50 +1602,77 @@
   padding: 5px 10px;
 }
 #app .atelier-shell .artwork-dialog {
-  width: min(1080px, calc(100vw - 32px));
+  width: min(1360px, calc(100vw - 48px));
   max-width: none;
-  max-height: calc(100vh - 32px);
+  height: min(880px, calc(100dvh - 48px));
+  max-height: calc(100dvh - 48px);
+  box-sizing: border-box;
+  overflow: hidden;
   border: 1px solid var(--line2);
   border-radius: 16px;
   background: var(--panel);
-  padding: 24px;
+  padding: 0;
   color: var(--ink);
+}
+#app .atelier-shell .artwork-dialog[open] {
+  display: flex;
+  flex-direction: column;
 }
 #app .atelier-shell .artwork-dialog::backdrop {
   background: #000a;
 }
 #app .atelier-shell .preview-grid {
-  grid-template-columns: 1.1fr 1fr;
-  gap: 24px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
 }
 #app .atelier-shell .preview-image {
   background: var(--stage);
   border: 0;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 0;
+  padding: 24px;
   min-width: 0;
+  min-height: 0;
+  align-self: stretch;
+  overflow: hidden;
 }
 #app .atelier-shell .preview-image img {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: none;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
   object-fit: contain;
 }
 #app .atelier-shell .preview-heading {
   display: flex;
   justify-content: space-between;
-  align-items: start;
-  gap: 12px;
-  margin-bottom: 16px;
+  align-items: center;
+  gap: 24px;
+  margin: 0;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+#app .atelier-shell .artwork-detail-title {
+  min-width: 0;
+}
+#app .atelier-shell .artwork-detail-title > p {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .artwork-detail-title .archive-badge {
+  margin-left: 10px;
+  padding: 1px 8px;
 }
 #app .atelier-shell .preview-heading h2 {
   font:
-    600 22px 'Noto Serif TC',
-    'Songti TC',
-    Georgia,
-    serif;
+    600 18px / 1.35 'Microsoft JhengHei',
+    system-ui,
+    sans-serif;
   margin: 0;
 }
 #app .atelier-shell .preview-top-actions {
@@ -1864,20 +1891,72 @@
   border-color: var(--accent);
 }
 #app .atelier-shell .gallery-card-meta {
-  padding: 12px 14px;
+  padding: 16px 16px 10px;
   margin: 0 !important;
 }
 #app .atelier-shell .gallery-card-meta .card-title {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: nowrap;
+  margin: 0;
+  height: 24px;
 }
 #app .atelier-shell .gallery-card-meta .card-title h2 {
   margin: 0;
   font-size: 15px;
+  min-width: 0;
+  flex: 1;
+  line-height: 1.35;
 }
-#app .atelier-shell .gallery-card-meta details {
+#app .atelier-shell .gallery-card-meta .archive-badge {
+  padding: 1px 6px;
+  flex: none;
+}
+#app .atelier-shell .gallery-card-meta .gallery-model-name {
+  color: var(--ink2);
+  margin: 6px 0 10px;
+  font-size: 12px;
+}
+#app .atelier-shell .gallery-file-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--ink3);
+  font-variant-numeric: tabular-nums;
+}
+#app .atelier-shell .gallery-file-meta > span {
+  white-space: nowrap;
+}
+#app .atelier-shell .gallery-card-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 8px;
+  margin-top: 10px;
+  border-top: 1px solid var(--line);
+}
+#app .atelier-shell .gallery-card-footer > p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 20px;
+}
+#app .atelier-shell .gallery-inspect {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 36px;
+  padding: 4px 0;
+  margin-top: 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent);
   font-size: 13px;
+}
+#app .atelier-shell .gallery-inspect:hover {
+  background: var(--raised);
 }
 #app .atelier-shell .artwork-grid.masonry {
   grid-auto-rows: 8px;
@@ -1900,8 +1979,12 @@
 #app .atelier-shell .artwork-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px 16px;
-  margin: 0 0 16px;
+  gap: 16px;
+  margin: 0 0 20px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
 }
 #app .atelier-shell .artwork-facts dt {
   font-size: 12px;
@@ -1909,11 +1992,95 @@
 }
 #app .atelier-shell .artwork-facts dd {
   margin: 2px 0 0;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
 }
-#app .atelier-shell .artwork-info > .preview-heading {
-  margin: 0 0 16px;
+#app .atelier-shell .artwork-facts small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink3);
+}
+#app .atelier-shell .artwork-info {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  font-size: 14px;
+  border-left: 1px solid var(--line);
+}
+#app .atelier-shell .artwork-context {
+  padding: 20px 24px 0;
+  min-width: 0;
+}
+#app .atelier-shell .artwork-context > span {
+  display: block;
+  color: var(--ink3);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+#app .atelier-shell .artwork-context strong {
+  display: block;
+  min-width: 0;
+  font-size: 14px;
+}
+#app .atelier-shell .artwork-action-help {
+  margin: 8px 24px 12px;
+  font-size: 12px;
+  color: var(--ink3);
+}
+#app .atelier-shell .artwork-detail-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 24px;
+  border-bottom: 1px solid var(--line);
+}
+#app .atelier-shell .artwork-detail-tabs > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  min-height: 42px;
+  padding: 6px 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  color: var(--ink3);
+  font-size: 13px;
+}
+#app .atelier-shell .artwork-detail-tabs > button[aria-selected='true'] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--asoft);
+}
+#app .atelier-shell .artwork-dirty-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warm);
+}
+#app .atelier-shell .artwork-detail-scroll {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 20px 24px;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line2) transparent;
+}
+#app .atelier-shell .artwork-detail-scroll .footnote {
+  font-size: 12px;
+  color: var(--ink3);
+  margin: 10px 0;
+}
+#app .atelier-shell .artwork-detail-scroll .organization-panel label {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+#app .atelier-shell .artwork-detail-scroll .organization-actions > button {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 13px;
 }
 #app .atelier-shell .artwork-info .organization-panel > h3 {
   display: none;
@@ -1921,6 +2088,7 @@
 #app .atelier-shell .artwork-info .organization-panel textarea {
   width: 100%;
   min-height: 110px;
+  font-size: 13px;
 }
 #app .atelier-shell .artwork-dialog .artwork-actions {
   display: flex;
@@ -1937,6 +2105,82 @@
   border: 1px solid var(--line2);
   color: var(--ink);
   background: var(--raised);
+  text-decoration: none;
+}
+#app .atelier-shell .artwork-dialog .artwork-primary-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  margin: 16px 24px 0;
+}
+#app .atelier-shell .artwork-primary-actions > :is(button, a) {
+  min-height: 44px;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+#app .atelier-shell .artwork-rating-panel form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+#app .atelier-shell .artwork-rating-panel form > label {
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  min-width: 0;
+  margin: 0;
+}
+#app .atelier-shell .artwork-rating-panel form > :is(p, button) {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin: 0;
+}
+#app .atelier-shell .artwork-rating-panel form > button {
+  min-height: 38px;
+  padding: 6px 16px;
+  font-size: 13px;
+}
+#app .atelier-shell .artwork-extra h3 {
+  margin: 20px 0 12px;
+  font-size: 14px;
+}
+#app .atelier-shell .artwork-extra dl {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  font-size: 13px;
+}
+#app .atelier-shell .artwork-extra .prompt {
+  border: 1px solid var(--line);
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--stage);
+  font-size: 13px;
+  line-height: 1.8;
+}
+#app .atelier-shell .artwork-extra details {
+  margin-top: 12px;
+}
+#app .atelier-shell .artwork-source-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+#app .atelier-shell .artwork-source-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 4px 10px;
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  background: var(--raised);
+  color: var(--ink2);
+  font-size: 12px;
   text-decoration: none;
 }
 #app .atelier-shell .pending-dot {

@@ -260,7 +260,7 @@ test('one isolated source survives the complete creation, library and recovery j
     await page.getByLabel('作品筆記', { exact: true }).fill('journey verified note')
     await dialog(page).getByRole('button', { name: '保存筆記', exact: true }).click()
     await expect(dialog(page).getByRole('status')).toContainText('筆記已保存')
-    await dialog(page).getByText('生成設定、人工評分與完整來源', { exact: true }).click()
+    await dialog(page).getByRole('tab', { name: '人工評分', exact: true }).click()
     await page.locator('#rating-prompt_adherence').selectOption('3')
     await page.locator('#rating-visual_style').selectOption('5')
     await dialog(page).getByRole('button', { name: '保存評分', exact: true }).click()

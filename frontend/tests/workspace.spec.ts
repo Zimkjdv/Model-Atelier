@@ -97,12 +97,14 @@ test('lost response recovers the original UUID, payload and endpoint once', asyn
 test('keyboard preview, real JSON download and revision conflict preserve edits', async ({ page, request }) => {
   await page.goto('/')
   await page.getByRole('button', { name: '作品庫', exact: true }).click()
+  await page.getByLabel('搜尋作品', { exact: true }).fill('qa-artwork.png')
   const cover = page.getByRole('button', { name: '查看作品 qa-artwork.png', exact: true })
   await cover.focus()
   await page.keyboard.press('Enter')
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
-  await expect(dialog.getByRole('button', { name: '關閉 ×' })).toBeFocused()
+  await expect(dialog.getByRole('button', { name: '關閉', exact: true })).toBeFocused()
+  await dialog.getByRole('tab', { name: '生成與來源', exact: true }).click()
   const downloadPromise = page.waitForEvent('download')
   await dialog.getByRole('link', { name: '下載完整工作流程', exact: true }).click()
   const download = await downloadPromise

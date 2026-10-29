@@ -79,6 +79,10 @@ async function cancelReload(page: Page) {
 }
 
 async function save(page: Page, id: string, button: Locator) {
+  const tab = await button.evaluate((element) =>
+    element.closest('[role="tabpanel"]')?.getAttribute('aria-labelledby'),
+  )
+  if (tab) await page.locator('#' + tab).click()
   const result = page.waitForResponse(
     (response) =>
       new URL(response.url()).pathname === `/api/artworks/${id}/organization` &&
@@ -100,7 +104,7 @@ async function close(page: Page) {
 
 async function scores(page: Page, values: (number | null)[]) {
   if (!(await page.locator('#rating-prompt_adherence').isVisible()))
-    await dialog(page).getByText('生成設定、人工評分與完整來源', { exact: true }).click()
+    await dialog(page).getByRole('tab', { name: '人工評分', exact: true }).click()
   for (const [index, key] of [
     'prompt_adherence',
     'character_consistency',
@@ -130,7 +134,7 @@ test('390px organize: filters, favorite, notes, archive, restore and immutable o
   await expect(
     card(page, item).getByRole('button', { name: '取消收藏：' + item.title, exact: true }),
   ).toHaveAttribute('aria-pressed', 'true')
-  await page.getByLabel('只看收藏', { exact: true }).check()
+  await page.getByRole('button', { name: '已收藏', exact: true }).click()
   await expect(page.locator('.artwork-card')).toHaveCount(1)
   await open(page, item)
   const note = group + ' saved observation'
@@ -138,7 +142,7 @@ test('390px organize: filters, favorite, notes, archive, restore and immutable o
   const notes = await save(
     page,
     item.id,
-    dialog(page).getByRole('button', { name: '保存筆記', exact: true }),
+    dialog(page).getByRole('button', { name: '保存筆記', exact: true, includeHidden: true }),
   )
   expect(notes.body).toEqual({ revision: favorite.value.revision, notes: note })
   await expect(dialog(page).getByRole('status').filter({ hasText: '筆記已保存' })).toBeVisible()
@@ -154,23 +158,27 @@ test('390px organize: filters, favorite, notes, archive, restore and immutable o
   ).toBeVisible()
   await page.getByLabel('模型篩選', { exact: true }).fill('')
   await expect(page.locator('.artwork-card')).toHaveCount(1)
+  await open(page, item)
   const archived = await save(
     page,
     item.id,
-    card(page, item).getByRole('button', { name: '封存作品：' + item.title, exact: true }),
+    dialog(page).getByRole('button', { name: '封存作品', exact: true }),
   )
   expect(archived.value.archived).toBe(true)
+  await close(page)
   await page.getByRole('button', { name: '重新整理', exact: true }).click()
   await expect(page.locator('.artwork-card')).toHaveCount(0)
-  await page.locator('#artwork-scope').selectOption('archived')
+  await page.getByRole('button', { name: '已封存', exact: true }).click()
   await expect(page.locator('.artwork-card')).toHaveCount(1)
+  await open(page, item)
   const restored = await save(
     page,
     item.id,
-    card(page, item).getByRole('button', { name: '還原作品：' + item.title, exact: true }),
+    dialog(page).getByRole('button', { name: '還原作品', exact: true }),
   )
   expect(restored.value.archived).toBe(false)
-  await page.locator('#artwork-scope').selectOption('active')
+  await close(page)
+  await page.getByRole('button', { name: '全部', exact: true }).click()
   await expect(page.locator('.artwork-card')).toHaveCount(1)
   await page.reload()
   await page.getByLabel('搜尋作品', { exact: true }).fill(note)
@@ -364,30 +372,40 @@ test('390px two tabs: notes and ratings conflict, explicit reload and save keep 
   await open(other, item)
   await other.getByLabel('作品筆記', { exact: true }).fill('saved by another tab')
   await scores(other, [1, 3, null, 2])
-  await expect(dialog(other).getByRole('button', { name: '保存筆記', exact: true })).toBeDisabled()
-  await expect(dialog(other).getByRole('button', { name: '保存評分', exact: true })).toBeDisabled()
+  await expect(
+    dialog(other).getByRole('button', { name: '保存筆記', exact: true, includeHidden: true }),
+  ).toBeDisabled()
+  await expect(
+    dialog(other).getByRole('button', { name: '保存評分', exact: true, includeHidden: true }),
+  ).toBeDisabled()
   await expect(dialog(other).getByRole('status')).toHaveText('作品清單讀取中，完成後即可保存。')
   releaseRead()
-  await expect(dialog(other).getByRole('button', { name: '保存筆記', exact: true })).toBeEnabled()
+  await expect(
+    dialog(other).getByRole('button', { name: '保存筆記', exact: true, includeHidden: true }),
+  ).toBeEnabled()
   await other.unroute('**/api/library/artworks?**')
-  await save(other, item.id, dialog(other).getByRole('button', { name: '保存筆記', exact: true }))
+  await save(
+    other,
+    item.id,
+    dialog(other).getByRole('button', { name: '保存筆記', exact: true, includeHidden: true }),
+  )
   const remote = await save(
     other,
     item.id,
-    dialog(other).getByRole('button', { name: '保存評分', exact: true }),
+    dialog(other).getByRole('button', { name: '保存評分', exact: true, includeHidden: true }),
   )
   await expect(dialog(other).getByRole('status').filter({ hasText: '評分已保存' })).toBeVisible()
   await page.bringToFront()
   const conflict = await save(
     page,
     item.id,
-    dialog(page).getByRole('button', { name: '保存評分', exact: true }),
+    dialog(page).getByRole('button', { name: '保存評分', exact: true, includeHidden: true }),
   )
   expect(conflict.status).toBe(409)
   const notesConflict = await save(
     page,
     item.id,
-    dialog(page).getByRole('button', { name: '保存筆記', exact: true }),
+    dialog(page).getByRole('button', { name: '保存筆記', exact: true, includeHidden: true }),
   )
   expect(notesConflict.status).toBe(409)
   await expect(dialog(page).getByRole('alert')).toContainText('另一個視窗')
@@ -396,6 +414,7 @@ test('390px two tabs: notes and ratings conflict, explicit reload and save keep 
   )
   await expect(page.locator('#rating-visual_style')).toHaveValue('2')
   await page.screenshot({ path: info.outputPath('rating-conflict.png') })
+  await dialog(page).getByRole('tab', { name: '作品與筆記', exact: true }).click()
   await decision(page, () =>
     dialog(page).getByRole('button', { name: '重新讀取筆記', exact: true }).click(),
   )
@@ -415,7 +434,7 @@ test('390px two tabs: notes and ratings conflict, explicit reload and save keep 
   const ratings = await save(
     page,
     item.id,
-    dialog(page).getByRole('button', { name: '保存評分', exact: true }),
+    dialog(page).getByRole('button', { name: '保存評分', exact: true, includeHidden: true }),
   )
   expect(ratings.status).toBe(200)
   expect(ratings.body.revision).toBe(remote.value.revision)
@@ -434,10 +453,12 @@ test('390px two tabs: notes and ratings conflict, explicit reload and save keep 
   const saving = save(
     page,
     item.id,
-    dialog(page).getByRole('button', { name: '保存筆記', exact: true }),
+    dialog(page).getByRole('button', { name: '保存筆記', exact: true, includeHidden: true }),
   )
   await expect(dialog(page).getByRole('button', { name: '關閉', exact: true })).toBeDisabled()
-  await expect(dialog(page).getByRole('button', { name: '保存評分', exact: true })).toBeDisabled()
+  await expect(
+    dialog(page).getByRole('button', { name: '保存評分', exact: true, includeHidden: true }),
+  ).toBeDisabled()
   await page.keyboard.press('Escape')
   await expect(dialog(page)).toBeVisible()
   await cancelReload(page)
@@ -457,7 +478,7 @@ test('390px two tabs: notes and ratings conflict, explicit reload and save keep 
   await page.getByRole('button', { name: '返回作品庫', exact: true }).click()
   await page.getByLabel('搜尋作品', { exact: true }).fill(group)
   await open(page, item)
-  await page.getByText('生成設定、人工評分與完整來源', { exact: true }).click()
+  await page.getByRole('tab', { name: '人工評分', exact: true }).click()
   await expect(page.locator('#rating-composition')).toHaveValue('4')
   await expect(page.getByLabel('作品筆記', { exact: true })).toHaveValue(
     'confirmed local rationale',
@@ -502,7 +523,7 @@ test('390px failed saves retain notes and scores without retries', async ({
   const failed = await save(
     page,
     item.id,
-    dialog(page).getByRole('button', { name: '保存評分', exact: true }),
+    dialog(page).getByRole('button', { name: '保存評分', exact: true, includeHidden: true }),
   )
   expect(failed.status).toBe(503)
   await expect(dialog(page).getByRole('alert')).toContainText('fixture organization failure')
@@ -517,13 +538,13 @@ test('390px failed saves retain notes and scores without retries', async ({
   const ratings = await save(
     page,
     item.id,
-    dialog(page).getByRole('button', { name: '保存評分', exact: true }),
+    dialog(page).getByRole('button', { name: '保存評分', exact: true, includeHidden: true }),
   )
   expect(ratings.status).toBe(200)
   const notes = await save(
     page,
     item.id,
-    dialog(page).getByRole('button', { name: '保存筆記', exact: true }),
+    dialog(page).getByRole('button', { name: '保存筆記', exact: true, includeHidden: true }),
   )
   expect(notes.status).toBe(200)
   await expect(dialog(page).getByRole('status').filter({ hasText: '筆記已保存' })).toBeVisible()

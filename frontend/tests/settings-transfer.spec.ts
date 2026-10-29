@@ -88,10 +88,14 @@ async function open(
   expect(response.ok()).toBe(true)
   const draft = await response.json()
   await page.goto('/#/studio/' + (mode === 'flux' ? 'flux' : 'checkpoint'))
-  await page
+  const row = page
     .locator(mode === 'flux' ? '.flux-draft' : '.draft-row')
     .filter({ has: page.getByText(value.title, { exact: true }) })
-    .click()
+  await row.evaluate((element) => {
+    for (let parent = element.parentElement; parent; parent = parent.parentElement)
+      if (parent instanceof HTMLDetailsElement) parent.open = true
+  })
+  await row.click()
   const discard = page.getByRole('button', {
     name: mode === 'flux' ? '捨棄變更並載入 FLUX' : '捨棄變更並載入',
     exact: true,
@@ -100,6 +104,11 @@ async function open(
   await expect(page.locator(mode === 'flux' ? '#flux-title' : '#draft-title')).toHaveValue(
     value.title,
   )
+  await page.locator('.settings-transfer').evaluateAll((elements) => {
+    for (const element of elements)
+      for (let parent = element.parentElement; parent; parent = parent.parentElement)
+        if (parent instanceof HTMLDetailsElement) parent.open = true
+  })
   await area(page).locator('summary').first().click()
   return { settings: value, draft, path }
 }
@@ -268,7 +277,9 @@ for (const width of [1440, 390])
         await request.get(`/api/artworks/${state.artwork_id}/settings-export`)
       ).body()
       await page.goto('/#/gallery')
+      await page.getByLabel('搜尋作品', { exact: true }).fill('qa-artwork.png')
       await page.getByRole('button', { name: '查看作品 qa-artwork.png', exact: true }).click()
+      await page.getByRole('dialog').getByRole('tab', { name: '生成與來源', exact: true }).click()
       const response = page.waitForResponse(
         (r) => new URL(r.url()).pathname === `/api/artworks/${state.artwork_id}/settings-export`,
       )
@@ -291,7 +302,7 @@ for (const width of [1440, 390])
       expect(doc.source_snapshot.workflow_json).toContain('18446744073709551615')
       expect(Buffer.from(doc.source_snapshot.workflow_json)).toEqual(Buffer.from(originalWorkflow))
       expect(doc.source_snapshot.id).toBe(state.artwork_id)
-      await page.getByRole('button', { name: '關閉 ×', exact: true }).click()
+      await page.getByRole('button', { name: '關閉', exact: true }).click()
       const source = await open(page, request, 'checkpoint')
       await paste(page, raw.toString())
       const result = await validate(page)

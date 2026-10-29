@@ -1,10 +1,38 @@
 <script setup lang="ts">
 import UiIcon from './UiIcon.vue'
+import OverflowText from './OverflowText.vue'
 import { vMasonry } from './masonry'
 const layout = ref('fixed')
 const importOpen = ref(false)
 const sort = ref('latest')
 const pageSize = ref(12)
+const detailTab = ref('notes')
+const detailTabs = [
+  { id: 'notes', label: '作品與筆記' },
+  { id: 'ratings', label: '人工評分' },
+  { id: 'sources', label: '生成與來源' },
+]
+function changeDetailTab(id: string) {
+  detailTab.value = id
+  preview.value?.querySelector('.artwork-detail-scroll')?.scrollTo(0, 0)
+}
+function detailTabKey(event: KeyboardEvent, index: number) {
+  const last = detailTabs.length - 1
+  const next =
+    event.key === 'ArrowRight'
+      ? (index + 1) % detailTabs.length
+      : event.key === 'ArrowLeft'
+        ? (index + last) % detailTabs.length
+        : event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? last
+            : -1
+  if (next < 0) return
+  event.preventDefault()
+  changeDetailTab(detailTabs[next]!.id)
+  preview.value?.querySelector<HTMLButtonElement>('#artwork-tab-' + detailTab.value)?.focus()
+}
 function clearFilters() {
   search.value = ''
   modelFilter.value = ''
@@ -25,6 +53,16 @@ function ratingSummary(ratings: Ratings) {
 function artworkDate(item: Artwork) {
   const date = new Date(item.created_at || item.imported_at)
   return Number.isNaN(date.getTime()) ? '日期未知' : date.toLocaleDateString('zh-TW')
+}
+function workflowLabel(id?: string | null) {
+  if (isInpaintWorkflow(id)) return '局部編輯'
+  if (isControlWorkflow(id)) return '結構參考'
+  if (id === referenceWorkflowId) return '畫風／角色參考'
+  if (id === imageWorkflowId || id === fluxImageId) return '圖生圖'
+  if (id === structureWorkflowId) return '結構輸出'
+  if (!id || ['checkpoint-text2image-v1', fluxWorkflowId, fluxLoraId].includes(id))
+    return '文字生圖'
+  return '其他工作流程'
 }
 function selectCollection(value: 'active' | 'archived', favorites = false) {
   scope.value = value
@@ -66,7 +104,7 @@ import { referenceWorkflowId } from './adapterSettings'
 import ReferenceComponentsSnapshot from './ReferenceComponentsSnapshot.vue'
 import { imageWorkflowId, type ReferenceSnapshot as ReferenceMetadata } from './referenceSettings'
 import { fluxWorkflowId, type ComponentSnapshot as ComponentMetadata } from './fluxSettings'
-import { isFluxExtension } from './fluxExtensions'
+import { fluxImageId, fluxLoraId, isFluxExtension } from './fluxExtensions'
 const props = defineProps<{ jobId?: string; comparing?: boolean }>()
 const emit = defineEmits<{
   studio: []
@@ -461,6 +499,7 @@ async function open(item: Artwork) {
     return
   }
   selected.value = item
+  detailTab.value = 'notes'
   notesDraft.value = item.notes
   ratingsDraft.value = { ...item.ratings }
   organizationError.value = ''
@@ -479,7 +518,9 @@ function closePreview() {
     !window.confirm('筆記或評分尚未保存，確定關閉並放棄變更？')
   )
     return false
+  // A native close event can arrive after the next open; clear this selection synchronously.
   preview.value?.close()
+  selected.value = null
   return true
 }
 function replaceItem(item: Artwork) {
@@ -751,61 +792,23 @@ onBeforeUnmount(() => {
           ><UiIcon name="check" :size="20" /></button
         ><div class="gallery-card-meta"
           ><div class="card-title"
-            ><h2>{{ item.title }}</h2
-            ><span v-if="item.archived" class="archive-badge">已封存</span
-            ><span v-if="item.favorite" class="favorite-badge">★ 收藏</span></div
-          ><p>{{ item.checkpoint }} · {{ item.width }}×{{ item.height }}</p
-          ><p class="gallery-rating" title="只計入已評項目；未評項目不當作零分">{{
-            ratingSummary(item.ratings)
-          }}</p
-          ><p class="gallery-date">{{ artworkDate(item) }}</p
-          ><details
-            ><summary>資訊與操作</summary
-            ><p
-              >{{ item.width }} × {{ item.height }} ·
-              {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p
-            >
-            <p>{{ item.checkpoint }} · 版本 {{ item.model_version }}</p>
-            <p v-if="item.notes" class="note-excerpt"
-              >{{ item.notes.slice(0, 160)
-              }}{{ item.notes_truncated || item.notes.length > 160 ? '…' : '' }}</p
-            >
-            <p v-if="isControlWorkflow(item.workflow_id)">Canny 結構參考 · 輪廓條件</p>
-            <p v-if="item.workflow_id === referenceWorkflowId">畫風／角色外觀參考 · 非身份鎖定</p>
-            <p v-if="isInpaintWorkflow(item.workflow_id)">局部編輯 · 原圖與遮罩</p>
-            <p v-if="item.workflow_id === imageWorkflowId"
-              >圖生圖 · 參考素材 {{ item.reference_metadata?.length ?? 0 }} 張</p
-            >
-            <p v-for="(lora, index) in item.lora_metadata ?? []" :key="index"
-              >LoRA {{ lora.name }} · 版本 {{ lora.version?.trim() || '未知' }}</p
-            >
-            <p v-if="!item.image_available" class="missing"
-              >原圖已遺失，請從備份還原；生成參數仍保留。</p
-            >
-            <div class="organization-actions"
-              ><button
-                class="secondary"
-                :aria-label="(item.archived ? '還原作品：' : '封存作品：') + item.title"
-                :disabled="busy || saving"
-                @click="archive(item)"
-                >{{ item.archived ? '還原作品' : '封存作品' }}</button
-              ></div
-            >
-            <div class="artwork-actions"
-              ><button
-                class="secondary"
-                :aria-label="'預覽與參數：' + item.title"
-                @click="open(item)"
-                >預覽與參數</button
-              ><button
-                class="secondary"
-                :aria-label="'載入創作設定：' + item.title"
-                @click="restore(item)"
-                >載入創作設定 →</button
-              ><a v-if="item.image_available" :href="imageUrl(item) + '?download=true'"
-                >下載原圖 ↓</a
-              ></div
-            ></details
+            ><h2><OverflowText :text="item.title" /></h2
+            ><span v-if="item.archived" class="archive-badge">已封存</span></div
+          ><p class="gallery-model-name"><OverflowText :text="item.checkpoint" /></p
+          ><p class="gallery-file-meta"
+            ><span>{{ item.width }} × {{ item.height }}</span
+            ><span>{{ (item.size / 1024 / 1024).toFixed(2) }} MiB</span></p
+          ><div class="gallery-card-footer"
+            ><p class="gallery-rating" title="只計入已評項目；未評項目不當作零分">{{
+              ratingSummary(item.ratings)
+            }}</p
+            ><p class="gallery-date">{{ artworkDate(item) }}</p></div
+          ><button
+            class="gallery-inspect"
+            :aria-label="'查看詳情：' + item.title"
+            @click="open(item)"
+            ><span>{{ item.image_available ? '查看詳情' : '原圖遺失 · 查看資料' }}</span
+            ><span aria-hidden="true">→</span></button
           ></div
         ></article
       ></div
@@ -917,266 +920,335 @@ onBeforeUnmount(() => {
     class="artwork-dialog"
     aria-labelledby="artwork-preview-title"
     @cancel.prevent="closePreview"
-    @close="selected = null"
   >
     <template v-if="selected">
-      <div class="preview-grid"
-        ><div class="preview-image"
-          ><img
+      <header class="preview-heading">
+        <div class="artwork-detail-title">
+          <p
+            >作品詳情 <span>· {{ artworkDate(selected) }}</span
+            ><span v-if="selected.archived" class="archive-badge">已封存</span></p
+          >
+          <h2 id="artwork-preview-title"><OverflowText :text="selected.title" /></h2>
+        </div>
+        <div class="preview-top-actions">
+          <button
+            class="secondary artwork-favorite"
+            :aria-pressed="!!selected.favorite"
+            :disabled="busy || saving"
+            @click="
+              organize(
+                selected,
+                { favorite: !selected.favorite },
+                selected.favorite ? '已取消收藏。' : '已加入收藏。',
+              )
+            "
+            >{{ selected.favorite ? '★ 已收藏' : '☆ 收藏' }}</button
+          >
+          <button
+            class="secondary"
+            :disabled="busy || saving || notesDirty || ratingsDirty"
+            @click="archive(selected)"
+            >{{ selected.archived ? '還原作品' : '封存作品' }}</button
+          >
+          <button class="secondary" :disabled="saving" autofocus @click="closePreview">關閉</button>
+        </div>
+      </header>
+      <div class="preview-grid">
+        <div class="preview-image">
+          <img
             v-if="selected.image_available"
             :src="imageUrl(selected)"
             :alt="selected.title"
             @error="selected.image_available = false"
-          /><p v-else class="notice warning">原圖無法讀取，請重新整理作品庫或從備份還原。</p></div
-        >
-        <div class="artwork-info"
-          ><div class="preview-heading"
-            ><h2 id="artwork-preview-title"
-              >{{ selected.title }}<small v-if="selected.archived"> · 已封存</small></h2
-            ><div class="preview-top-actions"
-              ><button
-                class="secondary"
-                :disabled="busy || saving || notesDirty || ratingsDirty"
-                @click="archive(selected)"
-                >{{ selected.archived ? '還原作品' : '封存作品' }}</button
-              ><button class="secondary" :disabled="saving" autofocus @click="closePreview"
-                >關閉</button
-              ></div
-            ></div
-          ><dl class="artwork-facts"
-            ><div
-              ><dt>模型</dt><dd>{{ selected.checkpoint }}</dd></div
-            ><div
-              ><dt>尺寸</dt><dd>{{ selected.width }} × {{ selected.height }}</dd></div
-            ><div
-              ><dt>像素量</dt
-              ><dd>{{ ((selected.width * selected.height) / 1e6).toFixed(2) }} MP</dd></div
-            ><div
-              ><dt>狀態</dt
-              ><dd>{{
-                selected.archived ? '已封存' : selected.favorite ? '已收藏' : '一般'
-              }}</dd></div
-            ></dl
-          ><section class="organization-panel" aria-label="作品管理"
-            ><h3>作品管理</h3
-            ><p v-if="busy" class="footnote" role="status">作品清單讀取中，完成後即可保存。</p
-            ><div class="organization-actions"
-              ><button
-                class="secondary"
-                :aria-pressed="!!selected.favorite"
-                :disabled="busy || saving"
-                @click="
-                  organize(
-                    selected,
-                    { favorite: !selected.favorite },
-                    selected.favorite ? '已取消收藏。' : '已加入收藏。',
+          />
+          <p v-else class="notice warning">原圖無法讀取，請重新整理作品庫或從備份還原。</p>
+        </div>
+        <div class="artwork-info">
+          <div class="artwork-context"
+            ><span>模型</span><strong><OverflowText :text="selected.checkpoint" /></strong
+          ></div>
+          <div class="artwork-actions artwork-primary-actions">
+            <button class="primary" @click="restore(selected)">載入創作設定 →</button>
+            <a v-if="selected.image_available" :href="imageUrl(selected) + '?download=true'"
+              >下載原圖 ↓</a
+            >
+          </div>
+          <p class="artwork-action-help">載入設定只填入創作台，不會自動生成。</p>
+          <div class="artwork-detail-tabs" role="tablist" aria-label="作品詳情分類">
+            <button
+              v-for="(tab, index) in detailTabs"
+              :key="tab.id"
+              :id="'artwork-tab-' + tab.id"
+              role="tab"
+              :aria-label="tab.label"
+              :aria-description="
+                (tab.id === 'notes' ? notesDirty : tab.id === 'ratings' && ratingsDirty)
+                  ? '有尚未保存的變更'
+                  : undefined
+              "
+              :aria-selected="detailTab === tab.id"
+              :aria-controls="'artwork-panel-' + tab.id"
+              :tabindex="detailTab === tab.id ? 0 : -1"
+              @click="changeDetailTab(tab.id)"
+              @keydown="detailTabKey($event, index)"
+              >{{ tab.label
+              }}<span
+                v-if="tab.id === 'notes' ? notesDirty : tab.id === 'ratings' && ratingsDirty"
+                class="artwork-dirty-dot"
+                aria-hidden="true"
+                title="尚未保存"
+              ></span
+            ></button>
+          </div>
+          <div class="artwork-detail-scroll">
+            <p v-if="busy" class="footnote" role="status">作品清單讀取中，完成後即可保存。</p>
+            <p v-if="organizationError" class="notice warning" role="alert">{{
+              organizationError
+            }}</p>
+            <p v-if="organizationMessage" class="notice" role="status">{{ organizationMessage }}</p>
+            <section
+              id="artwork-panel-notes"
+              v-show="detailTab === 'notes'"
+              role="tabpanel"
+              aria-labelledby="artwork-tab-notes"
+              tabindex="0"
+            >
+              <dl class="artwork-facts">
+                <div
+                  ><dt>尺寸</dt
+                  ><dd>{{ selected.width }} × {{ selected.height }} <small>px</small></dd></div
+                >
+                <div
+                  ><dt>像素量</dt
+                  ><dd
+                    >{{ ((selected.width * selected.height) / 1e6).toFixed(2) }}
+                    <small>MP</small></dd
+                  ></div
+                >
+                <div
+                  ><dt>檔案大小</dt
+                  ><dd>{{ (selected.size / 1024 / 1024).toFixed(2) }} <small>MiB</small></dd></div
+                >
+                <div
+                  ><dt>創作方式</dt><dd>{{ workflowLabel(selected.workflow_id) }}</dd></div
+                >
+              </dl>
+              <section class="organization-panel" aria-label="作品管理">
+                <form @submit.prevent="organize(selected, { notes: notesDraft }, '筆記已保存。')"
+                  ><label for="artwork-notes">作品筆記</label
+                  ><textarea
+                    id="artwork-notes"
+                    v-model="notesDraft"
+                    rows="5"
+                    maxlength="10000"
+                    :disabled="saving"
+                    aria-describedby="artwork-notes-help"
+                    placeholder="記下這次實驗的觀察、用途或下次想調整的參數。"
+                  ></textarea
+                  ><p id="artwork-notes-help" class="footnote"
+                    >最多 10,000 字 · {{ notesDirty ? '有尚未保存的變更' : '筆記已同步' }}。</p
+                  ><div class="organization-actions"
+                    ><button class="primary" :disabled="busy || saving || !notesDirty">{{
+                      saving ? '保存中…' : '保存筆記'
+                    }}</button
+                    ><button type="button" class="secondary" :disabled="saving" @click="reloadNotes"
+                      >重新讀取筆記</button
+                    ></div
+                  ></form
+                ><p class="footnote"
+                  >修訂 {{ selected.revision }} ·
+                  {{
+                    selected.organization_updated_at
+                      ? new Date(selected.organization_updated_at).toLocaleString()
+                      : '尚未整理'
+                  }}</p
+                ></section
+              >
+              <p class="footnote">封存後仍可預覽、下載與還原。</p>
+            </section>
+            <section
+              id="artwork-panel-ratings"
+              v-show="detailTab === 'ratings'"
+              role="tabpanel"
+              aria-labelledby="artwork-tab-ratings"
+              tabindex="0"
+            >
+              <section class="organization-panel artwork-rating-panel" aria-label="人工評分"
+                ><h3>人工評分</h3
+                ><p class="footnote"
+                  >1 最低、5 最高；未觀察／不適用請留空。這是個人觀察，不代表模型自動驗證。</p
+                ><form
+                  @submit.prevent="organize(selected, { ratings: ratingsDraft }, '評分已保存。')"
+                  ><label v-for="(label, key) in ratingLabels" :key="key" :for="'rating-' + key"
+                    >{{ label
+                    }}<select
+                      :id="'rating-' + key"
+                      :aria-label="label"
+                      v-model="ratingsDraft[key]"
+                      :disabled="saving"
+                      ><option :value="null">未評分／不適用</option
+                      ><option v-for="score in 5" :key="score" :value="score"
+                        >{{ score }} / 5</option
+                      ></select
+                    ></label
+                  ><p v-if="ratingsDirty" class="footnote">評分有尚未保存變更。</p
+                  ><button class="primary" :disabled="busy || saving || !ratingsDirty"
+                    >保存評分</button
+                  ></form
+                ></section
+              >
+            </section>
+            <section
+              id="artwork-panel-sources"
+              v-show="detailTab === 'sources'"
+              role="tabpanel"
+              aria-labelledby="artwork-tab-sources"
+              tabindex="0"
+              class="artwork-extra"
+            >
+              <div class="artwork-source-actions">
+                <a :href="`/api/artworks/${selected.id}/workflow`">下載完整工作流程</a>
+                <a :href="`/api/jobs/${selected.job_id}`" target="_blank" rel="noopener"
+                  >原始任務 JSON ↗</a
+                >
+              </div>
+              <h3>生成設定</h3>
+              <dl
+                ><dt>Checkpoint</dt><dd>{{ selected.checkpoint }}</dd
+                ><dt>模型版本（提交時登記）</dt><dd>{{ selected.model_version }}</dd
+                ><dt>圖片尺寸</dt><dd>{{ selected.width }} × {{ selected.height }}</dd
+                ><dt>Seed</dt><dd>{{ selected.parameters.seed ?? '未知' }}</dd
+                ><dt>Steps / CFG</dt
+                ><dd
+                  >{{ selected.parameters.steps ?? '未知' }} /
+                  {{ selected.parameters.cfg ?? '未知' }}</dd
+                ><dt>Sampler / Scheduler</dt
+                ><dd
+                  >{{ selected.parameters.sampler ?? '未知' }} /
+                  {{ selected.parameters.scheduler ?? '未知' }}</dd
+                ><dt>Denoise</dt><dd>{{ selected.parameters.denoise ?? '未知' }}</dd></dl
+              >
+              <h3>畫面描述</h3>
+              <p class="prompt">{{
+                selected.parameters.prompt ?? '無法從此工作流程解析，請查看完整 JSON。'
+              }}</p>
+              <h3>負面提示詞</h3>
+              <p class="prompt">{{ selected.parameters.negative_prompt || '未設定或無法解析' }}</p>
+              <details class="model-snapshot"
+                ><summary>提交時模型資料</summary>
+                <template v-if="selected.model_metadata"
+                  ><p class="footnote"
+                    >保留任務提交時的使用者登記，不隨模型庫後續編輯改動；不代表平台已驗證檔案、授權或相容性。</p
+                  ><dl>
+                    <dt>模型檔名</dt><dd>{{ selected.model_metadata.name || '未知' }}</dd>
+                    <dt>登記版本</dt
+                    ><dd>{{ selected.model_metadata.version?.trim() || '未知' }}</dd>
+                    <dt>登記架構</dt
+                    ><dd>{{ architectureLabel(selected.model_metadata.architecture) }}</dd>
+                    <dt>模型檔案大小</dt><dd>{{ fileSize(selected.model_metadata.size_bytes) }}</dd>
+                    <dt>模型檔案 SHA-256</dt
+                    ><dd class="file-hash">{{ fileHash(selected.model_metadata.sha256) }}</dd>
+                    <dt>模型來源</dt
+                    ><dd
+                      ><a
+                        v-if="safeMetadataUrl(selected.model_metadata.source_url)"
+                        :href="safeMetadataUrl(selected.model_metadata.source_url)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >查看當時登記來源 ↗</a
+                      ><span v-else>未知</span></dd
+                    >
+                    <dt>授權名稱／標記</dt
+                    ><dd>{{ selected.model_metadata.license_name?.trim() || '未知' }}</dd>
+                    <dt>授權條款網址</dt
+                    ><dd
+                      ><a
+                        v-if="safeMetadataUrl(selected.model_metadata.license_url)"
+                        :href="safeMetadataUrl(selected.model_metadata.license_url)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >查看當時登記條款 ↗</a
+                      ><span v-else>未知</span></dd
+                    >
+                    <dt>登記資料更新</dt
+                    ><dd>{{ metadataTime(selected.model_metadata.metadata_updated_at) }}</dd>
+                    <dt>快照保存</dt
+                    ><dd>{{ metadataTime(selected.model_metadata.captured_at) }}</dd>
+                  </dl></template
+                >
+                <p v-else class="footnote"
+                  >此作品尚無提交時的模型資料快照，當時架構、檔案識別及授權資訊未知。</p
+                >
+              </details>
+              <LoraSnapshot
+                v-if="
+                  !selected.workflow_id ||
+                  selected.workflow_id === 'checkpoint-text2image-v1' ||
+                  isFluxExtension(selected.workflow_id) ||
+                  selected.workflow_id === imageWorkflowId ||
+                  isInpaintWorkflow(selected.workflow_id) ||
+                  isControlWorkflow(selected.workflow_id)
+                "
+                :items="selected.lora_metadata"
+              />
+              <a
+                v-if="
+                  !selected.workflow_id ||
+                  ['checkpoint-text2image-v1', imageWorkflowId, fluxWorkflowId].includes(
+                    selected.workflow_id,
                   )
                 "
-                >{{ selected.favorite ? '★ 已收藏' : '☆ 收藏' }}</button
-              ></div
-            ><form @submit.prevent="organize(selected, { notes: notesDraft }, '筆記已保存。')"
-              ><label for="artwork-notes">作品筆記</label
-              ><textarea
-                id="artwork-notes"
-                v-model="notesDraft"
-                rows="5"
-                maxlength="10000"
-                :disabled="saving"
-                aria-describedby="artwork-notes-help"
-                placeholder="記下這次實驗的觀察、用途或下次想調整的參數。"
-              ></textarea
-              ><p id="artwork-notes-help" class="footnote"
-                >最多 10,000 字 ·
-                {{
-                  notesDirty ? '有尚未保存的變更' : '筆記已同步'
-                }}。封存後仍可預覽、下載與還原。</p
-              ><div class="organization-actions"
-                ><button class="primary" :disabled="busy || saving || !notesDirty">{{
-                  saving ? '保存中…' : '保存筆記'
-                }}</button
-                ><button type="button" class="secondary" :disabled="saving" @click="reloadNotes"
-                  >重新讀取筆記</button
-                ></div
-              ></form
-            ><p class="footnote"
-              >修訂 {{ selected.revision }} ·
-              {{
-                selected.organization_updated_at
-                  ? new Date(selected.organization_updated_at).toLocaleString()
-                  : '尚未整理'
-              }}</p
-            ><p v-if="organizationError" class="notice warning" role="alert">{{
-              organizationError
-            }}</p
-            ><p v-if="organizationMessage" class="notice" role="status">{{
-              organizationMessage
-            }}</p></section
-          ><div class="artwork-actions"
-            ><button class="primary" @click="restore(selected)">載入創作設定 →</button
-            ><a v-if="selected.image_available" :href="imageUrl(selected) + '?download=true'"
-              >下載原圖 ↓</a
-            ><a :href="`/api/artworks/${selected.id}/workflow`">下載完整工作流程</a
-            ><a :href="`/api/jobs/${selected.job_id}`" target="_blank" rel="noopener"
-              >原始任務 JSON ↗</a
-            ></div
-          ><p class="footnote">載入設定只填入創作台，不會自動生成。封存後可隨時還原。</p
-          ><details class="artwork-extra"
-            ><summary>生成設定、人工評分與完整來源</summary
-            ><section class="organization-panel" aria-label="人工評分"
-              ><h3>人工評分</h3
-              ><p class="footnote"
-                >1 最低、5 最高；未觀察／不適用請留空。這是個人觀察，不代表模型自動驗證。</p
-              ><form @submit.prevent="organize(selected, { ratings: ratingsDraft }, '評分已保存。')"
-                ><label v-for="(label, key) in ratingLabels" :key="key" :for="'rating-' + key"
-                  >{{ label
-                  }}<select
-                    :id="'rating-' + key"
-                    :aria-label="label"
-                    v-model="ratingsDraft[key]"
-                    :disabled="saving"
-                    ><option :value="null">未評分／不適用</option
-                    ><option v-for="score in 5" :key="score" :value="score"
-                      >{{ score }} / 5</option
-                    ></select
-                  ></label
-                ><p v-if="ratingsDirty" class="footnote">評分有尚未保存變更。</p
-                ><button class="primary" :disabled="busy || saving || !ratingsDirty"
-                  >保存評分</button
-                ></form
+                :href="`/api/artworks/${selected.id}/settings-export`"
+                >匯出創作設定（含來源快照）</a
+              >
+              <ControlSnapshot
+                v-if="isControlWorkflow(selected.workflow_id)"
+                :items="selected.component_metadata"
+              />
+              <ReferenceComponentsSnapshot
+                v-else-if="selected.workflow_id === referenceWorkflowId"
+                :items="selected.component_metadata"
+              />
+              <ComponentSnapshot v-else :items="selected.component_metadata" />
+              <ExperimentSnapshot :item="selected.experiment_context" />
+              <RuntimeSnapshot :item="selected.runtime_metadata" />
+              <JobMeasurements :item="selected.measurements" />
+              <StructureOutput
+                v-if="selected.workflow_id === structureWorkflowId"
+                :job-id="selected.job_id"
+              />
+              <ControlEdgePreview
+                v-if="selected.workflow_id === controlEdgeWorkflowId"
+                :key="selected.id"
+                :job-id="selected.job_id"
+                :artwork-id="selected.id"
+              />
+              <p
+                v-else-if="
+                  selected.workflow_id !== structureWorkflowId &&
+                  isControlWorkflow(selected.workflow_id)
+                "
+                class="footnote"
+                >舊版 v1 沒有保存同次邊緣輸出，不會重新計算歷史圖。</p
+              >
+              <ReferenceSnapshot
+                :items="selected.reference_metadata"
+                :job-id="selected.job_id"
+                :processed-ready="true"
+              />
+              <details
+                ><summary>作品來源紀錄</summary><p>原引擎：{{ selected.engine_url }}</p
+                ><p>任務：{{ selected.job_id }}</p
+                ><p>提交：{{ new Date(selected.created_at).toLocaleString() }}</p
+                ><p>匯入：{{ new Date(selected.imported_at).toLocaleString() }}</p
+                ><p class="file-hash">作品原圖 SHA-256：{{ selected.sha256 }}</p></details
               ></section
             >
-            <h3>生成設定</h3>
-            <dl
-              ><dt>Checkpoint</dt><dd>{{ selected.checkpoint }}</dd
-              ><dt>模型版本（提交時登記）</dt><dd>{{ selected.model_version }}</dd
-              ><dt>圖片尺寸</dt><dd>{{ selected.width }} × {{ selected.height }}</dd
-              ><dt>Seed</dt><dd>{{ selected.parameters.seed ?? '未知' }}</dd
-              ><dt>Steps / CFG</dt
-              ><dd
-                >{{ selected.parameters.steps ?? '未知' }} /
-                {{ selected.parameters.cfg ?? '未知' }}</dd
-              ><dt>Sampler / Scheduler</dt
-              ><dd
-                >{{ selected.parameters.sampler ?? '未知' }} /
-                {{ selected.parameters.scheduler ?? '未知' }}</dd
-              ><dt>Denoise</dt><dd>{{ selected.parameters.denoise ?? '未知' }}</dd></dl
-            >
-            <h3>畫面描述</h3>
-            <p class="prompt">{{
-              selected.parameters.prompt ?? '無法從此工作流程解析，請查看完整 JSON。'
-            }}</p>
-            <h3>負面提示詞</h3>
-            <p class="prompt">{{ selected.parameters.negative_prompt || '未設定或無法解析' }}</p>
-            <details class="model-snapshot"
-              ><summary>提交時模型資料</summary>
-              <template v-if="selected.model_metadata"
-                ><p class="footnote"
-                  >保留任務提交時的使用者登記，不隨模型庫後續編輯改動；不代表平台已驗證檔案、授權或相容性。</p
-                ><dl>
-                  <dt>模型檔名</dt><dd>{{ selected.model_metadata.name || '未知' }}</dd>
-                  <dt>登記版本</dt><dd>{{ selected.model_metadata.version?.trim() || '未知' }}</dd>
-                  <dt>登記架構</dt
-                  ><dd>{{ architectureLabel(selected.model_metadata.architecture) }}</dd>
-                  <dt>模型檔案大小</dt><dd>{{ fileSize(selected.model_metadata.size_bytes) }}</dd>
-                  <dt>模型檔案 SHA-256</dt
-                  ><dd class="file-hash">{{ fileHash(selected.model_metadata.sha256) }}</dd>
-                  <dt>模型來源</dt
-                  ><dd
-                    ><a
-                      v-if="safeMetadataUrl(selected.model_metadata.source_url)"
-                      :href="safeMetadataUrl(selected.model_metadata.source_url)"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      >查看當時登記來源 ↗</a
-                    ><span v-else>未知</span></dd
-                  >
-                  <dt>授權名稱／標記</dt
-                  ><dd>{{ selected.model_metadata.license_name?.trim() || '未知' }}</dd>
-                  <dt>授權條款網址</dt
-                  ><dd
-                    ><a
-                      v-if="safeMetadataUrl(selected.model_metadata.license_url)"
-                      :href="safeMetadataUrl(selected.model_metadata.license_url)"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      >查看當時登記條款 ↗</a
-                    ><span v-else>未知</span></dd
-                  >
-                  <dt>登記資料更新</dt
-                  ><dd>{{ metadataTime(selected.model_metadata.metadata_updated_at) }}</dd>
-                  <dt>快照保存</dt><dd>{{ metadataTime(selected.model_metadata.captured_at) }}</dd>
-                </dl></template
-              >
-              <p v-else class="footnote"
-                >此作品尚無提交時的模型資料快照，當時架構、檔案識別及授權資訊未知。</p
-              >
-            </details>
-            <LoraSnapshot
-              v-if="
-                !selected.workflow_id ||
-                isFluxExtension(selected.workflow_id) ||
-                selected.workflow_id === imageWorkflowId ||
-                isInpaintWorkflow(selected.workflow_id) ||
-                isControlWorkflow(selected.workflow_id)
-              "
-              :items="selected.lora_metadata"
-            />
-            <a
-              v-if="
-                !selected.workflow_id ||
-                ['checkpoint-text2image-v1', imageWorkflowId, fluxWorkflowId].includes(
-                  selected.workflow_id,
-                )
-              "
-              :href="`/api/artworks/${selected.id}/settings-export`"
-              >匯出創作設定（含來源快照）</a
-            >
-            <ControlSnapshot
-              v-if="isControlWorkflow(selected.workflow_id)"
-              :items="selected.component_metadata"
-            />
-            <ReferenceComponentsSnapshot
-              v-else-if="selected.workflow_id === referenceWorkflowId"
-              :items="selected.component_metadata"
-            />
-            <ComponentSnapshot v-else :items="selected.component_metadata" />
-            <ExperimentSnapshot :item="selected.experiment_context" />
-            <RuntimeSnapshot :item="selected.runtime_metadata" />
-            <JobMeasurements :item="selected.measurements" />
-            <StructureOutput
-              v-if="selected.workflow_id === structureWorkflowId"
-              :job-id="selected.job_id"
-            />
-            <ControlEdgePreview
-              v-if="selected.workflow_id === controlEdgeWorkflowId"
-              :key="selected.id"
-              :job-id="selected.job_id"
-              :artwork-id="selected.id"
-            />
-            <p
-              v-else-if="
-                selected.workflow_id !== structureWorkflowId &&
-                isControlWorkflow(selected.workflow_id)
-              "
-              class="footnote"
-              >舊版 v1 沒有保存同次邊緣輸出，不會重新計算歷史圖。</p
-            >
-            <ReferenceSnapshot
-              :items="selected.reference_metadata"
-              :job-id="selected.job_id"
-              :processed-ready="true"
-            />
-            <details
-              ><summary>作品來源紀錄</summary><p>原引擎：{{ selected.engine_url }}</p
-              ><p>任務：{{ selected.job_id }}</p
-              ><p>提交：{{ new Date(selected.created_at).toLocaleString() }}</p
-              ><p>匯入：{{ new Date(selected.imported_at).toLocaleString() }}</p
-              ><p class="file-hash">作品原圖 SHA-256：{{ selected.sha256 }}</p></details
-            ></details
-          ></div
-        ></div
-      ></template
-    >
+          </div></div
+        >
+      </div>
+    </template>
+    <div data-overflow-tooltip-root></div>
   </dialog>
 </template>
 

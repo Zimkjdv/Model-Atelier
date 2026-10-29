@@ -287,6 +287,7 @@ for (const width of [1440, 390]) {
     }, info) => {
       const data = await prepare(request)
       await page.goto('/#/studio/checkpoint')
+      await page.getByRole('button', { name: '任務與歷史資訊', exact: true }).click()
       const snapshots = []
       async function check(area: ReturnType<Page['locator']>, kind: string) {
         await area.locator('summary').click()
@@ -327,6 +328,7 @@ for (const width of [1440, 390]) {
         await page
           .getByRole('button', { name: '查看作品 ' + entry.artwork.title, exact: true })
           .click()
+        await page.getByRole('dialog').getByRole('tab', { name: '生成與來源', exact: true }).click()
         const area = page.getByRole('dialog').locator('.job-measurements')
         await check(area, entry.kind)
         await area.locator('p').last().scrollIntoViewIfNeeded()
@@ -338,7 +340,7 @@ for (const width of [1440, 390]) {
         expect(await (await request.get('/api/jobs/' + entry.job.id)).json()).toEqual(
           snapshots.find((v) => v.id === entry.job.id),
         )
-        await page.getByRole('button', { name: '關閉 ×', exact: true }).click()
+        await page.getByRole('button', { name: '關閉', exact: true }).click()
       }
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),

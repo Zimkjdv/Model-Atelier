@@ -16,6 +16,7 @@ for (const width of [1440, 390]) {
       .first()
       .click()
     const dialog = page.getByRole('dialog')
+    await dialog.getByRole('tab', { name: '生成與來源', exact: true }).click()
     await dialog.getByText('任務耗時與資源來源', { exact: true }).click()
     const samples = dialog.getByRole('group', { name: '連續資源取樣' })
     await expect(samples).toContainText('成功 3／嘗試 3 次')
