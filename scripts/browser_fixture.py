@@ -197,7 +197,13 @@ def fixture(data, count=None, legacy_ui=False, empty=False):
             from scripts.flux_fixture import definitions
 
             if name in definitions():
-                return httpx.Response(200, json={name: definitions()[name]})
+                definition = definitions()[name]
+                if name == 'KSampler' and state.get('simple_creation'):
+                    definition['input']['required']['sampler_name'][0].extend(
+                        ['euler_ancestral', 'dpmpp_2m']
+                    )
+                    definition['input']['required']['scheduler'][0].append('karras')
+                return httpx.Response(200, json={name: definition})
         if name == 'CheckpointLoaderSimple':
             value = {name: {'input': {'required': {'ckpt_name': [['demo.safetensors']]}}}}
             if state.get('fooocus'):
@@ -209,8 +215,14 @@ def fixture(data, count=None, legacy_ui=False, empty=False):
                 name: {
                     'input': {
                         'required': {
-                            'sampler_name': [['euler']],
-                            'scheduler': [['normal']],
+                            'sampler_name': [
+                                ['euler', 'euler_ancestral', 'dpmpp_2m']
+                                if state.get('simple_creation')
+                                else ['euler']
+                            ],
+                            'scheduler': [
+                                ['normal', 'karras'] if state.get('simple_creation') else ['normal']
+                            ],
                             'steps': ['INT', {'min': 1, 'max': 10000, 'default': 20}],
                             'cfg': ['FLOAT', {'min': 0, 'max': 100, 'default': 7}],
                             'denoise': ['FLOAT', {'min': 0, 'max': 1, 'default': 1}],
@@ -357,6 +369,11 @@ def fixture(data, count=None, legacy_ui=False, empty=False):
             asset_id=asset['id'] if asset else None,
             mask_asset_id=mask_asset['id'] if mask_asset else None,
         )
+
+    @wrapper.post('/qa/simple-creation')
+    def prepare_simple_creation(enabled: bool = True):
+        state['simple_creation'] = enabled
+        return {'synthetic_only': True}
 
     @wrapper.post('/qa/flux-extensions')
     def prepare_flux_extensions(enabled: bool = True):

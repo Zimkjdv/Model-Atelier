@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises'
 async function studio(page: Page, mode = 'Checkpoint／SDXL') {
   await page.goto('/')
   await page.getByRole('button', { name: '創作工作台', exact: true }).click()
+  await page.getByRole('tab', { name: '進階工作台', exact: true }).click()
   await page.getByRole('button', { name: mode, exact: true }).click()
 }
 

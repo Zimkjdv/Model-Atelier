@@ -13,6 +13,7 @@ for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 1000 })
       await page.goto('/')
       await page.getByRole('button', { name: '創作工作台', exact: true }).click()
+      await page.getByRole('tab', { name: '進階工作台', exact: true }).click()
       await page.getByRole('button', { name: 'FLUX.1 [schnell]', exact: true }).click()
       await page.getByRole('button', { name: 'FLUX LoRA／圖生圖', exact: true }).click()
       const studio = page.getByRole('region', { name: 'FLUX LoRA 與圖生圖工作台', exact: true })

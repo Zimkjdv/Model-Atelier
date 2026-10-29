@@ -79,6 +79,7 @@ for (const width of [1440, 1280]) test(`${width}px: first connection, model, exp
     await page.getByRole('button', { name: '設為偏好', exact: true }).click()
     await expect(page.getByRole('button', { name: '✓ 偏好模型', exact: true })).toBeDisabled()
     await page.getByRole('button', { name: '創作工作台', exact: true }).click()
+    await page.getByRole('tab', { name: '進階工作台', exact: true }).click()
     await page.getByRole('button', { name: 'FLUX.1 [schnell]', exact: true }).click()
     await expect(page.getByLabel('提交能力狀態')).toContainText('尚缺必要條件')
     await page.getByText('能力與實機驗證範圍', { exact: true }).click()

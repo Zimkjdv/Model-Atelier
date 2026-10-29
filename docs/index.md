@@ -32,6 +32,7 @@
 | 保存、匯入及手動執行比較組 | [保存與匯入](experiment-plans.md#storage-and-import)、[任務與作品關聯](experiment-plans.md#runs-and-artworks) |
 | 下載完整比較結果 | [結果報告](experiment-plans.md#result-reports) |
 | 規劃動漫畫風與角色驗證 | [圖片分組、品質判斷與訓練界線](anime-style-development.md) |
+| 簡易模式現況、動漫範例與首次成功體驗規劃 | [簡易創作與範例模板改善方案（操作與來源追溯已實作）](simple-creation-plan.md) |
 
 ## 模型與 FLUX
 

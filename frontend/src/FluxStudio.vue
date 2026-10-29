@@ -28,6 +28,8 @@ import RuntimeSnapshot from './RuntimeSnapshot.vue'
 import SettingsTransfer from './SettingsTransfer.vue'
 import { copySettings, type ImportPreview } from './settingsTransfer'
 import type { RuntimeMetadata } from './runtimeMetadata'
+import type { SimpleTransfer } from './simpleCreation'
+import { templateSelection, type TemplateSelection, type TemplateContext } from './templateContext'
 import {
   fluxProblem,
   fluxRoles,
@@ -38,8 +40,14 @@ import {
   type ComponentSnapshot as ComponentMetadata,
 } from './fluxSettings'
 
-type Draft = FluxForm & { id: string; revision: number; updated_at: string }
+type Draft = FluxForm & {
+  id: string
+  revision: number
+  updated_at: string
+  template_selection?: TemplateSelection | null
+}
 type Restoration = {
+  template_context?: TemplateContext | null
   settings: FluxForm
   component_metadata: ComponentMetadata[] | null
   runtime_metadata?: RuntimeMetadata | null
@@ -47,6 +55,7 @@ type Restoration = {
   warnings: string[]
 }
 const props = defineProps<{
+  simpleRequest?: SimpleTransfer | null
   transferRequest?: number
   purposeRequest?: { image: boolean; token: number } | null
   restoreRequest?: { artworkId: string; token: number } | null
@@ -68,6 +77,7 @@ function openExtensions() {
 const form = reactive(newFlux()),
   records = ref<Draft[]>([]),
   catalog = ref<FluxCatalog | null>(null)
+const sourceTemplate = ref<TemplateSelection | null>(null)
 const currentEngine = ref(''),
   id = ref<string | null>(null),
   revision = ref<number | null>(null)
@@ -79,7 +89,12 @@ const saved = ref(JSON.stringify(form)),
   origin = ref<Restoration | null>(null)
 const previewJson = ref('')
 const pending = ref<Draft | Restoration | 'new' | null>(null)
-const dirty = computed(() => saved.value !== JSON.stringify(form))
+const savedTemplate = ref('null')
+const dirty = computed(
+  () =>
+    saved.value !== JSON.stringify(form) ||
+    JSON.stringify(sourceTemplate.value) !== savedTemplate.value,
+)
 const savingDraft = ref(false)
 useUnsavedChanges(dirty, savingDraft)
 const problem = computed(() => fluxProblem(form))
@@ -155,6 +170,12 @@ async function load(sync = false) {
   }
 }
 function apply(value: Draft | Restoration | 'new') {
+  sourceTemplate.value =
+    value === 'new'
+      ? null
+      : 'settings' in value
+        ? templateSelection(value.template_context)
+        : value.template_selection || null
   if (value === 'new') {
     Object.assign(form, newFlux(currentEngine.value))
     id.value = null
@@ -175,6 +196,7 @@ function apply(value: Draft | Restoration | 'new') {
     origin.value = null
   }
   saved.value = typeof value === 'object' && 'settings' in value ? '' : JSON.stringify(form)
+  savedTemplate.value = JSON.stringify(sourceTemplate.value)
   pending.value = null
   message.value = '已載入設定；尚未提交生成。'
 }
@@ -186,6 +208,7 @@ function importSettings(value: ImportPreview) {
   if (busy.value || loading.value || pending.value || !('diffusion_model' in value.bundle.settings))
     return
   Object.assign(form, copySettings(value.bundle.settings))
+  sourceTemplate.value = null
   id.value = null
   revision.value = null
   origin.value = null
@@ -204,11 +227,16 @@ async function save(asNew = false) {
     const value = (await api('flux/drafts' + (existing ? '/' + id.value : ''), {
       method: existing ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, ...(existing ? { revision: revision.value } : {}) }),
+      body: JSON.stringify({
+        ...form,
+        ...(sourceTemplate.value ? { template_selection: sourceTemplate.value } : {}),
+        ...(existing ? { revision: revision.value } : {}),
+      }),
     })) as Draft
     id.value = value.id
     revision.value = value.revision
     saved.value = JSON.stringify(form)
+    savedTemplate.value = JSON.stringify(sourceTemplate.value)
     records.value = [value, ...records.value.filter((item) => item.id !== value.id)]
     message.value = 'FLUX 草稿已保存；未啟動 GPU 任務。'
   } catch (e) {
@@ -315,6 +343,30 @@ onMounted(() => {
   if (props.purposeRequest?.image) openExtensions()
 })
 const fieldProblems = computed(() => generationFieldProblems(form))
+let appliedSimpleToken = 0
+watch(
+  [() => props.simpleRequest, () => busy.value, () => loading.value],
+  ([request]) => {
+    if (!request || request.token === appliedSimpleToken || busy.value || loading.value) return
+    appliedSimpleToken = request.token
+    if (!('diffusion_model' in request.settings)) return
+    if (
+      pending.value ||
+      (dirty.value && !window.confirm('帶入簡易配方會取代目前 FLUX 工作台的未保存設定，確定載入？'))
+    )
+      return
+    showExtensions.value = false
+    Object.assign(form, copySettings(request.settings))
+    sourceTemplate.value = request.templateSelection ? { ...request.templateSelection } : null
+    id.value = null
+    revision.value = null
+    origin.value = null
+    saved.value = ''
+    error.value = ''
+    message.value = '簡易配方已帶入為新 FLUX 草稿；完整參數已保留，尚未生成。'
+  },
+  { immediate: true, flush: 'post' },
+)
 const preflightBlockers = computed(() => {
   const issues: PreflightBlocker[] = []
   if (currentEngine.value !== form.engine_url || !form.engine_url)
@@ -567,6 +619,7 @@ const preflightBlockers = computed(() => {
             :height="form.height"
           /><div
             ><GenerationPanel
+              :template-selection="sourceTemplate"
               preview-stage
               @preview="previewJob = $event"
               submit-target="#studio-submit-flux"

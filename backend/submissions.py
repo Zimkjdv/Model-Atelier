@@ -38,7 +38,7 @@ from backend import (
     adapter_catalog,
 )
 from backend.reference_workflows import IMG2IMG_ID
-from backend import compute_lease, diagnostics
+from backend import compute_lease, diagnostics, template_context
 
 
 def _matches_recorded_submission(existing, value, reference, experiment, generation_settings):
@@ -49,6 +49,10 @@ def _matches_recorded_submission(existing, value, reference, experiment, generat
         return False
     same_reference = not reference or existing.get('reference_settings') == reference['settings']
     if not same_reference:
+        return False
+    if not template_context.matches(
+        existing.get('template_context'), getattr(value, 'template_selection', None)
+    ):
         return False
     return experiment_context.matches(
         existing.get('experiment_context'), experiment, generation_settings
@@ -69,6 +73,7 @@ def _submission_guard_active(job):
 class Submission(BaseModel):
     # Associations require the complete supported form, never arbitrary graph input.
     experiment: None = None
+    template_selection: template_context.Selection | None = None
     request_id: UUID
     engine_url: str
     checkpoint: str = Field(min_length=1, max_length=2048)
@@ -112,6 +117,7 @@ def install(app, host):
 
     class Generate(host.DraftInput):
         request_id: UUID
+        template_selection: template_context.Selection | None = None
         experiment: experiment_context.Selection | None = None
         control_net_name: None = None
         control_strength: None = None
@@ -232,6 +238,7 @@ def install(app, host):
                 component_metadata=reference.get('component_metadata') if reference else None,
                 experiment=experiment,
                 generation_settings=generation_settings,
+                template_selection=getattr(value, 'template_selection', None),
             )
         except ValueError as exc:
             raise HTTPException(409, str(exc))
@@ -528,6 +535,7 @@ def install(app, host):
             mode='json',
             exclude={
                 'request_id',
+                'template_selection',
                 'revision',
                 'experiment',
                 'mask_asset_id',
@@ -550,6 +558,9 @@ def install(app, host):
                 if existing is not None:
                     if (
                         existing.get('workflow_id') != IMG2IMG_ID
+                        or not template_context.matches(
+                            existing.get('template_context'), value.template_selection
+                        )
                         or existing.get('reference_settings') != settings
                         or not experiment_context.matches(
                             existing.get('experiment_context'), experiment, settings
@@ -573,6 +584,7 @@ def install(app, host):
                     engine_url=value.engine_url,
                     checkpoint=value.checkpoint,
                     workflow=image_workflows.build(settings, value.request_id),
+                    template_selection=value.template_selection,
                 )
                 return await submit_locked(
                     submission,
@@ -591,6 +603,7 @@ def install(app, host):
                 engine_url=value.engine_url,
                 checkpoint=value.checkpoint,
                 workflow=workflow,
+                template_selection=value.template_selection,
             ),
             experiment=experiment,
             generation_settings=settings,
@@ -746,6 +759,7 @@ def install(app, host):
             model_metadata=job.get('model_metadata'),
             lora_metadata=job.get('lora_metadata'),
             runtime_metadata=job.get('runtime_metadata'),
+            template_context=job.get('template_context'),
             reference_metadata=job.get('reference_metadata'),
             warnings=warnings
             + adapter_catalog.restoration_warnings(

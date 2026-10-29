@@ -244,6 +244,7 @@ def install(app, host):
             model_metadata=item.get('model_metadata'),
             lora_metadata=item.get('lora_metadata'),
             runtime_metadata=item.get('runtime_metadata'),
+            template_context=item.get('template_context'),
             reference_metadata=item.get('reference_metadata'),
             warnings=warnings,
             **(

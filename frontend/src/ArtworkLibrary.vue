@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import UiIcon from './UiIcon.vue'
+import TemplateSnapshot from './TemplateSnapshot.vue'
+import type { TemplateContext } from './templateContext'
 import OverflowText from './OverflowText.vue'
 import { vMasonry } from './masonry'
 const layout = ref('fixed')
@@ -123,6 +125,7 @@ type Parameters = {
   denoise: number | null
 }
 type Artwork = {
+  template_context?: TemplateContext | null
   notes_truncated?: boolean
   experiment_context?: ExperimentContext | null
   measurements?: Measurements | null
@@ -1127,6 +1130,10 @@ onBeforeUnmount(() => {
                   >{{ selected.parameters.sampler ?? '未知' }} /
                   {{ selected.parameters.scheduler ?? '未知' }}</dd
                 ><dt>Denoise</dt><dd>{{ selected.parameters.denoise ?? '未知' }}</dd></dl
+              >
+              <TemplateSnapshot :item="selected.template_context" />
+              <p v-if="!selected.template_context" class="footnote"
+                >此作品未記錄起始模板；不依圖片、檔名或目前模型推定來源。</p
               >
               <h3>畫面描述</h3>
               <p class="prompt">{{

@@ -17,7 +17,7 @@ from starlette.concurrency import run_in_threadpool
 from backend import assets, catalog, drafts, environment, execution_device, reference_workflows
 from backend.schemas import Settings, ModelTarget, ModelMetadata, DraftInput, AssetUpdate
 from pydantic import ConfigDict, model_validator
-from backend import workflow_support
+from backend import workflow_support, template_context
 
 
 def install(app, host):
@@ -26,6 +26,7 @@ def install(app, host):
 
     class GeneralDraft(DraftInput):
         model_config = ConfigDict(extra='forbid')
+        template_selection: template_context.Selection | None = None
 
         @model_validator(mode='before')
         @classmethod
@@ -214,6 +215,8 @@ def install(app, host):
 
     def draft_payload(value):
         payload = value.model_dump(mode='json', exclude={'revision'})
+        if payload.get('template_selection') is None:
+            payload.pop('template_selection', None)
         payload['reference_ids'] = list(dict.fromkeys(payload['reference_ids']))
         entries = catalog.read(host.DB, value.engine_url)['models']
         item = next((item for item in entries if item['name'] == value.checkpoint), {})

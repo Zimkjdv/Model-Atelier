@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
-import { onMounted, onUnmounted, ref } from 'vue'
-import { pages, useNavigation } from './navigation'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { pages, useNavigation, type Mode } from './navigation'
 import ModelLibrary from './ModelLibrary.vue'
 import CreationStudio from './CreationStudio.vue'
 import FluxStudio from './FluxStudio.vue'
@@ -23,6 +23,11 @@ import type { EngineReport } from './environmentTypes'
 import SystemWorkspace from './SystemWorkspace.vue'
 import PageTabs from './PageTabs.vue'
 import UiIcon from './UiIcon.vue'
+import SimpleCreation from './SimpleCreation.vue'
+import type { SimpleTransfer } from './simpleCreation'
+import type { TemplateSelection } from './templateContext'
+import type { CreationForm } from './creationSettings'
+import type { FluxForm } from './fluxSettings'
 import type { HostSystem as System } from './systemTypes'
 const system = ref<System | null>(null),
   engine = ref<EngineReport | null>(null)
@@ -56,6 +61,37 @@ const fluxRestoreRequest = ref<{ artworkId: string; token: number } | null>(null
 const inpaintRestoreRequest = ref<{ artworkId: string; token: number } | null>(null)
 const controlRestoreRequest = ref<{ artworkId: string; token: number } | null>(null)
 const referenceRestoreRequest = ref<{ artworkId: string; token: number } | null>(null)
+const simpleTransfer = ref<SimpleTransfer | null>(null)
+const simpleModelCategory = ref('checkpoint')
+function openSimpleModels(category: 'checkpoint' | 'flux' = 'checkpoint') {
+  simpleModelCategory.value = category
+  navigate('模型庫')
+}
+const lastAdvancedMode = ref<Exclude<Mode, 'simple'>>(
+  studioMode.value === 'simple' ? 'checkpoint' : studioMode.value,
+)
+watch(studioMode, (mode) => {
+  if (mode !== 'simple') lastAdvancedMode.value = mode
+})
+function selectCreationMode(mode: string) {
+  navigate('創作工作台', mode === 'simple' ? 'simple' : lastAdvancedMode.value)
+}
+const creationModeItems = [
+  { id: 'simple', label: '簡易創作' },
+  { id: 'advanced', label: '進階工作台' },
+]
+let simpleTransferToken = 0
+function transferSimple(
+  settings: CreationForm | FluxForm,
+  templateSelection?: TemplateSelection | null,
+) {
+  const family = 'diffusion_model' in settings ? 'flux' : 'checkpoint'
+  if (!navigate('創作工作台', family)) return
+  const image = 'checkpoint' in settings && settings.workflow_mode === 'image2image'
+  imagePurpose.value = image
+  purposeRequest.value = { image, token: Date.now() }
+  simpleTransfer.value = { settings, templateSelection, token: ++simpleTransferToken }
+}
 let restoreToken = 0
 function restoreArtwork(artworkId: string, workflowId?: string | null) {
   const mode =
@@ -278,7 +314,14 @@ async function testConnection() {
     <main id="main-content" tabindex="-1"
       ><header class="app-topbar"
         ><h1>{{ page === '作品庫' && galleryComparison ? '作品比較' : page }}</h1
-        ><div class="top-tools"
+        ><PageTabs
+          v-if="page === '創作工作台'"
+          id="creation-mode"
+          label="創作模式"
+          :items="creationModeItems"
+          :model-value="studioMode === 'simple' ? 'simple' : 'advanced'"
+          @update:model-value="selectCreationMode"
+        /><div class="top-tools"
           ><span class="connection-status"
             ><span class="dot" :class="{ online: engine?.connected }"></span
             >{{ engine?.connected ? '引擎已連線' : engine ? '引擎未連線' : '連線狀態未知' }}</span
@@ -287,10 +330,25 @@ async function testConnection() {
       >
       <section
         class="content"
-        :class="{ 'studio-content': page === '創作工作台', 'system-content': page === '系統資訊' }"
+        :class="{
+          'studio-content': page === '創作工作台',
+          'simple-content': page === '創作工作台' && studioMode === 'simple',
+          'system-content': page === '系統資訊',
+        }"
+        :id="
+          page === '創作工作台'
+            ? 'creation-mode-panel-' + (studioMode === 'simple' ? 'simple' : 'advanced')
+            : undefined
+        "
+        :role="page === '創作工作台' ? 'tabpanel' : undefined"
+        :aria-labelledby="
+          page === '創作工作台'
+            ? 'creation-mode-tab-' + (studioMode === 'simple' ? 'simple' : 'advanced')
+            : undefined
+        "
       >
         <p v-if="routeNotice" class="notice" role="status">{{ routeNotice }}</p>
-        <template v-if="page === '創作工作台'"
+        <template v-if="page === '創作工作台' && studioMode !== 'simple'"
           ><div class="studio-navigation"
             ><div class="workflow-switch" role="group" aria-label="創作工作流程"
               ><button
@@ -355,11 +413,21 @@ async function testConnection() {
           ></template
         >
         <KeepAlive
-          ><CreationStudio
+          ><SimpleCreation
+            v-if="page === '創作工作台' && studioMode === 'simple'"
+            @advanced="transferSimple"
+            @models="openSimpleModels"
+            @settings="openConnection"
+            @gallery="navigate('作品庫', studioMode, $event)" /><CreationStudio
+            :simple-request="
+              simpleTransfer && 'checkpoint' in simpleTransfer.settings ? simpleTransfer : null
+            "
             :transfer-request="
               transferRequest?.family === 'checkpoint' ? transferRequest.token : undefined
             "
-            v-if="(page === '創作工作台' && studioMode === 'checkpoint') || page === '實驗比較'"
+            v-else-if="
+              (page === '創作工作台' && studioMode === 'checkpoint') || page === '實驗比較'
+            "
             :workspace="page === '實驗比較' ? 'experiments' : 'studio'"
             :purpose-request="purposeRequest"
             @purpose="imagePurpose = $event"
@@ -370,6 +438,9 @@ async function testConnection() {
             @assets="navigate('參考素材')"
             @gallery="navigate('作品庫', studioMode, $event)"
             @studio="navigate('創作工作台', 'checkpoint')" /><FluxStudio
+            :simple-request="
+              simpleTransfer && 'diffusion_model' in simpleTransfer.settings ? simpleTransfer : null
+            "
             :transfer-request="
               transferRequest?.family === 'flux' ? transferRequest.token : undefined
             "
@@ -533,7 +604,13 @@ async function testConnection() {
                 aria-labelledby="settings-tab-diagnostics"
                 ><DiagnosticsPanel /></section></div></div
         ></template>
-        <ModelLibrary v-if="page === '模型庫'" @create="useModel" @settings="openConnection" />
+        <ModelLibrary
+          v-if="page === '模型庫'"
+          :initial-category="simpleModelCategory"
+          @entered="simpleModelCategory = 'checkpoint'"
+          @create="useModel"
+          @settings="openConnection"
+        />
         <AssetLibrary
           v-else-if="page === '參考素材'"
           @use="useAsset"

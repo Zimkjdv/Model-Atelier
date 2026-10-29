@@ -11,7 +11,7 @@ export const pages = [
   '設定',
 ] as const
 export type Page = (typeof pages)[number]
-export type Mode = 'checkpoint' | 'flux' | 'inpaint' | 'control' | 'reference'
+export type Mode = 'simple' | 'checkpoint' | 'flux' | 'inpaint' | 'control' | 'reference'
 type Route = { page: Page; mode: Mode; job: string; comparison?: boolean }
 const paths: Record<Page, string> = {
   創作工作台: 'studio',
@@ -23,7 +23,7 @@ const paths: Record<Page, string> = {
   參考素材: 'assets',
   訓練工作區: 'training',
 }
-const modes: Mode[] = ['checkpoint', 'flux', 'inpaint', 'control', 'reference']
+const modes: Mode[] = ['simple', 'checkpoint', 'flux', 'inpaint', 'control', 'reference']
 const fallback: Route = { page: '系統資訊', mode: 'checkpoint', job: '' }
 export function routeHash(route: Route): string {
   return (
@@ -64,7 +64,24 @@ export function parseRoute(hash: string): { route: Route; invalid: boolean } {
 
 /** URL contains navigation only, never forms, credentials or submission actions. */
 export function useNavigation(canLeave: () => boolean) {
+  const preferenceKey = 'atelier-creation-mode-v1'
+  let preferred: Mode = 'simple'
+  try {
+    const saved = localStorage.getItem(preferenceKey)
+    if (modes.includes(saved as Mode)) preferred = saved as Mode
+  } catch {
+    /* Keep the preference in memory when browser storage is unavailable. */
+  }
   const initial = parseRoute(window.location.hash)
+  function remember(mode: Mode) {
+    preferred = mode
+    try {
+      localStorage.setItem(preferenceKey, mode)
+    } catch {
+      /* Session preference still works. */
+    }
+  }
+  if (initial.route.page === '創作工作台') remember(initial.route.mode)
   const route = ref(initial.route),
     notice = ref(initial.invalid ? '無法辨識此網址，已顯示系統資訊。' : '')
   const page = computed(() => route.value.page),
@@ -87,17 +104,20 @@ export function useNavigation(canLeave: () => boolean) {
   }
   function apply(next: Route) {
     route.value = next
-    if (next.page === '創作工作台') studioMode.value = next.mode
+    if (next.page === '創作工作台') {
+      studioMode.value = next.mode
+      remember(next.mode)
+    }
     committed = routeHash(next)
     void focusMain()
   }
-  function navigate(
-    next: Page,
-    mode: Mode = studioMode.value,
-    job = '',
-    comparison = false,
-  ): boolean {
-    const target = { page: next, mode, job: next === '作品庫' ? job : '', comparison }
+  function navigate(next: Page, mode?: Mode, job = '', comparison = false): boolean {
+    const target = {
+      page: next,
+      mode: mode ?? (next === '創作工作台' ? preferred : studioMode.value),
+      job: next === '作品庫' ? job : '',
+      comparison,
+    }
     const hash = routeHash(target)
     if (hash === committed) return true
     if (!canLeave()) return false

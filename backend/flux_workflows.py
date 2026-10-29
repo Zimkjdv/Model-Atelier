@@ -9,6 +9,7 @@ from uuid import UUID
 import httpx
 from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from backend import template_context
 
 from backend import (
     capabilities,
@@ -296,6 +297,9 @@ async def submit(host, value):
     else:
         if (
             existing.get('workflow_id') != workflow_id
+            or not template_context.matches(
+                existing.get('template_context'), getattr(value, 'template_selection', None)
+            )
             or existing['workflow'] != graph
             or existing['engine_url'] != value.engine_url
             or extension
@@ -332,6 +336,8 @@ async def submit(host, value):
             component_metadata=metadata,
             reference_metadata=extra['references'] if extra else None,
             reference_settings=extra['settings'] if extra else None,
+            template_selection=getattr(value, 'template_selection', None),
+            generation_settings={key: getattr(value, key) for key in Input.model_fields},
         )
     except ValueError as exc:
         raise HTTPException(409, str(exc))
@@ -442,9 +448,11 @@ def install(app, host, job_lock):
     flux_extensions.install(app, host, job_lock)
 
     class Generate(Input):
+        template_selection: template_context.Selection | None = None
         request_id: UUID
 
     class Draft(Input):
+        template_selection: template_context.Selection | None = None
         revision: int | None = Field(default=None, strict=True, ge=1)
 
     @app.get('/api/flux/drafts')
@@ -455,7 +463,10 @@ def install(app, host, job_lock):
         try:
             return drafts.save(
                 host.DB,
-                value.model_dump(exclude={'revision'}),
+                value.model_dump(
+                    exclude={'revision'}
+                    | ({'template_selection'} if value.template_selection is None else set())
+                ),
                 str(draft_id) if draft_id else None,
                 value.revision,
                 prefix='flux_draft:',
@@ -509,6 +520,7 @@ def install(app, host, job_lock):
             job_id=str(job_id),
             settings=value,
             component_metadata=job.get('component_metadata'),
+            template_context=job.get('template_context'),
             lora_metadata=job.get('lora_metadata'),
             reference_metadata=job.get('reference_metadata'),
             runtime_metadata=job.get('runtime_metadata'),
@@ -530,6 +542,7 @@ def install(app, host, job_lock):
             artwork_id=str(artwork_id),
             settings=value,
             component_metadata=item.get('component_metadata'),
+            template_context=item.get('template_context'),
             lora_metadata=item.get('lora_metadata'),
             reference_metadata=item.get('reference_metadata'),
             runtime_metadata=item.get('runtime_metadata'),

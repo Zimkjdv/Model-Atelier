@@ -3946,3 +3946,57 @@
   background: var(--line2);
   border-radius: 8px;
 }
+
+#app .atelier-shell .studio-content.simple-content {
+  height: calc(100vh - 62px);
+  overflow: auto;
+}
+#app .atelier-shell .simple-content .simple-stage .studio-preview {
+  padding: 20px;
+  height: 480px;
+  min-height: 320px;
+}
+#app .atelier-shell .simple-content .generation-statusbar {
+  margin: 0;
+  padding: 16px;
+  flex-wrap: wrap;
+}
+#app .atelier-shell .simple-content .stage-heading {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+#app .atelier-shell .app-topbar > .page-tabs {
+  margin: 0 auto 0 24px;
+}
+@media (max-width: 900px) {
+  #app .atelier-shell .app-topbar:has(> .page-tabs) {
+    flex-wrap: wrap;
+    height: auto;
+    gap: 10px;
+    padding-block: 12px;
+  }
+  #app .atelier-shell .app-topbar > .page-tabs {
+    order: 3;
+    flex-basis: 100%;
+    margin: 0;
+  }
+  #app .atelier-shell .studio-content.simple-content {
+    height: auto;
+    overflow: visible;
+  }
+  #app .atelier-shell .simple-content .simple-stage .studio-preview {
+    height: 360px;
+    min-height: 220px;
+  }
+  #app .atelier-shell .simple-content .generation-statusbar > div {
+    flex-basis: 100%;
+  }
+  #app .atelier-shell .simple-content .stage-job-choice {
+    flex-wrap: wrap;
+    min-width: 0;
+    max-width: 100%;
+  }
+  #app .atelier-shell .simple-content .stage-job-choice select {
+    max-width: 100%;
+  }
+}

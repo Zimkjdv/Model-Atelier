@@ -4,6 +4,7 @@ import type { LoraMetadataSnapshot } from './modelMetadata'
 import type { JobMeasurements } from './jobMeasurements'
 import type { ComponentSnapshot } from './fluxSettings'
 import type { ReferenceSnapshot } from './referenceSettings'
+import type { TemplateContext } from './templateContext'
 
 export type JobProgress = {
   node: string
@@ -22,6 +23,7 @@ export type JobFailure = {
   exception_type: string | null
 }
 export type Job = {
+  template_context?: TemplateContext | null
   experiment_context?: ExperimentContext | null
   measurements?: JobMeasurements | null
   id: string

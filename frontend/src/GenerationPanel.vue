@@ -8,7 +8,7 @@ import {
 } from './generationPreflight'
 import { api as request, ApiError } from './apiClient'
 import { submitOnce } from './generationRequest'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onActivated, onBeforeUnmount, ref, watch } from 'vue'
 import ExperimentSnapshot from './ExperimentSnapshot.vue'
 import { experimentForSubmission, type ExperimentLoad } from './experimentSettings'
 import type { CreationForm } from './creationSettings'
@@ -47,7 +47,10 @@ import { imageWorkflowId } from './referenceSettings'
 import { fluxWorkflowId, type FluxForm } from './fluxSettings'
 import { fluxExtensionSubmission, type FluxExtensionForm } from './fluxExtensions'
 import { mergeJob, terminal, useJobEvents, type Job } from './jobEvents'
+import type { TemplateSelection } from './templateContext'
+import TemplateSnapshot from './TemplateSnapshot.vue'
 const props = defineProps<{
+  templateSelection?: TemplateSelection | null
   form: CreationForm | FluxForm | FluxExtensionForm | InpaintForm | ControlForm | ReferenceForm
   experiment?: ExperimentLoad | null
   workflow?: 'flux' | 'flux-addon' | 'inpaint' | 'control' | 'reference'
@@ -90,6 +93,7 @@ const emit = defineEmits<{
   restoreJob: [jobId: string]
   busy: [value: boolean]
   pending: [value: boolean]
+  submitted: [id: string, settings: Record<string, unknown>]
 }>()
 const previewId = ref('')
 const previewJob = computed(
@@ -108,6 +112,16 @@ try {
 } catch {
   /* No valid saved request. */
 }
+// Simple and advanced workspaces use the same submission recovery slot.
+// A cached panel must read changes made by the other workspace before reuse.
+onActivated(() => {
+  if (busy.value) return
+  try {
+    pending.value = JSON.parse(localStorage.getItem(pendingKey) || 'null')
+  } catch {
+    error.value = '無法讀取原提交請求，請先檢查瀏覽器儲存；目前請求已保留。'
+  }
+})
 watch(busy, (value) => emit('busy', value), { immediate: true, flush: 'sync' })
 watch(pending, (value) => emit('pending', !!value), { immediate: true, flush: 'sync' })
 const hasFieldProblems = computed(() => Object.keys(props.fieldProblems || {}).length > 0)
@@ -203,6 +217,7 @@ function freezeCurrentSubmission(): Record<string, unknown> {
   const candidate = {
     ...JSON.parse(JSON.stringify(props.form)),
     request_id: crypto.randomUUID(),
+    ...(props.templateSelection ? { template_selection: { ...props.templateSelection } } : {}),
     ...(props.workflow === 'control'
       ? {
           [controlPendingMarker]:
@@ -246,7 +261,11 @@ async function generate() {
   error.value = ''
   try {
     const frozen = pending.value || freezeCurrentSubmission()
-    await submitOnce(frozenSubmissionDescriptor(frozen), clearConfirmedSubmission)
+    const receipt = await submitOnce<{ id: string }>(
+      frozenSubmissionDescriptor(frozen),
+      clearConfirmedSubmission,
+    )
+    emit('submitted', receipt.id, frozen)
     await load()
   } catch (e) {
     error.value = e instanceof Error ? e.message : '提交失敗'
@@ -527,6 +546,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
           >舊版 v1 沒有保存同次邊緣輸出，不會重新計算歷史圖。</p
         >
         <ExperimentSnapshot :item="job.experiment_context" />
+        <TemplateSnapshot :item="job.template_context" />
         <LoraSnapshot
           v-if="checkpointForm || workflow === 'flux-addon'"
           :items="job.lora_metadata"

@@ -5,7 +5,13 @@ from copy import deepcopy
 import sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta, timezone
-from backend import job_measurements, experiment_context, diagnostics, resource_sampling
+from backend import (
+    job_measurements,
+    experiment_context,
+    diagnostics,
+    resource_sampling,
+    template_context,
+)
 
 
 def display(value):
@@ -16,6 +22,7 @@ def display(value):
         lora_metadata=value.get('lora_metadata'),
         measurements=value.get('measurements'),
         experiment_context=value.get('experiment_context'),
+        template_context=value.get('template_context'),
     )
 
 
@@ -35,6 +42,7 @@ def reserve(
     reference_settings=None,
     experiment=None,
     generation_settings=None,
+    template_selection=None,
 ):
     value, fresh = _reserve(
         path,
@@ -51,6 +59,7 @@ def reserve(
         reference_settings=reference_settings,
         experiment=experiment,
         generation_settings=generation_settings,
+        template_selection=template_selection,
     )
     diagnostics.record_job('submission_new' if fresh else 'submission_recovered', value)
     return value, fresh
@@ -72,6 +81,7 @@ def _reserve(
     reference_settings=None,
     experiment=None,
     generation_settings=None,
+    template_selection=None,
 ):
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
@@ -87,6 +97,7 @@ def _reserve(
                 )
                 or value.get('workflow_id') != workflow_id
                 or value.get('reference_settings') != reference_settings
+                or not template_context.matches(value.get('template_context'), template_selection)
                 or not experiment_context.matches(
                     value.get('experiment_context'), experiment, generation_settings
                 )
@@ -108,6 +119,9 @@ def _reserve(
                 model_metadata,
                 kind=(reference_settings or {}).get('control_kind', 'canny'),
             )
+        recipe_context = template_context.freeze(
+            template_selection, generation_settings, model_metadata, component_metadata, workflow_id
+        )
         context = experiment_context.freeze(db, experiment, generation_settings, model_metadata)
         if workflow_id == 'checkpoint-fooocus-inpaint-v3':
             from backend.fooocus_workflows import validate_model
@@ -156,6 +170,7 @@ def _reserve(
             reference_metadata=deepcopy(frozen_refs) if reference_metadata is not None else None,
             reference_settings=deepcopy(reference_settings),
             experiment_context=context,
+            template_context=recipe_context,
             runtime_metadata=None,
             measurements=job_measurements.initial(engine_url),
             status='validating',
@@ -194,6 +209,7 @@ def _update(path, job_id, expected_revision, changes):
             'reference_metadata',
             'reference_settings',
             'experiment_context',
+            'template_context',
             'runtime_metadata',
             'measurements',
         )

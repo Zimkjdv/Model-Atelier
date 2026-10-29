@@ -53,9 +53,12 @@ import type {
 import { architectureLabel } from './modelMetadata'
 import { presetFields, profileIdentity, validateProfile } from './modelProfiles'
 import type { ModelProfile } from './modelProfiles'
+import type { SimpleTransfer } from './simpleCreation'
+import { templateSelection, type TemplateSelection } from './templateContext'
 type Asset = ReferenceAsset
 type Draft = Omit<CreationForm, keyof GenerationFields> &
   Partial<GenerationFields> & {
+    template_selection?: TemplateSelection | null
     id: string
     revision: number
     model_version: string
@@ -84,6 +87,7 @@ const emit = defineEmits<{
   purpose: [image: boolean]
 }>()
 const props = defineProps<{
+  simpleRequest?: SimpleTransfer | null
   transferRequest?: number
   modelRequest?: { name: string; engineUrl: string; token: number } | null
   assetRequest?: { id: string; purpose: string; token: number } | null
@@ -92,6 +96,7 @@ const props = defineProps<{
   restoreRequest?: { artworkId: string; token: number } | null
 }>()
 const form = reactive(newCreation())
+const sourceTemplate = ref<TemplateSelection | null>(null)
 watch(
   () => form.workflow_mode,
   (value) => emit('purpose', value === 'image2image'),
@@ -154,7 +159,12 @@ const restoration = createRequestScope(),
   lists = createRequestScope()
 let active = true,
   reading = false
-const dirty = computed(() => JSON.stringify(form) !== saved.value)
+const savedTemplate = ref('null')
+const dirty = computed(
+  () =>
+    JSON.stringify(form) !== saved.value ||
+    JSON.stringify(sourceTemplate.value) !== savedTemplate.value,
+)
 const savingDraft = ref(false)
 useUnsavedChanges(dirty, savingDraft)
 const selected = computed(() =>
@@ -293,6 +303,12 @@ const aspect = computed(() =>
   Number(form.width) > 0 && Number(form.height) > 0 ? `${form.width} / ${form.height}` : '1 / 1',
 )
 function apply(record: Draft | 'new' | Restoration) {
+  sourceTemplate.value =
+    record === 'new'
+      ? null
+      : 'kind' in record
+        ? templateSelection(record.value.template_context)
+        : record.template_selection || null
   experimentLoad.value = null
   restoration.cancel()
   restoring.value = false
@@ -356,6 +372,7 @@ function apply(record: Draft | 'new' | Restoration) {
     draftVersion.value = record.model_version || '未知'
   }
   saved.value = JSON.stringify(form)
+  savedTemplate.value = JSON.stringify(sourceTemplate.value)
   pending.value = null
   error.value = ''
   message.value = ''
@@ -390,6 +407,7 @@ function importSettings(value: ImportPreview, experiment: ExperimentLoad | null 
     return
   restoration.cancel()
   Object.assign(form, copySettings(value.bundle.settings))
+  sourceTemplate.value = null
   experimentLoad.value = experiment ? JSON.parse(JSON.stringify(experiment)) : null
   id.value = null
   revision.value = null
@@ -588,7 +606,11 @@ async function save(copy = false) {
     const record = await api<Draft>(
       id.value && !copy ? 'drafts/' + id.value : 'drafts',
       id.value && !copy ? 'PUT' : 'POST',
-      { ...form, revision: revision.value },
+      {
+        ...form,
+        revision: revision.value,
+        ...(sourceTemplate.value ? { template_selection: sourceTemplate.value } : {}),
+      },
     )
     apply(record)
     records.value = [record, ...records.value.filter((r) => r.id !== record.id)]
@@ -636,6 +658,49 @@ onActivated(() => {
   active = true
   void refresh()
 })
+
+let appliedSimpleToken = 0
+watch(
+  [
+    () => props.simpleRequest,
+    () => busy.value,
+    () => restoring.value,
+    () => generationBusy.value,
+    () => generationPending.value,
+  ],
+  ([request]) => {
+    if (
+      !active ||
+      !request ||
+      request.token === appliedSimpleToken ||
+      busy.value ||
+      restoring.value ||
+      generationBusy.value ||
+      generationPending.value
+    )
+      return
+    appliedSimpleToken = request.token
+    if (!('checkpoint' in request.settings)) return
+    if (
+      pending.value ||
+      (dirty.value && !window.confirm('帶入簡易配方會取代目前進階工作台的未保存設定，確定載入？'))
+    )
+      return
+    restoration.cancel()
+    Object.assign(form, copySettings(request.settings))
+    sourceTemplate.value = request.templateSelection ? { ...request.templateSelection } : null
+    id.value = null
+    revision.value = null
+    draftVersion.value = ''
+    origin.value = null
+    experimentLoad.value = null
+    presetChoice.value = null
+    saved.value = ''
+    error.value = ''
+    message.value = '簡易配方已帶入為新草稿；完整參數已保留，尚未生成。'
+  },
+  { immediate: true, flush: 'post' },
+)
 
 let appliedModelToken = 0
 watch(
@@ -1353,6 +1418,7 @@ watch(
           :height="form.height"
         /><div
           ><GenerationPanel
+            :template-selection="sourceTemplate"
             preview-stage
             @preview="previewJob = $event"
             submit-target="#studio-submit-checkpoint"

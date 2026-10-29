@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "templates": [
+    {
+      "id": "animagine", "version": 1, "title": "日系人物插畫", "model": "Animagine XL 4.0 Opt", "family": "checkpoint",
+      "description": "從單人半身插畫開始，試著修改髮型、衣著與背景。",
+      "note": "人物起始配方，畫質待驗收；既有實測為固定風景配置。",
+      "manifest_file": "animagine-xl-4.0-opt.json", "presetId": "animagine-xl-4.0-opt-author",
+      "reference": "docs/models/animagine-xl-4.0-opt.md",
+      "prompt": "1girl, solo, adult woman, blue hair, short hair, white shirt, looking at viewer, upper body, smile, outdoors, garden, daylight, masterpiece, high score, great score, absurdres",
+      "negative": "lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature", "seed": "9007199254740993"
+    },
+    {
+      "id": "pony", "version": 1, "title": "動漫場景", "model": "Pony Diffusion V6 XL", "family": "checkpoint",
+      "description": "山湖、森林與晴空；從風景認識 Pony 的專屬提示詞。",
+      "note": "沿用固定風景起始參數；不同環境不保證產生相同圖片。",
+      "manifest_file": "pony-v6-xl.json", "presetId": "pony-v6-xl-rtx3060-landscape",
+      "reference": "docs/validation/pony-v6-xl-rtx3060.md",
+      "prompt": "score_9,score_8_up,score_7_up,rating_safe,source_anime,landscape,mountain lake,pine forest,blue sky,peaceful daylight,scenery,no humans",
+      "negative": "", "seed": "9007199254740993"
+    },
+    {
+      "id": "flux", "version": 1, "title": "FLUX 插畫實驗", "model": "FLUX.1 [schnell]", "family": "flux",
+      "description": "用英文句子描述山間小屋，體驗四步生成的固定配置。",
+      "note": "Schnell，非 Kontext；插畫畫質待驗收。512²／FP8／CPU 編碼器。",
+      "reference": "docs/models/flux-workflow.md",
+      "prompt": "An anime background illustration of a small wooden cabin beside a peaceful mountain lake, pine forest, soft morning sunlight, clean lines, gentle colors, no people.",
+      "negative": "", "seed": "9007199254740993"
+    }
+  ]
+}

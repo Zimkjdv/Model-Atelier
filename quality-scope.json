@@ -129,7 +129,10 @@
     "backend/test_artwork_downloads.py",
     "backend/job_results.py",
     "backend/test_job_results.py",
-    "backend/test_listing_totals.py"
+    "backend/test_listing_totals.py",
+    "backend/template_context.py",
+    "backend/test_template_context.py",
+    "backend/gallery.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -169,6 +172,9 @@
     ".prettierrc.json",
     "frontend/src/App.vue",
     "frontend/src/navigation.ts",
+    "frontend/src/SimpleCreation.vue",
+    "frontend/src/simpleCreation.ts",
+    "frontend/tests/simple-creation.spec.ts",
     "frontend/src/adapterSettings.ts",
     "frontend/src/ReferenceStudio.vue",
     "frontend/src/ReferenceComponents.vue",
@@ -232,7 +238,11 @@
     "frontend/playwright.journey.config.ts",
     "frontend/journey-tests/isolated-journey.spec.ts",
     "frontend/tests/asset-handoff.spec.ts",
-    "frontend/tests/desktop-acceptance-matrix.spec.ts"
+    "frontend/tests/desktop-acceptance-matrix.spec.ts",
+    "frontend/src/templateContext.ts",
+    "frontend/src/TemplateSnapshot.vue",
+    "frontend/src/creationSettings.ts",
+    "frontend/tests/simple-creation-acceptance.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css", "frontend/src/redesign.css"]
 }

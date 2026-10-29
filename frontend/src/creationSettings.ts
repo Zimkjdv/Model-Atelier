@@ -1,5 +1,6 @@
 import type { ModelMetadataSnapshot, LoraMetadataSnapshot } from './modelMetadata'
 import type { RuntimeMetadata } from './runtimeMetadata'
+import type { TemplateContext } from './templateContext'
 import {
   referenceDefaults,
   type ReferenceFields,
@@ -36,6 +37,7 @@ export type CreationForm = GenerationFields &
   }
 
 export type ArtworkSettings = {
+  template_context?: TemplateContext | null
   runtime_metadata?: RuntimeMetadata | null
   artwork_id: string
   settings: CreationForm
@@ -47,6 +49,7 @@ export type ArtworkSettings = {
 }
 
 export type FailedJobSettings = {
+  template_context?: TemplateContext | null
   runtime_metadata?: RuntimeMetadata | null
   job_id: string
   settings: CreationForm

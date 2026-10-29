@@ -35,10 +35,12 @@ type Catalog = {
   sync_error: string | null
 }
 const emit = defineEmits<{
+  entered: []
   settings: []
   create: [architecture: string, name?: string, engineUrl?: string]
 }>()
-const category = ref('checkpoint'),
+const props = defineProps<{ initialCategory?: string }>()
+const category = ref(props.initialCategory === 'flux' ? 'flux' : 'checkpoint'),
   view = ref('list')
 const loraLibrary = ref<InstanceType<typeof LoraLibrary> | null>(null)
 const controlLibrary = ref<InstanceType<typeof ControlLibrary> | null>(null)
@@ -203,7 +205,10 @@ async function update(model: Model, metadata = false) {
     busy.value = false
   }
 }
-onMounted(() => load())
+onMounted(() => {
+  emit('entered')
+  void load()
+})
 </script>
 
 <template>
