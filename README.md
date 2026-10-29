@@ -48,7 +48,7 @@ Set-Location ..
 
 | 目的 | 入口 |
 | --- | --- |
-| 第一次操作 | [HTML 圖文教學](docs/guide/index.html)：下載後用瀏覽器開啟，可離線閱讀、點圖放大與列印；部分截圖為舊布局。 |
+| 第一次操作 | [新版 HTML 圖文教學](docs/guide/index.html)：依目前桌面介面與新截圖編排，下載後可離線閱讀、點圖放大與列印。 |
 | 找功能、API、模型、訓練或驗收文件 | [完整文件索引](docs/index.md)，功能細節由各主題文件維護。 |
 | 看目前 UI 與驗收 | [正式交付現況](docs/ui-redesign/INTEGRATION-NOTES.md)、[桌面驗收](docs/ui-redesign/ACCEPTANCE.md)、[原始 preview](docs/ui-redesign/preview.html)。 |
 | 看尚未完成的工作 | [產品 ROADMAP](ROADMAP.md) 與 [UI 獨立待辦](docs/ui-redesign/BACKEND-CAPABILITIES-BACKLOG.md)，不以頁面美化代替能力完成。 |
