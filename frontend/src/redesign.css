@@ -2121,6 +2121,27 @@
 #app .atelier-shell .asset-card h2 {
   margin: 14px 14px 2px;
 }
+#app .atelier-shell .asset-card-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  margin: 14px 14px 2px;
+}
+#app .atelier-shell .asset-card-heading > h2 {
+  min-width: 0;
+  margin: 0;
+  line-height: 1.5;
+  height: 3em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+#app .atelier-shell .asset-card-heading > .asset-purpose {
+  float: none;
+}
 #app .atelier-shell .library-footer {
   display: flex;
   align-items: center;
@@ -3061,6 +3082,13 @@
 }
 #app .atelier-shell .asset-detail-create .secondary:hover {
   background: var(--raised);
+}
+/* The supplied icons have different internal whitespace; compensate only in these actions. */
+#app .atelier-shell .asset-action-create > .ui-icon {
+  transform: translateY(2px);
+}
+#app .atelier-shell .asset-action-edit > .ui-icon {
+  transform: translateY(0.5px);
 }
 #app .atelier-shell .asset-detail-info > .footnote {
   font-size: 12px;

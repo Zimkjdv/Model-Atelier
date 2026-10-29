@@ -1,5 +1,95 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { randomUUID } from 'node:crypto'
+
+test('asset names keep card rows aligned and action icons visually centered', async ({
+  page,
+  request,
+}, info) => {
+  const state = await (await request.get('/qa/state')).json()
+  const source = await (await request.get('/api/assets/' + state.asset_id)).json()
+  const image = await (await request.get('/api/assets/' + state.asset_id + '/image')).body()
+  const names = [
+    '[UI驗證] 山巒參考圖',
+    '469589683_1531471580858677_6134171745250946552_n.jpg',
+    '這是一個很長的中文素材名稱'.repeat(6).slice(0, 100),
+  ]
+  const assets = names.map((title, i) => ({
+    ...source,
+    id: randomUUID(),
+    title,
+    purpose: ['style', 'character', 'composition'][i],
+  }))
+  await page.route('**/api/library/assets?**', (route) =>
+    route.fulfill({
+      json: { items: assets, total: assets.length, next_cursor: null, previous_cursor: null },
+    }),
+  )
+  await page.route('**/api/assets/*/image', (route) =>
+    route.fulfill({ body: image, contentType: 'image/png' }),
+  )
+  let writes = 0
+  page.on('request', (r) => {
+    if (r.url().includes('/api/') && r.method() !== 'GET') writes++
+  })
+  for (const [width, height] of [
+    [1280, 800],
+    [1440, 900],
+    [1920, 1080],
+  ]) {
+    await page.setViewportSize({ width, height })
+    await page.goto('/#/assets')
+    const cards = page.locator('.asset-card')
+    await expect(cards).toHaveCount(3)
+    await expect
+      .poll(() =>
+        cards
+          .locator('img')
+          .evaluateAll((images) => images.every((image) => (image as HTMLImageElement).complete)),
+      )
+      .toBe(true)
+    for (const selector of [
+      '.asset-card-heading h2',
+      ':scope > p',
+      ':scope > .asset-actions',
+      '.asset-management > summary',
+    ]) {
+      const boxes = await Promise.all(
+        [0, 1, 2].map((index) => cards.nth(index).locator(selector).boundingBox()),
+      )
+      expect(
+        Math.max(...boxes.map((box) => box!.y)) - Math.min(...boxes.map((box) => box!.y)),
+        selector,
+      ).toBeLessThanOrEqual(1)
+    }
+    const heights = await cards.evaluateAll((elements) =>
+      elements.map((element) => element.getBoundingClientRect().height),
+    )
+    expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(1)
+    for (let i = 0; i < names.length; i++) {
+      await expect(cards.nth(i).locator('h2')).toHaveText(names[i])
+      await expect(cards.nth(i).locator('h2')).toHaveAttribute('title', names[i])
+    }
+    await page.screenshot({ path: info.outputPath('asset-card-names-' + width + '.png') })
+    await cards.nth(1).locator('.asset-cover').click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog.getByRole('heading', { name: names[1], exact: true })).toBeVisible()
+    const deltas = await dialog.locator('.asset-detail-create button').evaluateAll((buttons) =>
+      buttons.map((button) => {
+        const svg = button.querySelector('svg')!,
+          box = svg.getBBox(),
+          frame = button.getBoundingClientRect()
+        const center = new DOMPoint(box.x + box.width / 2, box.y + box.height / 2).matrixTransform(
+          svg.getScreenCTM()!,
+        )
+        return Math.abs(center.y - frame.y - frame.height / 2)
+      }),
+    )
+    expect(Math.max(...deltas)).toBeLessThanOrEqual(0.3)
+    await dialog.getByRole('button', { name: '關閉', exact: true }).click()
+  }
+  expect(writes).toBe(0)
+})
 
 test('completed stage shows original dimensions, handles offline and does not import', async ({
   page,

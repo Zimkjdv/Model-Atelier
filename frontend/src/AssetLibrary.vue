@@ -305,9 +305,9 @@ onMounted(() => {
           ><button class="secondary" :disabled="busy" @click="editing = null">取消</button></div
         ></template
       ><template v-else
-        ><h2
-          >{{ item.title }}
-          <span class="asset-purpose" :class="item.purpose">{{ purposes[item.purpose] }}</span></h2
+        ><div class="asset-card-heading"
+          ><h2 :title="item.title">{{ item.title }}</h2>
+          <span class="asset-purpose" :class="item.purpose">{{ purposes[item.purpose] }}</span></div
         ><p>
           {{ item.width }} × {{ item.height }} · {{ (item.size / 1024 / 1024).toFixed(2) }} MiB</p
         ><div class="asset-actions"
@@ -497,11 +497,14 @@ onMounted(() => {
             ><p v-if="selected.archived" class="footnote">素材已封存，還原後即可帶入創作。</p
             ><div class="asset-actions"
               ><button
-                class="primary"
+                class="primary asset-action-create"
                 :disabled="busy || selected.archived"
                 @click="emit('use', selected.id, selected.purpose)"
                 ><UiIcon name="studio" :size="18" />用於創作</button
-              ><button class="secondary" :disabled="busy" @click="editAsset(selected)"
+              ><button
+                class="secondary asset-action-edit"
+                :disabled="busy"
+                @click="editAsset(selected)"
                 ><UiIcon name="edit" :size="18" />編輯素材資料</button
               ></div
             ></div
