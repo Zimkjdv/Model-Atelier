@@ -32,7 +32,7 @@ E03 已先以 `3cce745` commit／push，才開始本項。2026-10-26（Asia/Taip
 | Canny | 11.25 | 37.98 |
 | Pony 1536²／30 步 | 9.26 | 32.77 |
 
-這些是不同時刻、不同快取及背景負載的整體觀察，不用表格排序推論各流程必要容量。3060 的 [T03](training-runtime-20261025.md)／[T06](training-control-20261025.md) 舊證據保持原樣，JSON 附來源檔案 hash，不以 4080 觀察回填。
+這些是不同時刻、不同快取及背景負載的整體觀察，不用表格排序推論各流程必要容量。3060 的 [T03](training-runtime-20261025.md)／[T06](training-workspace-20261025.md#t06-control) 舊證據保持原樣，JSON 附來源檔案 hash，不以 4080 觀察回填。
 
 ## RTX 4080 訓練
 

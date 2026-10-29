@@ -6,9 +6,38 @@
 .\.venv\Scripts\python.exe scripts/check_quality.py
 ```
 
-依序執行範圍內格式／靜態檢查、後端 unittest、Vue 型別與正式建置、`npm test` 的前端契約檢查（API／生命週期、實驗、遮罩、控制與欄位預檢）、Playwright Chromium。格式與高風險狀態維護見 [維護規則](maintenance.md)。`--skip-browser` 會明列跳過，不表示完整品質通過。
+依序執行範圍內格式／靜態檢查、後端 unittest、Vue 型別與正式建置、`npm test` 的前端契約檢查（API／生命週期、實驗、遮罩、控制與欄位預檢）、Playwright Chromium。格式規則見[格式與靜態檢查](#static-checks)，高風險提交邊界見[架構契約](architecture.md#submission-invariants)。`--skip-browser` 會明列跳過，不表示完整品質通過。
 
-2026-10-25 起，完整入口依檔名排序，每六份瀏覽器 spec 為一批，各自啟動新的 Playwright／Chromium 與臨時平台，使用不同埠及 `runtime/quality/browser-results/group-N`、`browser-report/group-N`。截至 2026-10-27，共 25 份 spec、五批（6＋6＋6＋6＋1）；實際批數由 `scripts/check_quality.py` 依檔案清單計算，新檔會自動納入一次。任一批失敗立即停止，單 worker／單案限制及零重試保留。此調整針對 Windows CI 的 Chromium `net::ERR_NO_BUFFER_SPACE` 與單次整套八分鐘截止；降低單程序累積負荷，不宣稱已證明某個產品記憶體洩漏。
+完整入口依檔名排序，每六份瀏覽器 spec 為一批；實際批數依 `frontend/tests/*.spec.ts` 計算，每檔自動納入一次。各批啟動新的 Playwright／Chromium 與臨時平台，使用不同埠及 `runtime/quality/browser-results/group-N`、`browser-report/group-N`。任一批失敗立即停止，單 worker、單案限制與零重試保留。此分批策略用於避免 Windows CI 的 Chromium `net::ERR_NO_BUFFER_SPACE` 與整套截止累積負荷，不代表已證明產品記憶體洩漏。
+
+<a id="static-checks"></a>
+
+## 格式與靜態檢查
+
+品質環境使用 `requirements-dev.lock.txt`（包含既有 runtime lock 與 Ruff 0.17.1），frontend 使用 package-lock 精確鎖定 Prettier 3.9.10、CSS-tree 3.2.1。正式使用者安裝仍可只用 runtime lock。
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.lock.txt
+.\.venv\Scripts\python.exe scripts/check_style.py
+.\.venv\Scripts\python.exe scripts/check_style.py --write
+.\.venv\Scripts\python.exe scripts/check_quality.py
+```
+
+預設只檢查，不改檔；`--write` 明確格式化後仍須通過靜態檢查，不執行 lint autofix。frontend 可單獨執行 `npm.cmd run format:check`、`npm.cmd run format`、`npm.cmd run lint`。任一步失敗回傳非零，完整 Q06 入口與 CI 先跑 style／static 再跑既有測試；`--skip-browser` 仍不能跳過格式檢查。
+
+| 語言 | 規則與用途 |
+| --- | --- |
+| Python | Ruff format：100 欄、4 空格、單引號、LF；lint E9／F63／F7／F811／F821–823／F841，檢查語法、錯誤比較／控制流程、重複定義、未定義名稱與未使用的區域賦值 |
+| TypeScript／Vue | Prettier：100 欄、2 空格、單引號、不加語句分號、LF，Vue 使用 strict whitespace；vue-tsc 檢查整個前端的型別與模板 |
+| CSS | Prettier 保持宣告順序；CSS-tree AST 檢查語法錯誤、同區塊重複宣告／自訂屬性及無效 hex 色碼。不同 selector／media 的覆蓋合法，自訂屬性區分大小寫；不是完整 CSS 相容性或視覺檢查 |
+
+設定見 `ruff.toml`、`.prettierrc.json`、`.gitattributes` 與 `quality-scope.json`；後者是**明確檔案清單**。第一批納管 submissions／jobs／cancellation／stopping、GenerationPanel／generationRequest／jobEvents、全域 style.css，以及對應品質工具。只對列出的檔案執行格式／Ruff／CSS 檢查，不以 `format .` 一次改寫整庫；CSS 檢查目前針對全域 CSS，Vue style 由 Prettier 格式化。
+
+新建或實質修改高風險模組時，將該檔加入 scope 並在同次變更說明理由；歷史模組逐批加入。字寬是 formatter 的換行目標，不是額外的強制 lint 長度。資料 JSON、模型 manifest、歷史 workflow、runtime 與使用者 DATA 不交給格式命令改寫。若要加入新規則，先證明能抓到具體錯誤，避免預設全開或大量忽略。
+
+工具語意依 [Ruff formatter](https://docs.astral.sh/ruff/formatter/)、[Ruff lint 配置](https://docs.astral.sh/ruff/linter/)、[Prettier 選項](https://prettier.io/docs/options) 與 [CSS-tree AST](https://github.com/csstree/csstree/blob/master/docs/ast.md)；未啟用 formatter preview 或任意本機套件版本。
+
+格式、狀態重構與行為驗收的邊界見[架構維護規則](architecture.md#submission-invariants)。
 
 ## 乾淨安裝
 
@@ -34,35 +63,36 @@ Set-Location ..
 
 單次服務預設監聽本機 18765；可用 `ATELIER_TEST_PORT` 指定另一隔離埠，分批入口從此埠依序遞增。`reuseExistingServer: false` 避免誤用既有平台，埠被占用即失敗。不要同時啟動兩套相同輸出目錄的測試；異常強制終止時可能留下系統臨時資料。
 
-瀏覽器案例覆蓋四工作台的 dirty、KeepAlive、重新整理／關頁警示與取消；草稿保存中及完成後狀態；遺失 HTTP 回覆後原 UUID／完整 body／端點恢復且引擎僅收到一次提交；作品 409 保留筆記；實際 workflow 檔案下載及最大 64 位 seed 原文字；Enter 開啟／Escape 關閉預覽與焦點還原；390px 導覽、輸入及預覽。另驗證跨頁比較、模型／收藏／封存組合、較早任務、素材選取保留、Q08 網址／首次使用，以及 Q09 診斷篩選與逐字下載。Node 邏輯檢查另涵蓋六種新舊提交流程。
+瀏覽器案例覆蓋各工作台的 dirty、KeepAlive、重新整理／關頁警示與取消；草稿保存中及完成後狀態；遺失 HTTP 回覆後原 UUID／完整 body／端點恢復且引擎僅收到一次提交；作品 409 保留筆記；實際 workflow 檔案下載及最大 64 位 seed 原文字；Enter 開啟／Escape 關閉預覽與焦點還原；390px 導覽、輸入及預覽。另驗證跨頁比較、模型／收藏／封存組合、較早任務、素材選取保留、Q08 網址／首次使用，以及 Q09 診斷篩選與逐字下載。Node 邏輯檢查另涵蓋六種新舊提交流程。
 
 重試次數為 0；失敗保存 screenshot、video、trace 與 HTML 報告至忽略的 `runtime/quality/`。完整入口在 frontend 以 `npx.cmd playwright show-report ../runtime/quality/browser-report/group-1` 等各批目錄查閱；單獨 `npm run test:browser` 的預設仍為 `browser-report`，trace 可用 `npx.cmd playwright show-trace <trace.zip>`。CI 在 push／PR 執行相同入口，保留證據 14 天。設定依 [Playwright webServer](https://playwright.dev/docs/test-webserver) 與 [CI 官方指南](https://playwright.dev/docs/ci-intro)。
 
-V01 新增 6 項遮罩瀏覽器回歸，當時總計 25 項：1440px／390px 的實際畫布操作與保存 PNG 像素核對、取消選取／素材重讀／KeepAlive、無效 PNG／保存失敗、捕獲／縮放／停用，以及 CDP 主觸點／第二指／取消。兩種寬度另保存全頁與遮罩截圖、像素量測附件至報告。以 `npm.cmd run test:browser -- mask-editor.spec.ts` 單獨執行；實機觸控仍未通過，詳見 [V01 驗收](validation/mask-editor-20261023.md)。
+<a id="quality-evidence"></a>
 
-V02 再新增 9 項，當時瀏覽器回歸共 34 項。以 `npm.cmd run test:browser -- inpaint-recovery.spec.ts` 重跑 v1／v2 × 1440px／390px × 遺失回應／異常 JSON 的 8 案例，以及未知版本保護。測試保存原 pending、平台請求／回覆、固定輸入與引擎呼叫雜湊及截圖；fixture 的 `/qa/engine-audit` 最多保留 1,000 筆方法／路徑與輸入雜湊，只存在臨時測試服務。Node 契約對六種生成端點驗證錯誤／缺失成功 id 與錯誤 detail.job_id 不會誤清除 pending。見 [V02 證據](validation/inpaint-recovery-20261023.md)。
+## 專項重跑與歷史證據
 
-V03 新增 5 項，當時瀏覽器回歸共 **39 項**。`npm.cmd run test:browser -- artwork-library.spec.ts` 實際操作 390px 作品整理、兩分頁筆記／評分修訂衝突、未保存及保存中保護、503 不重送、原圖與精確參數比較、橫向鍵盤捲動及四件選取上限。fixture 的 `/qa/artwork-set` 只建立臨時合成作品，不呼叫生成；每案檢查生成數不變，並附原圖／workflow bytes、管理修訂 JSON 與畫面。見 [V03 驗收](validation/artwork-library-20261023.md)。
+以下從 `frontend` 執行，各命令只覆蓋指定領域；目前案例數依測試清單計算，不沿用歷史累積數。
 
-V04 新增 8 項，當時瀏覽器回歸共 **47 項**。`npm.cmd run test:browser -- comparison-validation.spec.ts` 在 1440px／390px 核對正反 8 步歷史品質條件、指定 LoRA model／CLIP 軸及錯誤、兩模型固定四案例逐組載入，以及任務／作品量測原來源、零與未知值。`scripts/comparison_fixture.py` 僅供臨時 fixture；完成後還原登記及移除本組紀錄，避免影響其他測試。另以本機歷史唯讀副本核對 11 件原 GPU 作品、四案例跨模型並排及設定還原，不以合成圖取代歷史結果。見 [V04 驗收](validation/comparison-measurements-20261023.md)。
+| 指令 | 範圍／原始驗收 |
+| --- | --- |
+| `npm.cmd run test:browser -- mask-editor.spec.ts` | 畫布筆刷、PNG 像素、素材重讀、捕獲／取消／第二指模擬；[V01](validation/mask-editor-20261023.md)，模擬不等於實機觸控 |
+| `npm.cmd run test:browser -- inpaint-recovery.spec.ts` | v1／v2、遺失回應、異常 JSON、未知版本、原 pending／端點／雜湊且不重送；[V02](validation/inpaint-recovery-20261023.md) |
+| `npm.cmd run test:browser -- artwork-library.spec.ts` | 修訂衝突、未保存／保存中、503 不重送、原圖／精確參數、鍵盤捲動、跨頁選取；[V03](validation/artwork-library-20261023.md) |
+| `npm.cmd run test:browser -- comparison-validation.spec.ts` | 歷史品質條件、有序 LoRA 比較軸、固定案例與量測來源、零／未知；[V04](validation/comparison-measurements-20261023.md) |
+| `npm.cmd run test:browser -- settings-transfer.spec.ts` | 真正下載／檔案選擇／貼上與取消、原 bytes／大整數、不跨流程與慢速／過大／無效 UTF-8 保護；[V05](validation/settings-transfer-20261023.md) |
+| `npm.cmd run test:browser -- ui-accessibility.spec.ts` | 逐頁標題、可讀名稱、Tab／Enter、焦點、展開／錯誤／空態與整頁溢出；[V06](validation/ui-accessibility-20261023.md) |
 
-V05 新增 12 項，當時瀏覽器回歸共 **59 項**。`npm.cmd run test:browser -- settings-transfer.spec.ts` 在 1440px／390px 實際下載三種一般創作設定及作品來源設定，保存檔案並比對 API bytes／檔名；真正檔案選擇器、剪貼簿貼上、取消及明確另存皆不生成。另核對原 workflow 大整數字串、未核實來源、晚到預覽、保存中停用、無效／跨流程文件，以及過大、無效 UTF-8 與慢速檔案保護。測試作品使用正式 workflow builder，不使用簡略圖冒充可還原設定。見 [V05 驗收](validation/settings-transfer-20261023.md)。
+V02 fixture 的 `/qa/engine-audit` 最多保留 1,000 筆方法／路徑與輸入雜湊；V03 `/qa/artwork-set` 只建立臨時合成作品。V04 `scripts/comparison_fixture.py` 僅用於隔離平台，完成後還原登記並移除本組紀錄；歷史 GPU 原圖與合成 fixture 的證據分開。以上都不提供正式平台測試端點，不將合成圖當成實機 GPU 品質。
 
-V06 新增 21 項，當時瀏覽器回歸共 **80 項**。`npm.cmd run test:browser -- ui-accessibility.spec.ts` 逐頁檢查九個入口在 1440px／390px 的標題、可讀名稱、Tab／Enter、焦點、展開內容、文字狀態與整頁溢出；另覆蓋硬體卡片、離線／舊資料、四類模型編輯、作品收藏及對話框、素材讀取／空白／錯誤、診斷 JSON、圖生圖與遮罩。精確鎖定 axe Playwright 4.14.0，保存 violations 與 incomplete；漸層文字另核對目前主題的 RGB 端點對比，不把自動結果視為全 WCAG 認證。新增量測與截圖增加執行時間，整套瀏覽器預算由五分鐘改為八分鐘，單案 45 秒、單 worker 與零重試維持。頁面矩陣、截圖／JSON 及限制見 [V06 驗收](validation/ui-accessibility-20261023.md)。
+無障礙檢查保存 axe 的 violations 與 incomplete，漸層文字另核對主題 RGB 端點對比；自動結果不是完整 WCAG、讀屏或觸控認證。全站瀏覽器預算八分鐘、單案 45 秒、單 worker 及零重試；以實際設定與各專項驗收為準。
 
-## 依賴與驗收範圍（2026-10-22）
+2026-10-22 的乾淨 lock／Chromium 安裝、runner 各階段故障立即停止及臨時失敗探針的 screenshot／video／trace 已驗證；當時的後端／瀏覽器數字與各次新增案例記在 [CHANGELOG](../CHANGELOG.md) 及上述驗收，不視為目前總數。Windows 8.3 TEMP 與 CI 路徑問題的實際別名重現見[獨立診斷](validation/windows-ci.md#windows-temp-alias-20261022)，產品路徑防護未放寬。
 
-Q06 建立時，全新隔離 venv 依 requirements.lock.txt 安裝、`npm ci` 與 Chromium 安裝通過。後端 550 項，549 通過、1 項 Windows symlink 建立權限跳過；測試列出理由。runner 測試逐個注入四階段失敗，均停止後續步驟並保留非零碼；另以臨時瀏覽器失敗探針確認 exit 1、畫面／錄影／trace／錯誤上下文均保存，探針未納入正式測試。
-
-Starlette 1.6.0 的 TestClient 優先使用 httpx2，現行 lock 的 httpx 0.28.1 fallback 會發出棄用提示；保留提示，以乾淨安裝及全量回歸確認當前相容。引擎 MockTransport／HTTP 仍直接使用 httpx，未混入更換傳輸依賴。故障注入／關閉 SSE 在 Windows 可能印出 ConnectionResetError，不隱藏其他錯誤；斷言與退出碼仍決定結果。
-
-安裝時發現 Vite 7.3.6 與 source-map-js 1.2.1 的既有 npm 警告，更新相容修補版至 7.3.7／1.2.2，當次 `npm audit` 回報 0 項已知問題；這不代表完整安全稽核。真正 GPU、觸控、行動瀏覽器、對比／讀屏及全站視覺仍依 V01–V06 各自驗收，這些案例不代替上述項目；Q04 效能指標及最新回歸見 [分頁說明](list-pagination.md)。
-
-首次遠端 Q06 CI 的 Windows 8.3 TEMP 問題已以實際別名重現並獨立修正，產品路徑防護不變；見 [診斷與回歸](validation/quality-windows-paths-20261022.md)。
+歷史相容性觀察：Starlette 1.6.0 TestClient 的 httpx 0.28.1 fallback 曾印出棄用提示；Windows 故障注入／關閉 SSE 可能印出 ConnectionResetError。保留這些提示，仍以斷言與退出碼判定；目前依賴以 lock 為準，不隱藏其他錯誤、不把引擎 HTTP 傳輸任意更換。當時 Vite／source-map-js 修補後的零項 npm audit 只屬當次結果，不是完整安全稽核或目前掃描結論。GPU、實機觸控、行動瀏覽器、對比／讀屏與全站視覺各自驗收；清單成本另見[分頁量測](list-pagination.md)。
 
 ## 同組隔離資料連續驗收
 
-模型五分類／兩版型、訓練四階段、五種創作目的／Checkpoint／FLUX 的桌面三尺寸另由 `frontend/tests/desktop-acceptance-matrix.spec.ts` 驗證。此檔沿用一般隔離 fixture，會由既有分批入口自動收集，也可在 `frontend` 執行 `npx.cmd playwright test tests/desktop-acceptance-matrix.spec.ts`。視覺基準直接讀原 `preview.html`，不產生另一份基準檔；支援界線、機器證據與必要差異見 [桌面驗收矩陣](ui-redesign/DESKTOP-ACCEPTANCE-MATRIX.md)。
+模型五分類／兩版型、訓練四階段、五種創作目的／Checkpoint／FLUX 的桌面三尺寸另由 `frontend/tests/desktop-acceptance-matrix.spec.ts` 驗證。此檔沿用一般隔離 fixture，會由既有分批入口自動收集，也可在 `frontend` 執行 `npx.cmd playwright test tests/desktop-acceptance-matrix.spec.ts`。視覺基準直接讀原 `preview.html`，不產生另一份基準檔；支援界線、機器證據與必要差異見 [桌面驗收矩陣](ui-redesign/ACCEPTANCE.md#desktop-matrix)。
 
 從 `frontend` 執行以下獨立設定；每次建立新的 `--empty` 臨時資料，不沿用一般套件的預設樣本。
 
@@ -70,4 +100,4 @@ Starlette 1.6.0 的 TestClient 優先使用 httpx2，現行 lock 的 httpx 0.28.
 npx.cmd playwright test --config playwright.journey.config.ts
 ```
 
-此設定只執行 `isolated-journey.spec.ts`，使用正式建置的前端、真實 API／SQLite 與合成引擎，從空庫沿一張來源圖串接生成、作品匯入、詳情、比較、下載、封存還原、離線與未保存保護。此檔位於獨立的 `frontend/journey-tests/`，一般 Playwright 與分批入口只收集 `frontend/tests/`，避免在已有其他測試資料的批次假裝驗證空庫；這個獨立命令需另外執行，不含在既有 `check_quality.py` 成功宣告內。無自動重試，輸出與 HTML 報告分別位於 `runtime/quality/journey-results`、`journey-report`。詳細範圍、證據與未完成能力見 [逐流程驗收](ui-redesign/ISOLATED-JOURNEY-ACCEPTANCE.md)。
+此設定只執行 `isolated-journey.spec.ts`，使用正式建置的前端、真實 API／SQLite 與合成引擎，從空庫沿一張來源圖串接生成、作品匯入、詳情、比較、下載、封存還原、離線與未保存保護。此檔位於獨立的 `frontend/journey-tests/`，一般 Playwright 與分批入口只收集 `frontend/tests/`，避免在已有其他測試資料的批次假裝驗證空庫；這個獨立命令需另外執行，不含在既有 `check_quality.py` 成功宣告內。無自動重試，輸出與 HTML 報告分別位於 `runtime/quality/journey-results`、`journey-report`。詳細範圍、證據與未完成能力見 [逐流程驗收](ui-redesign/ACCEPTANCE.md#isolated-journey)。

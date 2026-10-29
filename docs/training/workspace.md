@@ -23,7 +23,7 @@ T05 將 T02 的清單審查與資料出口接到 `#/training`。原生平台側�
 
 每頁 20 個圖片入口、50 個圖片缺項，完整分頁取代原先只顯示前 200 個問題。資料集層級的問題／提醒獨立顯示，不會因圖片搜尋藏起來。未知缺項代碼仍原樣保留。點「定位圖片」會清除圖片篩選、移到該圖所在頁並聚焦審查欄位；「下一張有阻擋缺項」依原清單順序循環。切換或篩選不丟失同份清單的未保存標註；已選圖不符合篩選時仍保留並提示，空結果也不會宣稱資料通過。
 
-最終 test 可定位其紀錄但仍不提供原圖預覽與欄位編輯。保留／排除用途與曝光規則沿用 T05，導覽不會把 test 變成訓練候選。操作與有限驗收見 [T07 紀錄](../validation/training-review-navigation-20261025.md)。
+最終 test 可定位其紀錄但仍不提供原圖預覽與欄位編輯。保留／排除用途與曝光規則沿用 T05，導覽不會把 test 變成訓練候選。操作與有限驗收見 [T07 紀錄](../validation/training-workspace-20261025.md#t07-navigation)。
 
 ## 保存與備份
 
@@ -65,7 +65,7 @@ T05 將 T02 的清單審查與資料出口接到 `#/training`。原生平台側�
 
 API 為唯讀 `GET /api/training/runs/<UUID>/report?include_logs=false`，僅限同一 DATA 已登記的 run；未知 UUID 回 404，容器／非 Windows 回 409。單個 JSON 最多讀 4 MiB、checkpoint 回執最多 256 KiB；報告最多 1 MiB，只保留最近 100 份 checkpoint 回執與最近 100 筆資源取樣，總筆數另列。壞 JSON、重複 key、缺檔或連結保留 missing／unreadable 與問題代碼，狀態無法可靠觀察時維持 unknown、resources_released=null。
 
-報告分次讀取，不是原子快照；活動 run 可能繼續改變。`manifest.matches_state` 只核對兩份 metadata 的關係，`artifact.matches_run`／checkpoint matches_run 只核對回執來源，**沒有重新讀取／驗證原圖、work、權重或 optimizer**。安裝／續訓前仍由 T03／T04 完整驗證；metadata 報告不能代替備份、可續訓證明、模型品質或 GPU 相容性驗收。見 [T08 有限實機與回歸](../validation/training-report-20261025.md)。
+報告分次讀取，不是原子快照；活動 run 可能繼續改變。`manifest.matches_state` 只核對兩份 metadata 的關係，`artifact.matches_run`／checkpoint matches_run 只核對回執來源，**沒有重新讀取／驗證原圖、work、權重或 optimizer**。安裝／續訓前仍由 T03／T04 完整驗證；metadata 報告不能代替備份、可續訓證明、模型品質或 GPU 相容性驗收。見 [T08 有限實機與回歸](../validation/training-workspace-20261025.md#t08-report)。
 
 ## 中斷與資料位置
 
@@ -73,4 +73,4 @@ SQLite 的 `training_request:*` 保存準備／續訓／比較請求，`training
 
 run 的 manifest／work／parent-study／checkpoint／資源／日誌在 `runtime/training/runs/<UUID>`，比較文件在 `runtime/training/evaluations/<請求 UUID>`，安裝權重及 sidecar 在受管理 `runtime/ComfyUI/models/loras`。它們**不在 DATA 備份內**，須與原資料包、環境／基底一起備份。比較保存中斷可能已有部分方案；保留 evaluation 及原方案 UUID，依 T04 CLI 人工核對，不自動重試或刪除。
 
-原生租約不跨 Docker，也不是整張 GPU 隔離。入口沿用 D01 的 peer／Host／Origin 保護，同機使用者及程式仍視為可信。新介面不增加作者圖來源權利或品質認列；有限實測見 [T06 驗收](../validation/training-control-20261025.md)。
+原生租約不跨 Docker，也不是整張 GPU 隔離。入口沿用 D01 的 peer／Host／Origin 保護，同機使用者及程式仍視為可信。新介面不增加作者圖來源權利或品質認列；有限實測見 [T06 驗收](../validation/training-workspace-20261025.md#t06-control)。

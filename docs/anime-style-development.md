@@ -132,7 +132,7 @@ T01／T02 已完成需求與資料介面。T02 唯讀盤點 22 檔，分為 10 �
 
 L01 接續先測一個適用於選定 checkpoint 的畫風 LoRA，固定其餘條件比較少量強度；需要時再比較排列。LCM 類加速方案的 steps／CFG／sampler 與畫風方案分開記錄，不能把少步數成功當成畫風改善。每次擴充先列出預計次數，保持有限且明確操作。
 
-R05 已新增獨立的 `anime-illustration-v1.json`：版本／bytes hash、UI 測試集選單、API `suite_id` 與單組 `scripts.verify_anime_suite` 入口均獨立保留；不覆寫通用 v1 的舊四案例或歷史 hash。新正向／反向提示詞軸可逐項比較完整文字，未自動導入作者圖片或建立生成批次。現有能力與限制見 [比較方案](experiment-plans.md)、[結果關聯](experiment-runs.md)、[固定測試集](illustration-suite.md)。
+R05 已新增獨立的 `anime-illustration-v1.json`：版本／bytes hash、UI 測試集選單、API `suite_id` 與單組 `scripts.verify_anime_suite` 入口均獨立保留；不覆寫通用 v1 的舊四案例或歷史 hash。新正向／反向提示詞軸可逐項比較完整文字，未自動導入作者圖片或建立生成批次。現有能力與限制見 [比較方案](experiment-plans.md)、[結果關聯](experiment-plans.md#runs-and-artworks)、[固定測試集](illustration-suite.md)。
 
 ## 不重寫整體架構，新增參考圖流程
 

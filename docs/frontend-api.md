@@ -1,6 +1,6 @@
-# 前端 HTTP 契約與載入生命週期
+# 前端通訊、導覽與編輯生命週期
 
-Q03 的共用入口位於 frontend/src/apiClient.ts，已用於 App、CreationStudio、FluxStudio、InpaintStudio、ControlStudio、ArtworkLibrary、GenerationPanel，以及設定／比較方案交換。各流程的能力、來源、修訂與表單驗證保留在原模組；共用 client 不改變選取模型、參數或快照。
+共用 HTTP 入口位於 frontend/src/apiClient.ts，已用於 App、CreationStudio、FluxStudio、InpaintStudio、ControlStudio、ArtworkLibrary、GenerationPanel，以及設定／比較方案交換。各流程的能力、來源、修訂與表單驗證保留在原模組；共用 client 不改變選取模型、參數或快照。
 
 ## HTTP 與錯誤
 
@@ -13,15 +13,15 @@ Q03 的共用入口位於 frontend/src/apiClient.ts，已用於 App、CreationSt
 
 ApiError 提供 kind（http／network／aborted／invalid-response）、HTTP status、結構化 detail 與 conclusive。字串 detail、detail.message、Pydantic detail 陣列分別解析；欄位陣列最多顯示三筆。HTML／不完整錯誤內容使用通用 HTTP 提示，不顯示原始頁面或網路例外。錯誤 body 讀取上限 64 KiB；成功的大資料限制仍由各功能驗證器處理。
 
-client 不自動重試任何方法、不改寫呼叫參數、不替流程選型。圖片／比較報告等專用子流程仍保留各自的原始 bytes 與來源／hash 驗證；本次沒有把所有串流轉成 JSON。各功能資料的欄位合法性仍須由原 caller 檢查。
+client 不自動重試任何方法、不改寫呼叫參數、不替流程選型。圖片／比較報告等專用子流程保留各自的原始 bytes 與來源／hash 驗證，不將所有串流轉成 JSON。各功能資料的欄位合法性仍須由原 caller 檢查。
 
 ## 可取消載入
 
 requestScope.ts 的 begin 取消上一個查詢並提供 signal／isCurrent；cancel 即使底層忽略 AbortSignal，也會使舊回覆失效；dispose 結束該 instance 的全部讀取。取消不重設表單或 pending，不表示已撤銷伺服器上的寫入。
 
-App 保留設定 epoch／網址對照；四工作台各自區分清單、profile、還原等讀取，KeepAlive 離開時取消、返回時重讀，卸載後不採用晚到回覆。原引擎／模型及 restore token 檢查仍保留。作品庫清單與筆記重讀也有 scope，409 保存衝突繼續保留未保存筆記與評分。
+App 保留設定 epoch／網址對照；各工作台分別區分清單、profile、還原等讀取，KeepAlive 離開時取消、返回時重讀，卸載後不採用晚到回覆。原引擎／模型及 restore token 檢查仍保留。作品庫清單與筆記重讀也有 scope，409 保存衝突繼續保留未保存筆記與評分。
 
-Q05 的重新整理／關頁提示是另一項；本次只處理非同步讀取生命週期，不把瀏覽器記憶體當成持久化草稿。
+非同步讀取取消與[未保存內容保護](#unsaved-changes)分開處理；瀏覽器記憶體不是持久化草稿。
 
 ## 提交與未知結果
 
@@ -35,7 +35,45 @@ V02 的原始 pending、v1／v2 端點、相同 body、遮罩／半徑、錯誤�
 
 E05 的 `measurements.continuous_resources` 為選填的新任務觀察欄位。後端取樣 journal 不改 job revision；GET 詳情可在 revision 相同時回傳更新的時間點，不能以整個回應物件相等判斷任務狀態是否遭改動。列表／SSE 沿用最近狀態轉移的快照，終態後所有量測凍結；作品保留相同觀察，歷史缺欄位不回填，見 [量測契約](job-measurements.md)。
 
-## 驗證（2026-10-22）
+<a id="navigation"></a>
+
+## 網址導覽與能力狀態
+
+頁面／工作流程使用 hash URL，可直接開啟、重新整理及返回／前進，不需要伺服器 rewrite 或額外 router 依賴：
+
+| 畫面 | 網址片段 |
+| --- | --- |
+| 系統資訊／首次使用 | `#/system`（空網址亦正規化至此） |
+| 五種工作台 | `#/studio/checkpoint`、`#/studio/flux`、`#/studio/inpaint`、`#/studio/control`、`#/studio/reference` |
+| 模型／參考素材 | `#/models`、`#/assets` |
+| 作品／選定匯入任務 | `#/gallery`、`#/gallery?job=<UUID>` |
+| 選定作品並排比較 | `#/gallery/compare`（選取內容仍由本次操作決定） |
+| 實驗比較／訓練工作區 | `#/experiments`、`#/training` |
+| 連線設定 | `#/settings` |
+
+錯誤路徑、流程或額外參數會顯示提示並替換成系統資訊。網址只表示導覽／選定任務，不包含表單、提示詞、圖片、引擎憑證，也不觸發生成、匯入或恢復原提交。作品庫的 job 是待匯入任務選項，不會自動匯入圖片。
+
+所有站內導覽與工作台事件使用同一入口；切換後焦點移到主要內容，頁面標題、`aria-current` 與流程 `aria-pressed` 隨之更新。跳至主要內容連結只移動焦點，不改網址。五種 Studio 由 KeepAlive 保留站內表單；重新整理會重建記憶體，未保存內容遵守 [未保存內容保護](#unsaved-changes)，網址本身不是草稿備份。作品未保存筆記／評分時，返回或點擊導覽均需明確確認；取消恢復原歷史位置、網址及筆記。
+
+系統、設定與工作台提供「連線 → 選模型 → 建立作品」指引，工作台預設收合以保留表單空間。連線顯示已連線、離線或未知；模型同步／登記不代表已載入權重。生成區依原本的 blocking 條件呈現「載入／處理中」「尚缺必要條件」「表單預檢可提交」及「原提交待確認」，沿用既有 disabled 判斷，不另建較寬鬆的提交規則。實際缺項提示保留於下方，詳細能力範圍可展開。
+
+FLUX 的固定配置與 GPU 驗收見[平台接入紀錄](models/flux-workflow.md#generation-acceptance)，不外推到其他配置。各流程只按對應文件的硬體、模型、參數與日期判讀；版本／來源／檔案 hash／執行裝置無法取得時保持未知。模型與任務的詳細來源／版本快照沿用原有展開區。沒有以「可提交」替代品質、授權或 GPU 驗收。
+
+<a id="unsaved-changes"></a>
+
+## 未保存內容與離頁保護
+
+五種工作台共用 `useUnsavedChanges`。表單、LoRA 或遮罩有未保存變更時註冊 `beforeunload`，草稿／遮罩正在保存時也保護；成功保存後才移除對應保護，保存失敗不清除內容。KeepAlive 切頁仍保留表單及筆刷，隱藏工作台的未保存內容也會阻擋整個分頁離開；卸載才移除監聽。
+
+Checkpoint 與 FLUX 可保存完整草稿。局部編輯／Canny／畫風角色參考只保留本頁表單，保存原圖或遮罩並不保存整份設定，專用草稿格式仍由 R07 處理。載入任務／作品設定為未保存的新內容；生成不會把表單標為已保存。
+
+取消瀏覽器警示會留在原頁，內容與筆刷不變。確認離開不會呼叫保存或生成。瀏覽器自行決定是否顯示警示文字，通常需要先與頁面互動；行動瀏覽器、系統強制結束程序或瀏覽器崩潰不保證觸發，請主動保存可保存的內容。
+
+待確認提交按上節的原 UUID／body／端點恢復；重新開啟只提供明確恢復操作，不是未保存草稿的自動備份。
+
+<a id="frontend-verification"></a>
+
+## 重跑與驗收範圍
 
 ```powershell
 Set-Location frontend
@@ -46,13 +84,8 @@ npm.cmd run check:inpaint
 npm.cmd run check:control
 ```
 
-全部通過。check:api 使用既有 TypeScript 與 Vue compiler／renderer，不新增測試套件：
+`check:api` 使用專案既有 TypeScript 與 Vue compiler／renderer，驗證 HTTP 錯誤、取消、原文字／bytes、實際 SFC 的 KeepAlive／晚到回覆／卸載、dirty／保存中／卸載監聽、精確 seed／LoRA 保留、原凍結提交流程及作品 409 未保存內容。子元件不渲染，不能據此宣稱真實 DOM、觸控或全站無障礙通過。
 
-- HTTP 409／422／500、字串／結構化／欄位錯誤、非 JSON、離線、取消及原文／原 bytes。
-- 實際四種 SFC 的 setup 與 KeepAlive 生命週期：離開／返回、底層忽略 abort、晚到回覆、卸載及未保存 prompt／完整 seed／LoRA 保留。子元件不渲染，不執行 GPU。
-- 實際四種 GenerationPanel：遺失回應保留 pending，修改表單後明確恢復仍送原 UUID／body／端點；另驗證修補與 Canny v1／v2 六個 descriptor、精確 seed、有序 LoRA、確認／未知結果及不重試。
-- 實際 ArtworkLibrary 的 409 操作保留筆記、評分與原修訂號。
+瀏覽器回歸另在臨時 DATA／模擬引擎檢查網址直達／刷新／返回、焦點、未保存筆記返回確認、重新整理／關頁警示、保存成功與失敗、遮罩筆畫、未知結果與原請求恢復；fixture 成功圖片為合成 PNG，不代表真實推論。入口與目前範圍見[品質檢查](quality-checks.md)。
 
-隔離平台與模擬引擎另在真實瀏覽器操作：填入未保存提示詞與 seed `18446744073709551615`，觸發欄位陣列 422 後內容仍在，四流程切換返回後保持；模擬 `/prompt` 遺失回應後顯示結果待確認，累計引擎提交恰為一次。測試頁與 8001 服務已停止；helper／資料保留在忽略的 runtime/q03_browser_check.py、runtime/q03-ui-data，正式資料未改。
-
-SFC renderer 驗證不代表真實 DOM／觸控或全站無障礙通過；上述瀏覽器只驗證列出的操作。沒有重新載入模型或 GPU 生成。後端相容基線為 Q02 的 548 項回歸（547 通過、1 項既有權限跳過）；Q03 只修改前端與文件。
+Q03／Q05／Q08 的原始四工作台、1440px／390px 與 bundle 數字屬當時歷史，不是目前測試總數或效能保證，見 [CHANGELOG](../CHANGELOG.md)。2026-10-23 新增第五個參考工作台的遺失回應、重新整理、完整還原與切頁保留另見 [R02 驗收](validation/reference-adapter-20261023.md)；六種 descriptor 與 v1／v2 失敗恢復見 [V02](validation/inpaint-recovery-20261023.md)。GPU、實體觸控及全站視覺仍須各自驗收。

@@ -1,6 +1,6 @@
 # F03：FLUX HTTP 生成、作品保存、離線與 OOM
 
-日期：2026-10-25。完整通過 run：`f7fbc72f-5ecd-4482-8734-ecf1dca8ca42`；[機器可讀摘要](flux-generation-20261025.json)、[重跑與操作](../models/flux-generation-acceptance.md)。
+日期：2026-10-25。完整通過 run：`f7fbc72f-5ecd-4482-8734-ecf1dca8ca42`；[機器可讀摘要](flux-generation-20261025.json)、[重跑與操作](../models/flux-workflow.md#generation-acceptance)。
 
 使用 RTX 3060 12 GiB、約 63.939 GiB RAM、ComfyUI `15eb748b3ec5f8a0a2d470b7fb280e2d7579f916`、Torch 2.14.0+cu130。四份原固定權重重新完整 SHA256 通過，沒有替換來源；每份 revision／bytes／SHA256 及完整 graph／參數保存在摘要。配置為 512×512、batch 1、4 steps、CFG 1、Euler／simple、主模型 `fp8_e4m3fn`、編碼器 CPU、seed 字串 `9007199254740993`。
 

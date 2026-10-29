@@ -18,7 +18,7 @@ Windows、Python 3.12、Node.js 24、鎖定的 Playwright 1.64.1 Chromium。五�
 
 修正前兩項瀏覽器斷言失敗保存在 `runtime/v03-before.log`、`runtime/v03-before-browser/`；雙分頁快速保存未發出 PATCH 的 trace 在 `runtime/v03-read-race-browser/`。測試開發另修正原生 select 的定位及 null 選項標籤，沒有把測試定位問題當成產品缺陷。
 
-依 [維護規則](../maintenance.md)，兩個 Vue 模組先獨立格式提交 `940dab1`，核對 script、編譯模板及 CSS 語意相同，建置與格式檢查通過；功能提交將清空比較的兩個操作移至具名函式，並以實際清空選擇回歸確認。兩個模組與新瀏覽器測試加入明確品質 scope，避免實質修改後漏檢。
+依 [維護規則](../quality-checks.md#static-checks)，兩個 Vue 模組先獨立格式提交 `940dab1`，核對 script、編譯模板及 CSS 語意相同，建置與格式檢查通過；功能提交將清空比較的兩個操作移至具名函式，並以實際清空選擇回歸確認。兩個模組與新瀏覽器測試加入明確品質 scope，避免實質修改後漏檢。
 
 ## 五項操作案例
 

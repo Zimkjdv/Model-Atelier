@@ -6,7 +6,7 @@
 
 `GET /api/reference-workflows` 回傳各流程的圖片數量、架構、輸入需求與是否已實作。文生圖不套用圖片；Checkpoint 圖生圖已實作後端，需明確登記 SD 1.x／SDXL 架構與一張未封存的素材。Checkpoint 局部編輯已提供獨立工作台及原圖／遮罩雙輸入流程，Pony／Animagine 在 RTX 3060 的固定條件通過，修補品質仍有接縫限制；見 [局部編輯說明](../inpainting.md)。[Canny 結構參考](../controlnet.md) 已提供 v1／v2 專用流程，v2 可保存同次原邊緣；[畫風／角色 adapter](ipadapter-reference.md) 已提供 SDXL 單張專用工作台，畫風與外觀模式分開；不代表訓練或身份鎖定。FLUX 使用獨立流程，尚未支援參考圖。
 
-`GET /api/assets/{id}/usage` 提供引用素材的草稿、任務、作品及已保存比較方案 ID。素材封存與引用檢查在同一 SQLite 寫入交易執行：草稿引用需先移除並保存；任務／作品／已保存比較方案引用的素材不可封存，以保留來源與重建能力；封存方案仍保留素材引用。方案保存與素材封存共用 SQLite 寫入交易，見[保存方案說明](../experiment-storage.md)。仍可更新名稱與用途。平台沒有素材永久刪除 API。
+`GET /api/assets/{id}/usage` 提供引用素材的草稿、任務、作品及已保存比較方案 ID。素材封存與引用檢查在同一 SQLite 寫入交易執行：草稿引用需先移除並保存；任務／作品／已保存比較方案引用的素材不可封存，以保留來源與重建能力；封存方案仍保留素材引用。方案保存與素材封存共用 SQLite 寫入交易，見[保存方案說明](../experiment-plans.md#storage-and-import)。仍可更新名稱與用途。平台沒有素材永久刪除 API。
 
 ## Checkpoint 圖生圖 API
 

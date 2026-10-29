@@ -34,7 +34,7 @@ Windows、Python 3.12、Node.js 24、Playwright 1.64.1 Chromium。六種案例�
 
 原 `File.text()` 會將無效 UTF-8 替換成字元，可能讓原本應拒絕的文件被改寫後接受。改為 `arrayBuffer()` 配合 fatal UTF-8 TextDecoder；測試把非法 byte 放在 JSON 提示詞字串內，確認直接拒絕而不是替換內容。有效檔案仍保留原文字，API schema／256 KiB 上限不變。
 
-依 [維護規則](../maintenance.md)，先以 `36f4e99` 獨立格式提交設定交換元件，script、編譯模板及 CSS 正規化比對相同，格式與正式建置通過；再加入讀取修正與操作回歸。元件與新測試納入明確品質 scope，沒有全庫格式化或新增依賴。
+依 [維護規則](../quality-checks.md#static-checks)，先以 `36f4e99` 獨立格式提交設定交換元件，script、編譯模板及 CSS 正規化比對相同，格式與正式建置通過；再加入讀取修正與操作回歸。元件與新測試納入明確品質 scope，沒有全庫格式化或新增依賴。
 
 ## 重跑及附件
 

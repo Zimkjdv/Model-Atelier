@@ -1,6 +1,6 @@
 # F04：Schnell LoRA 與原圖重繪
 
-這兩種流程各自實作、各自驗收，皆使用 [F03 固定四元件與 512 配置](flux-generation-acceptance.md)。目前支援固定 PVC LoRA 的模型權重套用，以及原生 VAE 圖生圖；Redux、IP-Adapter、身份參考、多 LoRA、LoRA＋圖生圖混用及未知組合維持停用。技術證據見 [F04 實測](../validation/flux-extensions-20261025.md)。
+這兩種流程各自實作、各自驗收，皆使用 [F03 固定四元件與 512 配置](flux-workflow.md#generation-acceptance)。目前支援固定 PVC LoRA 的模型權重套用，以及原生 VAE 圖生圖；Redux、IP-Adapter、身份參考、多 LoRA、LoRA＋圖生圖混用及未知組合維持停用。技術證據見 [F04 實測](../validation/flux-extensions-20261025.md)。
 
 ## 先完成安裝與登記
 

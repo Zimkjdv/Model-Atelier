@@ -57,4 +57,4 @@ R02 補充：`checkpoint-ipadapter-reference-v1` 沿用相同保護，新增 `fa
 
 最終完整品質入口通過 scoped format／static、585 項後端（1 項既有 Windows 權限條件跳過）、Vue build、四組前端契約及 87 項 Chromium（4.4 分鐘）。檢視兩工作台的 1440px／390px 四張支援範圍截圖，文字換行可讀。完整 log 為 `runtime/r07-quality-final.log`；初次完整回歸發現舊封套回讀的相容問題，補有限相容及反冒用測試後重跑通過。
 
-R07-01／02 的格式評估及尚未支援時的保護已完成；後續專用功能啟用須另按完整契約實作與驗收。既有說明：[局部編輯](inpainting.md)、[羽化](inpaint-feather.md)、[Canny](controlnet.md)、[一般交換](creation-settings-transfer.md)、[比較方案](experiment-plans.md)。
+R07-01／02 的格式評估及尚未支援時的保護已完成；後續專用功能啟用須另按完整契約實作與驗收。既有說明：[局部編輯](inpainting.md)、[羽化](inpainting.md#inner-feather)、[Canny](controlnet.md)、[一般交換](creation-settings-transfer.md)、[比較方案](experiment-plans.md)。

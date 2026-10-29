@@ -2,7 +2,9 @@
 
 個人 AI 圖像創作與實驗工作台。更新日期：2026-10-27。
 
-本檔只追蹤 **10 個未完成主項、11 個待驗收子項**（共 21 個未勾選框）。已完成條目的原驗收敘述、圖片提醒與證據移至 [CHANGELOG 已完成條目](CHANGELOG.md#roadmap-completed-20261025)；原 39 框去向與補回驗收也保留於 [歷史索引](CHANGELOG.md#unchecked-index)。移動不改變完成狀態，也不新增實測結論。
+本檔只追蹤 **10 個未完成主項、11 個待驗收子項**（共 21 個未勾選框）。已完成條目的原驗收敘述、圖片提醒與證據移至 [CHANGELOG 已完成條目](CHANGELOG.md#roadmap-completed-20261025)；原 39 框去向與補回驗收可由 [固定歷史來源](CHANGELOG.md#unchecked-index) 追溯。移動不改變完成狀態，也不新增實測結論。
+
+本檔主線計數維持原範圍；UI 的 N05 全域任務、N06 偏好保存及 N07 分類容量另由 [獨立待辦](docs/ui-redesign/BACKEND-CAPABILITIES-BACKLOG.md) 管理，尚未完成，沒有計入下表。
 
 ## 接下來的順序與條件
 
@@ -15,7 +17,7 @@
 
 近期完成：E02 → E03 → E04 已驗證 RTX 4080 八流程、兩機相同配置比較、1536² 較高負載與 512／1024 自製幾何技術訓練。F01–F04 已完成 RTX 3060／約 64 GiB RAM 的固定 512 FLUX 配置；RTX 4080 的 SDXL 驗收不涵蓋 FLUX。T05–T08 的圖片審查、訓練控制、缺項導覽及報告，以及 D01／D02 本機部署與選用 Docker 均已完成，證據保留於 [CHANGELOG.md](CHANGELOG.md)。
 
-各工作項獨立驗證、commit／push 後再接續下一項。已完成項只針對可重現問題改善；其他配置另立實測，不以技術試訓認列作者品質，不自動批准作者圖片。延伸模組參考 [GitHub 借用決策](docs/github-reuse-assessment-20261023.md)。
+各工作項獨立驗證、commit／push 後再接續下一項。已完成項只針對可重現問題改善；其他配置另立實測，不以技術試訓認列作者品質，不自動批准作者圖片。延伸模組參考 [GitHub 借用決策](docs/research/upstream-reuse.md#reuse-assessment)。
 
 技術維持 Vue／FastAPI／SQLite 與獨立 ComfyUI；保留原 UUID／端點、不可變快照、精確 seed、未知結果不重送及未知能力標示。權重／原始圖片／runtime 不進 Git，不以顯卡型號或 VRAM 估算保證可執行。驗收以 [docs/validation](docs/validation) 及各功能說明為準。
 

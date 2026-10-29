@@ -41,7 +41,7 @@ Windows、Python 3.12、Node.js 24、Playwright 1.64.1 Chromium。新增 **21 �
 
 連線、清單內外、收藏、停用、缺少必要條件、未保存、讀取與錯誤均有文字／原生控制狀態，不只依賴綠色、黃底或圓點。關於可自由手繪的路徑輸入與鍵盤例外，範圍依 [W3C 2.1.1](https://www.w3.org/WAI/WCAG22/Understanding/keyboard.html)；此處沒有以鍵盤模擬自由筆畫來宣稱觸控通過。
 
-依 [維護規則](../maintenance.md)，CreationStudio 與共用 theme 先以 `6b17b17` 獨立格式提交，核對 TypeScript、編譯模板及 CSS 值／順序相同，再提交功能修正；兩模組與新測試納入品質 scope。格式工具會刪除 Vue 事件的多敘述分號，因此尺寸預設按鈕保留精確原文；另一處明確保留按鈕間空白，避免純格式提交混入模板差異。
+依 [維護規則](../quality-checks.md#static-checks)，CreationStudio 與共用 theme 先以 `6b17b17` 獨立格式提交，核對 TypeScript、編譯模板及 CSS 值／順序相同，再提交功能修正；兩模組與新測試納入品質 scope。格式工具會刪除 Vue 事件的多敘述分號，因此尺寸預設按鈕保留精確原文；另一處明確保留按鈕間空白，避免純格式提交混入模板差異。
 
 ## 重跑與證據
 

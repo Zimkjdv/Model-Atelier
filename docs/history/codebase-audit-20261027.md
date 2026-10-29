@@ -1,6 +1,6 @@
 # 程式庫深度稽核與安全清理計畫（2026-10-27）
 
-依 [SAFE_CODEBASE_AUDIT.md](../prompts/SAFE_CODEBASE_AUDIT.md) 的六個階段進行。本文保存該次唯讀稽核的證據、限制及 B1–B6 清理計畫，不以搜尋不到直接呼叫作為刪除依據。
+依 [SAFE_CODEBASE_AUDIT.md](../../prompts/SAFE_CODEBASE_AUDIT.md) 的六個階段進行。本文保存該次唯讀稽核的證據、限制及 B1–B6 清理計畫，不以搜尋不到直接呼叫作為刪除依據。
 
 稽核基準為 `main` 的 `052bf88`；使用者新增的四份規則／稽核 Markdown 已先提交並推送。稽核期間未修改或刪除任何檔案，沒有足夠證據支持整份刪除產品模組或測試。
 
@@ -8,9 +8,9 @@
 
 ## 階段 1：理解專案與限制
 
-已閱讀 [AGENTS.md](../AGENTS.md)、[REQUIREMENTS.md](../REQUIREMENTS.md)、[AGENTS-MAINTENANCE.md](../AGENTS-MAINTENANCE.md)，以及架構、部署、資料保存、前端契約和維護文件。需求明確，沒有需要額外釐清的規則衝突。
+已閱讀 [AGENTS.md](../../AGENTS.md)、[REQUIREMENTS.md](../../REQUIREMENTS.md)、[AGENTS-MAINTENANCE.md](../../AGENTS-MAINTENANCE.md)，以及架構、部署、資料保存、前端契約和維護文件。需求明確，沒有需要額外釐清的規則衝突。
 
-目前是 Windows 本機單人工作台：Vue → FastAPI → SQLite／本機圖片，另接獨立 ComfyUI；Docker 為選用部署方式。參考 [架構與資料流](architecture.md)、[應用程式工廠](application-factory.md)、[部署邊界](deployment.md)、[維護規則](maintenance.md)。
+目前是 Windows 本機單人工作台：Vue → FastAPI → SQLite／本機圖片，另接獨立 ComfyUI；Docker 為選用部署方式。參考 [架構與資料流](../architecture.md)、[應用程式工廠](../architecture.md#application-factory)、[部署邊界](../setup-and-operations.md#local-access)、[維護規則](../quality-checks.md#static-checks)。
 
 主要入口及相容責任：
 
@@ -45,12 +45,12 @@
 
 | 位置（基準行號） | 符號 | 直接證據 |
 | --- | --- | --- |
-| [backend/training_control.py](../backend/training_control.py):6 | `Path` | AST 沒有對應名稱讀取 |
-| [backend/training_review.py](../backend/training_review.py):7 | `Path` | AST 沒有對應名稱讀取 |
-| [scripts/install_structure_preprocessors.py](../scripts/install_structure_preprocessors.py):6 | `os` | AST 沒有對應名稱讀取 |
-| [scripts/training_worker.py](../scripts/training_worker.py):5 | `json` | 實際使用 `read_json`／`compute_lease.atomic_json`，沒有使用此匯入 |
-| [scripts/verify_flux_extensions.py](../scripts/verify_flux_extensions.py):7 | `Path` | 路徑取自 fixture，沒有使用此名稱 |
-| [scripts/verify_hardware.py](../scripts/verify_hardware.py):12 | `sys` | CLI 使用 argparse／base.main，沒有使用此名稱 |
+| [backend/training_control.py](../../backend/training_control.py):6 | `Path` | AST 沒有對應名稱讀取 |
+| [backend/training_review.py](../../backend/training_review.py):7 | `Path` | AST 沒有對應名稱讀取 |
+| [scripts/install_structure_preprocessors.py](../../scripts/install_structure_preprocessors.py):6 | `os` | AST 沒有對應名稱讀取 |
+| [scripts/training_worker.py](../../scripts/training_worker.py):5 | `json` | 實際使用 `read_json`／`compute_lease.atomic_json`，沒有使用此匯入 |
+| [scripts/verify_flux_extensions.py](../../scripts/verify_flux_extensions.py):7 | `Path` | 路徑取自 fixture，沒有使用此名稱 |
+| [scripts/verify_hardware.py](../../scripts/verify_hardware.py):12 | `sys` | CLI 使用 argparse／base.main，沒有使用此名稱 |
 
 - 已檢查 AST、產品呼叫、相關測試、腳本、文件與 qualified references，未找到透過這些模組取用上述名稱的用途。四份 scripts 未發現以 `eval`／`exec`／`globals`／`locals`／`__import__` 動態讀取這些名稱的路徑。
 - 標準函式庫匯入不負責專案註冊；所有原有 HTTP、CLI、參數及資料格式保留。仍無法完全排除倉庫外程式將偶然暴露的模組屬性當 API，這是最壞失敗情況。
@@ -60,17 +60,17 @@
 
 ### B2：修正品質文件的現況／歷史混寫
 
-風險：低。位置：[docs/quality-checks.md](quality-checks.md):11、51。
+風險：低。位置：[docs/quality-checks.md](../quality-checks.md):11、51。
 
-- 直接證據：文件寫「目前 24 份 spec、四批」，實際有 25 份；[browser_stages](../scripts/check_quality.py):13 每六份分批，因此目前為五批。V06 的「現有 80 項」應標為當時數字，而非覆寫原驗收數。
+- 直接證據：文件寫「目前 24 份 spec、四批」，實際有 25 份；[browser_stages](../../scripts/check_quality.py):13 每六份分批，因此目前為五批。V06 的「現有 80 項」應標為當時數字，而非覆寫原驗收數。
 - 只修正文句，不改品質工具或測試。效益是避免錯誤操作預期；最壞是誤改歷史紀錄。
 - 驗證計畫：核對檔案數與分批演算法、檢查本機連結和 diff，保留各日期原測試結果。回退為單獨文件提交的 revert。
 
 ### B3：讓 FLUX URL 驗證直接依賴純 schema
 
-風險：中。位置：[backend/flux_workflows.py](../backend/flux_workflows.py):52 的 `Input.valid_engine`。
+風險：中。位置：[backend/flux_workflows.py](../../backend/flux_workflows.py):52 的 `Input.valid_engine`。
 
-- 直接證據：驗證器從 `backend.main` 匯入 `Settings`；main 再匯出的正是 [backend.schemas.Settings](../backend/schemas.py):9。該純 schema 的依賴為標準函式庫、Pydantic 及 `lora_settings`。
+- 直接證據：驗證器從 `backend.main` 匯入 `Settings`；main 再匯出的正是 [backend.schemas.Settings](../../backend/schemas.py):9。該純 schema 的依賴為標準函式庫、Pydantic 及 `lora_settings`。
 - 已檢查 main 的相容匯出、FLUX extensions 對 Input 的繼承、路由註冊及直接建構 Input 的測試／scripts。若獨立驗證器在 main 尚未匯入時執行，現有依賴會引入 `app=create_app()` 的完整註冊圖；這不等於寫入 SQLite，但形成隱藏初始化依賴。
 - 範圍僅為將內部依賴改成 `backend.schemas.Settings`，保留 main 相容匯出；不改 URL 驗證規則、端點、JSON 或資料 key。
 - 效益是解除反向依賴；最壞是影響倉庫外對 `main.Settings` 的 monkeypatch。倉庫內未找到此用途，外部消費者尚未驗證。
@@ -78,9 +78,9 @@
 
 ### B4：限制羽化預覽的錯誤回應大小
 
-風險：中；屬功能修正，不能混入純清理。位置：[frontend/src/inpaintPreview.ts](../frontend/src/inpaintPreview.ts):6。
+風險：中；屬功能修正，不能混入純清理。位置：[frontend/src/inpaintPreview.ts](../../frontend/src/inpaintPreview.ts):6。
 
-- 直接證據：失敗回應直接使用 `response.json()`，沒有 bytes 上限；同檔成功圖片限制 32 MiB，而 [cannyPreview.ts](../frontend/src/cannyPreview.ts):31 的錯誤回應已有 64 KiB 上限。
+- 直接證據：失敗回應直接使用 `response.json()`，沒有 bytes 上限；同檔成功圖片限制 32 MiB，而 [cannyPreview.ts](../../frontend/src/cannyPreview.ts):31 的錯誤回應已有 64 KiB 上限。
 - 已檢查預覽 UI、驗證器及 `check-inpaint.mjs` 的一般錯誤／成功超限案例。這是確認的靜態差異，尚未執行超大錯誤回應重現，不能宣稱已證實可利用情境。
 - 建議另批加入有界錯誤讀取，可沿用 64 KiB 政策；成功圖片、來源與 hash 驗證維持原規則。
 - 效益是限制錯誤處理記憶體；最壞是錯誤訊息或 UI 狀態改變。沒有資料遷移，但錯誤行為會改變，需明確批准。
@@ -88,7 +88,7 @@
 
 ### B5：抽取預覽串流讀取的共用機制
 
-風險：中。首批位置：[cannyPreview.ts](../frontend/src/cannyPreview.ts):22、[inpaintPreview.ts](../frontend/src/inpaintPreview.ts):9。
+風險：中。首批位置：[cannyPreview.ts](../../frontend/src/cannyPreview.ts):22、[inpaintPreview.ts](../../frontend/src/inpaintPreview.ts):9。
 
 - 直接證據：重複 `getReader → chunks → 超限 cancel → finally releaseLock → Uint8Array`。比較報告與 `TrainingReport.vue` 也有相似機制，但限制與領域驗證不同，不能視為完全相同功能。
 - 各讀取器均有 UI 呼叫者；此項是共用機制整理，不是刪除未使用程式。首批只處理 Canny／羽化，保留各自限額、錯誤訊息、PNG、來源及 SHA256 驗證。
@@ -98,7 +98,7 @@
 
 ### B6：共用 Node 契約測試的純 TS 載入助手
 
-風險：中，優先度低。位置：[check-api.mjs](../frontend/check-api.mjs):5、[check-control.mjs](../frontend/check-control.mjs):4、[check-inpaint.mjs](../frontend/check-inpaint.mjs):4、[check-experiment-runs.mjs](../frontend/check-experiment-runs.mjs):4、28。
+風險：中，優先度低。位置：[check-api.mjs](../../frontend/check-api.mjs):5、[check-control.mjs](../../frontend/check-control.mjs):4、[check-inpaint.mjs](../../frontend/check-inpaint.mjs):4、[check-experiment-runs.mjs](../../frontend/check-experiment-runs.mjs):4、28。
 
 - 直接證據：重複 readFile、TypeScript transpile、相依替換及 base64 data URL setup；它們仍由 `npm test` 與品質入口實際使用。
 - 只共用純 TS 載入 setup，保留全部測試與斷言。`check-studio-reads.mjs` 會編譯 Vue SFC、stub 子元件並接 Vue renderer，行為不同，排除於此批。

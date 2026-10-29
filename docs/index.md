@@ -1,98 +1,146 @@
 # 文件索引
 
-現行入口是 [README](../README.md)，待辦與驗收條件以 [ROADMAP](../ROADMAP.md) 為準；歷史測試數不表示目前所有功能已驗收。
+[README](../README.md)提供專案介紹與快速開始，[CHANGELOG](../CHANGELOG.md)記錄有日期的完成歷史，[ROADMAP](../ROADMAP.md)列出未完成工作與驗收條件。本索引依使用情境導向主要文件，詳細契約與證據留在各主題中。
 
-初次操作先讀 [HTML 圖文使用教學](guide/index.html)：用瀏覽器開啟本機檔案，包含六張介面截圖、操作步驟、資料審查與訓練流程、常見問題及備份提醒，可離線閱讀／列印。深入契約與開發細節再依下列索引閱讀。
+第一次使用可先開啟[離線圖文教學](guide/index.html)，依步驟操作、放大圖片或列印；教學檔案的維護方式見[教學說明](guide/README.md)。
 
-## 上游參考與開發策略
+## 安裝與日常操作
 
-- [GitHub 借用與開發策略](github-reuse-assessment-20261023.md)：主要決策入口、R01 → R03、ComfyUI 節點、訓練工具及整合邊界
-- [全部 47 個 ROADMAP 主項對照](roadmap-upstream-map-20261023.md)：已完成與未完成項目的來源、可沿用流程與仍需驗收部分
-- [動漫相關原碼研究](anime-upstream-candidates-20261023.md)：分割、偵測修補、區域提示、LoRA 訓練與標註；尚未安裝或整合
-
-## 安裝與維護
-
-- [安裝、首次生成、埠與備份](setup-and-operations.md)、[架構與資料流](architecture.md)、[UI 規範](ui-guidelines.md)
-- [應用程式工廠、配置與測試隔離](application-factory.md)
-- [前端 HTTP 契約、取消與原請求恢復](frontend-api.md)
-- [工作台未保存內容與離頁保護](unsaved-changes.md)
-- [品質檢查、隔離瀏覽器回歸與 CI](quality-checks.md)
-- [全站桌面／窄視窗視覺與無障礙補驗](validation/ui-accessibility-20261023.md)
-- [清單分頁、相容策略與資料成長基準](list-pagination.md)
-- [停機完整備份、唯讀盤點與新目錄還原](data-backup.md)
-- [網址導覽、首次使用指引與能力狀態](navigation.md)
-- [請求／任務追蹤、狀態分離與診斷預覽匯出](diagnostics.md)
-- [格式、靜態檢查與高風險流程維護規則](maintenance.md)
-- [裝置回報](execution-device.md)、[環境版本](runtime-versions.md)、[效能條件](execution-context.md)、[量測](job-measurements.md)
-- [系統資訊目錄卡片、磁碟容量與開啟資料夾](storage-overview.md)、[狀態驗收](validation/storage-overview-20261024.md)
-
-## 創作與作品
-
-以動漫畫風為目標時，先讀 [動漫畫風驗證與開發計畫](anime-style-development.md)：圖片數量／分組、保留評估集、流程擴充及驗收。R02 已接入單張參考，T03／T04 已提供技術訓練與產物流程，T05／T06 已接上網頁操作；作者圖片仍待逐張審查與品質驗證。歷史指定順序為 **T01 → T02 → R01 → R03**，目前待辦以 ROADMAP 為準。
-
-| 工作 | 說明 |
+| 要做的事 | 文件 |
 | --- | --- |
-| 一般設定交換 | [精確 JSON](creation-settings-transfer.md) |
-| 專用流程格式 | [局部編輯／Canny 草稿、交換與比較的支援及方案](specialized-workflow-formats.md) |
-| 畫風／角色參考 | [R02 操作、固定來源與契約](models/ipadapter-reference.md)、[實際圖片用途／未訓練備註](validation/reference-inputs-20261023.md)、[12 組 GPU 與品質觀察](validation/reference-adapter-20261023.md) |
-| 圖生圖／素材 | [參考流程與版本](models/reference-workflows.md) |
-| 局部編輯 | [遮罩修補](inpainting.md)、[羽化](inpaint-feather.md)、[R03 Fooocus 專用修補實驗選項與品質限制](fooocus-inpainting.md) |
-| Canny | [ControlNet 與原邊緣](controlnet.md)、[CPU 預覽](canny-preview.md) |
-| Pose／Depth | [R01 SDXL 姿勢／相對深度流程、安裝與 RTX3060 驗收](structure-reference.md) |
-| Pony Canny v2 實測 | [五組 LoRA、原邊緣／下載／還原與品質限制](validation/pony-canny-v2-20261023.md)、[可解析證據](validation/pony-canny-v2-20261023.json) |
-| 作品整理 | [收藏／筆記／封存](artwork-library.md)、[比較與人工評分](artwork-comparison.md) |
-| 實驗 | [固定案例](illustration-suite.md)、[比較方案](experiment-plans.md)、[保存／匯入](experiment-storage.md)、[任務關聯](experiment-runs.md)、[結果報告](comparison-report.md) |
+| 安裝、啟動平台與獨立 ComfyUI、首次生成、本機存取 | [安裝與日常操作](setup-and-operations.md) |
+| 使用選用的 Docker 本機部署 | [Docker 部署與原生環境差異](docker.md) |
+| 停機備份、唯讀盤點及還原 | [完整資料備份](data-backup.md) |
+| 認識頁面入口與首次使用指引 | [導覽與能力狀態](frontend-api.md#navigation) |
+| 查詢任務、判讀請求狀態與匯出診斷 | [診斷與追蹤](diagnostics.md) |
+| 保留尚未保存的編輯 | [未保存內容與離頁保護](frontend-api.md#unsaved-changes) |
 
-## 訓練與資料
+## 創作、作品與比較實驗
 
-- [T05 訓練圖片與標註審查介面](training/workspace.md)：沿用 T02，原圖預覽、版本保存、來源重驗與明確資料出口，不自動批准作者圖
-- [T07 缺項搜尋、篩選與圖片定位](training/workspace.md#t07-缺項導覽)、[桌面／窄版驗收](validation/training-review-navigation-20261025.md)：依已保存檢查完整分頁，保留未保存標註及 final test 不預覽規則
-- [T06 本機訓練控制與產物銜接](training/workspace.md#t06-本機訓練與產物)、[停止／續訓與模型回登驗收](validation/training-control-20261025.md)：原 UUID 查回、單次啟動與資源釋放，建比較方案不生成
-- [T08 訓練報告預覽與原始 JSON 下載](training/workspace.md#t08-訓練報告)、[唯讀驗收](validation/training-report-20261025.md)：來源／狀態／資源與回執觀察，日誌另選，不代替 payload 驗證或備份
+| 要做的事 | 文件 |
+| --- | --- |
+| 上傳及管理素材、進行 Checkpoint 單張圖生圖 | [參考素材與圖生圖](models/reference-workflows.md) |
+| 遮罩修補、保存筆畫及內側羽化 | [局部編輯](inpainting.md)、[v2 羽化與 CPU 合成預覽](inpainting.md#inner-feather) |
+| 試用固定 SDXL 專用修補 | [Fooocus v3 的來源、限制與操作](fooocus-inpainting.md) |
+| Canny 引導、保存同次原邊緣、預覽來源 | [Canny 結構參考](controlnet.md)、[近似 CPU 預覽](controlnet.md#cpu-preview) |
+| 使用姿勢或深度條件 | [SDXL Pose／Depth v3](structure-reference.md) |
+| 使用單張畫風或角色外觀參考 | [IPAdapter SDXL 專用流程](models/ipadapter-reference.md) |
+| 匯出、預覽與匯入一般創作設定 | [創作設定交換](creation-settings-transfer.md) |
+| 了解專用流程尚未支援的草稿、交換及比較 | [專用格式能力與設計邊界](specialized-workflow-formats.md) |
+| 收藏、筆記、封存、並排及人工評分 | [作品庫](artwork-library.md)、[比較與評分](artwork-library.md#comparison-and-ratings) |
+| 建立固定案例與參數方案 | [比較方案](experiment-plans.md)、[單案例實機工具](illustration-suite.md) |
+| 保存、匯入及手動執行比較組 | [保存與匯入](experiment-plans.md#storage-and-import)、[任務與作品關聯](experiment-plans.md#runs-and-artworks) |
+| 下載完整比較結果 | [結果報告](experiment-plans.md#result-reports) |
+| 規劃動漫畫風與角色驗證 | [圖片分組、品質判斷與訓練界線](anime-style-development.md) |
 
-- [T01 訓練需求與驗收範圍 v1](training/requirements.md)、[需求確認證據](validation/training-requirements-20261023.md)：畫風／角色分開、僅 SDXL 候選，沒有啟動訓練
+## 模型與 FLUX
 
-- [T02 資料契約、Schema 與本機 CLI](training/dataset-contract.md)、[固定官方工具介面評估](training/tool-interface-research.md)、[22 檔盤點與出口驗收](validation/training-dataset-20261023.md)：真實資料仍待審查，沒有訓練
+| 主題 | 文件 |
+| --- | --- |
+| Checkpoint 固定來源與選型 | [Animagine XL 4.0 Opt](models/animagine-xl-4.0-opt.md)；[Pony manifest](../models/pony-v6-xl.json)、[Animagine manifest](../models/animagine-xl-4.0-opt.json) |
+| LoRA 管理、順序、雙強度與實測匹配 | [LoRA 模型庫](models/lora-library.md)、[有序串接](models/lora-library.md#ordered-lora)、[歷史條件查詢](models/lora-library.md#historical-evidence) |
+| 像素畫 LoRA 的格式相容副本 | [固定來源與轉換限制](models/pixel-art-lora-sdxl.md) |
+| FLUX 硬體前置判斷 | [RTX 3060、量化／卸載與 GGUF 流程差異](models/flux-rtx3060-planning.md) |
+| FLUX 安裝、來源及快速預檢 | [固定四元件安裝與完整驗檔](models/flux-installation.md)、[來源選型歷史](models/flux-installation.md#source-selection) |
+| FLUX 元件庫、純文生圖與失敗復原 | [專用工作流程](models/flux-workflow.md)、[元件庫](models/flux-workflow.md#components)、[平台生成與驗收工具](models/flux-workflow.md#generation-acceptance) |
+| FLUX 固定精度、卸載與資源觀察 | [獨立原生節點觀察工具](models/flux-runtime-observation.md) |
+| FLUX LoRA／原圖重繪 | [獨立擴充流程](models/flux-extensions.md) |
+| Pony 授權與依賴 | [固定修訂查核](models/pony-v6-xl-license.md)、[M01 作者聲明與元件指紋補查](models/pony-v6-xl-license-followup-20261026.md) |
+| FLUX 逐元件條款與來源鏈 | [F02 查核](models/flux-component-licenses.md)、[M02 編碼器發布與轉換追查](models/flux-encoder-lineage-followup-20261026.md) |
 
-- [T03 獨立訓練環境與明確 run](training/runtime.md)、[RTX 3060 技術與資源驗收](validation/training-runtime-20261025.md)：只用自製幾何資料，作者圖未訓練；後續 T06 已提供網頁操作
+授權標籤、手動登記、檔案完整 hash、發布者來源鏈及實機載入各有不同證明範圍；未核實的缺口以對應文件及 ROADMAP 為準。
 
-- [T04 產物回登與固定比較](training/artifacts.md)、[技術載入／保存／離線還原證據](validation/training-artifacts-20261025.md)：原生模型庫與六份比較方案，品質未認列
+## 訓練與資料審查
 
-## 模型與執行環境
+| 階段 | 文件 |
+| --- | --- |
+| 決定訓練目標與品質驗收 | [T01 需求與範圍](training/requirements.md) |
+| 建立清單、分割、審查與匯出資料包 | [T02 資料契約與 CLI](training/dataset-contract.md) |
+| 查閱固定上游 trainer／caption／dataset 介面 | [工具介面研究](training/tool-interface-research.md) |
+| 準備獨立環境、啟動、停止與新 run 續訓 | [T03 訓練 runtime](training/runtime.md) |
+| 安裝產物、回登來源與建立固定評估 | [T04 產物與品質關卡](training/artifacts.md) |
+| 從網頁完成四階段操作 | [訓練工作區](training/workspace.md)、[缺項導覽](training/workspace.md#t07-缺項導覽)、[訓練與產物](training/workspace.md#t06-本機訓練與產物)、[報告](training/workspace.md#t08-訓練報告) |
 
-- [FLUX／RTX 3060 實作前置判斷](models/flux-rtx3060-planning.md)：官方量化／卸載依據、GGUF 流程差異、4080 提醒規則及未驗收範圍
-- [F01 固定 FLUX 安裝與完整驗檔](models/flux-installation.md)：官方 CLI 登入、四元件整體來源／磁碟檢查、續傳及離線 SHA256；[固定四份安裝證據](validation/flux-installation-20261025.md)
-- [F02 實際精度／卸載工具](models/flux-runtime-observation.md)、[RTX 3060 實測](validation/flux-runtime-20261025.md)：512 原生配置、CPU／CUDA 張量與有界資源取樣，平台 HTTP／保存／OOM 另見下列 F03
-- [F03 平台生成、作品保存與失敗復原](models/flux-generation-acceptance.md)：獨立 HTTP 引擎／DATA、原 UUID、離線 GET 與受控真實 CUDA OOM；[驗收](validation/flux-generation-20261025.md)
-- [F04 Schnell LoRA 與原生 VAE 圖生圖](models/flux-extensions.md)：獨立版本／草稿、固定來源、元件與原圖快照、未知組合停用；[RTX 3060 四案例](validation/flux-extensions-20261025.md)
-- [F02 元件條款與來源查核](models/flux-component-licenses.md)：BFL 全文與模型卡、CLIP／T5 上游參考；編碼器轉檔鏈仍待追溯
+## 系統資訊、架構與開發
 
-- [部署決策與本機存取](deployment.md)、[D01 HTTP／UI 驗收](validation/local-deployment-20261025.md)：同一台電腦、角色來源與連線邊界
-- [選用 Docker 本機部署](docker.md)、[D02 GPU／出圖／資料持久化與還原驗收](validation/docker-deployment-20261025.md)：容器平台接原生 ComfyUI，保留原生操作與訓練限制
+| 主題 | 文件 |
+| --- | --- |
+| 架構、資料流、應用程式工廠及測試隔離 | [架構](architecture.md) |
+| HTTP 邊界、取消、原請求恢復與前端狀態 | [前端 API 契約](frontend-api.md) |
+| 平台、引擎裝置與版本來源 | [執行裝置](execution-device.md)、[環境版本與效能條件](runtime-versions.md) |
+| 任務耗時、背景取樣及峰值限制 | [任務量測](job-measurements.md) |
+| 目錄、磁碟空間與開啟資料夾 | [儲存空間總覽](architecture.md#storage-capacity) |
+| 清單成長與分頁相容性 | [分頁契約與基準](list-pagination.md) |
+| 檢查命令、隔離瀏覽器、格式與靜態規則 | [品質檢查與維護](quality-checks.md) |
+| 專案協作與需求釐清規則 | [AGENTS](../AGENTS.md)、[必要時的需求澄清](../REQUIREMENTS.md) |
 
-- [Animagine 來源與預設](models/animagine-xl-4.0-opt.md)
-- [LoRA 庫](models/lora-library.md)、[多 LoRA](models/multi-lora-workflow.md)、[有序證據](models/ordered-lora-evidence.md)
-- [FLUX 來源／限制](models/flux1-schnell.md)、[元件庫](models/flux-components.md)、[專用流程](models/flux-workflow.md)
-- [Pony manifest](../models/pony-v6-xl.json)、[Animagine manifest](../models/animagine-xl-4.0-opt.json)
-- [Pony 固定修訂授權／依賴查核](models/pony-v6-xl-license.md)：標準條文、作者附文及未核實的授權鏈分開記錄
+## 介面規劃與桌面驗收
+
+| 要查閱的內容 | 文件 |
+| --- | --- |
+| 視覺規範與元件狀態 | [UI 規範](ui-redesign/PLAN.md#visual-guidelines) |
+| 原始參考與重設計目標 | [互動 preview](ui-redesign/preview.html)、[規劃](ui-redesign/PLAN.md) |
+| 正式版既有能力及保留範圍 | [功能清單](ui-redesign/FEATURE-INVENTORY.md) |
+| 實作落點、已整合行為與必要差異 | [整合說明](ui-redesign/INTEGRATION-NOTES.md) |
+| 主要流程、各分類／階段及三種桌面尺寸的驗收 | [統一驗收紀錄](ui-redesign/ACCEPTANCE.md) |
+| 需要後端能力、仍未完成的工作 | [後端能力待辦](ui-redesign/BACKEND-CAPABILITIES-BACKLOG.md) |
 
 ## 實機與歷史證據
 
-實測限於所列模型／hash／硬體／參數與日期；原始 runtime 報告、權重與作品不在 Git，備份依各紀錄。
+實測只適用於文件列出的日期、來源 hash、模型、硬體與參數。以下分開列出 GPU、CPU／HTTP、合成資料與介面證據；完成技術流程不等於品質通過，也不代表其他主機已完成相同驗收。原始 runtime、權重與使用者圖片不在 Git，備份範圍依各文件。
 
-- [Pony／RTX 3060](validation/pony-v6-xl-rtx3060.md)、[Animagine／RTX 3060](validation/animagine-xl-4-0-opt-rtx3060.md)
-- [圖生圖](validation/checkpoint-image2image-rtx3060.md)、[修補](validation/checkpoint-inpaint-rtx3060.md)、[羽化](validation/inpaint-feather-rtx3060.md)
-- [Canny](validation/checkpoint-canny-rtx3060.md)、[邊緣](validation/canny-edges-rtx3060.md)、[預覽](validation/canny-preview-rtx3060.md)
-- [風格強度](validation/animagine-style-strength-rtx3060.md)、[多 LoRA 品質](validation/animagine-multi-lora-quality-rtx3060.md)、[四案例](validation/general-illustration-suite-rtx3060.md)
-- [R05 動漫基準](validation/anime-baseline-20261023.md)：18 件模型／seed／提示標籤／新素材 denoise 比較與逐圖失敗觀察；使用者目標畫風仍待圖片
-- [L01 更多畫風／有序 LoRA](validation/style-matrix-20261023.md)：14 組原生比較、四組原格式拒絕證據、獨立[像素畫相容副本](models/pixel-art-lora-sdxl.md)與逐圖品質限制
-- [停止](validation/running-stop-rtx3060.md)、[E01](validation/execution-device-20261022.md)、[FLUX 範圍](validation/flux-integration.md)
-- [全部驗收目錄](validation)、[CHANGELOG](../CHANGELOG.md)、[2026-10-03 檢查](review-2026-10-03.md)
-- [整理前 README 全文](history/readme-before-q01-20261022.md)：舊限制與命令僅供追溯。
+### Checkpoint、LoRA 與影像流程
 
-- [E02 RTX 4080 八個基本流程與離線驗收](validation/rtx4080-workflows-20261026.md)、[可解析證據](validation/rtx4080-workflows-20261026.json)
-- [E03 同配置 3060／4080 比較與 1536² 獨立負載](validation/hardware-comparison-20261026.md)、[可解析證據](validation/hardware-comparison-20261026.json)
-- [E04 推論／訓練資源分開登記、4080 512／1024 真實技術訓練](validation/hardware-resources-20261026.md)、[可解析證據](validation/hardware-resources-20261026.json)
+| 證據範圍 | 獨立紀錄 |
+| --- | --- |
+| RTX 3060 基礎文生圖 | [Pony V6 XL](validation/pony-v6-xl-rtx3060.md)、[Animagine 4.0 Opt](validation/animagine-xl-4-0-opt-rtx3060.md) |
+| 單一 LCM LoRA | [Pony](validation/pony-lcm-rtx3060.md)、[Animagine](validation/animagine-lcm-rtx3060.md) |
+| 多 LoRA 與品質條件 | [原 4 步載入](validation/animagine-multi-lora-rtx3060.md)、[8 步順序比較](validation/animagine-multi-lora-quality-rtx3060.md)、[單一 LoRA 強度／seed](validation/animagine-style-strength-rtx3060.md)、[更多畫風矩陣](validation/style-matrix-20261023.md) |
+| 固定案例與跨模型觀察 | [通用插畫四案例](validation/general-illustration-suite-rtx3060.md)、[動漫品質基準](validation/anime-baseline-20261023.md) |
+| 圖生圖及 denoise 比較 | [Checkpoint 圖生圖](validation/checkpoint-image2image-rtx3060.md)、[兩模型比較與關聯](validation/image-comparison-rtx3060.md) |
+| 局部修補 | [一般 v1](validation/checkpoint-inpaint-rtx3060.md)、[內側羽化 v2](validation/inpaint-feather-rtx3060.md)、[Fooocus v3 與品質限制](validation/fooocus-inpainting-20261023.md) |
+| Canny 原生條件及 CPU 差異 | [v1](validation/checkpoint-canny-rtx3060.md)、[v2 同次邊緣](validation/canny-edges-rtx3060.md)、[CPU／GPU 預覽比對](validation/canny-preview-rtx3060.md)、[Pony v2 有序 LoRA](validation/pony-canny-v2-20261023.md) |
+| 單張畫風／角色參考 | [原圖片用途與分組](validation/reference-inputs-20261023.md)、[12 組 adapter 實測](validation/reference-adapter-20261023.md) |
+| Pose／Depth | [流程中的實測與限制](structure-reference.md#驗收及限制)、[可解析證據](validation/structure-reference-20261023.json) |
+| 指定執行中任務停止 | [RTX 3060 停止與保存](validation/running-stop-rtx3060.md) |
 
-- [M01 作者 V6 聲明補查與本機元件指紋](models/pony-v6-xl-license-followup-20261026.md)、[可解析缺口與證據](validation/pony-license-audit-20261026.json)：完整授權驗收仍需發布者澄清
-- [M02 編碼器發布歷史與 CLIP 候選全張量比對](models/flux-encoder-lineage-followup-20261026.md)、[可解析缺口與證據](validation/flux-encoder-audit-20261026.json)：數值吻合已驗證，發布者來源／轉換與條款仍待補足
+### FLUX、裝置與資源
+
+| 證據範圍 | 獨立紀錄 |
+| --- | --- |
+| FLUX 早期介面與缺權重拒絕，非 GPU 出圖 | [2026-10-05 整合](validation/flux-integration.md) |
+| FLUX 四元件實際安裝及離線完整驗檔 | [F01](validation/flux-installation-20261025.md) |
+| FLUX 原生節點精度／卸載與取樣 | [F02 RTX 3060 固定配置](validation/flux-runtime-20261025.md) |
+| FLUX 平台 HTTP、保存、離線與受控 CUDA OOM | [F03](validation/flux-generation-20261025.md) |
+| FLUX 固定 LoRA／圖生圖四案例 | [F04](validation/flux-extensions-20261025.md) |
+| 執行裝置回報與 CPU 模式 | [E01](validation/execution-device-20261022.md) |
+| 原引擎連續取樣，非任務專用峰值 | [E05](validation/resource-sampling-20261023.md) |
+| RTX 4080 基本流程 | [E02 八個流程](validation/rtx4080-workflows-20261026.md) |
+| 兩機相同配置與獨立較高負載 | [E03](validation/hardware-comparison-20261026.md) |
+| 推論與合成訓練資源分開登記 | [E04](validation/hardware-resources-20261026.md) |
+| Pony／FLUX 來源查核的機器可讀證據 | [M01](validation/pony-license-audit-20261026.json)、[M02](validation/flux-encoder-audit-20261026.json)；結論見上方各授權文件 |
+
+### 訓練、平台與介面
+
+| 證據範圍 | 獨立紀錄 |
+| --- | --- |
+| 訓練需求與資料契約，非作者圖訓練 | [T01](validation/training-requirements-20261023.md)、[T02](validation/training-dataset-20261023.md) |
+| 自製幾何資料的訓練與產物技術驗收 | [T03](validation/training-runtime-20261025.md)、[T04](validation/training-artifacts-20261025.md) |
+| 訓練工作區分階段介面與有限實機 | [T05 審查](validation/training-workspace-20261025.md#t05-review)、[T06 控制](validation/training-workspace-20261025.md#t06-control)、[T07 導覽](validation/training-workspace-20261025.md#t07-navigation)、[T08 報告](validation/training-workspace-20261025.md#t08-report) |
+| 原生與容器部署，各自的能力邊界 | [D01 本機存取](validation/local-deployment-20261025.md)、[D02 Docker 與持久化](validation/docker-deployment-20261025.md) |
+| 遮罩瀏覽器操作與原請求故障恢復 | [V01 畫布／PNG](validation/mask-editor-20261023.md)、[V02 v1／v2 恢復](validation/inpaint-recovery-20261023.md) |
+| 作品、比較及設定交換的介面補驗 | [V03 作品庫](validation/artwork-library-20261023.md)、[V04 比較／量測](validation/comparison-measurements-20261023.md)、[V05 實際設定下載](validation/settings-transfer-20261023.md) |
+| 模型／取樣比較軸與版本契約 | [R06](validation/extended-comparisons-20261023.md) |
+| 視覺、無障礙與系統目錄操作 | [V06](validation/ui-accessibility-20261023.md)、[目錄／磁碟與開啟資料夾](validation/storage-overview-20261024.md) |
+| 格式與高風險維護回歸 | [Q10](validation/maintenance-20261023.md) |
+| Windows CI 的不同失敗與修正 | [TEMP 別名及瀏覽器分批歷史](validation/windows-ci.md) |
+
+## 研究與歷史
+
+| 用途 | 文件 |
+| --- | --- |
+| 查閱上游原碼、採用決策、整合邊界與未整合候選 | [上游研究與重用評估](research/upstream-reuse.md) |
+| 追溯特定日期的程式庫檢查 | [2026-10-27 稽核](history/codebase-audit-20261027.md)、[2026-10-03 檢查](../CHANGELOG.md#review-2026-10-03) |
+| 對照整理前的舊入口與完整歷史 | [固定舊版 README](../CHANGELOG.md#readme-before-q01)、[原始 CHANGELOG、狀態快照及驗收對照](../CHANGELOG.md#history) |
+
+歷史文件中的命令、限制及測試數只描述當時狀態；日常操作回到本索引列出的主要文件，完成歷史及剩餘工作分別查 CHANGELOG 與 ROADMAP。

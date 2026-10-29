@@ -30,4 +30,4 @@ GenerationPanel 使用 `freezeCurrentSubmission`、`frozenSubmissionDescriptor`�
 
 完整品質入口通過：574 項後端（1 項既有 Windows symlink 權限跳過）、前端型別／正式建置、四組契約與 19 項瀏覽器回歸。README／ROADMAP／索引及本輪文件的 120 個本地連結核對無缺失。
 
-重跑命令見 [品質指南](../quality-checks.md) 與 [維護規則](../maintenance.md)。測試使用臨時 DATA／模擬引擎，不讀寫使用者資料，不提供新的 GPU／全站 V06 驗收結論。
+重跑命令見 [品質指南](../quality-checks.md) 與 [維護規則](../quality-checks.md#static-checks)。測試使用臨時 DATA／模擬引擎，不讀寫使用者資料，不提供新的 GPU／全站 V06 驗收結論。
