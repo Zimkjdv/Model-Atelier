@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiIcon from './UiIcon.vue'
 import {
   fieldLabels,
   focusPreflightField,
@@ -381,7 +382,9 @@ onBeforeUnmount(() => window.clearInterval(timer))
             busy || disabled || (!pending && (missingModel || !!blockedReason || hasFieldProblems))
           "
           @click="generate"
-          >{{ busy ? '處理中…' : pending ? '恢復原提交請求' : '生成圖片' }}</button
+          ><UiIcon :name="pending ? 'refresh' : 'studio'" :size="20" /><span>{{
+            busy ? '處理中…' : pending ? '恢復原提交請求' : '生成圖片'
+          }}</span></button
         ></div
       ></Teleport
     >

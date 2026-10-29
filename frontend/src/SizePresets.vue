@@ -36,7 +36,9 @@ const nearest = computed(() => {
       >{{ labels[i] }}</button
     ></div
   ><p class="size-summary"
-    >{{ width }} × {{ height }} 像素 · {{ ((width * height) / 1000000).toFixed(2) }} MP ·
-    {{ nearest }}。可在進階設定自訂尺寸。</p
+    ><span
+      >{{ width }} × {{ height }} 像素 · {{ ((width * height) / 1000000).toFixed(2) }} MP ·
+      {{ nearest }}</span
+    ><small>可在進階設定自訂尺寸。</small></p
   >
 </template>

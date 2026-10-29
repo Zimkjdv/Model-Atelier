@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiIcon from './UiIcon.vue'
 import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError, type PreflightBlocker } from './generationPreflight'
 import StudioPreview from './StudioPreview.vue'
@@ -319,7 +320,8 @@ const preflightBlockers = computed(() => {
                 ><option value="image">VAE 圖生圖（構圖重繪）</option></select
               >
               <template v-if="kind === 'image'"
-                ><label for="flux-extension-image">FLUX 原圖素材</label
+                ><label for="flux-extension-image" class="studio-field-label"
+                  ><UiIcon name="assets" :size="15" />FLUX 原圖素材</label
                 ><select
                   v-field-error:image_asset_id="fieldProblems.image_asset_id"
                   id="flux-extension-image"
@@ -333,8 +335,8 @@ const preflightBlockers = computed(() => {
                   ></select
                 ></template
               >
-              <label for="flux-extension-prompt"
-                >描述你想創作的畫面
+              <label for="flux-extension-prompt" class="studio-field-label"
+                ><UiIcon name="text" :size="15" />描述你想創作的畫面
                 <small>{{ base.prompt.length.toLocaleString() }} / 20,000</small></label
               >
               <textarea

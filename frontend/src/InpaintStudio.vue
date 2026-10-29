@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiIcon from './UiIcon.vue'
 import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError, type PreflightBlocker } from './generationPreflight'
 import StudioPreview from './StudioPreview.vue'
@@ -326,7 +327,8 @@ const preflightBlockers = computed(() => {
             ></div
           ><form class="panel editor" @submit.prevent
             ><fieldset :disabled="locked">
-              <label for="inpaint-source">原圖與遮罩</label
+              <label for="inpaint-source" class="studio-field-label"
+                ><UiIcon name="assets" :size="15" />原圖與遮罩</label
               ><select
                 v-field-error:image_asset_id="fieldProblems.image_asset_id"
                 id="inpaint-source"
@@ -344,8 +346,8 @@ const preflightBlockers = computed(() => {
                   }}{{ asset.archived ? '（已封存）' : '' }}</option
                 ></select
               >
-              <label for="inpaint-prompt"
-                >描述你想創作的畫面
+              <label for="inpaint-prompt" class="studio-field-label"
+                ><UiIcon name="text" :size="15" />描述你想創作的畫面
                 <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
               ><textarea
                 v-field-error:prompt="fieldProblems.prompt"
@@ -355,7 +357,8 @@ const preflightBlockers = computed(() => {
                 rows="5"
                 placeholder="描述編輯範圍內的新物件、動作或場景"
               />
-              <label for="inpaint-checkpoint">模型</label
+              <label for="inpaint-checkpoint" class="studio-field-label"
+                ><UiIcon name="models" :size="15" />模型</label
               ><select
                 v-field-error:checkpoint="fieldProblems.checkpoint"
                 id="inpaint-checkpoint"

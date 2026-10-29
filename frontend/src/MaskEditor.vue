@@ -382,22 +382,24 @@ onActivated(() => {
       ></div
     >
     <div class="tools mask-primary-tools">
-      <button
-        type="button"
-        class="secondary"
-        :aria-pressed="!erase"
-        :disabled="!editable"
-        @click="erase = false"
-        >筆刷</button
-      >
-      <button
-        type="button"
-        class="secondary"
-        :aria-pressed="erase"
-        :disabled="!editable"
-        @click="erase = true"
-        >擦除</button
-      >
+      <div class="mask-tool-group" role="group" aria-label="遮罩繪製工具">
+        <button
+          type="button"
+          class="secondary"
+          :aria-pressed="!erase"
+          :disabled="!editable"
+          @click="erase = false"
+          >筆刷</button
+        >
+        <button
+          type="button"
+          class="secondary"
+          :aria-pressed="erase"
+          :disabled="!editable"
+          @click="erase = true"
+          >擦除</button
+        >
+      </div>
       <label for="mask-brush"
         >大小<input
           id="mask-brush"
@@ -406,7 +408,7 @@ onActivated(() => {
           min="1"
           max="256"
           :disabled="!editable"
-        />{{ brush }} px</label
+        /><span class="mask-tool-value">{{ brush }} px</span></label
       >
       <label v-if="feather !== undefined" for="mask-feather"
         >羽化<input
@@ -418,24 +420,30 @@ onActivated(() => {
           :value="feather"
           :disabled="disabled || busy"
           @input="emit('update:feather', Number(($event.target as HTMLInputElement).value))"
-        />{{ feather }} px</label
+        /><span class="mask-tool-value">{{ feather }} px</span></label
       >
-      <button type="button" class="secondary" :disabled="!editable" @click="invert">反相</button>
-      <button type="button" class="secondary" :disabled="!editable" @click="clear">清除遮罩</button>
-      <button
-        type="button"
-        class="secondary"
-        :disabled="!editable || historyIndex <= 0"
-        @click="undo(-1)"
-        >復原</button
-      >
-      <button
-        type="button"
-        class="secondary"
-        :disabled="!editable || historyIndex >= history.length - 1"
-        @click="undo(1)"
-        >重做</button
-      >
+      <div class="mask-tool-group" role="group" aria-label="遮罩範圍操作">
+        <button type="button" class="secondary" :disabled="!editable" @click="invert">反相</button>
+        <button type="button" class="secondary" :disabled="!editable" @click="clear"
+          >清除遮罩</button
+        >
+      </div>
+      <div class="mask-tool-group" role="group" aria-label="遮罩復原與重做">
+        <button
+          type="button"
+          class="secondary"
+          :disabled="!editable || historyIndex <= 0"
+          @click="undo(-1)"
+          >復原</button
+        >
+        <button
+          type="button"
+          class="secondary"
+          :disabled="!editable || historyIndex >= history.length - 1"
+          @click="undo(1)"
+          >重做</button
+        >
+      </div>
     </div>
     <div class="mask-drawing-area">
       <div

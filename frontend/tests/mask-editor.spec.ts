@@ -166,6 +166,11 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 })
     const before = (await (await request.get('/qa/state')).json()).prompts
     const source = await openEditor(page, request)
+    // Exercise a definite display scale independently of toolbar density. The
+    // desktop matrix separately checks the unmodified full-width stage layout.
+    await page.locator('.studio-stage').evaluate((stage: HTMLElement) => {
+      stage.style.maxWidth = '640px'
+    })
     const mask = editor(page)
     const size = mask.getByRole('slider', { name: '大小' })
     await size.focus()

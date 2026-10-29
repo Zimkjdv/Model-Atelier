@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiIcon from './UiIcon.vue'
 import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError } from './generationPreflight'
 import SizePresets from './SizePresets.vue'
@@ -758,8 +759,8 @@ watch(
                 @update:model-value="chooseImage"
               />
               <template v-if="editableWorkflow"
-                ><label for="draft-prompt"
-                  >描述你想創作的畫面
+                ><label for="draft-prompt" class="studio-field-label"
+                  ><UiIcon name="text" :size="15" />描述你想創作的畫面
                   <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
                 ><textarea
                   v-field-error:prompt="fieldProblems.prompt"
@@ -770,7 +771,8 @@ watch(
                   placeholder="描述角色、場景、光線與你想呈現的畫面…"
                 ></textarea>
               </template>
-              <label for="draft-model">模型</label
+              <label for="draft-model" class="studio-field-label"
+                ><UiIcon name="models" :size="15" />模型</label
               ><select
                 v-field-error:checkpoint="fieldProblems.checkpoint"
                 id="draft-model"

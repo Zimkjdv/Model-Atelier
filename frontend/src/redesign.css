@@ -1263,7 +1263,7 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 2px;
   border: 1px solid var(--line);
-  background: var(--stage);
+  background: var(--rail);
   border-radius: 10px;
   padding: 3px;
 }
@@ -1279,11 +1279,20 @@
   color: var(--ink3);
   font-size: 12px;
   border-radius: 7px;
+  border: 0;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
-#app .atelier-shell .workflow-switch button[aria-pressed='true'] {
+#app .atelier-shell .workflow-switch button:hover {
   background: var(--raised);
   color: var(--ink);
-  box-shadow: inset 0 0 0 1px var(--line2);
+}
+#app .atelier-shell .workflow-switch button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--aink);
+  font-weight: 600;
+  box-shadow: 0 2px 6px #0003;
 }
 #app .atelier-shell .architecture-switch {
   display: flex;
@@ -1342,6 +1351,63 @@
   color: var(--ink3);
   font-size: 12px;
   font-weight: 400;
+  border-radius: 5px;
+  background: var(--panel);
+  padding: 1px 6px;
+  font-variant-numeric: tabular-nums;
+}
+#app .atelier-shell .studio-settings .studio-field-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink2);
+  font-weight: 500;
+}
+#app .atelier-shell .studio-field-label > .ui-icon {
+  color: var(--ink3);
+}
+#app .atelier-shell .studio-settings .studio-field-label > small {
+  float: none;
+  margin-left: auto;
+}
+#app .atelier-shell .studio-settings :is(select, textarea):not([aria-invalid='true']) {
+  border-color: var(--line);
+  background-color: var(--stage);
+}
+#app
+  .atelier-shell
+  .studio-settings
+  :is(select, textarea):enabled:hover:not([aria-invalid='true']) {
+  border-color: var(--line2);
+}
+#app .atelier-shell .studio-settings :is(select, textarea):focus:not([aria-invalid='true']) {
+  border-color: var(--accent);
+}
+#app .atelier-shell .studio-settings .studio-advanced {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+#app .atelier-shell .studio-advanced > summary {
+  min-height: 22px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+#app .atelier-shell .studio-advanced > summary::marker {
+  color: var(--ink3);
+}
+#app .atelier-shell .studio-settings .studio-advanced[open] {
+  background: var(--bg);
+  border-color: var(--line2);
+}
+#app .atelier-shell .studio-advanced[open] > summary {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--accent);
 }
 #app .atelier-shell .studio-settings :is(input, select, textarea) {
   width: 100%;
@@ -1375,6 +1441,10 @@
 #app .atelier-shell .generation-submit .primary {
   width: 100%;
   font-size: 17px;
+  gap: 8px;
+}
+#app .atelier-shell .studio-submit .generation-submit > .primary:not(:disabled) {
+  box-shadow: 0 3px 12px #0003;
 }
 #app .atelier-shell .generation-submit .submission-state {
   margin: 0 0 8px;
@@ -1382,6 +1452,19 @@
   border: 0;
   background: none;
   font-size: 13px;
+}
+#app .atelier-shell .submission-state::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 7px;
+  background: var(--ink3);
+  vertical-align: 2px;
+}
+#app .atelier-shell .generation-submit:has(> .primary:not(:disabled)) .submission-state::before {
+  background: var(--accent);
 }
 #app .atelier-shell .generation-submit > .notice {
   font-size: 13px;
@@ -1481,6 +1564,12 @@
   font-size: 13px;
   color: var(--ink3);
   margin: 6px 0;
+}
+#app .atelier-shell .size-summary > small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--ink3);
 }
 #app .atelier-shell .mask-editor {
   margin: 0;
@@ -2685,15 +2774,25 @@
   font-size: 12px;
 }
 #app .atelier-shell .studio-utility-bar {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin: 14px 0 10px;
 }
 #app .atelier-shell .studio-utility-bar > button {
-  min-height: 36px;
-  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 7px 10px;
   font-size: 13px;
+  background: var(--panel);
+  border-color: var(--line);
+}
+#app .atelier-shell .studio-utility-bar > button:hover {
+  background: var(--raised);
+  border-color: var(--line2);
 }
 #app .atelier-shell .studio-tools:not([open]) {
   margin: 0;
@@ -2780,7 +2879,7 @@
   padding: 4px 12px;
   font-size: 13px;
 }
-#app .atelier-shell .mask-primary-tools > button,
+#app .atelier-shell .mask-primary-tools button,
 #app .atelier-shell .mask-file-tools > button {
   min-height: 36px;
   padding: 5px 10px;
@@ -3020,6 +3119,34 @@
 }
 #app .atelier-shell .mask-primary-tools label {
   gap: 6px;
+}
+#app .atelier-shell .mask-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+}
+#app .atelier-shell .mask-tool-group > button {
+  min-height: 30px;
+  padding: 4px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+}
+#app .atelier-shell .mask-tool-group > button:enabled:hover {
+  background: var(--raised);
+}
+#app .atelier-shell .mask-tool-value {
+  min-width: 42px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--panel);
+  color: var(--ink2);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 #app .atelier-shell .mask-primary-tools input[type='range'] {
   width: 90px;
@@ -3538,9 +3665,26 @@
 }
 
 #app .atelier-shell .stage-view-switch {
-  display: flex;
-  gap: 8px;
+  display: inline-flex;
+  align-self: start;
+  width: fit-content;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--panel);
   margin-bottom: 10px;
+}
+#app .atelier-shell .stage-view-switch > button {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink3);
+}
+#app .atelier-shell .stage-view-switch > button[aria-pressed='true'] {
+  background: var(--raised);
+  color: var(--ink);
+  box-shadow: 0 1px 3px #0003;
 }
 #app .atelier-shell .stage-view-switch + .studio-preview {
   height: calc(100vh - 211px);

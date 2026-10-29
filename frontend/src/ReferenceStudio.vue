@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiIcon from './UiIcon.vue'
 import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError, type PreflightBlocker } from './generationPreflight'
 import SizePresets from './SizePresets.vue'
@@ -312,7 +313,8 @@ const preflightBlockers = computed(() => {
             ></div
           ><form class="panel editor" @submit.prevent
             ><fieldset :disabled="locked">
-              <label for="reference-source">參考圖片</label
+              <label for="reference-source" class="studio-field-label"
+                ><UiIcon name="assets" :size="15" />參考圖片</label
               ><select
                 v-field-error:image_asset_id="fieldProblems.image_asset_id"
                 id="reference-source"
@@ -330,8 +332,8 @@ const preflightBlockers = computed(() => {
                   }}{{ a.archived ? '（已封存）' : '' }}</option
                 ></select
               >
-              <label for="reference-prompt"
-                >描述你想創作的畫面
+              <label for="reference-prompt" class="studio-field-label"
+                ><UiIcon name="text" :size="15" />描述你想創作的畫面
                 <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
               ><textarea
                 v-field-error:prompt="fieldProblems.prompt"
@@ -340,7 +342,8 @@ const preflightBlockers = computed(() => {
                 rows="5"
                 maxlength="20000"
               />
-              <label for="reference-checkpoint">模型 · SDXL</label
+              <label for="reference-checkpoint" class="studio-field-label"
+                ><UiIcon name="models" :size="15" />模型 · SDXL</label
               ><select
                 v-field-error:checkpoint="fieldProblems.checkpoint"
                 id="reference-checkpoint"
@@ -368,7 +371,8 @@ const preflightBlockers = computed(() => {
                     form.height = h
                   }
                 "
-              /><label for="reference-mode">參考目的</label
+              /><label for="reference-mode" class="studio-field-label"
+                ><UiIcon name="reference" :size="15" />參考目的</label
               ><select
                 v-field-error:reference_mode="fieldProblems.reference_mode"
                 id="reference-mode"

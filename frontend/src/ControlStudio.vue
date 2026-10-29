@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiIcon from './UiIcon.vue'
 import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError, type PreflightBlocker } from './generationPreflight'
 import SizePresets from './SizePresets.vue'
@@ -326,7 +327,8 @@ const preflightBlockers = computed(() => {
             ></div
           ><form class="panel editor" @submit.prevent
             ><fieldset :disabled="locked">
-              <label for="control-source">結構來源圖</label
+              <label for="control-source" class="studio-field-label"
+                ><UiIcon name="assets" :size="15" />結構來源圖</label
               ><select
                 v-field-error:image_asset_id="fieldProblems.image_asset_id"
                 id="control-source"
@@ -344,8 +346,8 @@ const preflightBlockers = computed(() => {
                   }}{{ asset.archived ? '（已封存）' : '' }}</option
                 ></select
               >
-              <label for="control-prompt"
-                >描述你想創作的畫面
+              <label for="control-prompt" class="studio-field-label"
+                ><UiIcon name="text" :size="15" />描述你想創作的畫面
                 <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
               ><textarea
                 v-field-error:prompt="fieldProblems.prompt"
@@ -355,7 +357,8 @@ const preflightBlockers = computed(() => {
                 rows="5"
                 placeholder="描述希望生成的物件、動作或場景"
               />
-              <label for="control-checkpoint">模型</label
+              <label for="control-checkpoint" class="studio-field-label"
+                ><UiIcon name="models" :size="15" />模型</label
               ><select
                 v-field-error:checkpoint="fieldProblems.checkpoint"
                 id="control-checkpoint"
@@ -392,7 +395,8 @@ const preflightBlockers = computed(() => {
                     form.height = h
                   }
                 "
-              /><label for="control-kind">結構方式</label
+              /><label for="control-kind" class="studio-field-label"
+                ><UiIcon name="control" :size="15" />結構方式</label
               ><select
                 id="control-kind"
                 :value="form.control_kind ?? 'canny'"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiIcon from './UiIcon.vue'
 import { ref, useId } from 'vue'
 withDefaults(defineProps<{ drafts?: boolean }>(), { drafts: true })
 const bar = ref<HTMLElement | null>(null)
@@ -24,9 +25,13 @@ function reveal(kind: 'tools' | 'validation') {
 
 <template>
   <div ref="bar" class="studio-utility-bar" role="group" aria-label="創作輔助工具">
-    <button type="button" class="secondary" @click="reveal('tools')">{{
-      drafts ? '草稿與設定交換' : '來源與流程資訊'
-    }}</button>
-    <button type="button" class="secondary" @click="reveal('validation')">相容性與實測</button>
+    <button type="button" class="secondary" @click="reveal('tools')"
+      ><UiIcon name="assets" :size="16" /><span>{{
+        drafts ? '草稿與設定交換' : '來源與流程資訊'
+      }}</span></button
+    >
+    <button type="button" class="secondary" @click="reveal('validation')"
+      ><UiIcon name="check" :size="16" /><span>相容性與實測</span></button
+    >
   </div>
 </template>

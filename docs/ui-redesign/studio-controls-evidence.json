@@ -1,0 +1,495 @@
+{
+  "executed_at": "2026-10-29T15:21:18.797780+00:00",
+  "scope": "five-purpose studio controls polish; original workflow contracts and SVG icons retained",
+  "reference_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+  "matrices": [
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "rows": [
+        {
+          "family": "Checkpoint",
+          "purpose": "文字創作",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "圖片重繪",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "局部修補",
+          "route": "inpaint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "結構引導",
+          "route": "control",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "風格參考",
+          "route": "reference",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 738
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "FLUX",
+          "purpose": "文字創作",
+          "workflow": "flux1-schnell-text2image-v1",
+          "form": "split four components"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "圖片重繪",
+          "workflow": "flux1-schnell-image2image-v1",
+          "restriction": "512×512 / 4 steps / FP8 / CPU; denoise below 1"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "局部修補",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "結構引導",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "風格參考",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        }
+      ]
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "rows": [
+        {
+          "family": "Checkpoint",
+          "purpose": "文字創作",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "圖片重繪",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "局部修補",
+          "route": "inpaint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "結構引導",
+          "route": "control",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "風格參考",
+          "route": "reference",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 838
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "FLUX",
+          "purpose": "文字創作",
+          "workflow": "flux1-schnell-text2image-v1",
+          "form": "split four components"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "圖片重繪",
+          "workflow": "flux1-schnell-image2image-v1",
+          "restriction": "512×512 / 4 steps / FP8 / CPU; denoise below 1"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "局部修補",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "結構引導",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "風格參考",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        }
+      ]
+    },
+    {
+      "preview_sha256": "f88076148aab2ff1471137f7b60a1be55c72c0d0f1219e52f981c462c9e76433",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "rows": [
+        {
+          "family": "Checkpoint",
+          "purpose": "文字創作",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "圖片重繪",
+          "route": "checkpoint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "局部修補",
+          "route": "inpaint",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "結構引導",
+          "route": "control",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "Checkpoint",
+          "purpose": "風格參考",
+          "route": "reference",
+          "form_geometry": {
+            "actual": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            },
+            "preview": {
+              "x": 72,
+              "y": 62,
+              "width": 410,
+              "height": 1018
+            }
+          },
+          "no_implicit_submission": true
+        },
+        {
+          "family": "FLUX",
+          "purpose": "文字創作",
+          "workflow": "flux1-schnell-text2image-v1",
+          "form": "split four components"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "圖片重繪",
+          "workflow": "flux1-schnell-image2image-v1",
+          "restriction": "512×512 / 4 steps / FP8 / CPU; denoise below 1"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "局部修補",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "結構引導",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        },
+        {
+          "family": "FLUX",
+          "purpose": "風格參考",
+          "supported": false,
+          "visible_behavior": "opens independent Checkpoint workflow; no FLUX conversion or submission"
+        }
+      ]
+    }
+  ],
+  "checks": {
+    "build": "passed",
+    "format": "passed",
+    "lint": "passed",
+    "npm_test": "passed",
+    "distinct_browser_cases": 16
+  },
+  "browser_cases": {
+    "purpose_architecture_desktop_matrix": 3,
+    "studio_alignment_source_focus_and_mask_geometry": 4,
+    "mask_scaled_pixels_invalid_png_and_pointer_lock": 3,
+    "completed_offline_and_unavailable_results": 2,
+    "preflight_inline_fields_and_focus": 2,
+    "cached_parameters_exact_seed_and_mask_undo": 2
+  },
+  "formal_read_only_inspection": {
+    "submissions": 0,
+    "evidence": [
+      {
+        "purpose": "文字創作",
+        "url": "http://127.0.0.1:8000/#/studio/checkpoint",
+        "footer": {
+          "x": 482,
+          "y": 825,
+          "width": 958,
+          "height": 71.1875
+        }
+      },
+      {
+        "purpose": "圖片重繪",
+        "url": "http://127.0.0.1:8000/#/studio/checkpoint",
+        "footer": {
+          "x": 482,
+          "y": 825,
+          "width": 958,
+          "height": 71.1875
+        }
+      },
+      {
+        "purpose": "局部修補",
+        "url": "http://127.0.0.1:8000/#/studio/inpaint",
+        "footer": {
+          "x": 482,
+          "y": 808.8125,
+          "width": 958,
+          "height": 71.1875
+        }
+      },
+      {
+        "purpose": "結構引導",
+        "url": "http://127.0.0.1:8000/#/studio/control",
+        "footer": {
+          "x": 482,
+          "y": 808.8125,
+          "width": 958,
+          "height": 71.1875
+        }
+      },
+      {
+        "purpose": "風格參考",
+        "url": "http://127.0.0.1:8000/#/studio/reference",
+        "footer": {
+          "x": 482,
+          "y": 825,
+          "width": 958,
+          "height": 71.1875
+        }
+      }
+    ]
+  },
+  "no_actual_gpu_inference": true
+}

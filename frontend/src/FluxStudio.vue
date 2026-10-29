@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiIcon from './UiIcon.vue'
 import StudioUtilityBar from './StudioUtilityBar.vue'
 import { generationFieldProblems, vFieldError, type PreflightBlocker } from './generationPreflight'
 import SizePresets from './SizePresets.vue'
@@ -350,8 +351,8 @@ const preflightBlockers = computed(() => {
               <button class="secondary" @click="apply(pending)">捨棄變更並載入 FLUX</button></div
             ><form class="panel flux-editor" aria-label="FLUX 創作設定" @submit.prevent="save()"
               ><fieldset :disabled="busy">
-                <label for="flux-prompt"
-                  >描述你想創作的畫面
+                <label for="flux-prompt" class="studio-field-label"
+                  ><UiIcon name="text" :size="15" />描述你想創作的畫面
                   <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
                 ><textarea
                   v-field-error:prompt="fieldProblems.prompt"

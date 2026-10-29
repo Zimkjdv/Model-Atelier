@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UiIcon from './UiIcon.vue'
 import { vFieldError, type FieldProblems } from './generationPreflight'
 import { computed } from 'vue'
 import { purposeLabel, type ReferenceAsset } from './referenceSettings'
@@ -28,7 +29,9 @@ const ratio = computed(() => (props.width > 0 && props.height > 0 ? props.width 
     :aria-label="part === 'settings' ? '重繪設定與輸入預覽' : '圖生圖輸入'"
   >
     <template v-if="part !== 'settings'">
-      <label for="image-asset">參考圖片</label>
+      <label for="image-asset" class="studio-field-label"
+        ><UiIcon name="assets" :size="15" />參考圖片</label
+      >
       <select
         v-field-error:image_asset_id="errors?.image_asset_id"
         id="image-asset"
