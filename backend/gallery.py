@@ -1,4 +1,5 @@
 """Import verified ComfyUI outputs into a durable, offline artwork library."""
+
 import hashlib
 import io
 import json
@@ -16,20 +17,36 @@ from backend import diagnostics
 
 MAX_BYTES = 32 * 1024 * 1024
 MAX_PIXELS = 32_000_000
-FORMATS = {'PNG': ('png', 'image/png'), 'JPEG': ('jpg', 'image/jpeg'), 'WEBP': ('webp', 'image/webp')}
-RATING_DEFAULTS = dict(prompt_adherence=None, character_consistency=None, visual_style=None, composition=None)
-ORGANIZATION_DEFAULTS = dict(favorite=False, notes='', archived=False, revision=0, organization_updated_at=None,
-                             ratings=RATING_DEFAULTS)
+FORMATS = {
+    'PNG': ('png', 'image/png'),
+    'JPEG': ('jpg', 'image/jpeg'),
+    'WEBP': ('webp', 'image/webp'),
+}
+RATING_DEFAULTS = dict(
+    prompt_adherence=None, character_consistency=None, visual_style=None, composition=None
+)
+ORGANIZATION_DEFAULTS = dict(
+    favorite=False,
+    notes='',
+    archived=False,
+    revision=0,
+    organization_updated_at=None,
+    ratings=RATING_DEFAULTS,
+)
 
 
 def organization_defaults(value):
     # Older records receive read-only defaults; historical image/graph data is unchanged.
-    return dict(measurements=None, experiment_context=None) | deepcopy(ORGANIZATION_DEFAULTS) | value
+    return (
+        dict(measurements=None, experiment_context=None) | deepcopy(ORGANIZATION_DEFAULTS) | value
+    )
 
 
 def get(path, artwork_id):
     with closing(sqlite3.connect(path)) as db:
-        row = db.execute('SELECT value FROM settings WHERE key=?', ('artwork:' + artwork_id,)).fetchone()
+        row = db.execute(
+            'SELECT value FROM settings WHERE key=?', ('artwork:' + artwork_id,)
+        ).fetchone()
     if not row:
         raise KeyError('找不到作品')
     value = organization_defaults(json.loads(row[0]))
@@ -40,7 +57,11 @@ def get(path, artwork_id):
 def list_all(path):
     with closing(sqlite3.connect(path)) as db:
         rows = db.execute("SELECT value FROM settings WHERE key LIKE 'artwork:%'").fetchall()
-    return sorted((organization_defaults(json.loads(row[0])) for row in rows), key=lambda item: item['imported_at'], reverse=True)
+    return sorted(
+        (organization_defaults(json.loads(row[0])) for row in rows),
+        key=lambda item: item['imported_at'],
+        reverse=True,
+    )
 
 
 class RevisionConflict(ValueError):
@@ -65,8 +86,14 @@ def organize(path, artwork_id, revision, changes):
             return value
         if revision >= 9007199254740991:
             raise RevisionConflict('作品修訂號已達上限，請先備份資料。')
-        value.update(changes, revision=revision + 1, organization_updated_at=datetime.now(timezone.utc).isoformat())
-        db.execute('UPDATE settings SET value=? WHERE key=?', (json.dumps(value, ensure_ascii=False), key))
+        value.update(
+            changes,
+            revision=revision + 1,
+            organization_updated_at=datetime.now(timezone.utc).isoformat(),
+        )
+        db.execute(
+            'UPDATE settings SET value=? WHERE key=?', (json.dumps(value, ensure_ascii=False), key)
+        )
         return value
 
 
@@ -77,22 +104,34 @@ def output_id(job, source):
 def outputs(job):
     if job.get('workflow_id') == 'checkpoint-canny-controlnet-edge-v2':
         from backend import control_edge_workflows
-        control_edge_workflows.extract(dict(job,source=dict(node_id='7')),lambda settings:settings)
+
+        control_edge_workflows.extract(
+            dict(job, source=dict(node_id='7')), lambda settings: settings
+        )
     if job.get('workflow_id') == 'checkpoint-structure-controlnet-v3':
         from backend import structure_workflows
-        structure_workflows.extract(dict(job,source=dict(node_id='7')),lambda settings:settings)
+
+        structure_workflows.extract(dict(job, source=dict(node_id='7')), lambda settings: settings)
     history = job.get('history') or {}
     state = history.get('status', {}) if isinstance(history, dict) else {}
     if not isinstance(state, dict):
         raise ValueError('任務狀態資料格式不正確')
-    if job['status'] != 'completed' or state.get('status_str') != 'success' or state.get('completed') is not True:
+    if (
+        job['status'] != 'completed'
+        or state.get('status_str') != 'success'
+        or state.get('completed') is not True
+    ):
         raise ValueError('僅能匯入已確認成功的任務，請先更新任務狀態')
     result = []
     raw = history.get('outputs', {})
     if not isinstance(raw, dict):
         raise ValueError('任務輸出資料格式不正確')
     for node_id, output in raw.items():
-        if job.get('workflow_id') in ('checkpoint-canny-controlnet-edge-v2','checkpoint-structure-controlnet-v3') and node_id != '7':
+        if (
+            job.get('workflow_id')
+            in ('checkpoint-canny-controlnet-edge-v2', 'checkpoint-structure-controlnet-v3')
+            and node_id != '7'
+        ):
             continue
         if job['workflow'].get(node_id, {}).get('class_type') != 'SaveImage':
             continue
@@ -103,9 +142,22 @@ def outputs(job):
             if not isinstance(image, dict) or image.get('type') != 'output':
                 raise ValueError('僅能匯入 output 圖片，不接受暫存或輸入檔案')
             filename, subfolder = image.get('filename'), image.get('subfolder', '')
-            if not isinstance(filename, str) or not filename or len(filename) > 255 or any(c in filename for c in '/\\:\x00') or '..' in filename or filename == '.' or filename.endswith(('[input]', '[temp]', '[output]')):
+            if (
+                not isinstance(filename, str)
+                or not filename
+                or len(filename) > 255
+                or any(c in filename for c in '/\\:\x00')
+                or '..' in filename
+                or filename == '.'
+                or filename.endswith(('[input]', '[temp]', '[output]'))
+            ):
                 raise ValueError('輸出檔名無效')
-            if not isinstance(subfolder, str) or len(subfolder) > 2048 or any(c in subfolder for c in '\\:\x00') or (subfolder and any(p in ('', '.', '..') for p in subfolder.split('/'))):
+            if (
+                not isinstance(subfolder, str)
+                or len(subfolder) > 2048
+                or any(c in subfolder for c in '\\:\x00')
+                or (subfolder and any(p in ('', '.', '..') for p in subfolder.split('/')))
+            ):
                 raise ValueError('輸出子目錄無效')
             source = dict(node_id=node_id, filename=filename, subfolder=subfolder, type='output')
             if source not in result:
@@ -119,23 +171,34 @@ def outputs(job):
 
 def parameters(workflow, output_node):
     """Follow the output's links; never guess parameters from unrelated branches."""
+
     def inputs(link, kind):
         if not isinstance(link, list) or len(link) != 2:
             return {}
         node = workflow.get(str(link[0]), {})
         return node.get('inputs', {}) if node.get('class_type') == kind else {}
+
     output = workflow.get(output_node, {}).get('inputs', {})
     composite = inputs(output.get('images'), 'ImageCompositeMasked')
     decoder = inputs(composite.get('source') if composite else output.get('images'), 'VAEDecode')
     sampler = inputs(decoder.get('samples'), 'KSampler')
-    controlled = inputs(sampler.get('positive'),'ControlNetApplyAdvanced')
-    positive = inputs(controlled.get('positive') if controlled else sampler.get('positive'), 'CLIPTextEncode')
-    negative = inputs(controlled.get('negative') if controlled else sampler.get('negative'), 'CLIPTextEncode')
-    return dict(prompt=positive.get('text'), negative_prompt=negative.get('text'),
-                seed=str(sampler['seed']) if isinstance(sampler.get('seed'), int) else None,
-                steps=sampler.get('steps'), cfg=sampler.get('cfg'),
-                sampler=sampler.get('sampler_name'), scheduler=sampler.get('scheduler'),
-                denoise=sampler.get('denoise'))
+    controlled = inputs(sampler.get('positive'), 'ControlNetApplyAdvanced')
+    positive = inputs(
+        controlled.get('positive') if controlled else sampler.get('positive'), 'CLIPTextEncode'
+    )
+    negative = inputs(
+        controlled.get('negative') if controlled else sampler.get('negative'), 'CLIPTextEncode'
+    )
+    return dict(
+        prompt=positive.get('text'),
+        negative_prompt=negative.get('text'),
+        seed=str(sampler['seed']) if isinstance(sampler.get('seed'), int) else None,
+        steps=sampler.get('steps'),
+        cfg=sampler.get('cfg'),
+        sampler=sampler.get('sampler_name'),
+        scheduler=sampler.get('scheduler'),
+        denoise=sampler.get('denoise'),
+    )
 
 
 def decode(raw):
@@ -158,35 +221,62 @@ def decode(raw):
                 stream = io.BytesIO()
                 preview.save(stream, format='PNG')
                 return extension, media_type, width, height, stream.getvalue()
-    except (UnidentifiedImageError, OSError, Image.DecompressionBombError, Image.DecompressionBombWarning) as exc:
+    except (
+        UnidentifiedImageError,
+        OSError,
+        Image.DecompressionBombError,
+        Image.DecompressionBombWarning,
+    ) as exc:
         raise ValueError('作品圖片損壞或尺寸過大，未保存檔案') from exc
 
 
 def save(path, folder, job, source, raw):
     extension, media_type, width, height, thumbnail = decode(raw)
     artwork_id = output_id(job, source)
-    value = dict(id=artwork_id, job_id=job['id'], prompt_id=job['prompt_id'],
-                 title=source['filename'], source=source, engine_url=job['engine_url'],
-                 checkpoint=job['checkpoint'], model_version=job.get('model_version') or '未知',
-                 model_metadata=deepcopy(job.get('model_metadata')),
-                 lora_metadata=deepcopy(job.get('lora_metadata')), runtime_metadata=deepcopy(job.get('runtime_metadata')),
-                 measurements=deepcopy(job.get('measurements')), experiment_context=deepcopy(job.get('experiment_context')),
-                 workflow_id=job.get('workflow_id'), component_metadata=deepcopy(job.get('component_metadata')),
-                 reference_metadata=deepcopy(job.get('reference_metadata')), reference_settings=deepcopy(job.get('reference_settings')),
-                 parameters=parameters(job['workflow'], source['node_id']), workflow=job['workflow'],
-                 width=width, height=height, size=len(raw), extension=extension, media_type=media_type,
-                 sha256=hashlib.sha256(raw).hexdigest(), created_at=job['created_at'],
-                 imported_at=datetime.now(timezone.utc).isoformat())
+    value = dict(
+        id=artwork_id,
+        job_id=job['id'],
+        prompt_id=job['prompt_id'],
+        title=source['filename'],
+        source=source,
+        engine_url=job['engine_url'],
+        checkpoint=job['checkpoint'],
+        model_version=job.get('model_version') or '未知',
+        model_metadata=deepcopy(job.get('model_metadata')),
+        lora_metadata=deepcopy(job.get('lora_metadata')),
+        runtime_metadata=deepcopy(job.get('runtime_metadata')),
+        measurements=deepcopy(job.get('measurements')),
+        experiment_context=deepcopy(job.get('experiment_context')),
+        workflow_id=job.get('workflow_id'),
+        component_metadata=deepcopy(job.get('component_metadata')),
+        reference_metadata=deepcopy(job.get('reference_metadata')),
+        reference_settings=deepcopy(job.get('reference_settings')),
+        parameters=parameters(job['workflow'], source['node_id']),
+        workflow=job['workflow'],
+        width=width,
+        height=height,
+        size=len(raw),
+        extension=extension,
+        media_type=media_type,
+        sha256=hashlib.sha256(raw).hexdigest(),
+        created_at=job['created_at'],
+        imported_at=datetime.now(timezone.utc).isoformat(),
+    )
     value.update(deepcopy(ORGANIZATION_DEFAULTS))
     folder.mkdir(parents=True, exist_ok=True)
     written = []
     try:
         with closing(sqlite3.connect(path)) as db, db:
             db.execute('BEGIN IMMEDIATE')
-            row = db.execute('SELECT value FROM settings WHERE key=?', ('artwork:' + artwork_id,)).fetchone()
+            row = db.execute(
+                'SELECT value FROM settings WHERE key=?', ('artwork:' + artwork_id,)
+            ).fetchone()
             if row:
                 return organization_defaults(json.loads(row[0])), False
-            for name, content in [(artwork_id + '.' + extension, raw), (artwork_id + '.thumb.png', thumbnail)]:
+            for name, content in [
+                (artwork_id + '.' + extension, raw),
+                (artwork_id + '.thumb.png', thumbnail),
+            ]:
                 target = folder / name
                 temp_name = None
                 try:
@@ -198,7 +288,10 @@ def save(path, folder, job, source, raw):
                 finally:
                     if temp_name and os.path.exists(temp_name):
                         os.unlink(temp_name)
-            db.execute('INSERT INTO settings VALUES (?, ?)', ('artwork:' + artwork_id, json.dumps(value, ensure_ascii=False)))
+            db.execute(
+                'INSERT INTO settings VALUES (?, ?)',
+                ('artwork:' + artwork_id, json.dumps(value, ensure_ascii=False)),
+            )
     except Exception:
         for target in written:
             target.unlink(missing_ok=True)
