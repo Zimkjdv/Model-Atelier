@@ -1,34 +1,37 @@
 <script setup lang="ts">
 import { simpleExamples } from './simpleExamples'
+import { computed } from 'vue'
 import type { SimpleTemplateId } from './simpleCreation'
-defineProps<{ id: SimpleTemplateId; modified: boolean }>()
+const props = defineProps<{ id: SimpleTemplateId; modified: boolean }>()
+const example = computed(() => simpleExamples[props.id])
 </script>
 <template>
-  <details class="simple-example">
+  <details v-if="example" class="simple-example">
     <summary>真實範例、完整配方與觀察</summary>
     <figure>
       <a
-        :href="simpleExamples[id].image"
+        :href="example.image"
         target="_blank"
         rel="noopener"
         :aria-label="'開啟 ' + id + ' 範例原圖'"
       >
-        <img :src="simpleExamples[id].image" :alt="id + ' 原配方實際生成成果'" />
+        <img :src="example.image" :alt="id + ' 原配方實際生成成果'" />
       </a>
       <figcaption
-        >原配方 v{{ simpleExamples[id].template_version }} · 固定 Seed 9007199254740993</figcaption
+        >原配方 v{{ example.template_version }} · 固定 Seed
+        {{ example.seed || '9007199254740993' }}</figcaption
       >
     </figure>
-    <p>{{ simpleExamples[id].environment }}</p>
+    <p>{{ example.environment }}</p>
     <ul
-      ><li v-for="note in simpleExamples[id].observations" :key="note">{{ note }}</li></ul
+      ><li v-for="note in example.observations" :key="note">{{ note }}</li></ul
     >
     <p v-if="modified" role="status">目前設定已修改；此範例只對應原配方。</p>
     <p class="footnote"
       >這是固定環境的一張成果，不保證目前環境、其他 Seed
       或題材有相同結果，也不代表指定角色或作者畫風通過。</p
     >
-    <a :href="simpleExamples[id].download" :download="id + '-example-v1.json'"
+    <a :href="example.download" :download="id + '-example-v1.json'"
       >下載完整配方與實測紀錄（JSON）</a
     >
     <p class="footnote"

@@ -12,11 +12,31 @@ from backend import model_profiles
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = 'models/simple-creation-templates-v1.json'
+EXTRA_REGISTRY = 'models/simple-creation-extra-templates-v1.json'
+STYLE_REGISTRY = 'models/simple-style-templates-v1.json'
 
 
 class Selection(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    template_id: Literal['animagine', 'pony', 'flux']
+    template_id: Literal[
+        'animagine',
+        'pony',
+        'flux',
+        'animagine-cafe',
+        'animagine-adventurer',
+        'animagine-kimono',
+        'animagine-library',
+        'pony-traveler',
+        'pony-station',
+        'pony-cat',
+        'pony-city',
+        'flux-workshop',
+        'flux-island',
+        'flux-traveler',
+        'flux-robot',
+        'style-lora',
+        'style-reference',
+    ]
     template_version: int = Field(strict=True, ge=1, le=1)
 
 
@@ -32,14 +52,18 @@ def matches(context, selected):
 
 def recipe(selected):
     chosen = selection(selected)
-    registry = json.loads((ROOT / REGISTRY).read_text(encoding='utf-8'))
-    entry = next(
-        item
-        for item in registry['templates']
+    entries = [
+        (filename, item)
+        for filename in (REGISTRY, EXTRA_REGISTRY, STYLE_REGISTRY)
+        for item in json.loads((ROOT / filename).read_text(encoding='utf-8'))['templates']
+    ]
+    filename, entry = next(
+        (filename, item)
+        for filename, item in entries
         if item['id'] == chosen['template_id'] and item['version'] == chosen['template_version']
     )
     baseline = dict(prompt=entry['prompt'], seed=entry['seed'])
-    if entry['family'] == 'checkpoint':
+    if entry['family'] != 'flux':
         manifest = json.loads(
             (ROOT / 'models' / entry['manifest_file']).read_text(encoding='utf-8')
         )
@@ -54,6 +78,35 @@ def recipe(selected):
         )
         requirements = [dict(role='checkpoint', sha256=manifest['sha256'], architecture='sdxl')]
         workflow = 'checkpoint-text2image-v1'
+        if entry.get('task') == 'lora':
+            lora = json.loads(
+                (ROOT / 'models' / entry['lora_manifest']).read_text(encoding='utf-8')
+            )
+            baseline['loras'] = [
+                dict(name=lora['filename'], enabled=True, strength_model=1.0, strength_clip=1.0)
+            ]
+            requirements.append(dict(role='lora', sha256=lora['sha256'], architecture='sdxl'))
+        elif entry.get('task') == 'reference':
+            parts = [
+                json.loads((ROOT / 'models' / name).read_text(encoding='utf-8'))
+                for name in entry['reference_manifests']
+            ]
+            baseline.pop('image_asset_id')
+            baseline.pop('reference_ids')
+            baseline.update(
+                reference_mode='style',
+                reference_resize='fit',
+                reference_weight=0.6,
+                reference_start=0.0,
+                reference_end=1.0,
+                ipadapter_name=parts[0]['filename'],
+                clip_vision_name=parts[1]['filename'],
+            )
+            requirements.extend(
+                dict(role=role, sha256=part['sha256'], architecture=kind)
+                for part, role, kind in zip(parts, ['ipadapter', 'clip_vision'], ['sdxl', 'other'])
+            )
+            workflow = 'checkpoint-ipadapter-reference-v1'
     else:
         plan = json.loads((ROOT / 'models/flux1-schnell-plan.json').read_text(encoding='utf-8'))
         requirements = [
@@ -68,7 +121,7 @@ def recipe(selected):
         title=entry['title'],
         model=entry['model'],
         family=entry['family'],
-        source=REGISTRY,
+        source=filename,
         reference=entry['reference'],
         quality_note=entry['note'],
         workflow_id=workflow,
@@ -77,7 +130,7 @@ def recipe(selected):
     )
 
 
-def freeze(selected, settings, metadata, components, workflow_id):
+def freeze(selected, settings, metadata, components, workflow_id, loras=None):
     if selected is None:
         return None
     if settings is None:
@@ -86,12 +139,15 @@ def freeze(selected, settings, metadata, components, workflow_id):
     is_flux = 'diffusion_model' in settings
     if (source['family'] == 'flux') != is_flux:
         raise ValueError('模板來源與目前工作流程家族不符')
+    if source['family'] == 'reference' and workflow_id != source['workflow_id']:
+        raise ValueError('圖片畫風模板需要專用的單張參考流程')
     differences = [key for key, value in source['baseline'].items() if settings.get(key) != value]
     actual_workflow = workflow_id or 'checkpoint-text2image-v1'
     if actual_workflow != source['workflow_id']:
         differences.append('workflow_id')
     actual = {part['role']: part for part in components or []}
     actual['checkpoint'] = metadata or {}
+    actual['lora'] = (loras or [{}])[0] if len(loras or []) == 1 else {}
     for part in source['requirements']:
         current = actual.get(part['role'], {})
         if any(current.get(key) != value for key, value in part.items() if key != 'role'):

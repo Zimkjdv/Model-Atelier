@@ -117,6 +117,7 @@ for (const width of [1440, 390])
         ),
     ).toBe(true)
     await page.getByRole('button', { name: '載入起始配方', exact: true }).click()
+    await page.locator('.simple-intro').scrollIntoViewIfNeeded()
     await page.screenshot({ path: info.outputPath('simple-creation-guide.png'), fullPage: false })
     await page.getByText('真實範例、完整配方與觀察', { exact: true }).click()
     await expect(page.locator('.simple-example')).toContainText('手部')

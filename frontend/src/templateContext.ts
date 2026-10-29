@@ -1,5 +1,23 @@
+export type SimpleModelId = 'animagine' | 'pony' | 'flux'
+export type SimpleGroupId = SimpleModelId | 'style-lora' | 'style-reference'
+export type SimpleTemplateId =
+  | SimpleModelId
+  | 'animagine-cafe'
+  | 'animagine-adventurer'
+  | 'animagine-kimono'
+  | 'animagine-library'
+  | 'pony-traveler'
+  | 'pony-station'
+  | 'pony-cat'
+  | 'pony-city'
+  | 'flux-workshop'
+  | 'flux-island'
+  | 'flux-traveler'
+  | 'flux-robot'
+  | 'style-lora'
+  | 'style-reference'
 export type TemplateSelection = {
-  template_id: 'animagine' | 'pony' | 'flux'
+  template_id: SimpleTemplateId
   template_version: 1
 }
 export type TemplateContext = {

@@ -27,20 +27,37 @@ import {
   matchSimpleModel,
   simpleFluxComponents,
   simpleTemplates,
+  simpleModelTemplates,
+  simpleStyleTemplates,
+  simpleStyleLora,
+  simpleReferenceParts,
   type ListedModel,
   type SimpleTemplateId,
 } from './simpleCreation'
 import GenerationPanel from './GenerationPanel.vue'
 import StudioPreview from './StudioPreview.vue'
 import TemplateSnapshot from './TemplateSnapshot.vue'
+import {
+  newReference,
+  referenceProblem,
+  type ReferenceForm,
+  type ReferenceCatalog,
+} from './adapterSettings'
+import type { ReferenceAsset } from './referenceSettings'
+import AssetChoices from './AssetChoices.vue'
+import SimpleStyleExample from './SimpleStyleExample.vue'
+import referenceDemoImage from '../../docs/guide/images/examples/reference-source.png?url'
 import SimpleExample from './SimpleExample.vue'
 import { simpleExamples } from './simpleExamples'
 import { presetEvidence } from './presetEvidence'
 import { templateSelection, type TemplateSelection, type TemplateContext } from './templateContext'
 
 const emit = defineEmits<{
-  advanced: [settings: CreationForm | FluxForm, selection?: TemplateSelection | null]
-  models: [category?: 'checkpoint' | 'flux']
+  advanced: [
+    settings: CreationForm | FluxForm | ReferenceForm,
+    selection?: TemplateSelection | null,
+  ]
+  models: [category?: 'checkpoint' | 'flux' | 'lora' | 'reference']
   settings: []
   gallery: [jobId: string]
 }>()
@@ -61,9 +78,29 @@ type Capabilities = {
 }
 const selectedId = ref<SimpleTemplateId>('animagine')
 const selected = computed(() => simpleTemplates.find((item) => item.id === selectedId.value)!)
+const variants = computed(() =>
+  simpleTemplates.filter((item) => item.modelId === selected.value.modelId),
+)
 const checkpoint = reactive(newCreation())
 const flux = reactive(newFlux())
-const form = computed(() => (selected.value.family === 'flux' ? flux : checkpoint))
+const reference = reactive(newReference())
+const form = computed(() =>
+  selected.value.family === 'flux'
+    ? flux
+    : selected.value.family === 'reference'
+      ? reference
+      : checkpoint,
+)
+const assets = ref<ReferenceAsset[]>([])
+const uploadBusy = ref(false)
+const uploadInput = ref<HTMLInputElement | null>(null)
+const loraCatalog = ref<{
+  engine_url: string
+  loras: ListedModel[]
+  synced_at: string | null
+  sync_error: string | null
+} | null>(null)
+const referenceCatalog = ref<ReferenceCatalog | null>(null)
 const catalog = ref<Catalog | null>(null)
 const fluxCatalog = ref<FluxCatalog | null>(null)
 const engine = ref<EngineReport | null>(null)
@@ -107,10 +144,23 @@ const restores = createRequestScope()
 const previewReads = createRequestScope()
 let active = true
 let templateEpoch = 0
-const modified = computed(() => !!loadedId.value && JSON.stringify(form.value) !== baseline.value)
-const unsaved = computed(() => modified.value)
-useUnsavedChanges(unsaved, saving)
-const locked = computed(() => generating.value || pending.value || saving.value)
+const modified = computed(() => {
+  if (!loadedId.value) return false
+  if (selected.value.family !== 'reference') return JSON.stringify(form.value) !== baseline.value
+  const original = JSON.parse(baseline.value || '{}')
+  const current: Record<string, unknown> = { ...form.value }
+  for (const item of [original, current]) {
+    delete item.image_asset_id
+    delete item.reference_ids
+  }
+  return JSON.stringify(current) !== JSON.stringify(original)
+})
+const unsaved = computed(() => !!loadedId.value && JSON.stringify(form.value) !== baseline.value)
+useUnsavedChanges(
+  unsaved,
+  computed(() => saving.value || uploadBusy.value),
+)
+const locked = computed(() => generating.value || pending.value || saving.value || uploadBusy.value)
 const step = computed(() =>
   !loadedId.value
     ? 1
@@ -174,12 +224,38 @@ function requirements() {
           : `${part.filename}：清單中尚未找到相符項目，請先安裝並同步。`,
         action: 'models',
       })
+  if (selected.value.task === 'lora' && !styleLora.value)
+    items.push({
+      key: 'lora',
+      label: simpleStyleLora.filename + '：請安裝固定原生鍵名版本、同步 LoRA 並核對登記。',
+      action: 'models',
+    })
+  if (selected.value.task === 'reference')
+    for (const part of referenceMatches.value)
+      if (!part.model)
+        items.push({
+          key: part.role,
+          label: part.filename + '：請同步參考元件並核對雜湊及相容系列。',
+          action: 'models',
+        })
   if (!items.length && status !== '可載入配方')
     items.push({ key: 'unknown', label: status + '，請重新檢查。', action: 'refresh' })
   return items
 }
 function repair(action: 'models' | 'settings' | 'refresh') {
-  if (action === 'models') emit('models', selected.value.family === 'flux' ? 'flux' : 'checkpoint')
+  if (action === 'models')
+    emit(
+      'models',
+      !modelFor(selectedId.value) && selected.value.family !== 'flux'
+        ? 'checkpoint'
+        : selected.value.task === 'lora'
+          ? 'lora'
+          : selected.value.task === 'reference'
+            ? 'reference'
+            : selected.value.family === 'flux'
+              ? 'flux'
+              : 'checkpoint',
+    )
   else if (action === 'settings') emit('settings')
   else void refresh(true)
 }
@@ -232,16 +308,50 @@ const fluxMatches = computed(() =>
         : undefined,
   })),
 )
+const styleLora = computed(() =>
+  loraCatalog.value?.engine_url === engineUrl.value
+    ? matchSimpleModel(loraCatalog.value.loras, simpleStyleLora, 'sdxl')
+    : undefined,
+)
+const referenceMatches = computed(() =>
+  simpleReferenceParts.map((part) => ({
+    ...part,
+    model:
+      referenceCatalog.value?.engine_url === engineUrl.value
+        ? matchSimpleModel(
+            referenceCatalog.value.components
+              .filter((item) => item.role === part.role && item.family === part.family)
+              .map((item) => ({ ...item, listed: item.listed === true })),
+            part,
+            part.architecture,
+          )
+        : undefined,
+  })),
+)
 function availability(id: SimpleTemplateId): string {
   if (loading.value) return '檢查中'
   if (!engine.value || engine.value.url !== engineUrl.value) return '狀態未知'
   if (!engine.value.connected) return '引擎離線'
-  if (id === 'flux') {
+  if (simpleTemplates.find((item) => item.id === id)?.family === 'flux') {
     if (!fluxCatalog.value?.synced_at || fluxCatalog.value.sync_error) return '元件清單待同步'
     return fluxMatches.value.every((part) => part.model) ? '可載入配方' : '缺少相符元件登記'
   }
   if (!catalog.value?.synced_at || catalog.value.sync_error) return '模型清單待同步'
-  return modelFor(id) ? '可載入配方' : '缺少相符模型登記'
+  if (!modelFor(id)) return '缺少相符模型登記'
+  const template = simpleTemplates.find((item) => item.id === id)!
+  if (
+    template.task === 'lora' &&
+    (!loraCatalog.value?.synced_at || loraCatalog.value.sync_error || !styleLora.value)
+  )
+    return '缺少相符 LoRA 登記'
+  if (
+    template.task === 'reference' &&
+    (!referenceCatalog.value?.synced_at ||
+      referenceCatalog.value.sync_error ||
+      referenceMatches.value.some((item) => !item.model))
+  )
+    return '缺少相符參考元件'
+  return '可載入配方'
 }
 const canLoad = computed(() => availability(selectedId.value) === '可載入配方' && !locked.value)
 
@@ -261,6 +371,8 @@ async function refresh(explicit = false) {
         method: explicit ? 'POST' : 'GET',
         signal: read.signal,
       }),
+      apiJson<NonNullable<typeof loraCatalog.value>>('loras', { signal: read.signal }),
+      apiJson<ReferenceCatalog>('reference-components', { signal: read.signal }),
     ])
     const latest = await apiJson<{ comfy_url: string }>('settings', { signal: read.signal })
     if (!read.isCurrent()) return
@@ -271,12 +383,14 @@ async function refresh(explicit = false) {
     catalog.value = results[1].status === 'fulfilled' ? results[1].value : null
     fluxCatalog.value = results[2].status === 'fulfilled' ? results[2].value : null
     capabilities.value = results[3].status === 'fulfilled' ? results[3].value : null
+    loraCatalog.value = results[4].status === 'fulfilled' ? results[4].value : null
+    referenceCatalog.value = results[5].status === 'fulfilled' ? results[5].value : null
     if (engine.value?.diagnostics?.matches_selected_engine === false) engine.value = null
     if (catalog.value?.engine_url !== engineUrl.value) catalog.value = null
     if (fluxCatalog.value?.engine_url !== engineUrl.value) fluxCatalog.value = null
     if (results.some((result) => result.status === 'rejected'))
       error.value = '部分可用狀態讀取失敗，請重新檢查；無法確認的項目不會視為就緒。'
-    if (loadedId.value && selected.value.family === 'checkpoint') await refreshProfile()
+    if (loadedId.value && selected.value.family !== 'flux') await refreshProfile()
     if (previewJob.value && !previewTemplateJob.value) void preview(previewJob.value)
   } catch (cause) {
     if (read.isCurrent()) {
@@ -348,14 +462,33 @@ async function loadTemplate(edit = false) {
     } else {
       const result = await refreshProfile()
       if (!active || epoch !== templateEpoch || !result?.preset) return
-      Object.assign(checkpoint, newCreation(), result.preset.settings, {
-        engine_url: engineUrl.value,
-        checkpoint: result.name,
-        title: template.title,
-        prompt: template.prompt,
-        negative_prompt: template.negative,
-        seed: template.seed,
-      })
+      const target = template.family === 'reference' ? reference : checkpoint
+      const inputId = reference.image_asset_id
+      Object.assign(
+        target,
+        template.family === 'reference' ? newReference() : newCreation(),
+        result.preset.settings,
+        {
+          engine_url: engineUrl.value,
+          checkpoint: result.name,
+          title: template.title,
+          prompt: template.prompt,
+          negative_prompt: template.negative,
+          seed: template.seed,
+        },
+      )
+      if (template.task === 'lora') {
+        checkpoint.loras = [
+          { name: styleLora.value!.name, enabled: true, strength_model: 1, strength_clip: 1 },
+        ]
+      }
+      if (template.task === 'reference') {
+        reference.image_asset_id = inputId
+        reference.reference_ids = inputId ? [inputId] : []
+        for (const part of referenceMatches.value)
+          reference[part.role === 'ipadapter' ? 'ipadapter_name' : 'clip_vision_name'] =
+            part.model!.name
+      }
     }
     loadedId.value = template.id
     editing.value = edit
@@ -383,10 +516,10 @@ const blockers = computed<PreflightBlocker[]>(() => {
       message: availability(selectedId.value) + '；請在模型庫同步並核對架構及 SHA256。',
       action: 'models',
     })
-  if (selected.value.family === 'checkpoint' && loadedId.value && !profile.value)
+  if (selected.value.family !== 'flux' && loadedId.value && !profile.value)
     issues.push({ message: '模型預設尚未確認，請重新檢查。', action: 'refresh' })
   if (
-    selected.value.family === 'checkpoint' &&
+    selected.value.family !== 'flux' &&
     loadedId.value &&
     (!capabilities.value?.available ||
       capabilities.value.stale ||
@@ -396,8 +529,8 @@ const blockers = computed<PreflightBlocker[]>(() => {
     issues.push({ message: '原引擎取樣選項尚未確認或已過期，請重新檢查。', action: 'refresh' })
   if (
     loadedId.value &&
-    selected.value.family === 'checkpoint' &&
-    modelFor(selectedId.value)?.name !== checkpoint.checkpoint
+    selected.value.family !== 'flux' &&
+    modelFor(selectedId.value)?.name !== ('checkpoint' in form.value ? form.value.checkpoint : '')
   )
     issues.push({ message: '配方模型已不在相符登記中，請核對後重新載入。', action: 'models' })
   if (
@@ -406,6 +539,27 @@ const blockers = computed<PreflightBlocker[]>(() => {
     fluxMatches.value.some((part) => part.model?.name !== flux[part.role])
   )
     issues.push({ message: '配方元件登記已變更，請核對後重新載入。', action: 'models' })
+  if (loadedId.value && selected.value.family === 'reference') {
+    const problem = referenceProblem(
+      reference,
+      assets.value.find((item) => item.id === reference.image_asset_id),
+    )
+    if (problem) issues.push({ message: problem })
+    if (
+      referenceMatches.value.some(
+        (part) =>
+          part.model?.name !==
+          reference[part.role === 'ipadapter' ? 'ipadapter_name' : 'clip_vision_name'],
+      )
+    )
+      issues.push({ message: '參考元件登記已變更，請重新載入配方。', action: 'models' })
+  }
+  if (
+    loadedId.value &&
+    selected.value.task === 'lora' &&
+    checkpoint.loras[0]?.name !== styleLora.value?.name
+  )
+    issues.push({ message: '原 LoRA 登記已變更，請重新載入配方。', action: 'models' })
   return issues
 })
 const fieldProblems = computed(() => {
@@ -414,7 +568,7 @@ const fieldProblems = computed(() => {
     c?.available && c.engine_matches && !c.stale && c.engine_url === form.value.engine_url
   return generationFieldProblems(
     form.value,
-    selected.value.family === 'checkpoint' && reliable
+    selected.value.family !== 'flux' && reliable
       ? { bounds: c.bounds, samplers: c.sampler_names, schedulers: c.schedulers }
       : {},
   )
@@ -427,6 +581,48 @@ function randomSeed() {
 function transfer() {
   if (!loadedId.value || locked.value || loading.value) return
   emit('advanced', JSON.parse(JSON.stringify(form.value)), selection.value)
+}
+function chooseReference(id: string | null) {
+  reference.image_asset_id = id
+  reference.reference_ids = id ? [id] : []
+}
+async function uploadReference(file: File | Blob, name: string) {
+  if (!loadedId.value || locked.value || selected.value.family !== 'reference') return
+  if (file.size > 20 * 1024 * 1024) {
+    error.value = '圖片不可超過 20 MiB。'
+    return
+  }
+  uploadBusy.value = true
+  error.value = ''
+  try {
+    const asset = await apiJson<ReferenceAsset>('assets?filename=' + encodeURIComponent(name), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: file,
+    })
+    assets.value = [...assets.value.filter((item) => item.id !== asset.id), asset]
+    chooseReference(asset.id)
+    message.value = '參考圖片已上傳並選取；按生成才會建立任務。'
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : '參考圖片上傳失敗。'
+  } finally {
+    uploadBusy.value = false
+    if (uploadInput.value) uploadInput.value.value = ''
+  }
+}
+async function uploadChosen(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) await uploadReference(file, file.name)
+}
+async function useDemoReference() {
+  if (locked.value || !loadedId.value) return
+  try {
+    const response = await fetch(referenceDemoImage)
+    if (!response.ok) throw new Error('範例圖片讀取失敗。')
+    await uploadReference(await response.blob(), '自產畫風參考範例.png')
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : '範例圖片讀取失敗。'
+  }
 }
 async function saveResult() {
   const job = previewJob.value
@@ -460,7 +656,7 @@ async function restoreJob(id: string) {
   try {
     const prefix = selected.value.family === 'flux' ? 'flux/' : ''
     const value = await apiJson<{
-      settings: CreationForm | FluxForm
+      settings: CreationForm | FluxForm | ReferenceForm
       template_context?: TemplateContext | null
     }>(prefix + 'jobs/' + id + '/creation-settings', { signal: read.signal })
     if (read.isCurrent())
@@ -522,17 +718,17 @@ onBeforeUnmount(() => {
     </ol>
     <div class="simple-cards" role="group" aria-label="起始配方">
       <button
-        v-for="item in simpleTemplates"
+        v-for="item in simpleModelTemplates"
         :key="item.id"
         type="button"
         class="simple-card"
-        :aria-pressed="selectedId === item.id"
+        :aria-pressed="selected.modelId === item.modelId"
         :disabled="loading || locked"
         @click="selectTemplate(item.id)"
       >
         <img
           class="simple-card-image"
-          :src="simpleExamples[item.id].image"
+          :src="simpleExamples[item.id]?.image"
           :alt="item.title + ' 原配方實際成果'"
         />
         <span class="simple-card-model">{{ item.model }}</span
@@ -540,12 +736,50 @@ onBeforeUnmount(() => {
         ><small>{{ availability(item.id) }}</small>
       </button>
     </div>
+    <div class="simple-style-cards" role="group" aria-label="畫風控制任務">
+      <button
+        v-for="item in simpleStyleTemplates"
+        :key="item.id"
+        class="secondary simple-variant"
+        :aria-pressed="selectedId === item.id"
+        :disabled="loading || locked"
+        @click="selectTemplate(item.id)"
+      >
+        <strong>{{ item.title }}</strong
+        ><span>{{ item.description }}</span
+        ><small>{{ availability(item.id) }}</small>
+      </button>
+    </div>
+    <section
+      v-if="!selected.task"
+      class="simple-variant-picker"
+      aria-labelledby="simple-variant-heading"
+    >
+      <h3 id="simple-variant-heading">{{ selected.model }} · 選擇起始配方（5 份）</h3>
+      <div class="simple-variants" role="group" aria-label="模型內的起始配方">
+        <button
+          v-for="item in variants"
+          :key="item.id"
+          class="secondary simple-variant"
+          :aria-pressed="selectedId === item.id"
+          :disabled="loading || locked"
+          @click="selectTemplate(item.id)"
+        >
+          <strong>{{ item.title }}</strong
+          ><span>{{ item.description }}</span>
+        </button>
+      </div>
+    </section>
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
     <p v-if="message" class="notice" role="status">{{ message }}</p>
     <div class="simple-workbench">
       <section class="simple-editor panel" aria-label="簡易創作設定">
         <h3>{{ selected.title }}</h3
-        ><p>原配方 v{{ selected.version }}；{{ simpleExamples[selectedId].environment }}</p>
+        ><p
+          >原配方 v{{ selected.version }}；{{
+            simpleExamples[selectedId]?.environment || selected.note
+          }}</p
+        >
         <p class="footnote">範例附有實測紀錄與限制。載入不會下載模型或自動生成。</p>
         <button class="primary" :disabled="!canLoad || loading" @click="loadTemplate(false)">
           {{ loadedId ? '還原配方設定' : '載入起始配方' }}
@@ -585,6 +819,54 @@ onBeforeUnmount(() => {
           >
         </div>
         <fieldset :disabled="!loadedId || loading || locked">
+          <template v-if="selected.family === 'reference'">
+            <label for="simple-reference">參考圖片</label>
+            <select
+              id="simple-reference"
+              :value="reference.image_asset_id || ''"
+              @change="chooseReference(($event.target as HTMLSelectElement).value || null)"
+            >
+              <option value="">選擇一張圖片</option>
+              <option
+                v-for="asset in assets.filter(
+                  (item) => !item.archived || item.id === reference.image_asset_id,
+                )"
+                :key="asset.id"
+                :value="asset.id"
+                :disabled="asset.archived"
+                >{{ asset.title }}</option
+              >
+            </select>
+            <input
+              ref="uploadInput"
+              id="simple-reference-upload"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              @change="uploadChosen"
+            />
+            <label for="simple-reference-upload">上傳自己的參考圖片</label>
+            <button class="secondary" @click="useDemoReference">使用自產示範參考圖</button>
+            <img
+              v-if="reference.image_asset_id"
+              class="simple-reference-preview"
+              :src="'/api/assets/' + reference.image_asset_id + '/image'"
+              alt="目前選取的參考圖片"
+            />
+            <label for="simple-reference-weight">參考程度 {{ reference.reference_weight }}</label>
+            <input
+              id="simple-reference-weight"
+              v-model.number="reference.reference_weight"
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+            />
+            <p class="footnote"
+              >0 與 0.6
+              有固定對照；其他程度屬修改設定，未逐值驗證畫質。參考可能同時帶入髮色、服裝及背景。
+              參考圖由你選擇，屬任務輸入；換圖後不能視為示範原圖的重現。</p
+            >
+          </template>
           <label for="simple-prompt">實際生成提示詞（英文）</label>
           <textarea
             id="simple-prompt"
@@ -624,10 +906,19 @@ onBeforeUnmount(() => {
           </template>
           <pre>{{ JSON.stringify(form, null, 2) }}</pre>
         </details>
-        <SimpleExample :id="selectedId" :modified="modified" />
-        <p v-if="loadedId" class="footnote"
-          >設定會在站內切頁時保留；重新整理前可帶到進階工作台保存草稿。</p
-        >
+        <SimpleExample v-if="simpleExamples[selectedId]" :id="selectedId" :modified="modified" />
+        <SimpleStyleExample v-if="selected.task" :task="selected.task" />
+        <details v-if="selected.family === 'reference'" class="simple-recipe"
+          ><summary>選擇其他已上傳素材</summary
+          ><AssetChoices
+            :selected-ids="reference.image_asset_id ? [reference.image_asset_id] : []"
+            @items="assets = $event"
+        /></details>
+        <p v-if="loadedId" class="footnote">{{
+          selected.family === 'reference'
+            ? '圖片參考設定僅保留本頁；生成後可從任務或作品還原完整設定。'
+            : '設定會在站內切頁時保留；重新整理前可帶到進階工作台保存草稿。'
+        }}</p>
         <div id="simple-submit" class="simple-submit"></div>
       </section>
       <div class="simple-stage">
@@ -660,11 +951,17 @@ onBeforeUnmount(() => {
           submit-target="#simple-submit"
           :form="form"
           :template-selection="selection"
-          :workflow="selected.family === 'flux' ? 'flux' : undefined"
+          :workflow="
+            selected.family === 'flux'
+              ? 'flux'
+              : selected.family === 'reference'
+                ? 'reference'
+                : undefined
+          "
           :field-problems="fieldProblems"
           :blockers="blockers"
           :blocked-reason="blockers[0]?.message"
-          :disabled="loading || saving"
+          :disabled="loading || saving || uploadBusy"
           @preview="preview"
           @submitted="submitted"
           @busy="generating = $event"
@@ -765,6 +1062,46 @@ onBeforeUnmount(() => {
 }
 .simple-card strong {
   font-size: 18px;
+}
+.simple-variant-picker {
+  margin-bottom: 20px;
+}
+.simple-style-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.simple-reference-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 240px;
+  margin: 12px 0;
+}
+.simple-editor select {
+  width: 100%;
+  min-width: 0;
+}
+.simple-variants {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 10px;
+}
+.simple-variant {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 6px;
+  white-space: normal;
+}
+.simple-variant span {
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.6;
+}
+.simple-variant[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--asoft);
 }
 .simple-card-image {
   width: 100%;

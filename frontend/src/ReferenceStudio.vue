@@ -26,6 +26,9 @@ import ReferenceComponents from './ReferenceComponents.vue'
 import ReferenceComponentsSnapshot from './ReferenceComponentsSnapshot.vue'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
 import RuntimeSnapshot from './RuntimeSnapshot.vue'
+import TemplateSnapshot from './TemplateSnapshot.vue'
+import type { SimpleTransfer } from './simpleCreation'
+import { templateSelection, type TemplateSelection, type TemplateContext } from './templateContext'
 import {
   copyReference,
   newReference,
@@ -41,6 +44,7 @@ import type { ReferenceAsset, ReferenceSnapshot as ReferenceMetadata } from './r
 import type { RuntimeMetadata } from './runtimeMetadata'
 
 const props = defineProps<{
+  simpleRequest?: SimpleTransfer | null
   assetRequest?: { id: string; purpose: string; token: number } | null
   restoreRequest?: { artworkId: string; token: number } | null
 }>()
@@ -60,6 +64,7 @@ type Capabilities = {
   schedulers: string[]
 }
 type Restoration = {
+  template_context?: TemplateContext | null
   settings: ReferenceForm
   warnings: string[]
   reference_metadata?: ReferenceMetadata[] | null
@@ -74,6 +79,8 @@ const form = reactive(newReference()),
   capabilities = ref<Capabilities | null>(null),
   profile = ref<ModelProfile | null>(null),
   assets = ref<ReferenceAsset[]>([])
+const sourceTemplate = ref<TemplateSelection | null>(null)
+const active = ref(true)
 const busy = ref(false),
   metadataBusy = ref(false),
   generationBusy = ref(false),
@@ -195,6 +202,7 @@ function apply(value: Restoration) {
   const copied = copyReference(value.settings)
   restores.cancel()
   Object.assign(form, copied)
+  sourceTemplate.value = templateSelection(value.template_context)
   origin.value = value
   pendingRestore.value = null
   baseline.value = ''
@@ -240,9 +248,11 @@ onMounted(async () => {
   mounted = true
 })
 onActivated(() => {
+  active.value = true
   if (mounted) void load()
 })
 onDeactivated(() => {
+  active.value = false
   loads.cancel()
   restores.cancel()
   busy.value = false
@@ -254,6 +264,32 @@ onBeforeUnmount(() => {
 })
 
 let appliedAssetToken = 0
+let appliedSimpleToken = 0
+watch(
+  [() => props.simpleRequest, () => locked.value, () => active.value],
+  ([request]) => {
+    if (
+      !request ||
+      !active.value ||
+      locked.value ||
+      request.token === appliedSimpleToken ||
+      !('ipadapter_name' in request.settings)
+    )
+      return
+    appliedSimpleToken = request.token
+    if (dirty.value && !window.confirm('帶入簡易配方會取代目前進階工作台的未保存設定，確定載入？'))
+      return
+    restores.cancel()
+    Object.assign(form, copyReference(request.settings))
+    sourceTemplate.value = request.templateSelection ? { ...request.templateSelection } : null
+    origin.value = null
+    baseline.value = ''
+    error.value = ''
+    message.value = '簡易配方已帶入；參考圖、程度與完整設定已保留，尚未生成。'
+    void load()
+  },
+  { immediate: true, flush: 'post' },
+)
 watch(
   [() => props.assetRequest, () => assets.value, () => locked.value],
   ([request]) => {
@@ -584,7 +620,7 @@ const preflightBlockers = computed(() => {
               }}</p
               ><ReferenceComponentsSnapshot :items="origin.component_metadata" /><ReferenceSnapshot
                 :items="origin.reference_metadata" /><RuntimeSnapshot
-                :item="origin.runtime_metadata"
+                :item="origin.runtime_metadata" /><TemplateSnapshot :item="origin.template_context"
             /></template>
             <ReferenceComponents
               :library="components"
@@ -607,6 +643,7 @@ const preflightBlockers = computed(() => {
           @preview="previewJob = $event"
           submit-target="#studio-submit-reference"
           :form="form"
+          :template-selection="sourceTemplate"
           workflow="reference"
           :blockers="preflightBlockers"
           :field-problems="fieldProblems"

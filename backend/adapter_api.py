@@ -8,7 +8,13 @@ from fastapi import HTTPException
 from pydantic import ConfigDict, Field, model_validator
 from starlette.concurrency import run_in_threadpool
 
-from backend import adapter_catalog as records, adapter_workflows as flow, diagnostics, jobs
+from backend import (
+    adapter_catalog as records,
+    adapter_workflows as flow,
+    diagnostics,
+    jobs,
+    template_context,
+)
 
 
 def install(app, host, submissions):
@@ -42,6 +48,7 @@ def install(app, host, submissions):
 
     class Generate(Input):
         request_id: UUID
+        template_selection: template_context.Selection | None = None
 
     @app.get('/api/reference/workflow')
     def descriptor():
@@ -68,7 +75,9 @@ def install(app, host, submissions):
     @app.post('/api/reference/generate')
     async def generate(value: Generate):
         diagnostics.bind_submission(value.request_id, flow.ID)
-        settings = value.model_dump(mode='json', exclude={'request_id', 'revision'})
+        settings = value.model_dump(
+            mode='json', exclude={'request_id', 'revision', 'template_selection'}
+        )
         async with submissions.job_lock(value.request_id):
             try:
                 existing = jobs.get(host.DB, str(value.request_id))
@@ -77,6 +86,9 @@ def install(app, host, submissions):
             if existing is not None:
                 if (
                     existing.get('workflow_id') != flow.ID
+                    or not template_context.matches(
+                        existing.get('template_context'), value.template_selection
+                    )
                     or existing.get('reference_settings') != settings
                     or existing.get('experiment_context') is not None
                 ):
@@ -121,9 +133,11 @@ def install(app, host, submissions):
                 engine_url=value.engine_url,
                 checkpoint=value.checkpoint,
                 workflow=flow.build(settings, value.request_id),
+                template_selection=value.template_selection,
             )
             return await submissions.submit_locked(
                 submission,
+                generation_settings=settings,
                 reference=dict(
                     settings=settings,
                     snapshot=snapshot,

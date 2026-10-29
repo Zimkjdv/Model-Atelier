@@ -8,7 +8,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from backend import flux_workflows, template_context, workflows
+from backend import adapter_workflows, flux_workflows, template_context, workflows
 
 ROOT = Path(__file__).resolve().parents[1]
 GUIDE = ROOT / 'docs/guide'
@@ -19,6 +19,48 @@ def read(path):
 
 
 class SimpleExampleTests(unittest.TestCase):
+    def test_extra_recipes_and_style_tasks_have_exact_real_examples(self):
+        index = read(ROOT / 'models/simple-creation-extra-examples-v1.json')['examples']
+        registry = read(ROOT / 'models/simple-creation-extra-templates-v1.json')['templates']
+        registry += read(ROOT / 'models/simple-style-templates-v1.json')['templates']
+        self.assertEqual(len(index), 14)
+        self.assertEqual({e['template_id'] for e in index}, {r['id'] for r in registry})
+        for model in ('animagine', 'pony', 'flux'):
+            self.assertEqual(sum(r['model_id'] == model for r in registry), 4)
+        for entry in index:
+            name = entry['template_id']
+            with self.subTest(template=name):
+                record = read(GUIDE / 'examples' / (name + '-v1.json'))
+                context = record['template_context']
+                expected = template_context.freeze(
+                    context['selection'],
+                    record['settings'],
+                    record['model_metadata'],
+                    record['component_metadata'],
+                    context['workflow_id'],
+                    record['lora_metadata'],
+                )
+                self.assertEqual(context, expected)
+                self.assertFalse(context['modified'])
+                self.assertEqual(entry['recipe_sha256'], context['recipe_sha256'])
+                self.assertEqual(entry['image_sha256'], record['image']['sha256'])
+                self.assertEqual(entry['observations'], record['observations'])
+                self.assertEqual(entry['seed'], record['settings']['seed'])
+                if name == 'style-reference':
+                    expected_graph = adapter_workflows.build(record['settings'], record['job_id'])
+                    source = GUIDE / record['source_image']['file']
+                    self.assertEqual(
+                        hashlib.sha256(source.read_bytes()).hexdigest(),
+                        record['source_image']['sha256'],
+                    )
+                else:
+                    builder = flux_workflows.build if name.startswith('flux-') else workflows.build
+                    expected_graph = builder(record['settings'])
+                self.assertEqual(record['workflow'], expected_graph)
+                self.assertTrue(record['local_weights_verified'])
+                self.assertEqual(record['source'], 'real_local_comfyui_generation')
+                self.image(record)
+
     def image(self, record):
         location = (GUIDE / record['image']['file']).resolve()
         self.assertTrue(location.is_relative_to(GUIDE.resolve()))

@@ -28,6 +28,7 @@ import type { SimpleTransfer } from './simpleCreation'
 import type { TemplateSelection } from './templateContext'
 import type { CreationForm } from './creationSettings'
 import type { FluxForm } from './fluxSettings'
+import type { ReferenceForm } from './adapterSettings'
 import type { HostSystem as System } from './systemTypes'
 const system = ref<System | null>(null),
   engine = ref<EngineReport | null>(null)
@@ -63,7 +64,7 @@ const controlRestoreRequest = ref<{ artworkId: string; token: number } | null>(n
 const referenceRestoreRequest = ref<{ artworkId: string; token: number } | null>(null)
 const simpleTransfer = ref<SimpleTransfer | null>(null)
 const simpleModelCategory = ref('checkpoint')
-function openSimpleModels(category: 'checkpoint' | 'flux' = 'checkpoint') {
+function openSimpleModels(category: 'checkpoint' | 'flux' | 'lora' | 'reference' = 'checkpoint') {
   simpleModelCategory.value = category
   navigate('模型庫')
 }
@@ -82,10 +83,15 @@ const creationModeItems = [
 ]
 let simpleTransferToken = 0
 function transferSimple(
-  settings: CreationForm | FluxForm,
+  settings: CreationForm | FluxForm | ReferenceForm,
   templateSelection?: TemplateSelection | null,
 ) {
-  const family = 'diffusion_model' in settings ? 'flux' : 'checkpoint'
+  const family =
+    'diffusion_model' in settings
+      ? 'flux'
+      : 'ipadapter_name' in settings
+        ? 'reference'
+        : 'checkpoint'
   if (!navigate('創作工作台', family)) return
   const image = 'checkpoint' in settings && settings.workflow_mode === 'image2image'
   imagePurpose.value = image
@@ -420,7 +426,11 @@ async function testConnection() {
             @settings="openConnection"
             @gallery="navigate('作品庫', studioMode, $event)" /><CreationStudio
             :simple-request="
-              simpleTransfer && 'checkpoint' in simpleTransfer.settings ? simpleTransfer : null
+              simpleTransfer &&
+              'checkpoint' in simpleTransfer.settings &&
+              !('ipadapter_name' in simpleTransfer.settings)
+                ? simpleTransfer
+                : null
             "
             :transfer-request="
               transferRequest?.family === 'checkpoint' ? transferRequest.token : undefined
@@ -467,6 +477,9 @@ async function testConnection() {
                 : null
             "
             v-else-if="page === '創作工作台' && studioMode === 'reference'"
+            :simple-request="
+              simpleTransfer && 'ipadapter_name' in simpleTransfer.settings ? simpleTransfer : null
+            "
             :restore-request="referenceRestoreRequest"
             @models="navigate('模型庫')"
             @assets="navigate('參考素材')"

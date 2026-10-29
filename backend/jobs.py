@@ -120,7 +120,12 @@ def _reserve(
                 kind=(reference_settings or {}).get('control_kind', 'canny'),
             )
         recipe_context = template_context.freeze(
-            template_selection, generation_settings, model_metadata, component_metadata, workflow_id
+            template_selection,
+            generation_settings,
+            model_metadata,
+            component_metadata,
+            workflow_id,
+            lora_metadata,
         )
         context = experiment_context.freeze(db, experiment, generation_settings, model_metadata)
         if workflow_id == 'checkpoint-fooocus-inpaint-v3':

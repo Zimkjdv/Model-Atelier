@@ -40,7 +40,11 @@ const emit = defineEmits<{
   create: [architecture: string, name?: string, engineUrl?: string]
 }>()
 const props = defineProps<{ initialCategory?: string }>()
-const category = ref(props.initialCategory === 'flux' ? 'flux' : 'checkpoint'),
+const category = ref(
+    ['flux', 'lora', 'reference'].includes(props.initialCategory || '')
+      ? props.initialCategory!
+      : 'checkpoint',
+  ),
   view = ref('list')
 const loraLibrary = ref<InstanceType<typeof LoraLibrary> | null>(null)
 const controlLibrary = ref<InstanceType<typeof ControlLibrary> | null>(null)

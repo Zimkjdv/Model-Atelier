@@ -1,0 +1,484 @@
+{
+  "schema_version": 1,
+  "id": "flux-robot-v1",
+  "date": "2026-10-30",
+  "source": "real_local_comfyui_generation",
+  "reviewer": "Codex visual inspection; not user approval",
+  "settings": {
+    "prompt": "A charming anime illustration of one small rounded friendly robot with a cream colored metal body, tending a potted plant on a sunny balcony, a simple watering can beside the pot, soft afternoon light, clean lines, gentle pastel colors, no text.",
+    "seed": "9007199254740997",
+    "width": 512,
+    "height": 512,
+    "steps": 4,
+    "weight_dtype": "fp8_e4m3fn",
+    "encoder_device": "cpu",
+    "engine_url": "http://127.0.0.1:8188",
+    "title": "圓形機器人",
+    "diffusion_model": "flux1-schnell.safetensors",
+    "vae": "ae.safetensors",
+    "clip_l": "clip_l.safetensors",
+    "t5xxl": "t5xxl_fp8_e4m3fn_scaled.safetensors"
+  },
+  "workflow": {
+    "1": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "flux1-schnell.safetensors",
+        "weight_dtype": "fp8_e4m3fn"
+      }
+    },
+    "2": {
+      "class_type": "DualCLIPLoader",
+      "inputs": {
+        "clip_name1": "clip_l.safetensors",
+        "clip_name2": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "type": "flux",
+        "device": "cpu"
+      }
+    },
+    "3": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "ae.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "A charming anime illustration of one small rounded friendly robot with a cream colored metal body, tending a potted plant on a sunny balcony, a simple watering can beside the pot, soft afternoon light, clean lines, gentle pastel colors, no text.",
+        "clip": [
+          "2",
+          0
+        ]
+      }
+    },
+    "5": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "",
+        "clip": [
+          "2",
+          0
+        ]
+      }
+    },
+    "6": {
+      "class_type": "EmptySD3LatentImage",
+      "inputs": {
+        "width": 512,
+        "height": 512,
+        "batch_size": 1
+      }
+    },
+    "7": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "5",
+          0
+        ],
+        "latent_image": [
+          "6",
+          0
+        ],
+        "seed": 9007199254740997,
+        "steps": 4,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1.0
+      }
+    },
+    "8": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "7",
+          0
+        ],
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    },
+    "9": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "8",
+          0
+        ],
+        "filename_prefix": "ModelAtelier"
+      }
+    }
+  },
+  "template_context": {
+    "schema_version": 1,
+    "origin": "builtin_recipe",
+    "selection": {
+      "template_id": "flux-robot",
+      "template_version": 1
+    },
+    "title": "圓形機器人",
+    "model": "FLUX.1 [schnell]",
+    "family": "flux",
+    "source": "models/simple-creation-extra-templates-v1.json",
+    "reference": "docs/models/flux-workflow.md",
+    "quality_note": "固定基底與原取樣配置；人物、動物或場景效果依本配方實際成果判讀，不外推至指定角色或作者畫風。",
+    "workflow_id": "flux1-schnell-text2image-v1",
+    "baseline": {
+      "prompt": "A charming anime illustration of one small rounded friendly robot with a cream colored metal body, tending a potted plant on a sunny balcony, a simple watering can beside the pot, soft afternoon light, clean lines, gentle pastel colors, no text.",
+      "seed": "9007199254740997",
+      "width": 512,
+      "height": 512,
+      "steps": 4,
+      "weight_dtype": "fp8_e4m3fn",
+      "encoder_device": "cpu"
+    },
+    "requirements": [
+      {
+        "role": "diffusion_model",
+        "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+      },
+      {
+        "role": "vae",
+        "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
+      },
+      {
+        "role": "clip_l",
+        "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
+      },
+      {
+        "role": "t5xxl",
+        "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a"
+      }
+    ],
+    "recipe_sha256": "d8c35151190e6b6c8813a14888a4dc4db711732dae9ae45fbd2120b75d0b7cef",
+    "modified": false,
+    "changed_fields": []
+  },
+  "job_id": "20007ff2-23d2-4776-b52b-d8c521b546e1",
+  "artwork_id": "9e562fec-4531-5122-b504-b428932b5163",
+  "generated_at": "2026-10-29T22:19:51.525378+00:00",
+  "runtime_metadata": {
+    "schema_version": 1,
+    "captured_at": "2026-10-29T22:19:31.304675+00:00",
+    "workflow": {
+      "id": "flux1-schnell-text2image-v1",
+      "sha256": "fafc9f03789c0b2f865b7a9d3191f0e34422dfc35fa8dddda80e8516b97b6acb",
+      "nodes": [
+        "CLIPTextEncode",
+        "DualCLIPLoader",
+        "EmptySD3LatentImage",
+        "KSampler",
+        "SaveImage",
+        "UNETLoader",
+        "VAEDecode",
+        "VAELoader"
+      ],
+      "node_versions": null,
+      "note": "原生節點未提供各別版本；流程 ID 是平台模板規格版本。"
+    },
+    "platform": {
+      "source": "platform Python process",
+      "python": "3.12.10",
+      "packages": [
+        {
+          "name": "fastapi",
+          "version": "0.141.1"
+        },
+        {
+          "name": "starlette",
+          "version": "1.6.0"
+        },
+        {
+          "name": "pydantic",
+          "version": "2.13.5"
+        },
+        {
+          "name": "httpx",
+          "version": "0.28.1"
+        },
+        {
+          "name": "Pillow",
+          "version": "12.3.0"
+        },
+        {
+          "name": "uvicorn",
+          "version": "0.52.4"
+        },
+        {
+          "name": "websockets",
+          "version": "17.1"
+        }
+      ]
+    },
+    "engine": {
+      "status": "reported",
+      "source": "http://127.0.0.1:8188/system_stats",
+      "comfyui": "0.34.0",
+      "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+      "pytorch": "2.14.0+cu130",
+      "packages": [
+        {
+          "name": "comfyui-frontend-package",
+          "installed": "1.51.9",
+          "required": "1.51.9"
+        },
+        {
+          "name": "comfyui-workflow-templates",
+          "installed": "0.11.55",
+          "required": "0.11.55"
+        },
+        {
+          "name": "comfyui-embedded-docs",
+          "installed": "0.5.11",
+          "required": "0.5.11"
+        },
+        {
+          "name": "comfy-kitchen",
+          "installed": "0.2.33",
+          "required": "0.2.33"
+        },
+        {
+          "name": "comfy-aimdo",
+          "installed": "0.5.2",
+          "required": "0.5.2"
+        }
+      ],
+      "cuda": null,
+      "driver": null,
+      "git_revision": null,
+      "note": "引擎回報值；CUDA、驅動及 Git revision 未由此介面提供，不從 PyTorch 後綴或平台環境推定。"
+    },
+    "execution_context": {
+      "schema_version": 1,
+      "workload": "inference",
+      "workflow_id": "flux1-schnell-text2image-v1",
+      "geometry": {
+        "width": 512,
+        "height": 512,
+        "batch_size": 1,
+        "source": "workflow node 6"
+      },
+      "parameters": [
+        {
+          "node_id": "1",
+          "class_type": "UNETLoader",
+          "settings": {
+            "weight_dtype": "fp8_e4m3fn"
+          }
+        },
+        {
+          "node_id": "2",
+          "class_type": "DualCLIPLoader",
+          "settings": {
+            "device": "cpu"
+          }
+        },
+        {
+          "node_id": "7",
+          "class_type": "KSampler",
+          "settings": {
+            "steps": 4,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 1.0,
+            "seed": "9007199254740997"
+          }
+        }
+      ],
+      "models": [
+        {
+          "role": "checkpoint",
+          "name": "flux1-schnell.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "architecture": "flux",
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+        },
+        {
+          "role": "diffusion_model",
+          "name": "flux1-schnell.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "architecture": "flux",
+          "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"
+        },
+        {
+          "role": "clip_l",
+          "name": "clip_l.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "architecture": "flux",
+          "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
+        },
+        {
+          "role": "t5xxl",
+          "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+          "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+          "architecture": "flux",
+          "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a"
+        },
+        {
+          "role": "vae",
+          "name": "ae.safetensors",
+          "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+          "architecture": "flux",
+          "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"
+        }
+      ],
+      "loras": [],
+      "launch_policy": {
+        "source": "http://127.0.0.1:8188/system_stats.system.argv",
+        "reported": true,
+        "precision_flags": [],
+        "memory_flags": []
+      },
+      "actual_precision": null,
+      "actual_offload": null,
+      "cache_state": "unknown",
+      "note": "完整流程／設定及提交前版本與資源快照一同保存。啟動旗標僅為設定，不能證明實際精度、卸載或排隊後裝置；無旗標不代表預設模式。冷／熱快取未被可靠回報，保持未知。此紀錄為推論，不代表訓練需求或最低 VRAM。"
+    },
+    "execution_device": {
+      "schema_version": 1,
+      "engine_url": "http://127.0.0.1:8188",
+      "source": "http://127.0.0.1:8188/model_atelier/execution-device",
+      "checked_at": "2026-10-29T22:19:31.335679+00:00",
+      "probe_id": "e49ce64c-229b-4158-b226-2999f2999302",
+      "status": "available",
+      "reason": "device_selected",
+      "device": {
+        "type": "cuda",
+        "index": 0
+      },
+      "backend_available": true
+    }
+  },
+  "model_metadata": {
+    "role": "diffusion_model",
+    "category": "diffusion_models",
+    "name": "flux1-schnell.safetensors",
+    "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+    "source_url": "",
+    "architecture": "flux",
+    "size_bytes": 23782506688,
+    "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+    "license_name": "",
+    "license_url": "",
+    "metadata_updated_at": "2026-10-29T22:17:49.756146+00:00",
+    "origin": "user_registered",
+    "captured_at": "2026-10-29T22:19:31.090732+00:00"
+  },
+  "component_metadata": [
+    {
+      "role": "diffusion_model",
+      "category": "diffusion_models",
+      "name": "flux1-schnell.safetensors",
+      "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "source_url": "",
+      "architecture": "flux",
+      "size_bytes": 23782506688,
+      "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-29T22:17:49.756146+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-29T22:19:31.090732+00:00"
+    },
+    {
+      "role": "clip_l",
+      "category": "text_encoders",
+      "name": "clip_l.safetensors",
+      "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "source_url": "",
+      "architecture": "flux",
+      "size_bytes": 246144152,
+      "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-29T22:17:49.763146+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-29T22:19:31.090732+00:00"
+    },
+    {
+      "role": "t5xxl",
+      "category": "text_encoders",
+      "name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "version": "revision 6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+      "source_url": "",
+      "architecture": "flux",
+      "size_bytes": 5157348688,
+      "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-29T22:17:49.767145+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-29T22:19:31.090732+00:00"
+    },
+    {
+      "role": "vae",
+      "category": "vae",
+      "name": "ae.safetensors",
+      "version": "revision 741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "source_url": "",
+      "architecture": "flux",
+      "size_bytes": 335304388,
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "license_name": "",
+      "license_url": "",
+      "metadata_updated_at": "2026-10-29T22:17:49.760146+00:00",
+      "origin": "user_registered",
+      "captured_at": "2026-10-29T22:19:31.090732+00:00"
+    }
+  ],
+  "lora_metadata": [],
+  "reference_metadata": null,
+  "workflow_id": "flux1-schnell-text2image-v1",
+  "local_weights_verified": [
+    {
+      "filename": "flux1-schnell.safetensors",
+      "sha256": "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a",
+      "size_bytes": 23782506688
+    },
+    {
+      "filename": "ae.safetensors",
+      "sha256": "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38",
+      "size_bytes": 335304388
+    },
+    {
+      "filename": "clip_l.safetensors",
+      "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+      "size_bytes": 246144152
+    },
+    {
+      "filename": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a",
+      "size_bytes": 5157348688
+    }
+  ],
+  "weights_verified_at": "2026-10-29T22:17:49.376226+00:00",
+  "weight_verification_scope": "Complete SHA256 once per four-recipe group; file size, mtime and ctime rechecked before every submission.",
+  "image": {
+    "file": "images/examples/flux-robot.png",
+    "sha256": "eabe5433add1582b8b485d9c3958534b4053c2d6e5cd86c0cd65610159d17580",
+    "bytes": 306828,
+    "width": 512,
+    "height": 512
+  },
+  "observations": [
+    "圓形米色機器人、植物、陽台與日光可見。",
+    "澆水壺與花盆有融合，沒有完整分離；手部細節較風格化。"
+  ],
+  "limits": [
+    "固定 RTX 3060 12GB／單一 Seed 與配置的有限原圖檢視；不是品質全面通過或真人新手驗收。",
+    "模型、元件、提示詞、比例及環境改變後，不能沿用此成果的品質判斷。"
+  ]
+}

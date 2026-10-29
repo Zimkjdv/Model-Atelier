@@ -193,6 +193,39 @@ def fixture(data, count=None, legacy_ui=False, empty=False):
             return httpx.Response(
                 200, content=raw.getvalue(), headers={'content-type': 'image/png'}
             )
+        if state.get('simple_style') and request.url.path.startswith('/object_info/'):
+            if name == 'LoraLoader':
+                weight = json.loads(
+                    (ROOT / 'models/pixel-art-lora-sdxl-comfy-v1.json').read_text(encoding='utf-8')
+                )
+                return httpx.Response(
+                    200,
+                    json={
+                        name: dict(
+                            input=dict(
+                                required=dict(
+                                    model=['MODEL'],
+                                    clip=['CLIP'],
+                                    lora_name=[[weight['filename']]],
+                                    strength_model=['FLOAT', dict(min=-20, max=20)],
+                                    strength_clip=['FLOAT', dict(min=-20, max=20)],
+                                )
+                            ),
+                            output=['MODEL', 'CLIP'],
+                        )
+                    },
+                )
+            if name in ('IPAdapterModelLoader', 'CLIPVisionLoader'):
+                definition = json.loads(json.dumps(REFERENCE_NODES[name]))
+                file = (
+                    'ip-adapter-plus-sdxl-vit-h.json'
+                    if name == 'IPAdapterModelLoader'
+                    else 'clip-vision-vit-h.json'
+                )
+                weight = json.loads((ROOT / 'models' / file).read_text(encoding='utf-8'))
+                field = 'ipadapter_file' if name == 'IPAdapterModelLoader' else 'clip_name'
+                definition['input']['required'][field][0] = [weight['filename']]
+                return httpx.Response(200, json={name: definition})
         if state.get('flux_extensions') and request.url.path.startswith('/object_info/'):
             from scripts.flux_fixture import definitions
 
@@ -373,6 +406,66 @@ def fixture(data, count=None, legacy_ui=False, empty=False):
     @wrapper.post('/qa/simple-creation')
     def prepare_simple_creation(enabled: bool = True):
         state['simple_creation'] = enabled
+        return {'synthetic_only': True}
+
+    style_catalogs = None
+
+    @wrapper.post('/qa/simple-style')
+    def prepare_simple_style(enabled: bool = True):
+        nonlocal style_catalogs
+        from backend import loras, adapter_catalog
+
+        keys = ('loras:' + ENGINE, 'adapters:' + ENGINE)
+        if not enabled:
+            with closing(sqlite3.connect(context.DB)) as db, db:
+                for key, row in (style_catalogs or {}).items():
+                    if row:
+                        db.execute('INSERT OR REPLACE INTO settings VALUES (?, ?)', (key, row[0]))
+                    else:
+                        db.execute('DELETE FROM settings WHERE key=?', (key,))
+            style_catalogs = None
+            state['simple_style'] = False
+            return {'synthetic_only': True}
+        if style_catalogs is None:
+            with closing(sqlite3.connect(context.DB)) as db:
+                style_catalogs = {
+                    key: db.execute('SELECT value FROM settings WHERE key=?', (key,)).fetchone()
+                    for key in keys
+                }
+        weight = json.loads(
+            (ROOT / 'models/pixel-art-lora-sdxl-comfy-v1.json').read_text(encoding='utf-8')
+        )
+        loras.merge(context.DB, ENGINE, [weight['filename']])
+        loras.update_metadata(
+            context.DB,
+            ENGINE,
+            weight['filename'],
+            dict(architecture='sdxl', sha256=weight['sha256'], version=weight['version']),
+        )
+        parts = [
+            json.loads((ROOT / 'models' / file).read_text(encoding='utf-8'))
+            for file in ('ip-adapter-plus-sdxl-vit-h.json', 'clip-vision-vit-h.json')
+        ]
+        adapter_catalog.merge(
+            context.DB,
+            ENGINE,
+            dict(ipadapter=[parts[0]['filename']], clip_vision=[parts[1]['filename']]),
+        )
+        for part, role in zip(parts, ('ipadapter', 'clip_vision')):
+            spec = adapter_catalog.ROLES[role]
+            adapter_catalog.update_metadata(
+                context.DB,
+                ENGINE,
+                role,
+                part['filename'],
+                dict(
+                    family=spec[2],
+                    architecture=spec[3],
+                    sha256=part['sha256'],
+                    version=part['version'],
+                ),
+            )
+        state['simple_style'] = True
         return {'synthetic_only': True}
 
     @wrapper.post('/qa/flux-extensions')

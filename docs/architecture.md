@@ -25,7 +25,7 @@ flowchart LR
 | submissions、flux_workflows、專用 *_api | 完整流程／來源驗證、輸入上傳與明確提交 |
 | jobs、cancellation、stopping、progress | UUID 帳本、修訂、取消／停止、租約與歷史核對 |
 | catalog、loras、flux_catalog、control_catalog | 引擎範圍清單及登記版本／來源 |
-| template_context、models/simple-creation-templates-v1.json | 版本化起始配方、伺服器計算的修改欄位及不可變模板來源快照 |
+| template_context、models/simple-creation-templates-v1.json／simple-creation-extra-templates-v1.json／simple-style-templates-v1.json | 原三份、新增十二份及兩個畫風任務；伺服器計算修改欄位並保存不可變模板來源 |
 | gallery、assets、experiment_store 等 | 本地資料、整理修訂與引用 |
 | workflow_support、WorkflowFormatSupport | 專用版本的草稿／交換／比較能力，拒絕部分轉換；平台格式描述與引擎即時能力分開 |
 | runtime_metadata、execution_device、job_measurements、resource_sampling | 提交前環境／裝置觀察；原引擎有界背景取樣使用獨立 journal，終態凍結，任務專用峰值保持未知 |
@@ -91,6 +91,8 @@ AppContext 位於 `app.state.context`，各 app 的路徑、引擎網址讀取�
 條件複雜時用具名函式或具名判斷說明上述操作；不要把不同 workflow 的 schema、來源 hash、遮罩／邊緣驗證或專用版本合併成較寬鬆的通用提交器。公開 JSON、精確 seed 字串、localStorage key、來源快照及原始 bytes 下載均屬相容契約。
 
 起始模板來源為選填的 `template_selection`（固定 ID／版本），不接受客戶端自填驗收文字。`jobs.reserve` 在新 UUID 交易中凍結由 `template_context` 解析的原配方、元件要求、證據文件、配方 SHA256 及實際修改欄位，與 workflow／模型快照同時保存。來源也納入同 UUID 一致性比對；原任務恢復先返回舊紀錄，不重新解析目前配方。任務更新不能覆寫 `template_context`，作品保存複製原快照。這是 JSON 的選填擴充，不需 SQLite 遷移，也不回填舊任務或作品。
+
+簡易模式維持三個模型入口，各含五份配方，另有兩個畫風任務；全部共用 GenerationPanel／既有提交及素材保存服務。LoRA 模板核對固定基底與單一原生 LoRA 的 SHA256／架構及雙強度。參考模板固定 SDXL Plus ViT-H 組合，僅走 adapter API；參考素材 ID 是可變輸入，不寫入靜態 baseline，其不可變素材及預處理快照仍隨 job／artwork 保存。新增登錄檔與範例索引不改原三份 digest。ReferenceStudio 的簡易轉交及任務還原保留來源，但沒有擴大專用流程的草稿／交換格式。
 
 配方內容以版本識別；變更已發佈配方時應新增版本及對應解析支援，不沿用舊版本改寫內容。Checkpoint 取樣參數目前沿用 profile，配方摘要亦涵蓋解析後參數；若 profile 改變造成起始配方變化，也需更新模板版本。歷史快照永遠讀原紀錄，不以現在的登記或證據文件取代。前端來源顯示、進階草稿與設定還原保留 ID／版本，重新生成建立新快照，不能把起始來源當作品質驗收。
 

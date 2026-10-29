@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "examples": [
+    {
+      "template_id": "animagine-cafe",
+      "template_version": 1,
+      "recipe_sha256": "d497abf096dd4f121c359049b755221c3c09664dbe8475905958fd671e27f049",
+      "image_sha256": "5527058023fb75bd4a82c4c039e6486fd67c63a0268163ab87334075bf72ddb1",
+      "generated_at": "2026-10-29T22:12:14.846526+00:00",
+      "seed": "9007199254740994",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 1024²／28 steps",
+      "observations": [
+        "黑髮、米色外套、咖啡杯與窗邊光線可見。",
+        "髮長接近及肩，未完全遵從 short hair；手部與全身結構未完整入鏡。"
+      ]
+    },
+    {
+      "template_id": "animagine-adventurer",
+      "template_version": 1,
+      "recipe_sha256": "1725c6b5df2426c92724fa7c31b8f50d7125645c971e2b8485ea111bf4b642f6",
+      "image_sha256": "755cbba7e90ae7327ce8dc0cbb32f3cc25ebf2fdbfb1987df31da5e5446dbb9c",
+      "generated_at": "2026-10-29T22:12:38.228798+00:00",
+      "seed": "9007199254740995",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 1024²／28 steps",
+      "observations": [
+        "銀髮、綠色斗篷、腰帶及森林斑駁光線可見。",
+        "偏側面半身，手部及下半身不在畫面內；未驗證角色身份。"
+      ]
+    },
+    {
+      "template_id": "animagine-kimono",
+      "template_version": 1,
+      "recipe_sha256": "9483de3910b9e194468251f3528c84eb6a9339170fc3f2c0f0c5f491734fc597",
+      "image_sha256": "e19f5e7da3dbdeaedcf4d33f0ff88635c98b8e5b1d97ca3a601edc288375852e",
+      "generated_at": "2026-10-29T22:13:01.607715+00:00",
+      "seed": "9007199254740996",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 1024²／28 steps",
+      "observations": [
+        "粉色花紋和服、盤髮、櫻花及彎曲石徑可見。",
+        "背側視角遮住部分臉部；橋梁結構、手腳與全身比例未完整驗證。"
+      ]
+    },
+    {
+      "template_id": "animagine-library",
+      "template_version": 1,
+      "recipe_sha256": "91e555e2faafbb10eca7da80cf44036ee614b7013c55c933206f5f880d2e66e9",
+      "image_sha256": "a929436e355ffd02a9060888a2a0371f2e9fc9b250ec96ea8e5a14ca1e71d682",
+      "generated_at": "2026-10-29T22:13:25.014773+00:00",
+      "seed": "9007199254740997",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 1024²／28 steps",
+      "observations": [
+        "短棕髮、眼鏡、藍色毛衣、書架與暖光可見。",
+        "人物前傾且裁切至上半身，手部未入鏡；不能據此判定身份一致。"
+      ]
+    },
+    {
+      "template_id": "pony-traveler",
+      "template_version": 1,
+      "recipe_sha256": "4b893002c50345632efbd3a1bf8968011969d9515edc13782b0c279086904f50",
+      "image_sha256": "d74075ca8cb20f77fef944e22b28058117fad593731f2e6db7235d51eff6cc1d",
+      "generated_at": "2026-10-29T22:14:15.660526+00:00",
+      "seed": "9007199254740994",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 768²／20 steps",
+      "observations": [
+        "紅色馬尾、藍色長外套、背包及雪山可見。",
+        "背側視角沒有清楚臉部；人物比例較風格化，未驗證特定角色。"
+      ]
+    },
+    {
+      "template_id": "pony-station",
+      "template_version": 1,
+      "recipe_sha256": "7ae5fa0c81916920b323d897f7333d315a52f2290500269e2a031b6876babae7",
+      "image_sha256": "cd61b7a537ddd77b518c6a8ad178ef171b80a2269c7318a366c1c0081450bb16",
+      "generated_at": "2026-10-29T22:14:26.224961+00:00",
+      "seed": "9007199254740995",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 768²／20 steps",
+      "observations": [
+        "橘色夕陽、山景、軌道、架空線及橋樑可見。",
+        "偏鐵路橋景，沒有明確站體或月台；未完全遵從車站題材。"
+      ]
+    },
+    {
+      "template_id": "pony-cat",
+      "template_version": 1,
+      "recipe_sha256": "43fd9c2642ea8a17eb72cb636dfbbdb5cab51bfda7054cf99933e361adf3c7df",
+      "image_sha256": "d1bc7aa379a3be6b3b7aca82a5a9a614ee1f08a13819ab24bcabbadcaec40416",
+      "generated_at": "2026-10-29T22:14:36.551726+00:00",
+      "seed": "9007199254740996",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 768²／20 steps",
+      "observations": [
+        "橘貓、植物與窗邊陽光可見。",
+        "貓在窗旁地面或低處，沒有精確落在提示詞指定的窗台。"
+      ]
+    },
+    {
+      "template_id": "pony-city",
+      "template_version": 1,
+      "recipe_sha256": "6fe9e87c74ecaca8eb4682c8266b3694aa69abbd70473a6c4ce7e6eaf338fa19",
+      "image_sha256": "1ac74c5e6670bb2409788182d668a92228135a35d8019a230e17450433f6d389",
+      "generated_at": "2026-10-29T22:14:47.069692+00:00",
+      "seed": "9007199254740997",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 768²／20 steps",
+      "observations": [
+        "霓虹雨巷、濕地反光與夜景可見。",
+        "儘管提示 no humans，街道仍有小人物；招牌是不可讀的擬文字。"
+      ]
+    },
+    {
+      "template_id": "flux-workshop",
+      "template_version": 1,
+      "recipe_sha256": "407b220e369f0ea5e990a677cc1460bfc49cd70bc9114eace6dc6b9700ec3a4d",
+      "image_sha256": "f390b02cc857e239e234a2a28b6d7bcdb6bc8484ed12c8ddbe407d8dcc7a8633",
+      "generated_at": "2026-10-29T22:18:43.472902+00:00",
+      "seed": "9007199254740994",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 512²／4 steps／FP8／CPU 編碼器",
+      "observations": [
+        "木製書架、書籍、玻璃瓶與暖色窗光可見。",
+        "同時出現圓形與拱形窗；儘管要求 no lettering，書封仍出現擬文字。"
+      ]
+    },
+    {
+      "template_id": "flux-island",
+      "template_version": 1,
+      "recipe_sha256": "5956c1793ffdcac0782f28f8776d8c1b734f6ddcfb40dfcbd440cc479ccb7946",
+      "image_sha256": "acc71651286adb348874d719aad21e53908dd18b9a21eb6a4c6e25d162270240",
+      "generated_at": "2026-10-29T22:19:07.274361+00:00",
+      "seed": "9007199254740995",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 512²／4 steps／FP8／CPU 編碼器",
+      "observations": [
+        "浮空島、雲海、瀑布與小屋可見。",
+        "出現兩棵樹，未精確遵從 one large tree 的數量。"
+      ]
+    },
+    {
+      "template_id": "flux-traveler",
+      "template_version": 1,
+      "recipe_sha256": "8273d512aa04e581ded9ec90b75602bb64248e3bd2d427db60a47d67b82f3e7b",
+      "image_sha256": "1033da66c7bcb8557382e145b1bfc26c2928927e9732757c07435d3ee502a634",
+      "generated_at": "2026-10-29T22:19:30.882873+00:00",
+      "seed": "9007199254740996",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 512²／4 steps／FP8／CPU 編碼器",
+      "observations": [
+        "短棕髮、紅圍巾、藍外套及村落可見。",
+        "背景有模糊人物，手部未入鏡；成人文字描述不等於外觀年齡或身份驗證。"
+      ]
+    },
+    {
+      "template_id": "flux-robot",
+      "template_version": 1,
+      "recipe_sha256": "d8c35151190e6b6c8813a14888a4dc4db711732dae9ae45fbd2120b75d0b7cef",
+      "image_sha256": "eabe5433add1582b8b485d9c3958534b4053c2d6e5cd86c0cd65610159d17580",
+      "generated_at": "2026-10-29T22:19:51.525378+00:00",
+      "seed": "9007199254740997",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 512²／4 steps／FP8／CPU 編碼器",
+      "observations": [
+        "圓形米色機器人、植物、陽台與日光可見。",
+        "澆水壺與花盆有融合，沒有完整分離；手部細節較風格化。"
+      ]
+    },
+    {
+      "template_id": "style-lora",
+      "template_version": 1,
+      "recipe_sha256": "2db52c132cb937f5753fb5019c9f9b0ce1b3b4b21427875d59f96b744020af03",
+      "image_sha256": "f1f7bee31de0da060e5efec628910e88b01aea56e3071df6d10dab98750cd7e2",
+      "generated_at": "2026-10-29T22:23:09.734994+00:00",
+      "seed": "9007199254740993",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 1024²／28 steps",
+      "observations": [
+        "像素色塊、黑髮、圓眼鏡、藍外套及紅圍巾可見。",
+        "紅書被裁切，手部未完整呈現；單圖不能證明任意題材的泛化或作者相似度。"
+      ]
+    },
+    {
+      "template_id": "style-reference",
+      "template_version": 1,
+      "recipe_sha256": "a1f70c33891a7e6fc03d63fa571a995f77c96d24db216c2641106c833199eed4",
+      "image_sha256": "c902e31e69890996d7fe62734e8ed8ce32c549052304a6220b7577c45ed5a79f",
+      "generated_at": "2026-10-29T22:27:04.055055+00:00",
+      "seed": "9007199254740993",
+      "environment": "2026-10-30 · RTX 3060 12GB · ComfyUI 0.34.0 · 1024²／28 steps",
+      "observations": [
+        "藍髮、戶外葉片等參考內容隨畫風一起轉移，與固定 0／0.6 對照一致。",
+        "參考不只影響線條；不保證純畫風提取、原提示髮色或角色身份。"
+      ]
+    }
+  ]
+}

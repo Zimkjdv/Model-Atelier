@@ -32,7 +32,7 @@
 | 保存、匯入及手動執行比較組 | [保存與匯入](experiment-plans.md#storage-and-import)、[任務與作品關聯](experiment-plans.md#runs-and-artworks) |
 | 下載完整比較結果 | [結果報告](experiment-plans.md#result-reports) |
 | 規劃動漫畫風與角色驗證 | [圖片分組、品質判斷與訓練界線](anime-style-development.md) |
-| 簡易模式、真實範例、首次成功體驗與畫風練習 | [簡易創作改善方案與驗收清單](simple-creation-plan.md)、[11.3 原圖／配方／有限品質觀察](validation/simple-content-20261030.md) |
+| 簡易模式、真實範例、首次成功體驗與畫風練習 | [簡易創作改善方案與驗收清單](simple-creation-plan.md)、[十五份配方與畫風簡易任務驗收](validation/simple-recipes-20261030.md)、[11.3 原圖／配方／有限品質觀察](validation/simple-content-20261030.md) |
 
 ## 模型與 FLUX
 

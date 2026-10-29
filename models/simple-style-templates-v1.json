@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "templates": [
+    {
+      "id": "style-lora",
+      "version": 1,
+      "title": "套用像素風格 LoRA",
+      "model": "Animagine XL 4.0 Opt",
+      "family": "checkpoint",
+      "description": "固定 Animagine 與原生像素 LoRA，修改人物描述並查看有／無 LoRA 對照。",
+      "note": "固定原生鍵名 LoRA、MODEL 1／CLIP 1；不組合其他 LoRA 或圖片輸入，不保證指定作者或角色效果。",
+      "manifest_file": "animagine-xl-4.0-opt.json",
+      "presetId": "animagine-xl-4.0-opt-author",
+      "reference": "docs/validation/style-matrix-20261023.md",
+      "prompt": "pixel art, anime illustration, one adult traveler, short black hair, round glasses, blue coat, red scarf, waist-up portrait, holding a closed red book, soft daylight, plain pale background",
+      "negative": "blurry, low quality, text, watermark",
+      "seed": "9007199254740993",
+      "model_id": "style-lora",
+      "task": "lora",
+      "lora_manifest": "pixel-art-lora-sdxl-comfy-v1.json"
+    },
+    {
+      "id": "style-reference",
+      "version": 1,
+      "title": "參考一張圖片的畫風",
+      "model": "Animagine XL 4.0 Opt",
+      "family": "reference",
+      "description": "選一張參考圖，修改描述與參考程度；其他 SDXL／IP-Adapter 元件由模板提供。",
+      "note": "固定 SDXL Plus ViT-H、單圖、fit；不組合 LoRA、FaceID 或結構引導。參考會連帶影響內容，不保證只抽取畫風。",
+      "manifest_file": "animagine-xl-4.0-opt.json",
+      "presetId": "animagine-xl-4.0-opt-author",
+      "reference": "docs/validation/simple-content-20261030.md",
+      "prompt": "1girl, solo, adult woman, red hair, long hair, white shirt, looking at viewer, upper body, smile, indoors, bookshop, bookshelf, masterpiece, high score, great score, absurdres",
+      "negative": "lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature",
+      "seed": "9007199254740993",
+      "model_id": "style-reference",
+      "task": "reference",
+      "reference_manifests": [
+        "ip-adapter-plus-sdxl-vit-h.json",
+        "clip-vision-vit-h.json"
+      ]
+    }
+  ]
+}

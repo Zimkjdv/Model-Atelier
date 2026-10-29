@@ -10,6 +10,7 @@ async function prepare(page: Page, request: APIRequestContext) {
   const before = await (await request.get('/qa/state')).json()
   await page.goto('/#/studio/reference')
   await expect(page.getByRole('region', { name: '畫風角色參考工作台' })).toBeVisible()
+  await page.getByRole('button', { name: '來源與流程資訊', exact: true }).click()
   const editor = page.locator('.component-editor')
   await editor.locator('summary').click()
   await page.getByRole('button', { name: '同步 adapter 與編碼器清單', exact: true }).click()
@@ -28,6 +29,7 @@ async function prepare(page: Page, request: APIRequestContext) {
     await expect(editor.getByRole('status')).toContainText('登記已保存')
     await expect(page.locator('#reference-metadata-component')).toBeEnabled()
   }
+  await page.locator('.studio-advanced > summary').click()
   await page.locator('#reference-checkpoint').selectOption('demo.safetensors')
   await expect(page.locator('#reference-source')).toBeEnabled()
   await page.locator('#reference-source').selectOption(before.asset_id)
@@ -87,6 +89,7 @@ for (const width of [1440, 390]) {
         const after = await (await request.get('/qa/state')).json()
         expect(after.prompts - before.prompts).toBe(1)
         expect(after.uploads - before.uploads).toBe(1)
+        await page.getByRole('button', { name: '任務與歷史資訊', exact: true }).click()
         await page.getByRole('button', { name: '更新任務狀態', exact: true }).click()
         const restore = page.getByRole('button', {
           name: '載入原設定並調整：' + frozen.request_id,
@@ -102,10 +105,11 @@ for (const width of [1440, 390]) {
         await expect(page.locator('#reference-prompt')).toHaveValue(
           'frozen adult character in a blue coat',
         )
+        await page.getByRole('button', { name: '來源與流程資訊', exact: true }).click()
         await page.locator('.reference-components').first().locator('summary').click()
         await expect(page.locator('.reference-components').first()).toContainText('fixture-r02')
-        await page.getByRole('button', { name: 'Checkpoint／SDXL', exact: true }).click()
-        await page.getByRole('button', { name: '畫風／角色參考', exact: true }).click()
+        await page.getByRole('button', { name: '文字創作', exact: true }).click()
+        await page.getByRole('button', { name: '風格參考', exact: true }).click()
         await expect(page.locator('#reference-prompt')).toHaveValue(
           'frozen adult character in a blue coat',
         )

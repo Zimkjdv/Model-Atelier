@@ -56,7 +56,9 @@ test('first creation opens simple mode, remembers selection and keeps explicit a
     'aria-selected',
     'true',
   )
-  await expect(page.getByRole('group', { name: '起始配方' }).getByRole('button')).toHaveCount(3)
+  await expect(
+    page.getByRole('group', { name: '起始配方', exact: true }).getByRole('button'),
+  ).toHaveCount(3)
   await page.getByRole('tab', { name: '進階工作台', exact: true }).click()
   await expect(page.locator('#draft-prompt')).toBeVisible()
   await page.getByRole('navigation').getByRole('button', { name: '系統資訊', exact: true }).click()

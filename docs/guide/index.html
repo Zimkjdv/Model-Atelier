@@ -35,8 +35,8 @@
         ><span class="version-badge">新版桌面介面 · 操作指南</span
         ><h1>把想法變成圖片，<br />再留下可比較的成果。</h1>
         <p class="lead"
-          >從三張簡易配方開始，逐步學會進階創作、整理作品、管理模型與素材，以及完成四階段的 LoRA
-          訓練。按你的需求選一條路線，不必一次讀完。</p
+          >從三個模型的十五份簡易配方與畫風任務開始，逐步學會進階創作、整理作品、管理模型與素材，以及完成四階段的
+          LoRA 訓練。按你的需求選一條路線，不必一次讀完。</p
         >
         <div class="hero-links"
           ><a class="button primary" href="#generate"
@@ -181,18 +181,20 @@
           ><strong>第一次使用：先選「簡易創作」</strong
           ><p
             >創作頁第一次進入預設為簡易模式，之後記住你的選擇。選 Animagine、Pony 或 FLUX Schnell
-            起始配方，按「載入起始配方」使用唯讀原描述，或按「套用後修改」編輯英文描述，再按「生成圖片」，完成後直接「存入作品庫」。需要回到原描述及固定
+            模型後，再從該模型五份起始配方中選一份（共十五份），按「載入起始配方」使用唯讀原描述，或按「套用後修改」編輯英文描述，再按「生成圖片」，完成後直接「存入作品庫」。需要回到原描述及固定
             Seed 時，按「還原配方設定」；已有修改會先要求確認。</p
           ><p
             >缺模型或元件時，依逐項缺少／登記不匹配的名稱，按處理入口開啟模型庫對應分類，完成同步及來源登記後返回。配方與描述會保留，再按「重新檢查」。入口不會自動安裝或下載模型。</p
           ><p
             >四步進度協助確認目前步驟；修改表單後，右側舊圖仍屬於原任務，需要再次按生成才會得到新成果。結果與作品庫的「生成與來源」可展開「起始模板」，查看版本、原配方、配方摘要及修改欄位；舊作品沒有記錄時不會推測來源。</p
           ><p
-            >三張卡都有固定正方形原配方與<a href="#examples">真實生成成果</a
-            >。中文是配方說明，描述欄沒有自動翻譯。需要其他比例、LoRA
-            或圖片功能，可按「帶到進階工作台」保留配方參數繼續操作；<a href="#style-tasks"
-              >兩份畫風練習模板</a
-            >提供有／無作用的對照與限制。</p
+            >三張卡都有固定正方形原配方與<a href="#examples">真實生成成果</a>，每個模型另有<a
+              href="#more-recipes"
+              >四份新增配方</a
+            >。中文是配方說明，描述欄沒有自動翻譯。下方「畫風控制任務」可直接載入<a
+              href="#style-tasks"
+              >LoRA 或單張圖片畫風參考</a
+            >。需要其他比例或完整設定時，可按「帶到進階工作台」繼續操作。</p
           ></div
         ><figure>
           <a
@@ -208,7 +210,7 @@
             /><span class="zoom-label">點擊放大 ↗</span></a
           >
           <figcaption
-            >正式簡易介面的隔離示範：三張卡使用下列真實成果，右側是未生成的空舞台。選卡與載入不會自動生成。</figcaption
+            >正式簡易介面的隔離示範：三個模型入口、模型內五份配方及兩個畫風任務。卡片使用下列真實成果；選卡與載入不會自動生成。</figcaption
           >
         </figure>
         <!-- examples-begin --><div id="examples"
@@ -385,10 +387,557 @@
             ></div
           ></div
         ><!-- examples-end -->
-        <!-- style-tasks-begin --><div id="style-tasks"
-          ><h3>兩份畫風練習模板 v1</h3
+        <div id="more-recipes"
+          ><h3>每個模型再加四份：完整十五份配方</h3
           ><p
-            >請在進階工作台使用以下完整配方。三張簡易卡示範不同模型，以下兩份練習示範畫風作用；相容組合仍依各流程限制。</p
+            >上方三份原配方保持不變；簡易創作先選模型，再選以下任一配方。全部附真實 RTX 3060
+            原圖與完整配方，固定
+            Seed。圖片是單一設定的有限觀察，不代表所有提示詞、指定角色或作者畫風已驗收。</p
+          >
+          <h4>Animagine XL 4.0 Opt</h4>
+          <details class="extra-recipe"
+            ><summary>清晨咖啡館 · Seed 9007199254740994</summary
+            ><p>短黑髮成人、針織外套與窗邊咖啡，練習室內光線。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/animagine-cafe.png"
+                aria-label="放大真實生成：清晨咖啡館"
+                ><img
+                  src="images/examples/animagine-cafe.png"
+                  width="1024"
+                  height="1024"
+                  alt="清晨咖啡館 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>黑髮、米色外套、咖啡杯與窗邊光線可見。</li>
+              <li>髮長接近及肩，未完全遵從 short hair；手部與全身結構未完整入鏡。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;1girl, solo, adult woman, short black hair, brown eyes, beige cardigan, white shirt, sitting at a cafe table, coffee cup, upper body, window light, cozy cafe interior, fully clothed, masterpiece, high score, great score, absurdres&quot;,
+  &quot;seed&quot;: &quot;9007199254740994&quot;,
+  &quot;width&quot;: 1024,
+  &quot;height&quot;: 1024,
+  &quot;steps&quot;: 28,
+  &quot;cfg&quot;: 5.0,
+  &quot;sampler_name&quot;: &quot;euler_ancestral&quot;,
+  &quot;scheduler&quot;: &quot;normal&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: null,
+  &quot;reference_ids&quot;: [],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;清晨咖啡館&quot;,
+  &quot;checkpoint&quot;: &quot;animagine-xl-4.0-opt.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/animagine-cafe-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+          <details class="extra-recipe"
+            ><summary>森林旅人 · Seed 9007199254740995</summary
+            ><p>銀髮成人與綠色披風，練習服裝與森林背景。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/animagine-adventurer.png"
+                aria-label="放大真實生成：森林旅人"
+                ><img
+                  src="images/examples/animagine-adventurer.png"
+                  width="1024"
+                  height="1024"
+                  alt="森林旅人 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>銀髮、綠色斗篷、腰帶及森林斑駁光線可見。</li>
+              <li>偏側面半身，手部及下半身不在畫面內；未驗證角色身份。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;1girl, solo, adult woman, silver hair, long hair, green cloak, brown tunic, belt, fully clothed, upper body, standing, forest path, dappled sunlight, fantasy adventurer, masterpiece, high score, great score, absurdres&quot;,
+  &quot;seed&quot;: &quot;9007199254740995&quot;,
+  &quot;width&quot;: 1024,
+  &quot;height&quot;: 1024,
+  &quot;steps&quot;: 28,
+  &quot;cfg&quot;: 5.0,
+  &quot;sampler_name&quot;: &quot;euler_ancestral&quot;,
+  &quot;scheduler&quot;: &quot;normal&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: null,
+  &quot;reference_ids&quot;: [],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;森林旅人&quot;,
+  &quot;checkpoint&quot;: &quot;animagine-xl-4.0-opt.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/animagine-adventurer-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+          <details class="extra-recipe"
+            ><summary>和服賞櫻 · Seed 9007199254740996</summary
+            ><p>粉色和服、櫻花與石橋，練習全身與季節場景。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/animagine-kimono.png"
+                aria-label="放大真實生成：和服賞櫻"
+                ><img
+                  src="images/examples/animagine-kimono.png"
+                  width="1024"
+                  height="1024"
+                  alt="和服賞櫻 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>粉色花紋和服、盤髮、櫻花及彎曲石徑可見。</li>
+              <li>背側視角遮住部分臉部；橋梁結構、手腳與全身比例未完整驗證。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;1girl, solo, adult woman, black hair, hair bun, pink kimono, floral pattern, obi, fully clothed, full body, standing on a stone bridge, cherry blossoms, spring, daylight, masterpiece, high score, great score, absurdres&quot;,
+  &quot;seed&quot;: &quot;9007199254740996&quot;,
+  &quot;width&quot;: 1024,
+  &quot;height&quot;: 1024,
+  &quot;steps&quot;: 28,
+  &quot;cfg&quot;: 5.0,
+  &quot;sampler_name&quot;: &quot;euler_ancestral&quot;,
+  &quot;scheduler&quot;: &quot;normal&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: null,
+  &quot;reference_ids&quot;: [],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;和服賞櫻&quot;,
+  &quot;checkpoint&quot;: &quot;animagine-xl-4.0-opt.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/animagine-kimono-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+          <details class="extra-recipe"
+            ><summary>書房青年 · Seed 9007199254740997</summary
+            ><p>戴眼鏡的成年男性與書架，練習不同人物特徵。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/animagine-library.png"
+                aria-label="放大真實生成：書房青年"
+                ><img
+                  src="images/examples/animagine-library.png"
+                  width="1024"
+                  height="1024"
+                  alt="書房青年 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>短棕髮、眼鏡、藍色毛衣、書架與暖光可見。</li>
+              <li>人物前傾且裁切至上半身，手部未入鏡；不能據此判定身份一致。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;1boy, solo, adult man, short brown hair, glasses, dark blue sweater, fully clothed, looking at viewer, upper body, smile, library, bookshelves, warm window light, masterpiece, high score, great score, absurdres&quot;,
+  &quot;seed&quot;: &quot;9007199254740997&quot;,
+  &quot;width&quot;: 1024,
+  &quot;height&quot;: 1024,
+  &quot;steps&quot;: 28,
+  &quot;cfg&quot;: 5.0,
+  &quot;sampler_name&quot;: &quot;euler_ancestral&quot;,
+  &quot;scheduler&quot;: &quot;normal&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;lowres, bad anatomy, bad hands, text, error, blurry, watermark, signature&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: null,
+  &quot;reference_ids&quot;: [],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;書房青年&quot;,
+  &quot;checkpoint&quot;: &quot;animagine-xl-4.0-opt.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/animagine-library-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+          <h4>Pony V6 XL</h4>
+          <details class="extra-recipe"
+            ><summary>動漫旅人 · Seed 9007199254740994</summary
+            ><p>紅髮、藍色外套與背包，練習人物和山間小徑。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/pony-traveler.png"
+                aria-label="放大真實生成：動漫旅人"
+                ><img
+                  src="images/examples/pony-traveler.png"
+                  width="768"
+                  height="768"
+                  alt="動漫旅人 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>紅色馬尾、藍色長外套、背包及雪山可見。</li>
+              <li>背側視角沒有清楚臉部；人物比例較風格化，未驗證特定角色。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;score_9,score_8_up,score_7_up,rating_safe,source_anime,1girl,solo,adult woman,red hair,ponytail,blue coat,long pants,boots,backpack,fully clothed,full body,standing,mountain path,daylight&quot;,
+  &quot;seed&quot;: &quot;9007199254740994&quot;,
+  &quot;width&quot;: 768,
+  &quot;height&quot;: 768,
+  &quot;steps&quot;: 20,
+  &quot;cfg&quot;: 5.5,
+  &quot;sampler_name&quot;: &quot;dpmpp_2m&quot;,
+  &quot;scheduler&quot;: &quot;karras&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;low quality, blurry, text, watermark, signature&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: null,
+  &quot;reference_ids&quot;: [],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;動漫旅人&quot;,
+  &quot;checkpoint&quot;: &quot;pony-v6-xl.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/pony-traveler-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+          <details class="extra-recipe"
+            ><summary>黃昏車站 · Seed 9007199254740995</summary
+            ><p>無人月台與遠山，練習黃昏的場景光影。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/pony-station.png"
+                aria-label="放大真實生成：黃昏車站"
+                ><img
+                  src="images/examples/pony-station.png"
+                  width="768"
+                  height="768"
+                  alt="黃昏車站 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>橘色夕陽、山景、軌道、架空線及橋樑可見。</li>
+              <li>偏鐵路橋景，沒有明確站體或月台；未完全遵從車站題材。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;score_9,score_8_up,score_7_up,rating_safe,source_anime,scenery,no humans,quiet rural train station,platform,railway tracks,distant mountains,sunset,warm orange sky,anime background&quot;,
+  &quot;seed&quot;: &quot;9007199254740995&quot;,
+  &quot;width&quot;: 768,
+  &quot;height&quot;: 768,
+  &quot;steps&quot;: 20,
+  &quot;cfg&quot;: 5.5,
+  &quot;sampler_name&quot;: &quot;dpmpp_2m&quot;,
+  &quot;scheduler&quot;: &quot;karras&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;low quality, blurry, text, watermark, signature&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: null,
+  &quot;reference_ids&quot;: [],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;黃昏車站&quot;,
+  &quot;checkpoint&quot;: &quot;pony-v6-xl.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/pony-station-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+          <details class="extra-recipe"
+            ><summary>窗邊貓咪 · Seed 9007199254740996</summary
+            ><p>橘貓、盆栽與窗光，練習動物和近景構圖。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/pony-cat.png"
+                aria-label="放大真實生成：窗邊貓咪"
+                ><img
+                  src="images/examples/pony-cat.png"
+                  width="768"
+                  height="768"
+                  alt="窗邊貓咪 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>橘貓、植物與窗邊陽光可見。</li>
+              <li>貓在窗旁地面或低處，沒有精確落在提示詞指定的窗台。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;score_9,score_8_up,score_7_up,rating_safe,source_anime,one orange tabby cat,sitting on a windowsill,potted plants,sunlight,cozy room,animal focus,no humans&quot;,
+  &quot;seed&quot;: &quot;9007199254740996&quot;,
+  &quot;width&quot;: 768,
+  &quot;height&quot;: 768,
+  &quot;steps&quot;: 20,
+  &quot;cfg&quot;: 5.5,
+  &quot;sampler_name&quot;: &quot;dpmpp_2m&quot;,
+  &quot;scheduler&quot;: &quot;karras&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;low quality, blurry, text, watermark, signature&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: null,
+  &quot;reference_ids&quot;: [],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;窗邊貓咪&quot;,
+  &quot;checkpoint&quot;: &quot;pony-v6-xl.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/pony-cat-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+          <details class="extra-recipe"
+            ><summary>雨夜街景 · Seed 9007199254740997</summary
+            ><p>霓虹小巷與雨水倒影，練習夜色和城市背景。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/pony-city.png"
+                aria-label="放大真實生成：雨夜街景"
+                ><img
+                  src="images/examples/pony-city.png"
+                  width="768"
+                  height="768"
+                  alt="雨夜街景 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>霓虹雨巷、濕地反光與夜景可見。</li>
+              <li>儘管提示 no humans，街道仍有小人物；招牌是不可讀的擬文字。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;score_9,score_8_up,score_7_up,rating_safe,source_anime,scenery,no humans,narrow city street at night,rain,neon lights,reflections on wet pavement,small shops,anime background&quot;,
+  &quot;seed&quot;: &quot;9007199254740997&quot;,
+  &quot;width&quot;: 768,
+  &quot;height&quot;: 768,
+  &quot;steps&quot;: 20,
+  &quot;cfg&quot;: 5.5,
+  &quot;sampler_name&quot;: &quot;dpmpp_2m&quot;,
+  &quot;scheduler&quot;: &quot;karras&quot;,
+  &quot;denoise&quot;: 1.0,
+  &quot;negative_prompt&quot;: &quot;low quality, blurry, text, watermark, signature&quot;,
+  &quot;loras&quot;: [],
+  &quot;workflow_mode&quot;: &quot;text2image&quot;,
+  &quot;image_asset_id&quot;: null,
+  &quot;reference_ids&quot;: [],
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;雨夜街景&quot;,
+  &quot;checkpoint&quot;: &quot;pony-v6-xl.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/pony-city-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+          <h4>FLUX.1 Schnell（不是 Kontext）</h4>
+          <details class="extra-recipe"
+            ><summary>魔法工坊 · Seed 9007199254740994</summary
+            ><p>木質工作桌、書籍與玻璃瓶，練習細節場景描述。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/flux-workshop.png"
+                aria-label="放大真實生成：魔法工坊"
+                ><img
+                  src="images/examples/flux-workshop.png"
+                  width="512"
+                  height="512"
+                  alt="魔法工坊 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>木製書架、書籍、玻璃瓶與暖色窗光可見。</li>
+              <li>同時出現圓形與拱形窗；儘管要求 no lettering，書封仍出現擬文字。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;A colorful anime background illustration of a cozy magical workshop, a wooden workbench with old books and small glass bottles, warm sunlight through a round window, wooden shelves, clean lines, gentle colors, no people, no lettering.&quot;,
+  &quot;seed&quot;: &quot;9007199254740994&quot;,
+  &quot;width&quot;: 512,
+  &quot;height&quot;: 512,
+  &quot;steps&quot;: 4,
+  &quot;weight_dtype&quot;: &quot;fp8_e4m3fn&quot;,
+  &quot;encoder_device&quot;: &quot;cpu&quot;,
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;魔法工坊&quot;,
+  &quot;diffusion_model&quot;: &quot;flux1-schnell.safetensors&quot;,
+  &quot;vae&quot;: &quot;ae.safetensors&quot;,
+  &quot;clip_l&quot;: &quot;clip_l.safetensors&quot;,
+  &quot;t5xxl&quot;: &quot;t5xxl_fp8_e4m3fn_scaled.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/flux-workshop-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+          <details class="extra-recipe"
+            ><summary>浮空島嶼 · Seed 9007199254740995</summary
+            ><p>雲海、瀑布與小屋，練習奇幻世界的整體構圖。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/flux-island.png"
+                aria-label="放大真實生成：浮空島嶼"
+                ><img
+                  src="images/examples/flux-island.png"
+                  width="512"
+                  height="512"
+                  alt="浮空島嶼 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>浮空島、雲海、瀑布與小屋可見。</li>
+              <li>出現兩棵樹，未精確遵從 one large tree 的數量。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;A storybook anime illustration of a small floating island above a sea of clouds, a waterfall spilling from the island, a tiny stone cottage and one large tree, blue sky, soft daylight, clean silhouettes, gentle colors, no people.&quot;,
+  &quot;seed&quot;: &quot;9007199254740995&quot;,
+  &quot;width&quot;: 512,
+  &quot;height&quot;: 512,
+  &quot;steps&quot;: 4,
+  &quot;weight_dtype&quot;: &quot;fp8_e4m3fn&quot;,
+  &quot;encoder_device&quot;: &quot;cpu&quot;,
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;浮空島嶼&quot;,
+  &quot;diffusion_model&quot;: &quot;flux1-schnell.safetensors&quot;,
+  &quot;vae&quot;: &quot;ae.safetensors&quot;,
+  &quot;clip_l&quot;: &quot;clip_l.safetensors&quot;,
+  &quot;t5xxl&quot;: &quot;t5xxl_fp8_e4m3fn_scaled.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/flux-island-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+          <details class="extra-recipe"
+            ><summary>日系旅人 · Seed 9007199254740996</summary
+            ><p>紅圍巾、藍外套與鄉村背景，練習自然語句人物描述。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/flux-traveler.png"
+                aria-label="放大真實生成：日系旅人"
+                ><img
+                  src="images/examples/flux-traveler.png"
+                  width="512"
+                  height="512"
+                  alt="日系旅人 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>短棕髮、紅圍巾、藍外套及村落可見。</li>
+              <li>背景有模糊人物，手部未入鏡；成人文字描述不等於外觀年齡或身份驗證。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;An anime illustration of one adult female traveler with short brown hair, a red scarf and a fully closed blue coat, upper body portrait, gentle smile, a peaceful village street in the background, soft daylight, clear facial features, clean lines, no text.&quot;,
+  &quot;seed&quot;: &quot;9007199254740996&quot;,
+  &quot;width&quot;: 512,
+  &quot;height&quot;: 512,
+  &quot;steps&quot;: 4,
+  &quot;weight_dtype&quot;: &quot;fp8_e4m3fn&quot;,
+  &quot;encoder_device&quot;: &quot;cpu&quot;,
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;日系旅人&quot;,
+  &quot;diffusion_model&quot;: &quot;flux1-schnell.safetensors&quot;,
+  &quot;vae&quot;: &quot;ae.safetensors&quot;,
+  &quot;clip_l&quot;: &quot;clip_l.safetensors&quot;,
+  &quot;t5xxl&quot;: &quot;t5xxl_fp8_e4m3fn_scaled.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/flux-traveler-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+          <details class="extra-recipe"
+            ><summary>圓形機器人 · Seed 9007199254740997</summary
+            ><p>陽台上的小機器人與盆栽，練習物件和動作描述。</p
+            ><figure
+              ><a
+                class="zoom"
+                href="images/examples/flux-robot.png"
+                aria-label="放大真實生成：圓形機器人"
+                ><img
+                  src="images/examples/flux-robot.png"
+                  width="512"
+                  height="512"
+                  alt="圓形機器人 真實配方成果"
+                  loading="lazy"
+                /><span class="zoom-label">點擊放大 ↗</span></a
+              ><figcaption>2026-10-30 · 固定原配方 v1 · RTX 3060 12GB</figcaption></figure
+            ><ul>
+              <li>圓形米色機器人、植物、陽台與日光可見。</li>
+              <li>澆水壺與花盆有融合，沒有完整分離；手部細節較風格化。</li> </ul
+            ><details
+              ><summary>完整實際設定與必要元件</summary>><pre><code>{
+  &quot;prompt&quot;: &quot;A charming anime illustration of one small rounded friendly robot with a cream colored metal body, tending a potted plant on a sunny balcony, a simple watering can beside the pot, soft afternoon light, clean lines, gentle pastel colors, no text.&quot;,
+  &quot;seed&quot;: &quot;9007199254740997&quot;,
+  &quot;width&quot;: 512,
+  &quot;height&quot;: 512,
+  &quot;steps&quot;: 4,
+  &quot;weight_dtype&quot;: &quot;fp8_e4m3fn&quot;,
+  &quot;encoder_device&quot;: &quot;cpu&quot;,
+  &quot;engine_url&quot;: &quot;http://127.0.0.1:8188&quot;,
+  &quot;title&quot;: &quot;圓形機器人&quot;,
+  &quot;diffusion_model&quot;: &quot;flux1-schnell.safetensors&quot;,
+  &quot;vae&quot;: &quot;ae.safetensors&quot;,
+  &quot;clip_l&quot;: &quot;clip_l.safetensors&quot;,
+  &quot;t5xxl&quot;: &quot;t5xxl_fp8_e4m3fn_scaled.safetensors&quot;
+}</code></pre
+              ><p
+                >元件識別、SHA256、workflow、環境及來源快照見
+                <a href="examples/flux-robot-v1.json" download>完整實測 JSON</a
+                >。使用目前配方按鈕載入，JSON 紀錄不是一般設定交換檔。</p
+              ></details
+            ></details
+          >
+        </div>
+        <!-- style-tasks-begin --><div id="style-tasks"
+          ><h3>兩個簡易畫風任務與真實對照 v1</h3
+          ><p
+            >簡易創作的「畫風控制任務」提供以下兩個入口。載入只填設定，按「生成圖片」才送出；不需要先展開技術參數。可修改描述、直接保存成果，或帶到對應進階工作台。模型配方示範不同模型，這兩個任務另示範畫風作用與限制。</p
           ><h4>風格 LoRA：固定基底，有／無 LoRA</h4
           ><ol class="steps"
             ><li
@@ -402,13 +951,14 @@
                 >。原始未轉換檔曾未載入成功，不以同名或出圖當作成功套用。</p
               ></li
             ><li
-              ><h3>填入共同配方並建立對照</h3
+              ><h3>載入簡易 LoRA 配方</h3
               ><p
-                >進階工作台 → 文字創作 → Checkpoint／SDXL。展開設定，依下列 JSON 填入共同提示詞與
-                Seed；先不掛 LoRA 生成保存，再加入單一 LoRA，MODEL 1、CLIP
-                1，其他參數不變後生成保存。觸發文字
+                >簡易創作 →「套用像素風格 LoRA」→「載入起始配方」或「套用後修改」→
+                生成並存入作品庫。模板固定 MODEL 1、CLIP 1 與下列取樣配置，觸發文字
                 <code>pixel art</code>
-                兩組都保留；這只是一個固定強度的已觀察案例，不推定低／中／高檔位。</p
+                已保留。可展開「查看真實作用對照與限制」觀看下列歷史比較；若要自行建立無 LoRA
+                對照，帶到進階後移除 LoRA，保留 Seed
+                及其他參數再生成。這只是一個固定強度的已觀察案例，不推定低／中／高檔位。</p
               ></li
             ></ol
           ><div class="sample-grid"
@@ -508,21 +1058,42 @@
                 >下載原 workflow、來源雜湊與環境 JSON</a
               ></p
             ></details
+          ><figure
+            ><a
+              class="zoom"
+              href="images/simple-reference.png"
+              aria-label="放大截圖：簡易圖片畫風參考"
+              ><img
+                src="images/simple-reference.png"
+                width="1440"
+                height="1000"
+                alt="簡易圖片畫風任務：選圖、上傳、自產示範圖與參考程度"
+                loading="lazy"
+              /><span class="zoom-label">點擊放大 ↗</span></a
+            ><figcaption
+              >1440×1000 隔離介面示範；參考圖是真實自產素材，右側尚未生成。這張截圖不作 GPU
+              成果證據。</figcaption
+            ></figure
           ><h4>單張圖片畫風參考：同流程的權重 0／0.6</h4
           ><ol class="steps"
             ><li
               ><h3>使用自產圖片作參考</h3
               ><p
-                >下載下圖原始 PNG，到「素材」上傳。進階工作台 →「風格參考」，選 Animagine XL 4.0 Opt
-                與這張素材；這是本輪自行生成的原創人物圖，不含使用者或作者原圖。</p
+                >簡易創作
+                →「參考一張圖片的畫風」→「載入起始配方」。按「使用自產示範參考圖」即可帶入下圖；也可上傳自己的
+                PNG／JPEG／WebP
+                或選已存素材。這是本輪自行生成的原創人物圖，不含使用者或作者原圖。選圖或上傳不會自動生成。</p
               ></li
             ><li
               ><h3>固定 SDXL Plus ViT-H 組合</h3
               ><p
                 >同步並核對 <code>ip-adapter-plus_sdxl_vit-h.safetensors</code> 與
                 <code>CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors</code
-                >。參考模式選「畫風參考」，fit、作用起始 0／結束 1；先以權重 0 生成保存，再只改成
-                0.6。這兩組都走同一個 IP-Adapter 流程，權重 0 是未施加參考作用的對照。</p
+                >。模板已固定畫風模式、fit、作用起始 0／結束 1；參考程度預設 0.6。可先設 0
+                生成保存，再只改成 0.6。這兩組都走同一個 IP-Adapter 流程，權重 0
+                是未施加參考作用的對照。0–1
+                之間其他程度屬已修改，未逐值實測；換參考圖也不能沿用示範成果的品質判斷。不組合
+                LoRA、多圖或身份鎖定。</p
               ></li
             ></ol
           ><figure

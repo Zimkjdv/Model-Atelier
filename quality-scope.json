@@ -249,7 +249,9 @@
     "frontend/src/SimpleExample.vue",
     "frontend/tests/simple-content.spec.ts",
     "frontend/check-preset-evidence.mjs",
-    "frontend/tests/simple-guide.spec.ts"
+    "frontend/tests/simple-guide.spec.ts",
+    "frontend/src/SimpleStyleExample.vue",
+    "frontend/tests/simple-recipes.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css", "frontend/src/redesign.css"]
 }
