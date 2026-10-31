@@ -1127,6 +1127,17 @@ onBeforeUnmount(() => {
 .simple-stage {
   min-width: 0;
 }
+.simple-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  align-self: start;
+  gap: 16px;
+}
+.simple-stage > .notice,
+.simple-stage > .simple-result-actions {
+  margin: 0;
+}
 .simple-editor h3 {
   margin-top: 0;
 }
@@ -1174,10 +1185,6 @@ onBeforeUnmount(() => {
 .simple-submit {
   margin-top: 20px;
 }
-.simple-stage :deep(.studio-preview) {
-  min-height: 320px;
-  height: 480px;
-}
 @media (max-width: 900px) {
   .simple-creation {
     padding: 16px;
@@ -1190,10 +1197,6 @@ onBeforeUnmount(() => {
   }
   .simple-intro {
     align-items: flex-start;
-  }
-  .simple-stage :deep(.studio-preview) {
-    height: 360px;
-    min-height: 220px;
   }
 }
 </style>

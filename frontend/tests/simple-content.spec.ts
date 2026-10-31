@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
+import AxeBuilder from '@axe-core/playwright'
 
 const animagine = JSON.parse(await readFile('../models/animagine-xl-4.0-opt.json', 'utf8'))
 const pony = JSON.parse(await readFile('../models/pony-v6-xl.json', 'utf8'))
@@ -22,10 +23,110 @@ test.afterEach(async ({ request }) => {
       version: original.version,
     },
   })
+
   await request.post('/qa/simple-creation?enabled=false')
   await request.post('/api/engine/capabilities/sync')
 })
 
+for (const unavailable of [true, false])
+  test(`simple preview contains ${unavailable ? 'offline error' : 'saved image'} above save controls and task history`, async ({
+    page,
+    request,
+  }, info) => {
+    const before = (await (await request.get('/qa/state')).json()).prompts
+    await request.post('/qa/engine/offline')
+    await page.route('**/api/library/jobs?*', async (route) => {
+      const response = await route.fetch()
+      const body = await response.json()
+      body.items = body.items.map((job: Record<string, unknown>) => ({
+        ...job,
+        checkpoint: 'animagine-xl-4.0-opt.safetensors',
+      }))
+      await route.fulfill({ json: body })
+    })
+    if (unavailable) {
+      await page.route('**/api/jobs/*/results', (route) =>
+        route.fulfill({
+          json: {
+            items: [
+              {
+                index: 0,
+                filename: 'offline.png',
+                saved: false,
+                local_available: false,
+                width: null,
+                height: null,
+              },
+            ],
+          },
+        }),
+      )
+      await page.route('**/api/jobs/*/results/*/image', (route) =>
+        route.fulfill({
+          status: 503,
+          json: { detail: '原引擎離線或無法讀取結果；尚未匯入作品庫的圖片需要原引擎。' },
+        }),
+      )
+    }
+    await page.goto('/#/studio/simple')
+    const preview = page.getByRole('region', { name: '創作畫布', exact: true })
+    const canvas = preview.locator(unavailable ? '.empty-canvas' : '.result-canvas')
+    if (unavailable) await expect(preview.getByRole('alert')).toContainText('原引擎離線')
+    else await expect(canvas.locator('img')).toHaveJSProperty('naturalWidth', 64)
+    const actions = page.locator('.simple-result-actions')
+    await expect(actions.getByRole('button', { name: '存入作品庫', exact: true })).toBeVisible()
+    for (const [width, height] of [
+      [1280, 800],
+      [1440, 900],
+      [1920, 1080],
+      [2732, 1806],
+      [390, 844],
+    ]) {
+      await page.setViewportSize({ width: width!, height: height! })
+      await preview.scrollIntoViewIfNeeded()
+      await page.screenshot({
+        path: info.outputPath(`${unavailable ? 'offline' : 'saved'}-${width}.png`),
+      })
+      const frame = (await preview.boundingBox())!
+      const surface = (await canvas.boundingBox())!
+      const caption = (await preview.locator('.stage-caption').boundingBox())!
+      const buttons = (await actions.boundingBox())!
+      const status = (await page.locator('.simple-stage .generation-statusbar').boundingBox())!
+      expect(
+        surface.y + surface.height,
+        `${width}px canvas must stay inside preview`,
+      ).toBeLessThanOrEqual(frame.y + frame.height + 1)
+      expect(caption.y, `${width}px caption must follow canvas`).toBeGreaterThanOrEqual(
+        surface.y + surface.height - 1,
+      )
+      expect(buttons.y, `${width}px save buttons must follow preview`).toBeGreaterThanOrEqual(
+        frame.y + frame.height - 1,
+      )
+      expect(status.y, `${width}px task controls must follow save buttons`).toBeGreaterThanOrEqual(
+        buttons.y + buttons.height - 1,
+      )
+      expect(surface.height).toBeGreaterThanOrEqual(160)
+      expect(surface.height).toBeLessThanOrEqual(Math.min(520, height! * 0.6) + 1)
+      expect(surface.x).toBeGreaterThanOrEqual(frame.x - 1)
+      expect(surface.x + surface.width).toBeLessThanOrEqual(frame.x + frame.width + 1)
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      )
+    }
+    if (unavailable) {
+      await page.getByRole('button', { name: '重新讀取結果', exact: true }).click()
+      await expect(preview.getByRole('alert')).toContainText('原引擎離線')
+    }
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .include('.atelier-shell')
+          .withTags(['wcag2a', 'wcag2aa'])
+          .analyze()
+      ).violations,
+    ).toEqual([])
+    expect((await (await request.get('/qa/state')).json()).prompts).toBe(before)
+  })
 for (const [name, architecture, sha256] of [
   ['Animagine', 'sdxl', animagine.sha256],
   ['Pony', 'sdxl', pony.sha256],

@@ -69,3 +69,5 @@
 ## 十五份配方與畫風簡易任務更新
 
 本輪四尺寸離線案例通過，37 個圖片參照均能載入，十二份新增完整配方與兩個簡易畫風入口文字、原圖放大／焦點還原、列印展開及離線章節跳轉均符合測試條件，無整頁橫溢、遠端請求及頁面例外。最新導覽報告在忽略的 `runtime/quality/simple-recipes-followup-*`，簡易圖片畫風截圖在 `simple-recipes-delivery-*`，首頁選卡圖在 `simple-recipes-repair-*`；圖片／文字的來源與實際驗證範圍見[本輪紀錄](../validation/simple-recipes-20261030.md)。
+
+2026-10-31 修正預覽畫布與操作區重疊，`simple-reference.png` 更新為本輪正式介面的 1440×1000 隔離截圖，參考素材及未生成狀態不變；來源在 `runtime/quality/simple-preview-delivery-*`。五尺寸版面及 23 項受影響操作驗證見[版面驗收](../validation/simple-preview-20261031.md)，未重跑不受影響的完整離線導覽案例。
