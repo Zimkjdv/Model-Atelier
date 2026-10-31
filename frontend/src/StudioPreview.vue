@@ -10,6 +10,7 @@ const props = withDefaults(
     title?: string
     family?: string
     job?: Job | null
+    compact?: boolean
   }>(),
   { title: '文字創作', family: '', job: null },
 )
@@ -121,13 +122,23 @@ function loaded(event: Event) {
         ><span v-if="family">{{ family }}</span
         ><span v-if="job">{{
           output?.saved ? (output.local_available ? '已存入作品庫' : '作品庫原圖遺失') : '任務結果'
+        }}</span
+        ><span v-if="compact && job">{{
+          job.status === 'completed'
+            ? '已完成'
+            : job.status === 'running'
+              ? '生成中'
+              : job.status === 'queued'
+                ? '排隊中'
+                : '尚未完成'
         }}</span></div
-      ><div class="stage-dimensions">{{
-        size ? size.width + ' × ' + size.height : job ? '尺寸待讀取' : width + ' × ' + height
-      }}</div></div
+      ><div class="stage-dimensions"
+        >{{ size ? size.width + ' × ' + size.height : job ? '尺寸待讀取' : width + ' × ' + height
+        }}<span v-if="compact && job" :title="job.id"> · 任務 {{ job.id.slice(0, 8) }}</span></div
+      ></div
     >
-    <div v-if="job" class="stage-result-meta"
-      ><span>任務 {{ job.id }}</span
+    <div v-if="job && (!compact || outputs.length > 1)" class="stage-result-meta"
+      ><span v-if="!compact">任務 {{ job.id }}</span
       ><label v-if="outputs.length > 1"
         >結果<select v-model="selected" :disabled="loading" @change="load(false)"
           ><option v-for="item in outputs" :key="item.index" :value="item.index"
@@ -168,7 +179,7 @@ function loaded(event: Event) {
             ? '顯示已保存原圖，可離線讀取。'
             : '作品庫原圖遺失；目前讀取原引擎結果，請檢查備份。'
           : '僅預覽原引擎結果；尚未保存到作品庫。'
-      }}<button class="secondary" @click="emit('gallery', job!.id)">{{
+      }}<button v-if="!compact" class="secondary" @click="emit('gallery', job!.id)">{{
         output?.saved ? '前往作品庫' : '前往作品庫匯入'
       }}</button></p
     >

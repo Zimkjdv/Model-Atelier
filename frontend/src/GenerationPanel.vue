@@ -343,49 +343,56 @@ onBeforeUnmount(() => window.clearInterval(timer))
   <article class="panel generation-history"
     ><Teleport defer :to="submitTarget || 'body'" :disabled="!submitTarget"
       ><div class="generation-submit"
-        ><p class="submission-state" role="status" aria-label="提交能力狀態">{{
-          submissionAvailability
-        }}</p>
+        ><p
+          v-if="!$slots.preflight"
+          class="submission-state"
+          role="status"
+          aria-label="提交能力狀態"
+          >{{ submissionAvailability }}</p
+        >
         <div class="preflight-feedback">
-          <div
-            v-if="displayBlockers.length"
-            class="notice warning preflight-blockers"
-            aria-label="流程與環境阻擋"
-            ><strong>需先處理</strong
-            ><ul
-              ><li v-for="(item, index) in displayBlockers" :key="index"
-                >{{ item.message }}
-                <a v-if="item.action === 'settings'" href="#/settings">前往引擎設定</a
-                ><a v-if="item.action === 'models'" href="#/models">前往模型與元件</a
-                ><template v-if="item.action === 'refresh'"
-                  ><a href="#/settings">檢查引擎連線</a>
-                  <button
+          <slot name="preflight">
+            <div
+              v-if="displayBlockers.length"
+              class="notice warning preflight-blockers"
+              aria-label="流程與環境阻擋"
+              ><strong>需先處理</strong
+              ><ul
+                ><li v-for="(item, index) in displayBlockers" :key="index"
+                  >{{ item.message }}
+                  <a v-if="item.action === 'settings'" href="#/settings">前往引擎設定</a
+                  ><a v-if="item.action === 'models'" href="#/models">前往模型與元件</a
+                  ><template v-if="item.action === 'refresh'"
+                    ><a href="#/settings">檢查引擎連線</a>
+                    <button
+                      class="text-button"
+                      :disabled="busy || disabled"
+                      @click="emit('refreshOptions')"
+                      >更新引擎選項</button
+                    ></template
+                  ><span
+                    v-if="!item.action && /引擎|ComfyUI|連線|元件/.test(item.message)"
+                    class="preflight-links"
+                    ><a href="#/settings">檢查引擎連線</a
+                    ><a href="#/models">檢查模型與元件</a></span
+                  ></li
+                ></ul
+              ></div
+            >
+            <div v-if="hasFieldProblems" class="preflight-fields" aria-label="需修正欄位"
+              ><p>請修正 {{ Object.keys(fieldProblems || {}).length }} 個欄位：</p
+              ><ul
+                ><li v-for="(message, key) in fieldProblems" :key="key"
+                  ><button
+                    type="button"
                     class="text-button"
-                    :disabled="busy || disabled"
-                    @click="emit('refreshOptions')"
-                    >更新引擎選項</button
-                  ></template
-                ><span
-                  v-if="!item.action && /引擎|ComfyUI|連線|元件/.test(item.message)"
-                  class="preflight-links"
-                  ><a href="#/settings">檢查引擎連線</a><a href="#/models">檢查模型與元件</a></span
-                ></li
-              ></ul
-            ></div
-          >
-          <div v-if="hasFieldProblems" class="preflight-fields" aria-label="需修正欄位"
-            ><p>請修正 {{ Object.keys(fieldProblems || {}).length }} 個欄位：</p
-            ><ul
-              ><li v-for="(message, key) in fieldProblems" :key="key"
-                ><button
-                  type="button"
-                  class="text-button"
-                  @click="focusPreflightField(submitTarget, String(key))"
-                  >{{ fieldLabels[key] || key }}：{{ message }}</button
-                ></li
-              ></ul
-            ></div
-          >
+                    @click="focusPreflightField(submitTarget, String(key))"
+                    >{{ fieldLabels[key] || key }}：{{ message }}</button
+                  ></li
+                ></ul
+              ></div
+            >
+          </slot>
           <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
           <p v-if="pending" class="notice warning"
             >尚有未確認的提交
@@ -408,7 +415,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
       ></Teleport
     >
     <div class="generation-statusbar"
-      ><div
+      ><slot name="actions" /><div v-if="!$slots.actions"
         ><strong>{{ jobs[0] ? labels[jobs[0].status] || jobs[0].status : '尚未開始' }}</strong
         ><p>{{
           jobs[0]?.progress

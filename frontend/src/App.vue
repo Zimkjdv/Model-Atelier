@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { pages, useNavigation, type Mode } from './navigation'
 import ModelLibrary from './ModelLibrary.vue'
 import CreationStudio from './CreationStudio.vue'
@@ -32,6 +32,13 @@ import type { ReferenceForm } from './adapterSettings'
 import type { HostSystem as System } from './systemTypes'
 const system = ref<System | null>(null),
   engine = ref<EngineReport | null>(null)
+const engineDevice = computed(() => {
+  if (!engine.value?.connected) return ''
+  const device = engine.value.diagnostics?.devices?.[0]
+  const name = device?.name || engine.value.stats?.devices[0]?.name
+  const memory = device?.vram.total || engine.value.stats?.devices[0]?.vram_total
+  return name ? ` · ${name}${memory ? ' ' + Math.round(memory / 1024 ** 3) + ' GB' : ''}` : ''
+})
 const artworkNotesDirty = ref(false)
 const trainingDirty = ref(false)
 const assetDirty = ref(false)
@@ -313,7 +320,7 @@ async function testConnection() {
           :aria-current="page === item ? 'page' : undefined"
           :title="item"
           @click="navigate(item)"
-          ><UiIcon :name="navIcons[i]!" />{{ navLabels[i] }}</button
+          ><UiIcon :name="navIcons[i]!" :size="24" />{{ navLabels[i] }}</button
         ></nav
       ></aside
     >
@@ -330,7 +337,8 @@ async function testConnection() {
         /><div class="top-tools"
           ><span class="connection-status"
             ><span class="dot" :class="{ online: engine?.connected }"></span
-            >{{ engine?.connected ? '引擎已連線' : engine ? '引擎未連線' : '連線狀態未知' }}</span
+            >{{ engine?.connected ? '引擎已連線' : engine ? '引擎未連線' : '連線狀態未知'
+            }}{{ engineDevice }}</span
           ><button class="secondary" @click="openConnection">連線設定</button></div
         ></header
       >

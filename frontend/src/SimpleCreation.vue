@@ -15,13 +15,14 @@ import { newCreation, type CreationForm } from './creationSettings'
 import { newFlux, type FluxCatalog, type FluxForm } from './fluxSettings'
 import {
   generationFieldProblems,
+  fieldLabels,
   vFieldError,
   type FieldLimits,
   type PreflightBlocker,
 } from './generationPreflight'
 import { validateProfile, type ModelProfile } from './modelProfiles'
 import type { EngineReport } from './environmentTypes'
-import type { Job } from './jobEvents'
+import { terminal, type Job } from './jobEvents'
 import { useUnsavedChanges } from './unsavedChanges'
 import {
   matchSimpleModel,
@@ -91,6 +92,24 @@ const form = computed(() =>
       ? reference
       : checkpoint,
 )
+function prefillDescription() {
+  Object.assign(form.value, {
+    title: selected.value.title,
+    prompt: selected.value.prompt,
+    seed: selected.value.seed,
+  })
+  if ('negative_prompt' in form.value) form.value.negative_prompt = selected.value.negative
+}
+prefillDescription()
+const aspectRatios = computed(() => [
+  {
+    label: '1:1',
+    width: selected.value.family === 'flux' ? 512 : 1024,
+    height: selected.value.family === 'flux' ? 512 : 1024,
+  },
+  { label: '3:4', width: 768, height: 1024 },
+  { label: '16:9', width: 1280, height: 720 },
+])
 const assets = ref<ReferenceAsset[]>([])
 const uploadBusy = ref(false)
 const uploadInput = ref<HTMLInputElement | null>(null)
@@ -171,8 +190,10 @@ const step = computed(() =>
         : savedJob.value === previewJob.value?.id
           ? 4
           : previewJob.value?.status === 'completed'
-            ? 3
-            : 2,
+            ? 4
+            : previewJob.value && !terminal(previewJob.value)
+              ? 3
+              : 2,
 )
 
 function requirements() {
@@ -429,6 +450,7 @@ function selectTemplate(id: SimpleTemplateId) {
   if (unsaved.value && !window.confirm('切換配方會取代簡易創作的未保存設定，確定切換？')) return
   profiles.cancel()
   selectedId.value = id
+  prefillDescription()
   loadedId.value = null
   editing.value = false
   baseline.value = ''
@@ -573,6 +595,45 @@ const fieldProblems = computed(() => {
       : {},
   )
 })
+const readiness = computed(() => {
+  if (loading.value) return []
+  const missing = requirements()
+  if (missing.length) return missing.map((item) => ({ ...item, field: '' }))
+  if (!loadedId.value)
+    return [
+      { key: 'recipe', label: '載入起始配方以確認模型與生成設定。', action: 'load', field: '' },
+    ]
+  return [
+    ...blockers.value.map((item, index) => ({
+      key: 'blocker-' + index,
+      label: item.message,
+      action: item.action || 'field',
+      field: selected.value.family === 'reference' ? 'simple-reference' : 'simple-prompt',
+    })),
+    ...Object.entries(fieldProblems.value).map(([key, label]) => ({
+      key,
+      label: `${fieldLabels[key] || key}：${label}`,
+      action: 'field',
+      field: key,
+    })),
+  ]
+})
+async function completeRequirement() {
+  if (locked.value || loading.value) return
+  const item = readiness.value[0]
+  if (!item) return
+  if (item.action === 'load') await loadTemplate(true)
+  else if (item.action === 'field') {
+    if (item.field === 'simple-reference') document.getElementById(item.field)?.focus()
+    else if (item.field === 'prompt' || item.field === 'simple-prompt') await editDescription()
+    else transfer()
+  } else repair(item.action as 'models' | 'settings' | 'refresh')
+}
+function setAspectRatio(width: number, height: number) {
+  if (!loadedId.value || locked.value || loading.value) return
+  form.value.width = width
+  form.value.height = height
+}
 function randomSeed() {
   const words = crypto.getRandomValues(new Uint32Array(2))
   form.value.seed = ((BigInt(words[0]!) << 32n) | BigInt(words[1]!)).toString()
@@ -700,22 +761,28 @@ onBeforeUnmount(() => {
 <template>
   <div class="simple-creation">
     <div class="simple-intro">
-      <div><h2>從一份配方開始創作</h2><p>選配方 → 修改描述 → 生成 → 存入作品庫</p></div>
+      <ol class="simple-steps" aria-label="創作進度">
+        <li
+          v-for="(label, index) in ['選擇配方', '確認或修改描述', '生成圖片', '保存成果']"
+          :key="label"
+          :aria-current="step === index + 1 ? 'step' : undefined"
+          :class="{
+            completed:
+              step > index + 1 || (index === 3 && savedJob === previewJob?.id && step === 4),
+          }"
+        >
+          <span aria-hidden="true">{{
+            step > index + 1 || (index === 3 && savedJob === previewJob?.id && step === 4)
+              ? '✓'
+              : index + 1
+          }}</span>
+          <span class="simple-step-label">{{ label }}</span>
+        </li>
+      </ol>
       <button class="secondary" :disabled="loading || locked" @click="refresh(true)"
         >重新檢查</button
       >
     </div>
-    <ol class="simple-steps" aria-label="創作進度">
-      <li
-        v-for="(label, index) in ['選擇配方', '確認或修改描述', '生成圖片', '保存成果']"
-        :key="label"
-        :aria-current="step === index + 1 ? 'step' : undefined"
-        :class="{ reached: step >= index + 1 }"
-      >
-        <span>{{ index + 1 }}</span
-        >{{ label }}
-      </li>
-    </ol>
     <div class="simple-cards" role="group" aria-label="起始配方">
       <button
         v-for="item in simpleModelTemplates"
@@ -733,43 +800,51 @@ onBeforeUnmount(() => {
         />
         <span class="simple-card-model">{{ item.model }}</span
         ><strong>{{ item.title }}</strong> <span>{{ item.description }}</span
-        ><small>{{ availability(item.id) }}</small>
+        ><small
+          class="simple-availability"
+          :class="{ ready: availability(item.id) === '可載入配方' }"
+          >{{ availability(item.id)
+          }}{{ selected.modelId === item.modelId ? ' · 已選擇' : '' }}</small
+        >
       </button>
     </div>
-    <div class="simple-style-cards" role="group" aria-label="畫風控制任務">
-      <button
-        v-for="item in simpleStyleTemplates"
-        :key="item.id"
-        class="secondary simple-variant"
-        :aria-pressed="selectedId === item.id"
-        :disabled="loading || locked"
-        @click="selectTemplate(item.id)"
-      >
-        <strong>{{ item.title }}</strong
-        ><span>{{ item.description }}</span
-        ><small>{{ availability(item.id) }}</small>
-      </button>
-    </div>
-    <section
-      v-if="!selected.task"
-      class="simple-variant-picker"
-      aria-labelledby="simple-variant-heading"
-    >
-      <h3 id="simple-variant-heading">{{ selected.model }} · 選擇起始配方（5 份）</h3>
-      <div class="simple-variants" role="group" aria-label="模型內的起始配方">
+    <div class="simple-recipe-options">
+      <div class="simple-style-cards" role="group" aria-label="畫風控制任務">
         <button
-          v-for="item in variants"
+          v-for="item in simpleStyleTemplates"
           :key="item.id"
-          class="secondary simple-variant"
+          class="secondary simple-variant simple-style-option"
+          :class="{ unavailable: availability(item.id) !== '可載入配方' }"
+          :title="item.description"
           :aria-pressed="selectedId === item.id"
           :disabled="loading || locked"
           @click="selectTemplate(item.id)"
         >
           <strong>{{ item.title }}</strong
-          ><span>{{ item.description }}</span>
+          ><small> · {{ availability(item.id) }}</small>
         </button>
       </div>
-    </section>
+      <section
+        v-if="!selected.task"
+        class="simple-variant-picker"
+        aria-labelledby="simple-variant-heading"
+      >
+        <h3 id="simple-variant-heading">{{ selected.model }} 起始配方</h3>
+        <div class="simple-variants" role="group" aria-label="模型內的起始配方">
+          <button
+            v-for="item in variants"
+            :key="item.id"
+            class="secondary simple-variant"
+            :aria-pressed="selectedId === item.id"
+            :disabled="loading || locked"
+            :title="item.description"
+            @click="selectTemplate(item.id)"
+          >
+            {{ item.title }}
+          </button>
+        </div>
+      </section>
+    </div>
     <p v-if="error" class="notice warning" role="alert">{{ error }}</p>
     <p v-if="message" class="notice" role="status">{{ message }}</p>
     <div class="simple-workbench">
@@ -780,42 +855,23 @@ onBeforeUnmount(() => {
             simpleExamples[selectedId]?.environment || selected.note
           }}</p
         >
-        <p class="footnote">範例附有實測紀錄與限制。載入不會下載模型或自動生成。</p>
-        <button class="primary" :disabled="!canLoad || loading" @click="loadTemplate(false)">
-          {{ loadedId ? '還原配方設定' : '載入起始配方' }}
-        </button>
-        <button
-          v-if="!loadedId"
-          class="secondary simple-edit-entry"
-          :disabled="!canLoad || loading"
-          @click="loadTemplate(true)"
-          >套用後修改</button
-        >
-        <button
-          v-else-if="!editing"
-          class="secondary simple-edit-entry"
-          :disabled="locked || loading"
-          @click="editDescription"
-          >編輯描述</button
-        >
-        <div v-if="availability(selectedId) !== '可載入配方' && !loading" class="simple-repair">
-          <strong>還需要完成</strong>
-          <ul
-            ><li v-for="item in requirements()" :key="item.key"
-              ><span>{{ item.label }}</span>
-              <button
-                class="secondary"
-                :disabled="loading || locked"
-                @click="repair(item.action)"
-                >{{
-                  item.action === 'models'
-                    ? '前往對應模型分類'
-                    : item.action === 'settings'
-                      ? '連線設定'
-                      : '重新檢查'
-                }}</button
-              >
-            </li></ul
+        <div class="simple-load-actions">
+          <button class="primary" :disabled="!canLoad || loading" @click="loadTemplate(false)">
+            {{ loadedId ? '還原配方設定' : '載入起始配方' }}
+          </button>
+          <button
+            v-if="!loadedId"
+            class="secondary simple-edit-entry"
+            :disabled="!canLoad || loading"
+            @click="loadTemplate(true)"
+            >套用後修改</button
+          >
+          <button
+            v-else-if="!editing"
+            class="secondary simple-edit-entry"
+            :disabled="locked || loading"
+            @click="editDescription"
+            >編輯描述</button
           >
         </div>
         <fieldset :disabled="!loadedId || loading || locked">
@@ -883,9 +939,22 @@ onBeforeUnmount(() => {
           <p v-if="loadedId && !editing" class="footnote"
             >目前保留原配方描述。要修改時按「編輯描述」；還原配方會恢復描述與固定 Seed。</p
           >
-          <p class="simple-size">輸出比例：正方形 1:1 · {{ form.width }} × {{ form.height }}</p>
-          <p class="footnote">首版保留配方尺寸；其他比例可帶到進階工作台調整。</p>
-          <p v-if="loadedId" role="status">{{
+          <div class="simple-size">
+            <span id="simple-ratio-label">比例</span>
+            <div role="group" aria-labelledby="simple-ratio-label" class="simple-ratios">
+              <button
+                v-for="ratio in aspectRatios"
+                :key="ratio.label"
+                type="button"
+                class="secondary"
+                :aria-pressed="form.width === ratio.width && form.height === ratio.height"
+                @click="setAspectRatio(ratio.width, ratio.height)"
+                >{{ ratio.label }}</button
+              >
+            </div>
+            <span class="simple-dimensions">{{ form.width }} × {{ form.height }}</span>
+          </div>
+          <p v-if="loadedId" class="footnote" role="status">{{
             modified ? '已修改配方，不沿用原配置的驗收結論。' : '使用原始配方設定。'
           }}</p>
           <div class="simple-actions">
@@ -893,6 +962,7 @@ onBeforeUnmount(() => {
             <button class="secondary" @click="transfer">帶到進階工作台</button>
           </div>
         </fieldset>
+        <div id="simple-submit" class="simple-submit"></div>
         <details v-if="loadedId" class="simple-recipe"
           ><summary>查看完整設定</summary>
           <p class="footnote"
@@ -919,7 +989,6 @@ onBeforeUnmount(() => {
             ? '圖片參考設定僅保留本頁；生成後可從任務或作品還原完整設定。'
             : '設定會在站內切頁時保留；重新整理前可帶到進階工作台保存草稿。'
         }}</p>
-        <div id="simple-submit" class="simple-submit"></div>
       </section>
       <div class="simple-stage">
         <p v-if="previewJob && loadedId && !resultMatchesForm" class="notice" role="status"
@@ -932,19 +1001,9 @@ onBeforeUnmount(() => {
           :height="form.height"
           :family="previewJob?.checkpoint || selected.model"
           title="簡易創作"
+          compact
           @gallery="emit('gallery', $event)"
         />
-        <div v-if="previewJob?.status === 'completed'" class="simple-result-actions">
-          <button
-            class="primary"
-            :disabled="saving || savedJob === previewJob.id"
-            @click="saveResult"
-          >
-            {{ saving ? '保存中…' : savedJob === previewJob.id ? '已存入作品庫' : '存入作品庫' }}
-          </button>
-          <button class="secondary" @click="emit('gallery', previewJob.id)">查看作品庫</button>
-        </div>
-        <TemplateSnapshot :item="previewTemplate" />
         <GenerationPanel
           :key="selected.family"
           preview-stage
@@ -969,7 +1028,59 @@ onBeforeUnmount(() => {
           @refresh-options="refresh(true)"
           @gallery="emit('gallery', $event)"
           @restore-job="restoreJob"
-        />
+        >
+          <template #preflight>
+            <div
+              v-if="readiness.length"
+              class="notice warning simple-repair"
+              aria-label="生成前需完成"
+              role="status"
+            >
+              <p
+                ><strong>還差 {{ readiness.length }} 項</strong>：{{ readiness[0]?.label }}</p
+              >
+              <button
+                type="button"
+                class="text-button simple-complete"
+                :disabled="loading || locked"
+                @click="completeRequirement"
+              >
+                {{
+                  readiness[0]?.action === 'load'
+                    ? '一鍵補齊 →'
+                    : readiness[0]?.action === 'models'
+                      ? '前往對應模型分類'
+                      : readiness[0]?.action === 'settings'
+                        ? '連線設定'
+                        : readiness[0]?.action === 'refresh'
+                          ? '重新檢查必要條件'
+                          : '前往修正 →'
+                }}
+              </button>
+              <details v-if="readiness.length > 1"
+                ><summary>查看所有待辦</summary
+                ><ul
+                  ><li v-for="item in readiness" :key="item.key">{{ item.label }}</li></ul
+                ></details
+              >
+            </div>
+          </template>
+          <template #actions>
+            <div v-if="previewJob?.status === 'completed'" class="simple-result-actions">
+              <button
+                class="primary"
+                :disabled="saving || savedJob === previewJob.id"
+                @click="saveResult"
+              >
+                {{
+                  saving ? '保存中…' : savedJob === previewJob.id ? '已存入作品庫' : '存入作品庫'
+                }}
+              </button>
+              <button class="secondary" @click="emit('gallery', previewJob.id)">查看作品庫</button>
+            </div>
+          </template>
+        </GenerationPanel>
+        <TemplateSnapshot :item="previewTemplate" />
       </div>
     </div>
   </div>
@@ -977,41 +1088,60 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .simple-creation {
-  max-width: 1500px;
+  --accent: #b7e3a0;
+  --ink3: #a6b8ac;
+  max-width: 1600px;
   margin: auto;
-  padding: 24px;
+  padding: 28px 32px 48px;
 }
 .simple-steps {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
   padding: 0;
-  margin: 0 0 20px;
+  margin: 0;
   list-style: none;
 }
 .simple-steps li {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--ink2);
+  color: var(--ink3);
+  font-size: 14px;
+}
+.simple-steps li:not(:last-child)::after {
+  content: '';
+  width: 28px;
+  height: 1px;
+  margin: 0 4px;
+  background: var(--line2);
 }
 .simple-steps li[aria-current='step'] {
   color: var(--accent);
   font-weight: 600;
 }
-.simple-steps span {
+.simple-steps li > span:first-child {
   display: grid;
   place-items: center;
   border: 1px solid var(--line2);
   border-radius: 50%;
   width: 26px;
   height: 26px;
+  flex: 0 0 26px;
 }
-.simple-steps .reached span {
+.simple-steps li[aria-current='step'] > span:first-child {
+  border: 2px solid var(--accent);
+}
+.simple-steps .completed {
+  color: var(--accent);
+}
+.simple-steps .completed > span:first-child {
   border-color: var(--accent);
+  color: var(--aink);
+  background: var(--accent);
 }
 .simple-edit-entry {
-  margin: 8px 0 0 8px;
+  margin: 0;
 }
 .simple-repair ul {
   padding-left: 18px;
@@ -1029,7 +1159,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 .simple-intro h2 {
   margin: 0 0 6px;
@@ -1048,10 +1178,10 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   text-align: left;
-  gap: 10px;
-  padding: 18px;
+  gap: 6px;
+  padding: 14px;
   border: 1px solid var(--line2);
-  border-radius: 12px;
+  border-radius: 16px;
   background: var(--panel);
   color: var(--ink);
 }
@@ -1064,13 +1194,31 @@ onBeforeUnmount(() => {
   font-size: 18px;
 }
 .simple-variant-picker {
-  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.simple-variant-picker h3 {
+  font-size: 13px;
+  color: var(--ink2);
+  margin: 0;
+  font-weight: 500;
+}
+.simple-recipe-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin: 24px 0;
 }
 .simple-style-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
+  order: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
 }
 .simple-reference-preview {
   display: block;
@@ -1083,16 +1231,15 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 .simple-variants {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .simple-variant {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  gap: 6px;
   white-space: normal;
+}
+.simple-style-option strong {
+  font-weight: 500;
 }
 .simple-variant span {
   font-size: 12px;
@@ -1105,7 +1252,7 @@ onBeforeUnmount(() => {
 }
 .simple-card-image {
   width: 100%;
-  height: 128px;
+  height: clamp(110px, 11vw, 164px);
   object-fit: contain;
   background: var(--bg);
   border-radius: 8px;
@@ -1113,14 +1260,24 @@ onBeforeUnmount(() => {
 .simple-card-model,
 .simple-card small {
   color: var(--ink2);
-  font-size: 12px;
+  font-size: 13px;
+}
+.simple-availability {
+  padding: 4px 12px;
+  margin-top: 2px;
+  border: 1px solid var(--line2);
+  border-radius: 999px;
+  align-self: flex-start;
+}
+.simple-availability.ready {
+  color: var(--accent);
 }
 .simple-card span {
   line-height: 1.6;
 }
 .simple-workbench {
   display: grid;
-  grid-template-columns: minmax(280px, 390px) minmax(0, 1fr);
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
   gap: 24px;
 }
 .simple-editor,
@@ -1132,7 +1289,11 @@ onBeforeUnmount(() => {
   grid-template-columns: minmax(0, 1fr);
   align-content: start;
   align-self: start;
-  gap: 16px;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  overflow: hidden;
 }
 .simple-stage > .notice,
 .simple-stage > .simple-result-actions {
@@ -1140,11 +1301,23 @@ onBeforeUnmount(() => {
 }
 .simple-editor h3 {
   margin-top: 0;
+  margin-bottom: 6px;
+  font-size: 18px;
+}
+.simple-editor > p {
+  color: var(--ink2);
+  font-size: 13px;
+  margin: 0 0 16px;
+}
+.simple-load-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 .simple-editor fieldset {
   border: 0;
   padding: 0;
-  margin: 22px 0 0;
+  margin: 20px 0 0;
   min-width: 0;
 }
 .simple-editor label {
@@ -1157,7 +1330,19 @@ onBeforeUnmount(() => {
   resize: vertical;
 }
 .simple-size {
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink2);
+}
+.simple-ratios {
+  display: flex;
+  gap: 8px;
+}
+.simple-dimensions {
+  margin-left: auto;
 }
 .simple-actions,
 .simple-result-actions {
@@ -1167,10 +1352,22 @@ onBeforeUnmount(() => {
   margin: 16px 0;
 }
 .simple-repair {
-  margin: 14px 0;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.simple-repair p {
+  margin: 0;
+}
+.simple-repair details {
+  margin-top: 8px;
 }
 .simple-repair button {
-  margin: 0 8px 8px 0;
+  margin: 4px 0 0;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .simple-recipe {
   margin-top: 20px;

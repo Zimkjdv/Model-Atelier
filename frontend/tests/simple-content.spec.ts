@@ -102,11 +102,13 @@ for (const unavailable of [true, false])
       expect(buttons.y, `${width}px save buttons must follow preview`).toBeGreaterThanOrEqual(
         frame.y + frame.height - 1,
       )
-      expect(status.y, `${width}px task controls must follow save buttons`).toBeGreaterThanOrEqual(
-        buttons.y + buttons.height - 1,
-      )
+      expect(
+        buttons.y,
+        `${width}px save buttons must be inside the bottom action row`,
+      ).toBeGreaterThanOrEqual(status.y - 1)
+      expect(buttons.y + buttons.height).toBeLessThanOrEqual(status.y + status.height + 1)
       expect(surface.height).toBeGreaterThanOrEqual(160)
-      expect(surface.height).toBeLessThanOrEqual(Math.min(520, height! * 0.6) + 1)
+      expect(surface.height).toBeLessThanOrEqual(Math.max(240, Math.min(680, height! * 0.6)) + 1)
       expect(surface.x).toBeGreaterThanOrEqual(frame.x - 1)
       expect(surface.x + surface.width).toBeLessThanOrEqual(frame.x + frame.width + 1)
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(

@@ -298,3 +298,71 @@ test('cached advanced panel recovers the original uncertain simple request witho
   expect(bodies[1]).toBe(bodies[0])
   expect((await (await request.get('/qa/state')).json()).prompts).toBe(before + 1)
 })
+
+for (const width of [1440, 390])
+  test(`${width}px: prefilled recipes, one-click completion, ratio submission and completed steps`, async ({
+    page,
+    request,
+  }, info) => {
+    await register(request)
+    const before = (await (await request.get('/qa/state')).json()).prompts
+    await page.setViewportSize({ width, height: 1000 })
+    await page.goto('/#/studio/simple')
+    const prompt = page.locator('#simple-prompt')
+    await expect(prompt).toHaveValue(/1girl/)
+    await expect(page.locator('.simple-steps [aria-current="step"]')).toContainText('選擇配方')
+    await page
+      .getByRole('group', { name: '模型內的起始配方' })
+      .getByRole('button', { name: '森林旅人', exact: true })
+      .click()
+    await expect(prompt).toHaveValue(/forest/)
+    await expect(page.locator('.simple-repair')).toContainText('還差 1 項')
+    await page.getByRole('button', { name: '一鍵補齊 →', exact: true }).click()
+    await expect(prompt).toBeEditable()
+    await expect(page.locator('.simple-repair')).toHaveCount(0)
+    await expect(page.locator('.simple-steps .completed')).toHaveCount(1)
+    await expect(page.locator('.simple-steps [aria-current="step"]')).toContainText(
+      '確認或修改描述',
+    )
+    const ratios = page.getByRole('group', { name: '比例', exact: true })
+    await ratios.getByRole('button', { name: '3:4', exact: true }).click()
+    await expect(page.locator('.simple-dimensions')).toHaveText('768 × 1024')
+    await ratios.getByRole('button', { name: '16:9', exact: true }).click()
+    await expect(page.locator('.simple-dimensions')).toHaveText('1280 × 720')
+    await expect(ratios.getByRole('button', { name: '16:9', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect((await (await request.get('/qa/state')).json()).prompts).toBe(before)
+    if (width === 1440) {
+      await page.locator('.simple-intro').scrollIntoViewIfNeeded()
+      await page.screenshot({ path: info.outputPath('simple-redesign-desktop.png') })
+    }
+    const response = page.waitForResponse(
+      (r) => r.url().endsWith('/api/generate') && r.request().method() === 'POST',
+    )
+    await page.getByRole('button', { name: '生成圖片', exact: true }).click()
+    const generated = await response
+    expect(generated.ok(), await generated.text()).toBeTruthy()
+    expect(generated.request().postDataJSON()).toMatchObject({ width: 1280, height: 720 })
+    await expect(page.locator('.simple-steps [aria-current="step"]')).toContainText('保存成果')
+    await expect(page.locator('.simple-steps .completed')).toHaveCount(3)
+    await page.getByRole('button', { name: '存入作品庫', exact: true }).click()
+    await expect(page.locator('.simple-steps .completed')).toHaveCount(4)
+    await prompt.fill('adult woman, green cloak, forest path')
+    await expect(page.locator('.simple-steps [aria-current="step"]')).toContainText(
+      '確認或修改描述',
+    )
+    await expect(page.locator('.simple-steps .completed')).toHaveCount(1)
+    await expect(page.getByRole('button', { name: '生成圖片', exact: true })).toBeEnabled()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .include('.atelier-shell')
+          .withTags(['wcag2a', 'wcag2aa'])
+          .analyze()
+      ).violations,
+    ).toEqual([])
+    expect((await (await request.get('/qa/state')).json()).prompts).toBe(before + 1)
+  })

@@ -151,6 +151,15 @@
   padding: 4px 10px;
   font-size: 13px;
 }
+#app .atelier-shell .connection-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--raised);
+}
 #app .atelier-shell .dot {
   width: 8px;
   height: 8px;
@@ -3952,18 +3961,21 @@
   overflow: auto;
 }
 #app .atelier-shell .simple-content .simple-stage .studio-preview {
-  --simple-canvas-height: clamp(220px, 45vh, 520px);
-  padding: 20px;
+  --simple-canvas-height: clamp(240px, 60vh, 680px);
+  padding: 24px;
   height: auto;
   min-height: 0;
+  border: 0;
+  background: transparent;
 }
 #app .atelier-shell .simple-content .studio-preview :is(.empty-canvas, .result-canvas) {
   box-sizing: border-box;
   flex: none;
-  width: 100%;
+  width: min(100%, calc(var(--simple-canvas-height) * var(--canvas-ratio)));
   height: var(--simple-canvas-height);
   min-height: 0;
-  margin: 0;
+  margin: 0 auto;
+  border-radius: 14px;
 }
 #app .atelier-shell .simple-content .stage-caption {
   display: flex;
@@ -3977,8 +3989,79 @@
 }
 #app .atelier-shell .simple-content .generation-statusbar {
   margin: 0;
-  padding: 16px;
+  padding: 0 24px 24px;
   flex-wrap: wrap;
+  background: transparent;
+  border: 0;
+  gap: 10px;
+}
+#app .atelier-shell .simple-content .generation-statusbar > button {
+  margin-left: auto;
+}
+#app .atelier-shell .simple-content .generation-history {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+#app .atelier-shell .simple-content .generation-records[open] {
+  padding: 20px 24px;
+}
+#app .atelier-shell .simple-content .simple-stage > .template-snapshot {
+  margin: 0 24px 20px;
+}
+#app .atelier-shell .simple-content .simple-editor {
+  padding: 24px;
+  border-radius: 16px;
+}
+#app .atelier-shell .simple-content :is(.simple-variant, .simple-ratios button) {
+  min-height: 36px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+#app .atelier-shell .simple-content .simple-variant.unavailable {
+  border-style: dashed;
+  color: var(--ink2);
+}
+#app
+  .atelier-shell
+  .simple-content
+  :is(.simple-variant, .simple-ratios button)[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--asoft);
+}
+#app .atelier-shell .simple-content .generation-submit > .primary {
+  width: 100%;
+  min-height: 54px;
+  font-size: 17px;
+}
+#app .atelier-shell .simple-content .simple-result-actions {
+  margin: 0;
+}
+#app .atelier-shell .simple-content .simple-actions > button {
+  flex: 1;
+  font-size: 13px;
+  padding-inline: 8px;
+}
+#app .atelier-shell .simple-content .simple-editor textarea {
+  min-height: 160px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+#app .atelier-shell .simple-content .simple-editor .footnote {
+  font-size: 13px;
+}
+#app .atelier-shell .simple-content .simple-repair p {
+  color: inherit;
+  font-size: 13px;
+}
+#app .atelier-shell .simple-content .simple-variant-picker h3 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink2);
 }
 #app .atelier-shell .simple-content .stage-heading {
   flex-wrap: wrap;
@@ -4008,7 +4091,7 @@
     overflow: visible;
   }
   #app .atelier-shell .simple-content .generation-statusbar > div {
-    flex-basis: 100%;
+    flex-basis: auto;
   }
   #app .atelier-shell .simple-content .stage-job-choice {
     flex-wrap: wrap;
@@ -4017,5 +4100,15 @@
   }
   #app .atelier-shell .simple-content .stage-job-choice select {
     max-width: 100%;
+  }
+  #app .atelier-shell .simple-content .simple-stage .studio-preview {
+    --simple-canvas-height: clamp(220px, 50vh, 480px);
+    padding: 16px;
+  }
+  #app .atelier-shell .simple-content .simple-editor {
+    padding: 18px;
+  }
+  #app .atelier-shell .simple-content .generation-statusbar {
+    padding: 0 16px 16px;
   }
 }
