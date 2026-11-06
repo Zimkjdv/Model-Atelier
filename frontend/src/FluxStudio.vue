@@ -21,6 +21,7 @@ import {
   watch,
 } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
+import PromptConverter from './PromptConverter.vue'
 import FluxExtensionStudio from './FluxExtensionStudio.vue'
 import { isFluxExtension, type FluxExtensionRestoration } from './fluxExtensions'
 import ComponentSnapshot from './ComponentSnapshot.vue'
@@ -85,6 +86,8 @@ const busy = ref(false),
   loading = ref(false),
   error = ref(''),
   message = ref('')
+const generationBusy = ref(false),
+  generationPending = ref(false)
 const saved = ref(JSON.stringify(form)),
   origin = ref<Restoration | null>(null)
 const previewJson = ref('')
@@ -403,17 +406,32 @@ const preflightBlockers = computed(() => {
               <button class="secondary" @click="apply(pending)">捨棄變更並載入 FLUX</button></div
             ><form class="panel flux-editor" aria-label="FLUX 創作設定" @submit.prevent="save()"
               ><fieldset :disabled="busy">
-                <label for="flux-prompt" class="studio-field-label"
-                  ><UiIcon name="text" :size="15" />描述你想創作的畫面
-                  <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
-                ><textarea
-                  v-field-error:prompt="fieldProblems.prompt"
-                  id="flux-prompt"
-                  v-model="form.prompt"
-                  maxlength="20000"
-                  rows="5"
-                  placeholder="例如：A peaceful mountain lake, soft morning light"
-                />
+                <PromptConverter
+                  editor-id="flux-prompt"
+                  :current-prompt="form.prompt"
+                  :context-key="
+                    JSON.stringify([
+                      form.engine_url,
+                      form.diffusion_model,
+                      form.clip_l,
+                      form.t5xxl,
+                      form.vae,
+                    ])
+                  "
+                  profile="flux"
+                  :disabled="busy || loading || !!pending || generationBusy || generationPending"
+                  @apply="form.prompt = $event"
+                >
+                  <textarea
+                    v-field-error:prompt="fieldProblems.prompt"
+                    id="flux-prompt"
+                    v-model="form.prompt"
+                    maxlength="20000"
+                    rows="5"
+                    aria-describedby="flux-prompt-hint"
+                    placeholder="例如：A peaceful mountain lake, soft morning light"
+                  />
+                </PromptConverter>
                 <p class="size-presets-label">模型</p>
                 <div class="studio-model-summary"
                   ><span>FLUX.1 [schnell] · 四元件</span
@@ -423,7 +441,7 @@ const preflightBlockers = computed(() => {
                     @click="
                       ($event.currentTarget as HTMLElement)
                         .closest('form')
-                        ?.querySelector('details')
+                        ?.querySelector('.studio-advanced')
                         ?.setAttribute('open', '')
                     "
                     >元件設定</button
@@ -629,6 +647,8 @@ const preflightBlockers = computed(() => {
               :field-problems="fieldProblems"
               :blocked-reason="block"
               :disabled="busy || loading"
+              @busy="generationBusy = $event"
+              @pending="generationPending = $event"
               @gallery="emit('gallery', $event)"
               @restore-job="restore('flux/jobs/' + $event + '/creation-settings')"
             />

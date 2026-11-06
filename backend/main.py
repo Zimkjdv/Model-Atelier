@@ -89,6 +89,7 @@ def create_app(
     engine_client_factory=None,
     deployment_profile: Profile | None = None,
     initial_engine_url: str | None = None,
+    prompt_client_factory=None,
 ):
     """Build isolated routes; initialize SQLite only when ASGI lifespan starts.
 
@@ -123,6 +124,9 @@ def create_app(
 
     diagnostics_api.install(app, context)
     core_api.install(app, context)
+    from backend import prompt_converter
+
+    prompt_converter.install(app, context, prompt_client_factory)
     from backend import listing_api
 
     listing_api.install(app, context)

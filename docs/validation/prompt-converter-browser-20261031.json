@@ -1,0 +1,22 @@
+[
+  {
+    "prompt": "atelier_demo_v1, Two adult women standing side by side in a garden, the woman on the left wearing a red jacket and the woman on the right wearing a blue jacket, no other people present.",
+    "base_url": "http://127.0.0.1:11434",
+    "model": "qwen3.5:2b",
+    "details": {
+      "family": "qwen35",
+      "parameter_size": "1.9B",
+      "quantization_level": "Q8_0"
+    },
+    "elapsed_ms": 9532,
+    "execution": "cpu-requested",
+    "keep_alive": 0,
+    "original_preserved_until_apply": true,
+    "applied": true,
+    "image_jobs": 0,
+    "widths": [
+      1440,
+      390
+    ]
+  }
+]

@@ -22,6 +22,7 @@ import {
   watch,
 } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
+import PromptConverter from './PromptConverter.vue'
 import AssetChoices from './AssetChoices.vue'
 import LoraControls from './LoraControls.vue'
 import LoraSnapshot from './LoraSnapshot.vue'
@@ -818,18 +819,38 @@ watch(
                 :height="form.height"
                 @update:model-value="chooseImage"
               />
-              <template v-if="editableWorkflow"
-                ><label for="draft-prompt" class="studio-field-label"
-                  ><UiIcon name="text" :size="15" />描述你想創作的畫面
-                  <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
-                ><textarea
-                  v-field-error:prompt="fieldProblems.prompt"
-                  id="draft-prompt"
-                  v-model="form.prompt"
-                  maxlength="20000"
-                  rows="7"
-                  placeholder="描述角色、場景、光線與你想呈現的畫面…"
-                ></textarea>
+              <template v-if="editableWorkflow">
+                <PromptConverter
+                  editor-id="draft-prompt"
+                  :current-prompt="form.prompt"
+                  :context-key="
+                    JSON.stringify([
+                      form.engine_url,
+                      form.checkpoint,
+                      form.workflow_mode,
+                      form.loras,
+                    ])
+                  "
+                  :profile="
+                    matchingProfile?.preset?.id.startsWith('pony-')
+                      ? 'pony'
+                      : matchingProfile?.preset?.id.startsWith('animagine-')
+                        ? 'animagine'
+                        : 'general'
+                  "
+                  :disabled="busy || restoring || generationBusy || generationPending || !!pending"
+                  @apply="form.prompt = $event"
+                >
+                  <textarea
+                    v-field-error:prompt="fieldProblems.prompt"
+                    id="draft-prompt"
+                    v-model="form.prompt"
+                    maxlength="20000"
+                    rows="5"
+                    aria-describedby="draft-prompt-hint"
+                    placeholder="直接輸入英文，或用「中文轉英文」構思畫面…"
+                  />
+                </PromptConverter>
               </template>
               <label for="draft-model" class="studio-field-label"
                 ><UiIcon name="models" :size="15" />模型</label

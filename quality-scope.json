@@ -133,7 +133,10 @@
     "backend/template_context.py",
     "backend/test_template_context.py",
     "backend/gallery.py",
-    "backend/test_simple_examples.py"
+    "backend/test_simple_examples.py",
+    "backend/prompt_converter.py",
+    "backend/test_prompt_converter.py",
+    "scripts/verify_prompt_converter.py"
   ],
   "web": [
     "frontend/tests/style-matrix.spec.ts",
@@ -251,7 +254,9 @@
     "frontend/check-preset-evidence.mjs",
     "frontend/tests/simple-guide.spec.ts",
     "frontend/src/SimpleStyleExample.vue",
-    "frontend/tests/simple-recipes.spec.ts"
+    "frontend/tests/simple-recipes.spec.ts",
+    "frontend/src/PromptConverter.vue",
+    "frontend/tests/prompt-converter.spec.ts"
   ],
   "css": ["frontend/src/style.css", "frontend/src/theme.css", "frontend/src/redesign.css"]
 }

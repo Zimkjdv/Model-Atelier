@@ -33,6 +33,7 @@ Set-Location ..
 | 範圍 | 操作與限制 |
 | --- | --- |
 | 創作 | 文生圖、單張圖片重繪、精確 Seed、草稿與設定交換；[最多四個有序 LoRA](docs/models/lora-library.md#ordered-lora)。batch 固定 1。 |
+| 中文提示詞 | [本機 Ollama 轉換器](docs/prompt-converter.md)：中文轉英文、預覽及明確套用；另需安裝本機小型模型，不會自動生成圖片。 |
 | 局部修補 | 遮罩筆刷／擦除／PNG、[v1／v2 修補與羽化](docs/inpainting.md)、[Fooocus 實驗流程](docs/fooocus-inpainting.md)。專用流程的一般草稿／交換／比較仍未開放。 |
 | 結構與單張參考 | [Canny 與 CPU 預覽](docs/controlnet.md)、[Pose／Depth](docs/structure-reference.md)、[SDXL 畫風／角色參考](docs/models/ipadapter-reference.md)。不保證身份鎖定或姿勢完全一致。 |
 | FLUX | [固定四元件安裝](docs/models/flux-installation.md)、[Schnell 文生圖及保存／復原](docs/models/flux-workflow.md)、[獨立 LoRA／VAE 圖生圖](docs/models/flux-extensions.md)。僅認列已驗收配置，未知組合與身份參考停用。 |

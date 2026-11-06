@@ -14,9 +14,11 @@ for (const width of [1440, 390]) {
       await page.goto('/')
       await page.getByRole('button', { name: '創作工作台', exact: true }).click()
       await page.getByRole('tab', { name: '進階工作台', exact: true }).click()
+      await page.locator('.architecture-switch > summary').click()
       await page.getByRole('button', { name: 'FLUX.1 [schnell]', exact: true }).click()
       await page.getByRole('button', { name: 'FLUX LoRA／圖生圖', exact: true }).click()
       const studio = page.getByRole('region', { name: 'FLUX LoRA 與圖生圖工作台', exact: true })
+      await studio.locator('.studio-advanced > summary').click()
       await expect(page.locator('#extension-diffusion_model')).toHaveValue(
         'flux1-schnell.safetensors',
       )
@@ -98,12 +100,23 @@ for (const width of [1440, 390]) {
       expect(imageRequest.workflow_id).toBe('flux1-schnell-image2image-v1')
       expect(imageRequest.lora_name).toBeUndefined()
       await request.post('/api/jobs/' + imageRequest.request_id + '/refresh')
+      await studio.getByRole('button', { name: '任務與歷史資訊', exact: true }).click()
       await studio.getByRole('button', { name: '更新任務狀態', exact: true }).click()
       await expect(studio.getByRole('alert')).toHaveCount(0)
       expect((await (await request.get('/qa/state')).json()).prompts).toBe(before + 2)
-      expect(
-        await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
-      ).toBe(true)
+      const layout = await page.evaluate(() => ({
+        width: document.documentElement.scrollWidth,
+        viewport: innerWidth,
+        overflow: Array.from(document.querySelectorAll('body *'))
+          .flatMap((element) => {
+            const bounds = element.getBoundingClientRect()
+            return bounds.width > 0 && bounds.right > innerWidth + 1
+              ? [{ tag: element.tagName, className: element.className, right: bounds.right }]
+              : []
+          })
+          .slice(-20),
+      }))
+      expect(layout.width, JSON.stringify(layout)).toBeLessThanOrEqual(layout.viewport + 1)
       expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([])
       await page.screenshot({
         path: testInfo.outputPath('flux-image-' + width + '.png'),

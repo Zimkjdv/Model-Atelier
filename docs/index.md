@@ -20,6 +20,7 @@
 | 要做的事 | 文件 |
 | --- | --- |
 | 上傳及管理素材、進行 Checkpoint 單張圖生圖 | [參考素材與圖生圖](models/reference-workflows.md) |
+| 中文描述轉英文、預覽與手動套用 | [本機小型 LLM 提示詞轉換器](prompt-converter.md) |
 | 遮罩修補、保存筆畫及內側羽化 | [局部編輯](inpainting.md)、[v2 羽化與 CPU 合成預覽](inpainting.md#inner-feather) |
 | 試用固定 SDXL 專用修補 | [Fooocus v3 的來源、限制與操作](fooocus-inpainting.md) |
 | Canny 引導、保存同次原邊緣、預覽來源 | [Canny 結構參考](controlnet.md)、[近似 CPU 預覽](controlnet.md#cpu-preview) |

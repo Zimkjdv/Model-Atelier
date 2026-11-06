@@ -53,6 +53,7 @@ with TestClient(app) as client:  # 執行啟動與關閉生命週期
 | data_root | root/data，決定素材、作品、job_inputs、control_edges 等保存位置 |
 | database | data_root/atelier.sqlite3，可指定既有資料庫；若分離至其他目錄，備份須另包含該檔 |
 | engine_client_factory | 預設建立 httpx.AsyncClient；可注入相同 async context manager 介面的實作，接收原 timeout／trust_env／follow_redirects 參數 |
+| prompt_client_factory | 選用的本機 Ollama client，獨立於 ComfyUI；轉換僅回英文預覽，不建立圖片任務，見[轉換器](prompt-converter.md) |
 
 AppContext 位於 `app.state.context`，各 app 的路徑、引擎網址讀取、環境快取、路由鎖與進度 Hub 均獨立。功能模組依原有順序逐項註冊，不再讀取整個 main 模組；純請求型別在 schemas.py，舊的 main.DraftInput 等純型別匯出保留。一般產品程式透過工廠與 HTTP 使用，不需修改 context 內部欄位。
 

@@ -36,6 +36,7 @@ import {
   type SimpleTemplateId,
 } from './simpleCreation'
 import GenerationPanel from './GenerationPanel.vue'
+import PromptConverter from './PromptConverter.vue'
 import StudioPreview from './StudioPreview.vue'
 import TemplateSnapshot from './TemplateSnapshot.vue'
 import {
@@ -923,19 +924,37 @@ onBeforeUnmount(() => {
               參考圖由你選擇，屬任務輸入；換圖後不能視為示範原圖的重現。</p
             >
           </template>
-          <label for="simple-prompt">實際生成提示詞（英文）</label>
-          <textarea
-            id="simple-prompt"
-            v-model="form.prompt"
-            :readonly="!editing"
-            v-field-error:prompt="fieldProblems.prompt"
-            rows="7"
-            maxlength="20000"
-            aria-describedby="simple-language"
-          />
-          <p id="simple-language" class="footnote"
-            >直接修改英文提示詞。此處沒有自動翻譯；上方中文是配方說明。</p
+          <PromptConverter
+            editor-id="simple-prompt"
+            :current-prompt="form.prompt"
+            :read-only="!editing || !loadedId"
+            :context-key="
+              JSON.stringify([
+                selectedId,
+                form.engine_url,
+                'checkpoint' in form ? form.checkpoint : 'flux',
+              ])
+            "
+            :profile="
+              selected.modelId === 'pony'
+                ? 'pony'
+                : selected.modelId === 'flux'
+                  ? 'flux'
+                  : 'animagine'
+            "
+            :disabled="locked"
+            @apply="form.prompt = $event"
           >
+            <textarea
+              id="simple-prompt"
+              v-model="form.prompt"
+              :readonly="!editing"
+              v-field-error:prompt="fieldProblems.prompt"
+              rows="5"
+              maxlength="20000"
+              aria-describedby="simple-prompt-hint"
+            />
+          </PromptConverter>
           <p v-if="loadedId && !editing" class="footnote"
             >目前保留原配方描述。要修改時按「編輯描述」；還原配方會恢復描述與固定 Seed。</p
           >

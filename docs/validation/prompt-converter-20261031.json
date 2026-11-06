@@ -1,0 +1,171 @@
+{
+  "measured_at": "2026-10-31T03:50:25.327803+00:00",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "cpu": "Intel64 Family 6 Model 165 Stepping 5, GenuineIntel",
+  "ram_bytes": 68654481408,
+  "ollama": {
+    "version": "0.40.13"
+  },
+  "installed_models": {
+    "models": [
+      {
+        "name": "qwen3.5:2b",
+        "model": "qwen3.5:2b",
+        "modified_at": "2026-10-31T11:41:50.9265224+08:00",
+        "size": 2683396812,
+        "digest": "0689d44085e06d165161a8a9a1731344278cfb5aade63a3c3dbdb48ab54b130a",
+        "details": {
+          "parent_model": "model.gguf",
+          "format": "gguf",
+          "family": "qwen35",
+          "families": [
+            "qwen35"
+          ],
+          "parameter_size": "1.9B",
+          "quantization_level": "Q8_0",
+          "context_length": 262144,
+          "embedding_length": 2048,
+          "runner": "llamacpp"
+        },
+        "capabilities": [
+          "completion",
+          "vision",
+          "tools",
+          "thinking"
+        ]
+      }
+    ]
+  },
+  "running_after": {
+    "models": []
+  },
+  "cases": [
+    {
+      "case": {
+        "id": "color-negation",
+        "description": "一隻黑貓坐在窗邊，不要項圈，水彩風格"
+      },
+      "status": 200,
+      "result": {
+        "prompt": "A black cat sitting by a window, without a collar, in a watercolor style.",
+        "base_url": "http://127.0.0.1:11434",
+        "model": "qwen3.5:2b",
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "1.9B",
+          "quantization_level": "Q8_0"
+        },
+        "elapsed_ms": 7172,
+        "execution": "cpu-requested",
+        "keep_alive": 0
+      }
+    },
+    {
+      "case": {
+        "id": "count-relations",
+        "description": "兩位成年女性並排站在花園，左邊穿紅色外套，右邊穿藍色外套，沒有其他人"
+      },
+      "status": 200,
+      "result": {
+        "prompt": "Two adult women standing side by side in a garden, the woman on the left wearing a red coat and the woman on the right wearing a blue coat, no other people present.",
+        "base_url": "http://127.0.0.1:11434",
+        "model": "qwen3.5:2b",
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "1.9B",
+          "quantization_level": "Q8_0"
+        },
+        "elapsed_ms": 8921,
+        "execution": "cpu-requested",
+        "keep_alive": 0
+      }
+    },
+    {
+      "case": {
+        "id": "hands-action",
+        "description": "一位成年男子左手拿著合上的書，右手握著白色杯子，坐在木椅上"
+      },
+      "status": 200,
+      "result": {
+        "prompt": "An adult man holding a closed book in his left hand and a white cup in his right hand, sitting on a wooden chair.",
+        "base_url": "http://127.0.0.1:11434",
+        "model": "qwen3.5:2b",
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "1.9B",
+          "quantization_level": "Q8_0"
+        },
+        "elapsed_ms": 7985,
+        "execution": "cpu-requested",
+        "keep_alive": 0
+      }
+    },
+    {
+      "case": {
+        "id": "landscape-flux",
+        "description": "清晨的山間湖泊，薄霧覆蓋水面，遠處有松樹，畫面中沒有人或建築",
+        "profile": "flux"
+      },
+      "status": 200,
+      "result": {
+        "prompt": "A mountain lake at dawn, covered in thin mist, with pine trees in the distance, no people or buildings in the scene.",
+        "base_url": "http://127.0.0.1:11434",
+        "model": "qwen3.5:2b",
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "1.9B",
+          "quantization_level": "Q8_0"
+        },
+        "elapsed_ms": 7734,
+        "execution": "cpu-requested",
+        "keep_alive": 0
+      }
+    },
+    {
+      "case": {
+        "id": "pony-tags",
+        "description": "一位成年女性，綠色眼睛，黑色短髮，穿黃色雨衣，站在下雨的街道",
+        "profile": "pony",
+        "style": "tags"
+      },
+      "status": 200,
+      "result": {
+        "prompt": "score_9, score_8_up, score_7_up, one adult woman, green eyes, short black hair, yellow raincoat, standing, rainy street",
+        "base_url": "http://127.0.0.1:11434",
+        "model": "qwen3.5:2b",
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "1.9B",
+          "quantization_level": "Q8_0"
+        },
+        "elapsed_ms": 7156,
+        "execution": "cpu-requested",
+        "keep_alive": 0
+      }
+    },
+    {
+      "case": {
+        "id": "literal-trigger",
+        "description": "一位成年女性在圖書館看書，鉛筆素描風格，不要彩色",
+        "protected_terms": [
+          "atelier_char_v1"
+        ]
+      },
+      "status": 200,
+      "result": {
+        "prompt": "atelier_char_v1, An adult woman reading a book in a library, pencil sketch style, no color.",
+        "base_url": "http://127.0.0.1:11434",
+        "model": "qwen3.5:2b",
+        "details": {
+          "family": "qwen35",
+          "parameter_size": "1.9B",
+          "quantization_level": "Q8_0"
+        },
+        "elapsed_ms": 7110,
+        "execution": "cpu-requested",
+        "keep_alive": 0
+      }
+    }
+  ],
+  "limitation": "Fixed text conversions only; semantic fidelity requires inspection. No image quality or GPU coexistence acceptance."
+}

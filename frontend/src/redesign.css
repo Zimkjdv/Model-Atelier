@@ -1597,7 +1597,7 @@
   display: flex;
   gap: 4px;
   background: var(--bg);
-  width: 362px;
+  width: min(362px, calc(100% - 48px));
 }
 #app .atelier-shell .studio-content > section > .flux-toolbar button {
   min-height: 28px;
@@ -4075,6 +4075,22 @@
   margin: 0 auto 0 24px;
 }
 @media (max-width: 900px) {
+  #app .atelier-shell .studio-stage .generation-statusbar {
+    flex-wrap: wrap;
+  }
+  #app .atelier-shell .studio-stage .generation-statusbar > div {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+  #app .atelier-shell .studio-stage .stage-job-choice {
+    flex-wrap: wrap;
+    min-width: 0;
+    max-width: 100%;
+  }
+  #app .atelier-shell .studio-stage .stage-job-choice select {
+    min-width: 0;
+    max-width: 100%;
+  }
   #app .atelier-shell .app-topbar:has(> .page-tabs) {
     flex-wrap: wrap;
     height: auto;
