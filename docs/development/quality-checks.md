@@ -14,10 +14,10 @@
 
 ## 格式與靜態檢查
 
-品質環境使用 `requirements-dev.lock.txt`（包含既有 runtime lock 與 Ruff 0.17.1），frontend 使用 package-lock 精確鎖定 Prettier 3.9.10、CSS-tree 3.2.1。正式使用者安裝仍可只用 runtime lock。
+品質環境使用 `requirements/development.lock.txt`（包含既有 runtime lock 與 Ruff 0.17.1），frontend 使用 package-lock 精確鎖定 Prettier 3.9.10、CSS-tree 3.2.1。正式使用者安裝仍可只用 runtime lock。
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements-dev.lock.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements/development.lock.txt
 .\.venv\Scripts\python.exe scripts/check_style.py
 .\.venv\Scripts\python.exe scripts/check_style.py --write
 .\.venv\Scripts\python.exe scripts/check_quality.py
@@ -31,7 +31,7 @@
 | TypeScript／Vue | Prettier：100 欄、2 空格、單引號、不加語句分號、LF，Vue 使用 strict whitespace；vue-tsc 檢查整個前端的型別與模板 |
 | CSS | Prettier 保持宣告順序；CSS-tree AST 檢查語法錯誤、同區塊重複宣告／自訂屬性及無效 hex 色碼。不同 selector／media 的覆蓋合法，自訂屬性區分大小寫；不是完整 CSS 相容性或視覺檢查 |
 
-設定見 `ruff.toml`、`.prettierrc.json`、`.gitattributes` 與 `quality-scope.json`；後者是**明確檔案清單**。第一批納管 submissions／jobs／cancellation／stopping、GenerationPanel／generationRequest／jobEvents、全域 style.css，以及對應品質工具。只對列出的檔案執行格式／Ruff／CSS 檢查，不以 `format .` 一次改寫整庫；CSS 檢查目前針對全域 CSS，Vue style 由 Prettier 格式化。
+設定集中於 `config/quality/`；品質入口會明確載入，設定見 `config/quality/ruff.toml`、`config/quality/prettier.json`、`.gitattributes` 與 `config/quality/scope.json`；後者是**明確檔案清單**。第一批納管 submissions／jobs／cancellation／stopping、GenerationPanel／generationRequest／jobEvents、全域 style.css，以及對應品質工具。只對列出的檔案執行格式／Ruff／CSS 檢查，不以 `format .` 一次改寫整庫；CSS 檢查目前針對全域 CSS，Vue style 由 Prettier 格式化。
 
 新建或實質修改高風險模組時，將該檔加入 scope 並在同次變更說明理由；歷史模組逐批加入。字寬是 formatter 的換行目標，不是額外的強制 lint 長度。資料 JSON、模型 manifest、歷史 workflow、runtime 與使用者 DATA 不交給格式命令改寫。若要加入新規則，先證明能抓到具體錯誤，避免預設全開或大量忽略。
 
@@ -45,7 +45,7 @@ Python 3.12、Node.js 24、Git；在新的 checkout 執行：
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements-dev.lock.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements/development.lock.txt
 Set-Location frontend
 npm.cmd ci
 npx.cmd playwright install chromium
@@ -86,7 +86,7 @@ V02 fixture 的 `/qa/engine-audit` 最多保留 1,000 筆方法／路徑與輸�
 
 無障礙檢查保存 axe 的 violations 與 incomplete，漸層文字另核對主題 RGB 端點對比；自動結果不是完整 WCAG、讀屏或觸控認證。全站瀏覽器預算八分鐘、單案 45 秒、單 worker 及零重試；以實際設定與各專項驗收為準。
 
-2026-10-22 的乾淨 lock／Chromium 安裝、runner 各階段故障立即停止及臨時失敗探針的 screenshot／video／trace 已驗證；當時的後端／瀏覽器數字與各次新增案例記在 [CHANGELOG](../../CHANGELOG.md) 及上述驗收，不視為目前總數。Windows 8.3 TEMP 與 CI 路徑問題的實際別名重現見[獨立診斷](../validation/windows-ci.md#windows-temp-alias-20261022)，產品路徑防護未放寬。
+2026-10-22 的乾淨 lock／Chromium 安裝、runner 各階段故障立即停止及臨時失敗探針的 screenshot／video／trace 已驗證；當時的後端／瀏覽器數字與各次新增案例記在 [CHANGELOG](../history/changelog.md) 及上述驗收，不視為目前總數。Windows 8.3 TEMP 與 CI 路徑問題的實際別名重現見[獨立診斷](../validation/windows-ci.md#windows-temp-alias-20261022)，產品路徑防護未放寬。
 
 歷史相容性觀察：Starlette 1.6.0 TestClient 的 httpx 0.28.1 fallback 曾印出棄用提示；Windows 故障注入／關閉 SSE 可能印出 ConnectionResetError。保留這些提示，仍以斷言與退出碼判定；目前依賴以 lock 為準，不隱藏其他錯誤、不把引擎 HTTP 傳輸任意更換。當時 Vite／source-map-js 修補後的零項 npm audit 只屬當次結果，不是完整安全稽核或目前掃描結論。GPU、實機觸控、行動瀏覽器、對比／讀屏與全站視覺各自驗收；清單成本另見[分頁量測](list-pagination.md)。
 
@@ -101,3 +101,5 @@ npx.cmd playwright test --config playwright.journey.config.ts
 ```
 
 此設定只執行 `isolated-journey.spec.ts`，使用正式建置的前端、真實 API／SQLite 與合成引擎，從空庫沿一張來源圖串接生成、作品匯入、詳情、比較、下載、封存還原、離線與未保存保護。此檔位於獨立的 `frontend/journey-tests/`，一般 Playwright 與分批入口只收集 `frontend/tests/`，避免在已有其他測試資料的批次假裝驗證空庫；這個獨立命令需另外執行，不含在既有 `check_quality.py` 成功宣告內。無自動重試，輸出與 HTML 報告分別位於 `runtime/quality/journey-results`、`journey-report`。詳細範圍、證據與未完成能力見 [逐流程驗收](../ui-redesign/ACCEPTANCE.md#isolated-journey)。
+
+單獨呼叫 Ruff 或 Prettier 時須指定設定：`ruff check --config config/quality/ruff.toml <檔案>`、`prettier --config config/quality/prettier.json <檔案>`。編輯器整合也需指向這兩份設定；移至集中目錄後，不依賴向上搜尋。上述 npm 與 Python 品質入口已處理此路徑。

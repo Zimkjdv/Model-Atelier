@@ -1,6 +1,9 @@
 **
-!Dockerfile
-!requirements.lock.txt
+!deploy/
+!deploy/docker/
+!deploy/docker/Dockerfile
+!requirements/
+!requirements/runtime.lock.txt
 !backend/
 !backend/**
 !scripts/
@@ -21,3 +24,15 @@
 !frontend/src/**
 **/__pycache__/
 **/*.pyc
+
+!docs/
+!docs/guide/
+!docs/guide/examples/
+!docs/guide/examples/*-v1.json
+!docs/guide/images/
+!docs/guide/images/examples/
+!docs/guide/images/examples/*.png
+**/node_modules/
+**/dist/
+**/.env
+**/.env.*

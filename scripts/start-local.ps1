@@ -1,11 +1,12 @@
 $ErrorActionPreference = 'Stop'
-Set-Location -LiteralPath $PSScriptRoot
-$atelierPython = Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
-if (-not (Test-Path -LiteralPath $atelierPython)) { throw 'Please create .venv and install requirements.lock.txt. See README.md.' }
+$atelierWorkspace = Split-Path -Parent $PSScriptRoot
+Set-Location -LiteralPath $atelierWorkspace
+$atelierPython = Join-Path $atelierWorkspace '.venv\Scripts\python.exe'
+if (-not (Test-Path -LiteralPath $atelierPython)) { throw 'Please create .venv and install requirements/runtime.lock.txt. See README.md.' }
 if (-not (Test-Path -LiteralPath 'frontend\dist\index.html')) { throw 'Please run npm.cmd ci and npm.cmd run build in frontend first.' }
 $atelierPromptProcess = $null
-if (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'runtime\prompt-llm\ollama\ollama.exe')) {
-    try { $atelierPromptProcess = & (Join-Path $PSScriptRoot 'start-prompt-llm.ps1') -Background }
+if (Test-Path -LiteralPath (Join-Path $atelierWorkspace 'runtime\prompt-llm\ollama\ollama.exe')) {
+    try { $atelierPromptProcess = & (Join-Path $atelierWorkspace 'scripts\start-prompt-llm.ps1') -Background }
     catch { Write-Warning "Optional prompt converter could not start: $_" }
 }
 try {

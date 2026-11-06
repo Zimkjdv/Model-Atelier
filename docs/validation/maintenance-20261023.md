@@ -4,7 +4,7 @@
 
 格式與工具設定為獨立提交 `c465726`；後續狀態重構另行提交。沒有新功能、資料遷移或公開 JSON 變更。第一批只整理四個 Python 任務模組、生成面板／請求／事件與全域 CSS，加上品質工具；未全庫格式化。
 
-`quality-scope.json` 明列 16 個唯一檔案。`scripts/check_style.py` 預設不寫入，明確 `--write` 才格式化；Ruff／Prettier／CSS-tree 固定版本由 dev lock／package-lock 安裝。Q06 入口新增 style／static 為第一階段，CI 改用 dev lock。
+`config/quality/scope.json` 明列 16 個唯一檔案。`scripts/check_style.py` 預設不寫入，明確 `--write` 才格式化；Ruff／Prettier／CSS-tree 固定版本由 dev lock／package-lock 安裝。Q06 入口新增 style／static 為第一階段，CI 改用 dev lock。
 
 ## 格式語意與靜態規則
 

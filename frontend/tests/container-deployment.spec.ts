@@ -27,8 +27,12 @@ for (const width of [1440, 390]) {
     )
     await page.setViewportSize({ width, height: 1000 })
     await page.goto('/#/system')
-    await expect(page.locator('.host-bar')).toContainText('容器平台')
-    await expect(page.getByText('不是 Windows 宿主機的完整資訊', { exact: false })).toBeVisible()
+    await page.getByRole('tab', { name: '主機與引擎', exact: true }).click()
+    const host = page.getByRole('region', { name: '平台主機', exact: true })
+    await expect(host).toContainText('isolated-container')
+    await expect(host).toContainText('容器可見資源')
+    await expect(host).toContainText('並非 Windows 宿主機完整資訊')
+    await page.getByRole('tab', { name: '安裝與部署', exact: true }).click()
     await expect(
       page.getByRole('button', { name: '檢查本機 ComfyUI 安裝', exact: true }),
     ).toHaveCount(0)

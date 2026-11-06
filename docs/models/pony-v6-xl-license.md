@@ -77,7 +77,7 @@ MIT 本文要求保留著作權及授權通知，並附免責；這是相應官�
 
 ## 本專案驗證與保存
 
-現有 `checkpoint-text2image-v1` 使用 `CheckpointLoaderSimple` 的 MODEL／CLIP／VAE，不要求額外模型自訂節點；ComfyUI 的獨立 venv、Python／PyTorch 版本及實際載入結果見 [既有 RTX 3060 驗收](../validation/pony-v6-xl-rtx3060.md)。這是執行依賴與既有成功證據，不能替代內嵌元件的授權來源證明。平台依賴鎖定在 `requirements.lock.txt`，與引擎環境分開。
+現有 `checkpoint-text2image-v1` 使用 `CheckpointLoaderSimple` 的 MODEL／CLIP／VAE，不要求額外模型自訂節點；ComfyUI 的獨立 venv、Python／PyTorch 版本及實際載入結果見 [既有 RTX 3060 驗收](../validation/pony-v6-xl-rtx3060.md)。這是執行依賴與既有成功證據，不能替代內嵌元件的授權來源證明。平台依賴鎖定在 `requirements/runtime.lock.txt`，與引擎環境分開。
 
 本次 69 項既有安裝、provenance、模型登記／預設及生成驗收回歸通過（1 項既有 Windows 權限條件跳過）；`python -m scripts.install_model pony-v6-xl --check` 唯讀預檢通過，沒有重新下載／修改權重、重寫舊 provenance、修改正式 DATA 或重新生成。manifest 原下載修訂、大小與權重 SHA256 保持不變；未核實標記會隨新安裝的 provenance 原樣保存。
 

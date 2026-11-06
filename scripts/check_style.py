@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def run_checks(*, write=False, run=subprocess.run):
-    scope = json.loads((ROOT / 'quality-scope.json').read_text(encoding='utf-8'))
+    scope = json.loads((ROOT / 'config/quality/scope.json').read_text(encoding='utf-8'))
     npm = shutil.which('npm.cmd' if sys.platform == 'win32' else 'npm')
     if not npm:
         print('Node.js/npm is required for scoped style checks.', file=sys.stderr)
@@ -23,12 +23,25 @@ def run_checks(*, write=False, run=subprocess.run):
                 '-m',
                 'ruff',
                 'format',
+                '--config',
+                str(ROOT / 'config/quality/ruff.toml'),
                 *([] if write else ['--check']),
                 *scope['python'],
             ],
             ROOT,
         ),
-        ([sys.executable, '-m', 'ruff', 'check', *scope['python']], ROOT),
+        (
+            [
+                sys.executable,
+                '-m',
+                'ruff',
+                'check',
+                '--config',
+                str(ROOT / 'config/quality/ruff.toml'),
+                *scope['python'],
+            ],
+            ROOT,
+        ),
         ([npm, 'run', 'format' if write else 'format:check'], ROOT / 'frontend'),
         ([npm, 'run', 'lint'], ROOT / 'frontend'),
     ]

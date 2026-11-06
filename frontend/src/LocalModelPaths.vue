@@ -93,7 +93,7 @@ onMounted(() => { void load() })
   <article class="panel local-model-paths">
     <div class="paths-heading"><div><span class="chip">LOCAL CHECKPOINT DIRECTORIES</span><h2>本機模型目錄</h2></div><button type="button" class="secondary" :disabled="busy" @click="requestReload">重新讀取已保存設定</button></div>
     <p>將已存在的 checkpoint 目錄加入本機 ComfyUI 的搜尋範圍。支援其他本機磁碟，模型檔案保留原位置。</p>
-    <p class="scope-note">適用本專案受管理的 ComfyUI：<code>{{ data?.managed_engine_url || 'http://127.0.0.1:8188' }}</code>（使用 start-comfyui.ps1 啟動）。</p>
+    <p class="scope-note">適用本專案受管理的 ComfyUI：<code>{{ data?.managed_engine_url || 'http://127.0.0.1:8188' }}</code>（使用 scripts/start-comfyui.ps1 啟動）。</p>
     <p v-if="scopeDiffers" class="notice">目前連線設定為 {{ selectedEngine }}。下方路徑僅影響本機受管理的 ComfyUI，不會套用到其他或遠端引擎。</p>
     <p v-if="error" class="notice warning" role="alert">{{ error }}<span v-if="conflict"> 你的輸入已保留，請先決定是否重新讀取已保存設定。</span></p>
     <p v-if="feedback" class="notice success" role="status">{{ feedback }}</p>
@@ -104,7 +104,7 @@ onMounted(() => { void load() })
     </form>
     <template v-if="data">
       <p class="footnote">已保存修訂 {{ data.revision }} · {{ updatedAt }} · 執行中引擎的套用狀態：未確認。</p>
-      <p class="restart-note">保存後需手動停止 ComfyUI，再使用 start-comfyui.ps1 重新啟動，最後到模型庫同步清單。</p>
+      <p class="restart-note">保存後需手動停止 ComfyUI，再使用 scripts/start-comfyui.ps1 重新啟動，最後到模型庫同步清單。</p>
       <details class="directory-details"><summary>已保存目錄與磁碟狀態</summary>
         <div class="directory-card"><div class="directory-heading"><h3>預設 checkpoint 目錄</h3><span :class="{ unavailable: data.default_directory.status !== 'existing' }">{{ directoryStatus(data.default_directory.status) }}</span></div><code>{{ data.default_directory.path }}</code>
           <p class="footnote">ComfyUI 原有預設目錄，固定保留。</p><dl><dt>磁碟總量</dt><dd>{{ diskSize(data.default_directory.disk?.total) }}</dd><dt>磁碟可用</dt><dd>{{ diskSize(data.default_directory.disk?.free) }}</dd></dl><p v-if="data.default_directory.error" class="directory-error">{{ data.default_directory.error }}</p></div>

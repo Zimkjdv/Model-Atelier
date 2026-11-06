@@ -5,9 +5,31 @@ import unittest
 from unittest.mock import patch
 
 from scripts.check_quality import ROOT, browser_stages, run_checks
+from scripts import check_style
 
 
 class QualityRunnerTests(unittest.TestCase):
+    @patch('scripts.check_style.shutil.which', return_value='npm')
+    def test_style_runner_uses_central_scope_and_explicit_ruff_configuration(self, _):
+        seen = []
+
+        def run(command, **options):
+            seen.append((command, options))
+            return SimpleNamespace(returncode=0)
+
+        self.assertEqual(check_style.run_checks(run=run), 0)
+        self.assertEqual(len(seen), 4)
+        for command, options in seen[:2]:
+            self.assertEqual(options['cwd'], ROOT)
+            self.assertEqual(
+                command[command.index('--config') + 1],
+                str(ROOT / 'config/quality/ruff.toml'),
+            )
+            self.assertIn('backend/submissions.py', command)
+        self.assertIn('--check', seen[0][0])
+        self.assertEqual(seen[2][0], ['npm', 'run', 'format:check'])
+        self.assertEqual(seen[3][0], ['npm', 'run', 'lint'])
+
     @patch('scripts.check_quality.shutil.which', return_value='npm')
     def test_every_stage_failure_is_nonzero_and_stops_subsequent_stages(self, _):
         for failure in range(4 + len(browser_stages(ROOT, 'npm'))):

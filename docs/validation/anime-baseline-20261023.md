@@ -11,7 +11,7 @@
 - 新 `prompt`／`negative_prompt` 比較軸只改一個完整文字欄位，使用 schema 2 模型登記快照。正向軸與固定案例不可同選；反向可比較空字串。保留原模型、原引擎、字串 seed、素材與有序 LoRA。模型登記變更的交易核對沿用 R06。
 - 舊 schema 1 六軸、schema 2 模型／取樣器／排程器與舊案例凍結文件保持相容。局部編輯／Canny／adapter 不冒充一般比較流程。最多 8 組、每組另載入並明確生成，沒有產品自動批次或重試。
 
-新單組 CLI、重跑與檔案獨占規則見[固定測試集](../development/illustration-suite.md)；API 使用見[比較方案](../features/experiment-plans.md)。新增高風險 CLI／測試及 UI 回歸均加入 `quality-scope.json`。
+新單組 CLI、重跑與檔案獨占規則見[固定測試集](../development/illustration-suite.md)；API 使用見[比較方案](../features/experiment-plans.md)。新增高風險 CLI／測試及 UI 回歸均加入 `config/quality/scope.json`。
 
 ## GPU 條件與矩陣
 

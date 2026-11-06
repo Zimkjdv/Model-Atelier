@@ -30,10 +30,10 @@ ollama pull qwen3.5:2b
 本次機器另已安裝可攜版於 `runtime/prompt-llm/ollama`，權重在 `runtime/prompt-llm/models`，均不進 Git。從官方 [Ollama Windows 發布包](https://github.com/ollama/ollama/releases) 安裝到相同位置後，也可使用：
 
 ```powershell
-.\start-prompt-llm.ps1
+.\scripts\start-prompt-llm.ps1
 ```
 
-此腳本只綁定 `127.0.0.1:11434`，指定專案權重目錄並停用雲端。`start-local.ps1`（包含 `start-all.bat` 啟動的平台）發現可攜版時會在背景啟動；關閉平台時只停止它自己啟動的服務。已有 Ollama 服務則沿用，不停止外部服務，也不變更系統登入啟動設定。獨立執行腳本時可按 Ctrl+C 停止。
+此腳本只綁定 `127.0.0.1:11434`，指定專案權重目錄並停用雲端。`scripts/start-local.ps1`（包含 `start-all.bat` 啟動的平台）發現可攜版時會在背景啟動；關閉平台時只停止它自己啟動的服務。已有 Ollama 服務則沿用，不停止外部服務，也不變更系統登入啟動設定。獨立執行腳本時可按 Ctrl+C 停止。
 
 可攜版未安裝時不影響原平台啟動；使用原生安裝的 Ollama 仍需先啟動它自己的服務。權重只會在明確執行下載指令時下載，UI 不會自動下載、切換模型或轉用遠端服務。
 

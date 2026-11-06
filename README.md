@@ -8,15 +8,15 @@ Windows／PowerShell 先準備 Git、Python 3.12 與 Node.js 24，從專案根�
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.lock.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements/runtime.lock.txt
 Set-Location frontend
 npm.cmd ci
 npm.cmd run build
 Set-Location ..
-.\start-local.ps1
+.\scripts\start-local.ps1
 ```
 
-開啟 [本機平台](http://127.0.0.1:8000/)。前端由 FastAPI 提供，不需另啟 Node。生成另需安裝 ComfyUI、相容 PyTorch 與模型權重；既有環境可另開終端執行 `./start-comfyui.ps1`。完成安裝後也可使用 `start-all.bat` 啟動兩者並開啟瀏覽器。
+開啟 [本機平台](http://127.0.0.1:8000/)。前端由 FastAPI 提供，不需另啟 Node。生成另需安裝 ComfyUI、相容 PyTorch 與模型權重；既有環境可另開終端執行 `./scripts/start-comfyui.ps1`。完成安裝後也可使用 `start-all.bat` 啟動兩者並開啟瀏覽器。
 
 詳細安裝、啟停、埠、跨機搬移與排錯以 [安裝與操作](docs/operations/setup-and-operations.md) 為準；選用 Docker 的獨立資料卷及 8001 埠見 [Docker 部署](docs/operations/docker.md)。新資料庫不附作品或權重，引擎離線時仍可整理已保存資料。
 
@@ -51,9 +51,10 @@ Set-Location ..
 | --- | --- |
 | 第一次操作 | [新版 HTML 圖文教學](docs/guide/index.html)：依目前桌面介面與新截圖編排，下載後可離線閱讀、點圖放大與列印。 |
 | 找功能、API、模型、訓練或驗收文件 | [分類文件總覽](docs/README.md)，功能細節由各主題文件維護。 |
+| 找啟動器、依賴、品質設定與部署檔 | [專案目錄分類](docs/README.md#專案根目錄與工具分類)。 |
 | 看目前 UI 與驗收 | [正式交付現況](docs/ui-redesign/INTEGRATION-NOTES.md)、[桌面驗收](docs/ui-redesign/ACCEPTANCE.md)、[原始 preview](docs/ui-redesign/preview.html)。 |
 | 看尚未完成的工作 | [產品 ROADMAP 與 UI 能力待辦](docs/planning/roadmap.md)，不以頁面美化代替能力完成。 |
-| 查版本變更與舊決策 | [CHANGELOG](CHANGELOG.md)，歷史測試數不代表目前全量驗收結果。 |
+| 查版本變更與舊決策 | [CHANGELOG](docs/history/changelog.md)，歷史測試數不代表目前全量驗收結果。 |
 | 開發與回歸 | [架構](docs/development/architecture.md)、[前端通訊與生命週期](docs/development/frontend-api.md)、[品質檢查](docs/development/quality-checks.md)。 |
 
 備份或搬機前先停止所有資料寫入者，再依停機備份流程操作；不要直接複製正在寫入的 SQLite，也不要以整包虛擬環境搬移代替重建環境。程式與測試在 Git，模型權重、原始圖片、`data/`、`runtime/` 及虛擬環境不納入 Git。

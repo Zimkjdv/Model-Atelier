@@ -1,6 +1,6 @@
 # 文件總覽
 
-[專案 README](../README.md)提供快速開始與能力摘要；本頁負責分類與導航。未完成工作集中於 [ROADMAP](planning/roadmap.md)，已完成變更與當時條件記於 [CHANGELOG](../CHANGELOG.md)。
+[專案 README](../README.md)提供快速開始與能力摘要；本頁負責分類與導航。未完成工作集中於 [ROADMAP](planning/roadmap.md)，已完成變更與當時條件記於 [CHANGELOG](history/changelog.md)。
 
 第一次操作先讀[離線圖文教學](guide/index.html)；安裝、啟停與搬機以[安裝與日常操作](operations/setup-and-operations.md)為準。
 
@@ -8,15 +8,15 @@
 
 | 位置 | 收錄內容 |
 | --- | --- |
-| [operations/](operations/) | 安裝、部署、診斷、備份與還原 |
-| [features/](features/) | 創作、圖片流程、作品庫、設定交換與實驗操作 |
-| [development/](development/) | 架構、前端契約、執行觀察、品質與驗收工具 |
-| [planning/](planning/) | 統一 ROADMAP、簡易創作及動漫畫風方案 |
-| [contributing/](contributing/) | 按需閱讀的需求釐清與協作規則維護指南 |
-| [models/](models/)／[training/](training/) | 模型來源、專用流程與訓練契約 |
-| [guide/](guide/)／[ui-redesign/](ui-redesign/) | 圖文教學與素材、桌面 UI 規格及驗收 |
+| [operations/](operations) | 安裝、部署、診斷、備份與還原 |
+| [features/](features) | 創作、圖片流程、作品庫、設定交換與實驗操作 |
+| [development/](development) | 架構、前端契約、執行觀察、品質與驗收工具 |
+| [planning/](planning) | 統一 ROADMAP、簡易創作及動漫畫風方案 |
+| [contributing/](contributing) | 按需閱讀的需求釐清與協作規則維護指南 |
+| [models/](models)／[training/](training) | 模型來源、專用流程與訓練契約 |
+| [guide/](guide)／[ui-redesign/](ui-redesign) | 圖文教學與素材、桌面 UI 規格及驗收 |
 | [validation/](validation/README.md) | 依功能分類的歷史驗收索引與機器可讀證據 |
-| [research/](research/)／[history/](history/) | 上游研究、採用決策與歷次稽核 |
+| [research/](research)／[history/](history) | 上游研究、採用決策與歷次稽核 |
 
 ## 安裝與日常操作
 
@@ -85,7 +85,7 @@ N05／N06／N07 的狀態、設計與完成條件集中於 [ROADMAP 的 UI 能�
 
 ## 研究與歷史
 
-[上游研究與採用決策](research/upstream-reuse.md)、[2026-10-27 稽核](history/codebase-audit-20261027.md)及 [CHANGELOG](../CHANGELOG.md)分別保存研究依據、當時稽核與完成紀錄。原始 runtime、權重與使用者圖片依備份流程另存。
+[上游研究與採用決策](research/upstream-reuse.md)、[2026-10-27 稽核](history/codebase-audit-20261027.md)及 [CHANGELOG](history/changelog.md)分別保存研究依據、當時稽核與完成紀錄。原始 runtime、權重與使用者圖片依備份流程另存。
 
 ## 文件維護
 
@@ -93,4 +93,17 @@ N05／N06／N07 的狀態、設計與完成條件集中於 [ROADMAP 的 UI 能�
 - 同一能力的目前規則在主題文件維護；待辦與完成條件放 ROADMAP，完成結果放 CHANGELOG，當時的測試條件與限制保存在 validation。
 - 新文件依用途放入上表分類。移動或合併時同步更新 Markdown／HTML 連結及章節錨點；保留歷史驗收的日期、數據與限制。
 - 模型 manifest、驗收 JSON、教學素材與 preview 有程式或來源指紋引用；調整目錄前先核對消費者。這些實體路徑應與消費者一同維護。
-- 啟動器、依賴清單、Docker／Compose 與工具自動讀取的設定留在既有位置；變更它們須連同實際呼叫者驗證。
+- 根目錄保留 README、AGENTS、Git 設定及雙擊入口 start-all.bat；依賴、部署與品質設定依下表維護，搬移時同步更新實際呼叫者與測試。
+
+## 專案根目錄與工具分類
+
+| 位置 | 用途 |
+| --- | --- |
+| 根目錄的 README.md／AGENTS.md | 專案入口與 Agent 自動發現的工作規則 |
+| 根目錄的 .gitignore／.gitattributes | Git 的排除與換行規則 |
+| 根目錄的 start-all.bat | Windows 雙擊入口，呼叫 scripts 中的啟動腳本 |
+| [scripts/](../scripts/) | 啟動與維護程式；PowerShell 以腳本的上層目錄解析專案根目錄 |
+| [requirements/](../requirements/) | 平台依賴範圍、執行 lock 與開發 lock；training 的獨立 lock 仍由 training 管理 |
+| [config/quality/](../config/quality/) | Ruff、Prettier 與明確品質 scope；品質入口使用顯式設定路徑 |
+| [deploy/docker/](../deploy/docker/) | Dockerfile、專屬 ignore、Compose 與選用 GPU observer 設定 |
+| [history/changelog.md](history/changelog.md) | 已完成變更及當時的驗收紀錄 |

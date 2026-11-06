@@ -4,18 +4,22 @@ D02 提供選擇性的 Linux 平台容器；日常 Windows `start-all.bat` 仍�
 
 ## 啟動與停止
 
-先啟動原生 ComfyUI，例如在另一個 PowerShell 執行 `./start-comfyui.ps1`。Docker Desktop 需切到 Linux containers；在專案根目錄執行：
+部署檔集中在 [deploy/docker](../../deploy/docker/)；以下命令均從專案根目錄執行並用 `-f` 指定 Compose。建置 context 仍是專案根目錄，映像名稱、埠、資料卷與本機存取限制沿用原設定。
+
+Dockerfile 同目錄的 `Dockerfile.dockerignore` 是 [Docker 官方支援的專屬 ignore](https://docs.docker.com/build/concepts/context/#filename-and-location)，不需要根目錄的 `.dockerignore`。前端 build stage 保留 frontend／models／教學範例的相對布局，納入實際匯入的 JSON 與 PNG；排除本機 node_modules、dist 與環境檔，避免覆蓋容器內的乾淨安裝。
+
+先啟動原生 ComfyUI，例如在另一個 PowerShell 執行 `./scripts/start-comfyui.ps1`。Docker Desktop 需切到 Linux containers；在專案根目錄執行：
 
 ```powershell
-docker compose up -d --build --wait
+docker compose -f deploy/docker/compose.yaml up -d --build --wait
 ```
 
 開啟 `http://127.0.0.1:8001/`。8001 與原生平台 8000 分開；新資料卷是空的，不會自動匯入原生 `data/`。第一次啟動的引擎預設為 `http://host.docker.internal:8188`；設定頁保存後以資料庫設定為準，修改 `ATELIER_ENGINE_URL` 或重建不會覆蓋已保存設定。引擎模型清單仍須明確同步。
 
 ```powershell
-docker compose logs --tail 100 platform
-docker compose stop
-docker compose up -d --wait
+docker compose -f deploy/docker/compose.yaml logs --tail 100 platform
+docker compose -f deploy/docker/compose.yaml stop
+docker compose -f deploy/docker/compose.yaml up -d --wait
 ```
 
 `stop`／`down` 保留資料卷；**`down -v` 會刪除平台資料**，不要把它當日常停止指令。需要改平台埠可先設 `$env:ATELIER_PORT='8002'`；同一輪命令須使用相同 Compose project 名稱／環境。不要同時讓原生與容器平台操作同一 DATA。
@@ -27,7 +31,7 @@ docker compose up -d --wait
 一般 Compose 不需 GPU 直通；真正生成仍由原生 ComfyUI 執行。若希望系統頁取得容器可見的 `nvidia-smi` 裝置資訊，可選用：
 
 ```powershell
-docker compose -f compose.yaml -f compose.gpu.yaml up -d --build --wait
+docker compose -f deploy/docker/compose.yaml -f deploy/docker/compose.gpu.yaml up -d --build --wait
 ```
 
 這需要 Docker Desktop WSL2 與可用的 NVIDIA 驅動。沒有 GPU observer 不代表原生引擎不能出圖；observer 可列裝置也不代表平台映像具有 PyTorch／CUDA 推論環境。
@@ -55,10 +59,10 @@ Compose 僅發布 `127.0.0.1:8001:8000`。容器內監聽 0.0.0.0 供 Docker 轉
 以下為預設 project／image 的範例，目的目錄必須尚不存在，重複備份要換新的日期名稱。先停止平台，再執行備份容器；`--platform-stopped` 只是明確聲明，真的仍在運行時工具也會拒絕。
 
 ```powershell
-docker compose stop
-docker compose run --rm --no-deps --entrypoint python -v model-atelier-backups:/home/atelier platform -m scripts.data_backup backup --data /data --destination /home/atelier/backup-20261025 --platform-stopped
-docker compose run --rm --no-deps --entrypoint python -v model-atelier-backups:/home/atelier platform -m scripts.data_backup verify --archive /home/atelier/backup-20261025
-docker compose up -d --wait
+docker compose -f deploy/docker/compose.yaml stop
+docker compose -f deploy/docker/compose.yaml run --rm --no-deps --entrypoint python -v model-atelier-backups:/home/atelier platform -m scripts.data_backup backup --data /data --destination /home/atelier/backup-20261025 --platform-stopped
+docker compose -f deploy/docker/compose.yaml run --rm --no-deps --entrypoint python -v model-atelier-backups:/home/atelier platform -m scripts.data_backup verify --archive /home/atelier/backup-20261025
+docker compose -f deploy/docker/compose.yaml up -d --wait
 ```
 
 上面 `compose run` 沿用專案網路；如果需要完全禁網的備份環境，使用與驗收相同的獨立命令：

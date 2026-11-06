@@ -4,7 +4,7 @@
 
 ## 平台
 
-依 [README 快速開始](../../README.md#快速開始) 建立 `.venv`、安裝 `requirements.lock.txt`，frontend 使用 `npm.cmd ci`、`npm.cmd run build`。`start-local.ps1` 先確認 Python 與前端 dist 存在，再以 localhost:8000 啟動，優雅關閉等待上限 5 秒。PowerShell 不允許腳本時可執行相同命令：
+依 [README 快速開始](../../README.md#快速開始) 建立 `.venv`、安裝 `requirements/runtime.lock.txt`，frontend 使用 `npm.cmd ci`、`npm.cmd run build`。`scripts/start-local.ps1` 先確認 Python 與前端 dist 存在，再以 localhost:8000 啟動，優雅關閉等待上限 5 秒。PowerShell 不允許腳本時可執行相同命令：
 
 ```powershell
 .\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --no-proxy-headers --timeout-graceful-shutdown 5
@@ -26,7 +26,7 @@ git -C runtime/ComfyUI checkout 15eb748b3ec5f8a0a2d470b7fb280e2d7579f916
 python -m venv runtime/ComfyUI/.venv
 .\runtime\ComfyUI\.venv\Scripts\python.exe -m pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
 .\runtime\ComfyUI\.venv\Scripts\python.exe -m pip install --no-cache-dir -r runtime/ComfyUI/requirements.txt
-.\start-comfyui.ps1
+.\scripts\start-comfyui.ps1
 ```
 
 ComfyUI 依賴未完整 lock，重建可能解析到不同套件，需重新核對環境。硬體條件見 [Pony 實測](../validation/pony-v6-xl-rtx3060.md)。啟動腳本綁定 localhost:8188，停用自動開頁及 API 節點，匯出模型目錄、核對條件化停止能力並安裝 [E01 唯讀裝置回報](../development/runtime-observability.md#execution-device)。升級後停止能力不匹配時停用，正常生成仍可用。
@@ -78,7 +78,7 @@ python -m scripts.verify_local_access --output runtime/my-local-access-check.jso
 
 ## 額外 checkpoint 目錄
 
-設定頁可登記最多八個既有可讀本機絕對目錄，每行一個。預設 checkpoint 目錄保留；不搬移、上傳或刪除權重。保存後：原 ComfyUI Ctrl+C → 重跑 `start-comfyui.ps1` → 同步模型庫。
+設定頁可登記最多八個既有可讀本機絕對目錄，每行一個。預設 checkpoint 目錄保留；不搬移、上傳或刪除權重。保存後：原 ComfyUI Ctrl+C → 重跑 `scripts/start-comfyui.ps1` → 同步模型庫。
 
 匯出 `runtime/comfy-extra-model-paths.json`，用 `--extra-model-paths-config` 追加，不改原 YAML；損壞設定或遺失目錄停止啟動。同相對檔名可能被較早目錄遮蔽，檔名不證明實際權重。此設定只代表受管理本機引擎，不代表遠端引擎；版本與 hash 需正確登記。
 
@@ -110,8 +110,8 @@ GET／PUT `/api/local-model-paths` 使用修訂號保護。data 備份保存路�
 
 | 埠 | 用途 | 啟動／停止 |
 | --- | --- | --- |
-| 8000 | 平台 API、前端與圖片 | start-local.ps1／該終端 Ctrl+C |
-| 8188 | ComfyUI 模型、生成、歷史與輸出 | start-comfyui.ps1／該終端 Ctrl+C |
+| 8000 | 平台 API、前端與圖片 | scripts/start-local.ps1／該終端 Ctrl+C |
+| 8188 | ComfyUI 模型、生成、歷史與輸出 | scripts/start-comfyui.ps1／該終端 Ctrl+C |
 | 5173（預設） | Vite 開發與代理至 8000 | frontend 內 npm.cmd run dev／該終端 Ctrl+C |
 | 8001 等臨時埠 | 隔離驗收 | 不是日常依賴，依驗收紀錄處理 |
 
@@ -125,4 +125,4 @@ GET／PUT `/api/local-model-paths` 使用修訂號保護。data 備份保存路�
 
 若出現 `'cho'`、`'-NoProfile'` 不是命令，請更新本專案的批次檔。2026-10-24 在真實 `cmd.exe` 重現舊版 UTF-8 中文批次內容被截斷，兩個 PowerShell 腳本單獨執行則能正常啟動。現行批次內容使用 ASCII 訊息，並以 `.gitattributes` 固定 CRLF 換行；維護時請保持此格式。回歸測試透過無視窗探針驗證繁中字碼頁 950、UTF-8 字碼頁 65001、含空白路徑與缺少 PowerShell 的錯誤分支，不會啟動實際生成服務。
 
-本頁為現行操作；歷史服務、磁碟與測試數不代表即時狀態。[整理前全文](../../CHANGELOG.md#readme-before-q01) 保留原說明；功能細節見 [索引](../README.md)。
+本頁為現行操作；歷史服務、磁碟與測試數不代表即時狀態。[整理前全文](../history/changelog.md#readme-before-q01) 保留原說明；功能細節見 [索引](../README.md)。

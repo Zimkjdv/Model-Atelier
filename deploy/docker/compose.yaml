@@ -2,7 +2,9 @@ name: model-atelier
 services:
   platform:
     image: "${ATELIER_IMAGE:-model-atelier:local}"
-    build: .
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
     ports:
       - "127.0.0.1:${ATELIER_PORT:-8001}:8000"
     environment:

@@ -14,7 +14,7 @@
 
 1. 基本 Compose 可連原生 ComfyUI 並出圖，平台 GPU 資訊不可得時保持空清單。
 2. 使用 NVIDIA 官方固定 sample digest 實際執行 nbody CUDA kernel，RTX 3060／Compute 8.6 成功；只視為 GPU 存取證據，不作速度比較。
-3. 同一平台映像加 GPU observer 後，`nvidia-smi` 回報 RTX 3060、12,288 MiB；實際 `compose.gpu.yaml` 亦成功取得裝置。平台沒有安裝 PyTorch 或充當推論引擎。
+3. 同一平台映像加 GPU observer 後，`nvidia-smi` 回報 RTX 3060、12,288 MiB；實際 `deploy/docker/compose.gpu.yaml` 亦成功取得裝置。平台沒有安裝 PyTorch 或充當推論引擎。
 4. 平台 `/api/system` 為 Linux／container，RAM 約 33.62 GB；引擎回報 win32、RAM 約 68.65 GB。系統頁標示容器來源，不混成 Windows 實體資源；容器不提供 Windows 原生 Python 安裝檢查按鈕。
 5. 以既有固定 Animagine XL 4.0 Opt（實檔大小及 SHA256 核對）生成一件 512×512／4 steps／cfg 5／euler_ancestral／normal 技術案例。seed 為字串 `18446744073709551615`，workflow 保存為精確整數。原 UUID 僅提交一次，完成後明確匯入作品，核對原圖 hash、完整 workflow、模型 metadata 與全部創作設定；不代表畫風品質或容器 GPU 推論通過。
 

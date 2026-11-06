@@ -29,7 +29,7 @@ restore 先完整驗證來源備份，再複製至**新目錄**；不覆寫目�
 .\.venv\Scripts\python.exe scripts/serve_local.py --data D:\Backups\atelier-restored-20261023\data --port 8001
 ```
 
-外置 DB 再加 `--database D:\Backups\atelier-restored-20261023\database\atelier.sqlite3`。開啟 `http://127.0.0.1:8001`；確認後停止原平台，選定原埠啟動此命令即為明確切換。預設 `start-local.ps1` 仍使用專案 data。舊資料保留可回退；不自動搬移、不自動提交或重新生成歷史圖。
+外置 DB 再加 `--database D:\Backups\atelier-restored-20261023\database\atelier.sqlite3`。開啟 `http://127.0.0.1:8001`；確認後停止原平台，選定原埠啟動此命令即為明確切換。預設 `scripts/start-local.ps1` 仍使用專案 data。舊資料保留可回退；不自動搬移、不自動提交或重新生成歷史圖。
 
 空間預檢保留 manifest 的 32 MiB 餘量；DATA／外置 DB／證據合計最多 100,000 個內容檔案（manifest 另計）／32 MiB manifest。複製途中空間不足、斷電或其他失敗時，新目錄保留 `.incomplete`，verify／restore／指定資料啟動均拒絕使用。來源與既有目的地不覆寫；確認內容後由操作者另行處理失敗目錄。沒有排程、保留副本清理或自動修復。
 

@@ -7,6 +7,7 @@ for (const width of [1440, 390]) {
   }, info) => {
     await page.setViewportSize({ width, height: 1000 })
     await page.goto('/#/system')
+    await page.getByRole('tab', { name: '安裝與部署', exact: true }).click()
     const panel = page
       .locator('article')
       .filter({ has: page.getByRole('heading', { name: '部署與存取', exact: true }) })

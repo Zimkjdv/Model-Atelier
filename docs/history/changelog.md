@@ -1,10 +1,18 @@
 # Model Atelier — Changelog
 
-本檔保存已完成變更與當時的驗收條件；歷史測試數、未完成數及環境描述均屬該日期。現行操作見 [README](README.md) 與 [文件索引](docs/README.md)，尚未完成工作見 [ROADMAP](docs/planning/roadmap.md)。
+本檔保存已完成變更與當時的驗收條件；歷史測試數、未完成數及環境描述均屬該日期。現行操作見 [README](../../README.md) 與 [文件索引](../README.md)，尚未完成工作見 [ROADMAP](../planning/roadmap.md)。
+
+## 2026-11-07 · 根目錄設定與啟動入口分類
+
+根目錄保留 README、AGENTS、Git 設定與 start-all.bat。其餘部署檔移至 deploy/docker，平台依賴移至 requirements，Ruff／Prettier／品質範圍移至 config/quality，三份 PowerShell 啟動器移至 scripts，本檔移至 docs/history。同步更新 CI、明確設定載入、啟動器根目錄解析及文件命令；既有雙擊入口仍可使用。
+
+Docker 前端建置基線原本缺少教學圖片與模型 JSON，已補齊 build stage 的輸入與目錄布局，並排除本機 node_modules／dist。依賴版本、埠、Compose 資料卷與存取限制維持原設定；歷史驗收 JSON 的來源檔名及 hash 保持原值。
+
+驗證：859 項後端測試（1 項既有條件跳過）、格式／靜態檢查、前端型別／建置與 Node 契約通過；另跑 4 項部署瀏覽器案例及 Docker 完整建置／唯讀映像匯入檢查。部署案例原本仍依賴舊 host-bar 與未切換的分頁，已按現行介面更新操作與定位，保留存取拒絕、來源區分、失敗保留快照與無重送斷言。一般瀏覽器全套未重跑，不宣稱完整品質入口通過。
 
 ## 2026-11-07 · 文件分類與說明整併
 
-文件入口改為 [分類總覽](docs/README.md)，操作、功能、開發、規劃與協作指南依用途歸檔。執行環境、裝置與量測說明合併；UI 能力待辦集中到 ROADMAP，已完成的 PC01／PC02 驗收條件由本檔保存。模型、驗收 JSON、教學素材與程式入口維持原路徑；歷史驗收文件只更新受影響的引用。
+文件入口改為 [分類總覽](../README.md)，操作、功能、開發、規劃與協作指南依用途歸檔。執行環境、裝置與量測說明合併；UI 能力待辦集中到 ROADMAP，已完成的 PC01／PC02 驗收條件由本檔保存。模型、驗收 JSON、教學素材與程式入口維持原路徑；歷史驗收文件只更新受影響的引用。
 
 <a id="pc02"></a>
 
@@ -14,7 +22,7 @@
 
 依使用者回饋移除「用中文，構思你的畫面」宣傳標題，以「提示詞助手」作為唯一可見標題與對話框可讀名稱。
 
-35 個相關 Chromium 案例、前端契約、格式／lint／型別及正式建置通過。新增關閉後續編、焦點還原、短視窗底部操作及樣式不影響工作台寬度的檢查；本機既有轉換 API 回 200，只需重新整理介面。詳見[操作](docs/features/prompt-converter.md)與[UI 驗收](docs/validation/prompt-editor-20261107.md)。本次沒有更動後端或重新認列模型品質。
+35 個相關 Chromium 案例、前端契約、格式／lint／型別及正式建置通過。新增關閉後續編、焦點還原、短視窗底部操作及樣式不影響工作台寬度的檢查；本機既有轉換 API 回 200，只需重新整理介面。詳見[操作](../features/prompt-converter.md)與[UI 驗收](../validation/prompt-editor-20261107.md)。本次沒有更動後端或重新認列模型品質。
 
 <a id="pc01"></a>
 
@@ -22,7 +30,7 @@
 
 依要求先在 ROADMAP 登記六項驗收條件，再完成獨立 Ollama API 與共用轉換器：簡易創作編輯狀態、一般 Checkpoint 及基礎 FLUX 支援中文、自然英文／標籤、可編輯預覽與明確套用。保留詞逐字補回、Pony 前綴由程式提供，轉換不生成圖片或改負面提示詞。loopback-only、CPU、完成卸載、有限等待、拒絕雲端／redirect／異常回覆及不重試；非同步過期保護與既有配方／任務規則保留。
 
-安裝並核對可攜 Ollama v0.40.13 與 Qwen3.5-2B Q8_0，六個固定案例 CPU 約 7.11–8.92 秒。真實隔離頁面轉換／套用 9.53 秒，圖片任務仍為零。38 後端、32 個不同瀏覽器案例、格式／lint／型別／建置與前端契約通過；無完整全庫或 GPU 共存認證。回歸發現既有 FLUX 測試未展開選單／進階／任務資訊，補上實際操作；另修窄版 FLUX 固定寬工具列及任務狀態列換行，不弱化原斷言。操作與固定模型／輸出／限制見[轉換器](docs/features/prompt-converter.md)、[驗收紀錄](docs/validation/prompt-converter-20261031.md)。
+安裝並核對可攜 Ollama v0.40.13 與 Qwen3.5-2B Q8_0，六個固定案例 CPU 約 7.11–8.92 秒。真實隔離頁面轉換／套用 9.53 秒，圖片任務仍為零。38 後端、32 個不同瀏覽器案例、格式／lint／型別／建置與前端契約通過；無完整全庫或 GPU 共存認證。回歸發現既有 FLUX 測試未展開選單／進階／任務資訊，補上實際操作；另修窄版 FLUX 固定寬工具列及任務狀態列換行，不弱化原斷言。操作與固定模型／輸出／限制見[轉換器](../features/prompt-converter.md)、[驗收紀錄](../validation/prompt-converter-20261031.md)。
 
 原 8000 服務重啟被自動核准審查以 `blocked by policy` 拒絕，仍需使用者重開平台載入新 API；沒有停止舊服務、切換正式資料或提交圖片。新版啟動腳本可啟動／沿用專案已安裝的 Ollama，不新增系統自啟。
 
@@ -42,13 +50,13 @@
 
 修正簡易預覽固定 480／360px 高度，卻沿用依視窗計算的較大畫布，導致離線錯誤畫布超出容器、與保存按鈕及任務列重疊。容器改為依內容排版，畫布高度限制為 220–520px；保存、來源與任務列保持分隔，窄視窗的欄位及長模型檔名可換行。
 
-23 項受影響瀏覽器案例、型別／正式建置、格式及 lint 通過。新增離線錯誤／已保存圖片兩個版面回歸案例，涵蓋 1280、1440、1920、2732 及 390px；保留重試、保存及來源功能。詳見[驗收紀錄](docs/validation/simple-preview-20261031.md)。真人新手觀察依使用者要求延後，未勾選。
+23 項受影響瀏覽器案例、型別／正式建置、格式及 lint 通過。新增離線錯誤／已保存圖片兩個版面回歸案例，涵蓋 1280、1440、1920、2732 及 390px；保留重試、保存及來源功能。詳見[驗收紀錄](../validation/simple-preview-20261031.md)。真人新手觀察依使用者要求延後，未勾選。
 
 ## 2026-10-30 · 十五份簡易配方與兩個畫風任務
 
 Animagine、Pony、Schnell 各新增四份，先選模型再選五份配方，原三份 v1 與歷史來源保持不變。新增「套用像素風格 LoRA」「參考一張圖片的畫風」簡易入口，固定相容基底／元件，支援描述、參考圖與程度、直接保存及完整轉交進階；缺項列名並開啟正確模型分類。圖片流程沿用專用恢復與還原，不擴大草稿或一般 JSON 交換。
 
-十四份新增模板都完成真實 RTX 3060 生成及保存，發布原始 PNG、完整配方／workflow、精確 Seed、不可變模板來源、權重識別與有限品質觀察，另保留原有畫風對照。同步離線導覽與[方案勾選](docs/planning/simple-creation-plan.md)，實際驗證與限制見[本輪驗收](docs/validation/simple-recipes-20261030.md)。真人新手觀察仍待回報，沒有以自動測試代填。
+十四份新增模板都完成真實 RTX 3060 生成及保存，發布原始 PNG、完整配方／workflow、精確 Seed、不可變模板來源、權重識別與有限品質觀察，另保留原有畫風對照。同步離線導覽與[方案勾選](../planning/simple-creation-plan.md)，實際驗證與限制見[本輪驗收](../validation/simple-recipes-20261030.md)。真人新手觀察仍待回報，沒有以自動測試代填。
 
 50 項相關後端、33 個不同產品瀏覽器案例、四尺寸離線導覽，以及前端測試／型別建置／格式靜態檢查通過。同步舊參考恢復測試的可見導覽入口，保留原有 UUID／來源／參數檢查；保留既有 Vite 大於 500 kB 提示。後端新來源欄位需重啟平台才生效。
 
@@ -62,7 +70,7 @@ HTML 補三份完整英文配方與兩份進階畫風練習，新增簡易截圖
 
 23 項相關後端、20 個不同產品瀏覽器案例及 4 個四尺寸離線導覽案例通過；前端 `npm test`、型別／正式建置與格式／靜態檢查通過。新增範例完整性測試、證據顯示、範例 UI 與相應測試納入明確檢查範圍；未改 formatter 規則。保留既有 Vite bundle 大於 500 kB 提示；沒有宣稱全站回歸或真人新手測試通過。
 
-[11.3 清單已勾選](docs/planning/simple-creation-plan.md#113-內容與品質)，[原圖、實測條件及限制](docs/validation/simple-content-20261030.md)獨立保存。真人觀察、指定角色身份及作者相似度仍待使用者驗收。
+[11.3 清單已勾選](../planning/simple-creation-plan.md#113-內容與品質)，[原圖、實測條件及限制](../validation/simple-content-20261030.md)獨立保存。真人觀察、指定角色身份及作者相似度仍待使用者驗收。
 
 ## 2026-10-30 · 簡易創作 11.1／11.2 操作與模板來源
 
@@ -74,7 +82,7 @@ HTML 補三份完整英文配方與兩份進階畫風練習，新增簡易截圖
 
 110 項相關後端測試、前端 `npm test`、型別與正式建置、格式／靜態檢查通過。最終簡易模式瀏覽器 14 項通過；另有作品詳情／素材帶入 6 項通過，共 20 個不同案例，含 1440／390px 的操作、保存、修改再生成、草稿及離線還原。最新報告／截圖在忽略的 `runtime/quality/simple-11-delivery-report`、`simple-11-delivery-results`；另六項在 `simple-11-final-report`、`simple-11-final-results`。保留既有 Vite bundle 大於 500 kB 提示，未宣稱全站回歸通過。
 
-同步[方案驗收清單](docs/planning/simple-creation-plan.md#11-驗收清單)、架構、前端文件及使用者導覽。11.1 程式操作與 11.2 資料功能已勾選；真人新手觀察仍待執行。沒有 GPU 畫質、真實範例圖或新手理解程度的新增驗收，11.3 品質及圖文同步待辦保留。後端更新需重啟平台才生效。
+同步[方案驗收清單](../planning/simple-creation-plan.md#11-驗收清單)、架構、前端文件及使用者導覽。11.1 程式操作與 11.2 資料功能已勾選；真人新手觀察仍待執行。沒有 GPU 畫質、真實範例圖或新手理解程度的新增驗收，11.3 品質及圖文同步待辦保留。後端更新需重啟平台才生效。
 
 ## 2026-10-30 · 簡易創作分頁第一版
 
@@ -86,7 +94,7 @@ HTML 補三份完整英文配方與兩份進階畫風練習，新增簡易截圖
 
 擴大創作／介面回歸為 23／24 項通過。未通過的是既有 `ui-redesign.spec.ts` 訓練匯出案例仍找「資料出口檢查」，未修改的正式訓練頁已使用「匯出資料包」；保留原失敗證據，沒有停用或弱化檢查。本輪沒有宣稱全套回歸通過。
 
-同步[改善方案與驗收勾選](docs/planning/simple-creation-plan.md)、前端文件與使用者導覽。此版未附真實範例圖、未做 GPU 畫質或真人新手驗收，尚無任意翻譯、更多比例、風格 LoRA／IP-Adapter 簡易模板與模板來源版本獨立持久化；原有進階驗證摘要問題保留待辦。既有導覽截圖尚未重拍，正文已註明。
+同步[改善方案與驗收勾選](../planning/simple-creation-plan.md)、前端文件與使用者導覽。此版未附真實範例圖、未做 GPU 畫質或真人新手驗收，尚無任意翻譯、更多比例、風格 LoRA／IP-Adapter 簡易模板與模板來源版本獨立持久化；原有進階驗證摘要問題保留待辦。既有導覽截圖尚未重拍，正文已註明。
 
 <a id="ux02"></a>
 
@@ -108,7 +116,7 @@ UX02-01 已驗收：同類隔離自製色塊資料在 390／768／1000px 的主�
 
 UX01-01 已驗收：3 train＋1 validation＋1 test＋1 excluded 顯示 3 / 3 候選通過；未保存的用途／標註編輯不改寫保存版統計，且匯出保持停用。來源與角色缺項、實際原圖 bytes 改變、資料集層級阻擋仍阻止匯出，最終 test 不請求圖片、不編輯、不提升為 train。導覽的第二個全圖進度改為同口徑候選摘要，非候選不再描述為已檢查。
 
-前端型別與正式建置、30 項後端資料／審查測試通過；五個新瀏覽器案例加原桌面審查及三尺寸四階段矩陣共 9 項通過，原兩個缺項導覽案例另已通過。既有審查測試改用目前折疊入口與分階段操作，原斷言保留。原 390px 案例因固定三欄造成主圖 0×0 而失敗，已另列 [UX02](docs/planning/roadmap.md#ux02)，沒有停用或弱化該檢查，也未宣稱全套或手機版通過。Vite 保留既有大於 500 kB bundle 提示。
+前端型別與正式建置、30 項後端資料／審查測試通過；五個新瀏覽器案例加原桌面審查及三尺寸四階段矩陣共 9 項通過，原兩個缺項導覽案例另已通過。既有審查測試改用目前折疊入口與分階段操作，原斷言保留。原 390px 案例因固定三欄造成主圖 0×0 而失敗，已另列 [UX02](../planning/roadmap.md#ux02)，沒有停用或弱化該檢查，也未宣稱全套或手機版通過。Vite 保留既有大於 500 kB bundle 提示。
 
 教學文字與兩張審查／匯出截圖同步更新。沒有修改後端判定、資料格式、正式資料或原始 preview，沒有啟動 GPU 生成或訓練。
 
@@ -116,7 +124,7 @@ UX01-01 已驗收：3 train＋1 validation＋1 test＋1 excluded 顯示 3 / 3 �
 
 依目前正式桌面前端重寫 `docs/guide`，以八個主要入口、五種創作目的、作品選取後再並排比較、四階段訓練、系統四分頁及設定五分類說明操作。重新拍攝隔離示範畫面，替換舊布局，移除個人原圖路徑及過期測試編號；保留離線閱讀、全尺寸放大、鍵盤操作與列印。
 
-重寫時確認訓練審查進度與出口檢查使用不同集合，混合清單可同時顯示「3 / 6 已審查、0 張待補」及出口通過，已記為 [UX01 待辦](docs/planning/roadmap.md#ux01)。本輪不改產品程式、原始 preview、正式資料或驗收 JSON，也不新增 GPU 生成／訓練結論。
+重寫時確認訓練審查進度與出口檢查使用不同集合，混合清單可同時顯示「3 / 6 已審查、0 張待補」及出口通過，已記為 [UX01 待辦](../planning/roadmap.md#ux01)。本輪不改產品程式、原始 preview、正式資料或驗收 JSON，也不新增 GPU 生成／訓練結論。
 
 ## 2026-10-29 · 文件整併與閱讀入口
 
@@ -130,18 +138,18 @@ README 收斂為入門與能力邊界，完整目錄由文件索引維護。操�
 
 依原始 preview 完成創作、作品／素材、模型庫、四階段訓練、設定及系統資訊的正式整合，保留既有後端、安全限制、來源快照與精確 Seed。後續補回主舞台結果、模型分類版型／同步、素材詳情、空狀態、欄位預檢、訓練摘要及設定交換引導；作品選取先顯示批次工具列，再由明確操作進入比較。
 
-創作五目的、模型五分類兩版型及訓練四階段以 1280×800、1440×900、1920×1080 為主要桌面範圍。後續另整理名稱 tooltip、卡片等高、詳情視窗與操作區。各批次的合成 fixture、真實既有資料唯讀檢查、未執行 GPU 的界線分開見 [交付現況](docs/ui-redesign/INTEGRATION-NOTES.md) 與 [驗收及證據](docs/ui-redesign/ACCEPTANCE.md)，不把不同批測試數加成一次全站結果。
+創作五目的、模型五分類兩版型及訓練四階段以 1280×800、1440×900、1920×1080 為主要桌面範圍。後續另整理名稱 tooltip、卡片等高、詳情視窗與操作區。各批次的合成 fixture、真實既有資料唯讀檢查、未執行 GPU 的界線分開見 [交付現況](../ui-redesign/INTEGRATION-NOTES.md) 與 [驗收及證據](../ui-redesign/ACCEPTANCE.md)，不把不同批測試數加成一次全站結果。
 
-N05 全域任務抽屜、N06 偏好保存及 N07 分類容量仍是 [獨立未完成能力](docs/planning/roadmap.md#backend-backlog)。最後操作區美化為 `e7597ce`；`622d5e3` 刪除六張無引用且內容相同的舊截圖，本機另清除可重建的測試產物，保留目前規劃與證據。
+N05 全域任務抽屜、N06 偏好保存及 N07 分類容量仍是 [獨立未完成能力](../planning/roadmap.md#backend-backlog)。最後操作區美化為 `e7597ce`；`622d5e3` 刪除六張無引用且內容相同的舊截圖，本機另清除可重建的測試產物，保留目前規劃與證據。
 
 ## 2026-10-27 · 文件整理與進度同步
 
-- 統一根目錄文件為 `README.md`、`docs/planning/roadmap.md`、`CHANGELOG.md`，同步文件及 HTML 教學中的檔名引用，保留既有驗收錨點。
+- 統一根目錄文件為 `README.md`、`docs/planning/roadmap.md`、`docs/history/changelog.md`，同步文件及 HTML 教學中的檔名引用，保留既有驗收錨點。
 - README 集中呈現 RTX 4080、FLUX、模型來源及訓練進度；將已完成的首輪開發順序改為資料審查、明確試訓及獨立品質評估步驟。
 - ROADMAP 依外部來源、圖片審查、觸控設備與官方服務條件整理下一步。未完成數維持 **10 主項／11 子項（21 框）**，M01／M02 仍未通過完整驗收。
 - 本次為文件整理，未新增 GPU、訓練或品質驗收；2026-10-26 的硬體與來源追查結果見下方原始紀錄。
 
-近期紀錄：[E02 RTX 4080](#e02) · [E03 兩機比較](#e03) · [E04 推論／訓練資源](#e04) · [M01 補查](docs/models/pony-v6-xl-license-followup-20261026.md) · [M02 補查](docs/models/flux-encoder-lineage-followup-20261026.md)。
+近期紀錄：[E02 RTX 4080](#e02) · [E03 兩機比較](#e03) · [E04 推論／訓練資源](#e04) · [M01 補查](../models/pony-v6-xl-license-followup-20261026.md) · [M02 補查](../models/flux-encoder-lineage-followup-20261026.md)。
 
 ## 2026-10-26 · M02 編碼器發布追溯與 CLIP 全張量對應（完整驗收仍待來源）
 
@@ -149,7 +157,7 @@ M01 已先以 `bab29c6` 提交並推送，再開始本批。補齊 CLIP-L／scal
 
 本機核對器擴充兩個獨立編碼器，完整 SHA256 通過；保存 CLIP 196 個 F16 張量及 T5 389 張量的內容指紋、168 個 F32 scalar scale 與空 FP8 marker。新增 CPU／NumPy 候選比對器，以嚴格 HTTPS Range 串流讀取 OpenAI 固定修訂的 492,241,920 bytes 文字權重，全部 196 張量 F32 → F16 後與本機逐位元一致；只主張候選數值對應，不冒稱讀完官方全檔或找到發布者實際 recipe。沒有保存另一份模型、啟動 GPU 任務或回寫歷史 provenance。
 
-137 項相關測試（1 既有跳過）、格式／靜態／Vue 型別通過。見 [公開來源、數值對應與重跑](docs/models/flux-encoder-lineage-followup-20261026.md)、[完整 JSON 證據](docs/validation/flux-encoder-audit-20261026.json)。清冊追加發布提交／指紋／證據，CLIP 的候選數值驗證為 true、歷史輸入確認為 false；兩個編碼器的 `terms_verified`、`conversion_lineage_verified` 均維持 false。**M02 的補查與工具完成，完整驗收仍受外部來源證據限制，主項／子項不勾選**；未完成總數仍為 10 主項／11 子項。
+137 項相關測試（1 既有跳過）、格式／靜態／Vue 型別通過。見 [公開來源、數值對應與重跑](../models/flux-encoder-lineage-followup-20261026.md)、[完整 JSON 證據](../validation/flux-encoder-audit-20261026.json)。清冊追加發布提交／指紋／證據，CLIP 的候選數值驗證為 true、歷史輸入確認為 false；兩個編碼器的 `terms_verified`、`conversion_lineage_verified` 均維持 false。**M02 的補查與工具完成，完整驗收仍受外部來源證據限制，主項／子項不勾選**；未完成總數仍為 10 主項／11 子項。
 
 ## 2026-10-26 · M01 作者 V6 聲明補查與元件指紋（完整驗收仍待來源）
 
@@ -157,7 +165,7 @@ M01 已先以 `bab29c6` 提交並推送，再開始本批。補齊 CLIP-L／scal
 
 新增無 GPU／模型載入的本機 safetensors 串流核對器：完整 Pony SHA256 通過，2,515 個 F16 張量分為 diffusion 1,680、CLIP-L 197、CLIP-G 390、VAE 248，保存排序後內容指紋。檔內 metadata 沒有精確上游／授權，不能依 `v6-full-te` 名稱推導來源。模型 manifest 追加本次來源及證據連結，未改固定下載、權重、原 provenance 或正式 DATA。
 
-77 項相關測試（1 既有跳過）、格式／靜態／Vue 型別通過。見 [第一手補查與重跑](docs/models/pony-v6-xl-license-followup-20261026.md)、[JSON](docs/validation/pony-license-audit-20261026.json)。**本次工具與公開資料補查完成，但固定 HF／作者聲明的適用關係、內含元件精確 revision 仍需發布者證據，M01 與 `terms_verified` 不勾選／不改 true**。未完成總數維持 10 主項／11 子項；先提交並推送本批結果後，再接續 M02，不以程式測試替代授權驗收。
+77 項相關測試（1 既有跳過）、格式／靜態／Vue 型別通過。見 [第一手補查與重跑](../models/pony-v6-xl-license-followup-20261026.md)、[JSON](../validation/pony-license-audit-20261026.json)。**本次工具與公開資料補查完成，但固定 HF／作者聲明的適用關係、內含元件精確 revision 仍需發布者證據，M01 與 `terms_verified` 不勾選／不改 true**。未完成總數維持 10 主項／11 子項；先提交並推送本批結果後，再接續 M02，不以程式測試替代授權驗收。
 
 ## 2026-10-26 · E04 推論／訓練資源分開登記與 CP950 修復
 
@@ -167,7 +175,7 @@ E03 已先以 `3cce745` commit／push。新增唯讀訓練資源匯出器，核�
 
 首次 512 run 因隔離 `-I` 忽略 `PYTHONIOENCODING`、CP950 無法列印 trainer 日文而失敗，保留原紀錄並確認釋放資源。最小回歸先重現同一字元失敗，再於 worker 起點明確將 stdout／stderr 設為 UTF-8；回歸及新 UUID 真實訓練成功。沒有修改固定上游、覆寫歷史 run 或批准作者圖；結束後恢復本機 ComfyUI，平台確認 CUDA 連線。
 
-最終空閒狀態下 798 項後端（1 既有跳過）、格式／靜態／型別、前端建置與契約全部通過；本項明確使用 --skip-browser，E02 的 122 項 Chromium 基線沿用，本項沒有前端變更。先前與真實訓練並行的回歸因運算互斥拒絕模擬提交而失敗，保留該輸出並於租約釋放後重新完整驗證，未移除互斥機制。見 [資源與失敗紀錄](docs/validation/hardware-resources-20261026.md)、[JSON](docs/validation/hardware-resources-20261026.json)。ROADMAP 保留 10 主項／11 子項（21 框），E02 → E03 → E04 各自 commit／push。
+最終空閒狀態下 798 項後端（1 既有跳過）、格式／靜態／型別、前端建置與契約全部通過；本項明確使用 --skip-browser，E02 的 122 項 Chromium 基線沿用，本項沒有前端變更。先前與真實訓練並行的回歸因運算互斥拒絕模擬提交而失敗，保留該輸出並於租約釋放後重新完整驗證，未移除互斥機制。見 [資源與失敗紀錄](../validation/hardware-resources-20261026.md)、[JSON](../validation/hardware-resources-20261026.json)。ROADMAP 保留 10 主項／11 子項（21 框），E02 → E03 → E04 各自 commit／push。
 
 <a id="e04"></a>
 
@@ -179,7 +187,7 @@ E03 已先以 `3cce745` commit／push。新增唯讀訓練資源匯出器，核�
 
 E02 已先以 `a74dfbe` commit／push。讀取 RTX 3060 原始 Pony 報告／成功 history，與 RTX 4080 新引擎程序第一次相同配置生成比較；固定權重完整 SHA256、模型／CLIP／VAE dtype、768²／20 步／精確 seed／batch 1／無附加元件及完整七節點圖均匹配。原 history 耗時 22.551／9.380 秒，單次比例 2.4042，保留 OS／驅動及背景負載差異；未回填舊任務量測、未把整卡取樣視為任務峰值。
 
-RTX 4080 另完成 1536²／30 步／batch 1，原圖、完整 workflow／設定與版本還原通過；15.171 秒引擎耗時使用 baseline 後的模型快取，獨立保存，不混入冷載入對照。新增唯讀比較器，精度／快取／來源／hash 未知、設定或 workflow 不同時不提供時間比，訓練不混用。見 [紀錄](docs/validation/hardware-comparison-20261026.md)、[JSON](docs/validation/hardware-comparison-20261026.json)。
+RTX 4080 另完成 1536²／30 步／batch 1，原圖、完整 workflow／設定與版本還原通過；15.171 秒引擎耗時使用 baseline 後的模型快取，獨立保存，不混入冷載入對照。新增唯讀比較器，精度／快取／來源／hash 未知、設定或 workflow 不同時不提供時間比，訓練不混用。見 [紀錄](../validation/hardware-comparison-20261026.md)、[JSON](../validation/hardware-comparison-20261026.json)。
 
 格式／靜態／Vue 型別與 38 項相關回歸通過；E02 完整 784 項後端及 122 項 Chromium 基線沿用。本項沒有修改前端或生成協調／背景取樣。ROADMAP 保留 11 主項／13 子項，E04 待本項 commit／push 後開始。
 
@@ -195,7 +203,7 @@ RTX 4080 另完成 1536²／30 步／batch 1，原圖、完整 workflow／設定
 
 八個固定案例通過：Pony／Animagine 文生圖、有序雙 LoRA、圖生圖、一般／羽化修補、Canny、單張 adapter。每例確認原 UUID／成功 history、原圖 hash／完整 workflow／版本與精確 seed 還原；引擎離線後八份原報告全部 GET-only 核對通過。Chromium 1440px／390px 核對系統 GPU、原圖預覽及載入表單，沒有生成請求。Canny 因搬移後元件登記缺漏的預檢失敗保留，補登固定身分後新報告通過。
 
-完整品質入口：784 項後端（1 既有跳過）、格式／靜態／型別／建置／契約及 122 項 Chromium 通過。幾何參考圖不代表作者品質，整卡觀察值不代表任務峰值；未測變體、較高負載及訓練另行登記。見 [實機紀錄](docs/validation/rtx4080-workflows-20261026.md)、[可解析證據](docs/validation/rtx4080-workflows-20261026.json)。ROADMAP 保留 12 主項／15 子項，E03 待本項 commit／push 後開始。
+完整品質入口：784 項後端（1 既有跳過）、格式／靜態／型別／建置／契約及 122 項 Chromium 通過。幾何參考圖不代表作者品質，整卡觀察值不代表任務峰值；未測變體、較高負載及訓練另行登記。見 [實機紀錄](../validation/rtx4080-workflows-20261026.md)、[可解析證據](../validation/rtx4080-workflows-20261026.json)。ROADMAP 保留 12 主項／15 子項，E03 待本項 commit／push 後開始。
 
 <a id="e02"></a>
 
@@ -209,7 +217,7 @@ F03 已先以 `6ac8bae` commit／push，才接續本項；其 [GitHub Actions](h
 
 固定 PVC LoRA 全檔 SHA256 通過，RTX 3060／約 64 GiB RAM、512×512／4 步／主模型 FP8／CPU 編碼器完成四個 HTTP 實機案例：強度 0／0.7，及兩張自製幾何原圖。原生 LoRA 觀察到 304 個參數 patch，RGB 像素差異、四份作品／來源快照與引擎離線後 GET 核對通過，各只提交一次。未知／SDXL／Dev LoRA、Redux／IP-Adapter、LoRA＋原圖混用及未驗收配置不啟用；幾何圖重繪不認列動漫畫風或角色品質。作者圖片後續需先審查及確認獨立保留圖。
 
-沿用原生節點與既有下載器，新增約 164 MiB 權重，未導入額外推論框架或開始訓練。模型卡宣告 Apache-2.0，但沒有獨立完整條款及全部資料權利鏈證明，manifest `terms_verified` 保持 false；M02 也保留。操作見 [F04](docs/models/flux-extensions.md)，[實機／介面證據](docs/validation/flux-extensions-20261025.md)。
+沿用原生節點與既有下載器，新增約 164 MiB 權重，未導入額外推論框架或開始訓練。模型卡宣告 Apache-2.0，但沒有獨立完整條款及全部資料權利鏈證明，manifest `terms_verified` 保持 false；M02 也保留。操作見 [F04](../models/flux-extensions.md)，[實機／介面證據](../validation/flux-extensions-20261025.md)。
 
 本機完整 780 項後端測試（1 既有跳過）通過，另新增清理後資料庫保護回歸，含此項的 38 項相關測試（1 既有跳過）通過；格式／型別／建置／契約及 122 項 Chromium 通過，1,062 個 Markdown 本機連結有效。完成項移至本檔，ROADMAP 保留 13 主項／17 子項未完成。
 
@@ -223,7 +231,7 @@ F03 已先以 `6ac8bae` commit／push，才接續本項；其 [GitHub Actions](h
 
 固定四份權重完整 SHA256 通過後，使用獨立 loopback HTTP 引擎與全新 DATA／SQLite，RTX 3060／約 64 GiB RAM 完成 512×512／4 步／主模型 FP8 e4m3fn／CPU 編碼器的單次提交、作品保存、完整設定還原與停止引擎後的唯讀驗證。另實測損壞模型載入失敗、極小程序配額下實際 CUDA OOM、明確新 UUID 的快取重試，以及故意遺失回覆後查回原 UUID；五個案例各僅一次 `/prompt`。保留完整錯誤、工作流程、四元件及環境快照，未認列自然顯存門檻、其他配置或動漫品質。
 
-新增驗收 CLI、只限獨立程序的故障測試及回歸；明確指定 ComfyUI database URL，避免其舊資料庫自動遷移，最終測試前後原資料庫 hash 相同。也依 F02 CI 的實際 traceback 修正 Windows 8.3／非正規 TEMP 路徑比較，保留逸出檢查。操作見 [F03](docs/models/flux-workflow.md#generation-acceptance)，[實測與限制](docs/validation/flux-generation-20261025.md)。
+新增驗收 CLI、只限獨立程序的故障測試及回歸；明確指定 ComfyUI database URL，避免其舊資料庫自動遷移，最終測試前後原資料庫 hash 相同。也依 F02 CI 的實際 traceback 修正 Windows 8.3／非正規 TEMP 路徑比較，保留逸出檢查。操作見 [F03](../models/flux-workflow.md#generation-acceptance)，[實測與限制](../validation/flux-generation-20261025.md)。
 
 完整本機檢查：775 項後端（1 既有跳過）、格式／型別／建置／契約及 120 項 Chromium 通過；1,033 個 Markdown 本機連結無誤。ROADMAP 僅保留 14 主項／19 子項未完成，F04 接續獨立實作。
 
@@ -237,9 +245,9 @@ F03 已先以 `6ac8bae` commit／push，才接續本項；其 [GitHub Actions](h
 
 F01 已先以 `5076208` commit／push。新增固定原生節點量測工具、檔案標頭的混合 dtype 盤點、實際 cast／參數裝置觀察、有界 RSS／整卡取樣及程序 CUDA allocator 最高值。先核對完整權重 hash、引擎停止及運算租約，獨立 worker 明確使用 CPU 編碼器、FP8 主模型與 512×512／batch 1／4 步，失敗／逾時保留回執，只停止自己擁有的程序。
 
-RTX 3060／約 64 GiB RAM 完成兩次原生案例，約 59／56 秒，輸出 PNG hash 相同；觀察到 FP8 權重由 CPU／CUDA 轉成 CUDA BF16，以及 CPU 常駐權重。程序 RSS 取樣最高約 36–37 GiB，整卡取樣最高約 11.4–11.6 GiB，不能承諾 32 GiB RAM、其他尺寸或最低硬體需求。條款清冊讀取 BFL／OpenAI／Google 一手全文與模型卡，CLIP／T5 的確切轉檔來源仍未證明，新增 M02 保留 false，不回填 F01 歷史側錄。見 [操作](docs/models/flux-runtime-observation.md)、[實測](docs/validation/flux-runtime-20261025.md)、[條款](docs/models/flux-component-licenses.md)。
+RTX 3060／約 64 GiB RAM 完成兩次原生案例，約 59／56 秒，輸出 PNG hash 相同；觀察到 FP8 權重由 CPU／CUDA 轉成 CUDA BF16，以及 CPU 常駐權重。程序 RSS 取樣最高約 36–37 GiB，整卡取樣最高約 11.4–11.6 GiB，不能承諾 32 GiB RAM、其他尺寸或最低硬體需求。條款清冊讀取 BFL／OpenAI／Google 一手全文與模型卡，CLIP／T5 的確切轉檔來源仍未證明，新增 M02 保留 false，不回填 F01 歷史側錄。見 [操作](../models/flux-runtime-observation.md)、[實測](../validation/flux-runtime-20261025.md)、[條款](../models/flux-component-licenses.md)。
 
-770 項後端（1 既有跳過）、型別／建置／契約及全部 120 項 Chromium 分四批通過。另依實際 Windows CI 的 `net::ERR_NO_BUFFER_SPACE` 及 480 秒總截止，將完整入口改為每六份 spec 使用新程序／埠與獨立證據目錄，保留單案限制及零重試；[診斷與驗證](docs/validation/windows-ci.md#browser-batching-20261025)。平台 HTTP／作品保存／離線還原／OOM 仍留 F03，沒有作者圖訓練或品質認列。
+770 項後端（1 既有跳過）、型別／建置／契約及全部 120 項 Chromium 分四批通過。另依實際 Windows CI 的 `net::ERR_NO_BUFFER_SPACE` 及 480 秒總截止，將完整入口改為每六份 spec 使用新程序／埠與獨立證據目錄，保留單案限制及零重試；[診斷與驗證](../validation/windows-ci.md#browser-batching-20261025)。平台 HTTP／作品保存／離線還原／OOM 仍留 F03，沒有作者圖訓練或品質認列。
 
 <a id="f02"></a>
 
@@ -251,7 +259,7 @@ RTX 3060／約 64 GiB RAM 完成兩次原生案例，約 59／56 秒，輸出 PN
 
 使用者完成官方 Hugging Face 存取及本機 CLI 登入後，固定 BFL 主模型／VAE、ComfyUI 範例編碼器四個來源 HEAD 均為 200。新增 `scripts.install_flux` 的整體來源／容量 check、有限續傳 install 與離線完整 verify；沿用共用下載器，固定 revision／bytes／SHA256、每磁碟區 2 GiB 預留、安裝鎖及不覆寫正式檔。憑證只從官方本機位置讀取，不寫進報告，CDN 與公開編碼器不收到 token。
 
-本機實際下載四份共 29,521,303,916 bytes，各自完整 SHA256 通過並保存來源側錄。761 項後端（1 既有跳過）、格式／型別／建置／契約、三項模型庫桌面／窄版含 axe 檢查通過；最終 48 項安裝／預檢回歸（1 既有跳過）亦通過。本項沒有載入 GPU，不認列 F02／F03；授權待核對欄位保留。操作見 [F01](docs/models/flux-installation.md)、[實際證據](docs/validation/flux-installation-20261025.md)。另補上 [另一台 Windows 主機部署](docs/operations/setup-and-operations.md#部署至另一台-windows主機)的資料搬移與環境重建步驟。
+本機實際下載四份共 29,521,303,916 bytes，各自完整 SHA256 通過並保存來源側錄。761 項後端（1 既有跳過）、格式／型別／建置／契約、三項模型庫桌面／窄版含 axe 檢查通過；最終 48 項安裝／預檢回歸（1 既有跳過）亦通過。本項沒有載入 GPU，不認列 F02／F03；授權待核對欄位保留。操作見 [F01](../models/flux-installation.md)、[實際證據](../validation/flux-installation-20261025.md)。另補上 [另一台 Windows 主機部署](../operations/setup-and-operations.md#部署至另一台-windows主機)的資料搬移與環境重建步驟。
 
 <a id="f01"></a>
 
@@ -263,9 +271,9 @@ RTX 3060／約 64 GiB RAM 完成兩次原生案例，約 59／56 秒，輸出 PN
 
 T07 已先以 `e09fa3b` commit／push，才新增已登記原 run 的唯讀報告：固定參數／來源 hash、狀態／資源、resume 與產物回執，最多 1 MiB；預設排除圖片、caption、路徑、GPU UUID 與日誌，另選才附日誌尾段。下載保存預覽的原始 bytes，改選 run／資料範圍清除舊預覽，未知／損壞紀錄保留，不重送或重跑。
 
-746 項完整後端（1 既有跳過）、格式／型別／建置／契約通過；本項採 8 項訓練相關 Chromium 回歸（含 axe 與 390px），不宣稱重跑整站瀏覽器。最後未知狀態保護另經 15 項相關後端及靜態檢查。原生平台只讀既有幾何圖 run，兩種寬度各 17,140 bytes 的下載與預覽 SHA 一致，零 API 寫入、原紀錄不變、沒有新訓練／生成。見 [操作](docs/training/workspace.md#t08-訓練報告)、[有限驗收](docs/validation/training-workspace-20261025.md#t08-report)。
+746 項完整後端（1 既有跳過）、格式／型別／建置／契約通過；本項採 8 項訓練相關 Chromium 回歸（含 axe 與 390px），不宣稱重跑整站瀏覽器。最後未知狀態保護另經 15 項相關後端及靜態檢查。原生平台只讀既有幾何圖 run，兩種寬度各 17,140 bytes 的下載與預覽 SHA 一致，零 API 寫入、原紀錄不變、沒有新訓練／生成。見 [操作](../training/workspace.md#t08-訓練報告)、[有限驗收](../validation/training-workspace-20261025.md#t08-report)。
 
-HTML 教學新增報告截圖與步驟。依使用者補充，另記錄 [FLUX／3060 官方資料與前置判斷](docs/models/flux-rtx3060-planning.md)：下一輪建議 F01 → F04，需量化／卸載或 4080 時先說明，GGUF 尚未整合／安裝，不認列固定權重或 GPU 驗收。
+HTML 教學新增報告截圖與步驟。依使用者補充，另記錄 [FLUX／3060 官方資料與前置判斷](../models/flux-rtx3060-planning.md)：下一輪建議 F01 → F04，需量化／卸載或 4080 時先說明，GGUF 尚未整合／安裝，不認列固定權重或 GPU 驗收。
 
 <a id="t08"></a>
 
@@ -277,7 +285,7 @@ HTML 教學新增報告截圖與步驟。依使用者補充，另記錄 [FLUX／
 
 T05 資料審查加入圖片 ID／檔名／群組搜尋、用途／已保存缺項篩選、跨頁定位與下一張阻擋缺項；完整問題分頁取代前 200 項截斷。資料集層級提醒獨立顯示，篩選與定位保留未保存標註，final test 仍不預覽。教學文字與截圖同步更新。
 
-739 項後端（1 既有跳過）、格式／型別／建置與契約通過；完整 Chromium 117 項通過、1 項既有模型庫案例在最後唯讀 `/qa/state` 遇到 ECONNRESET，獨立重驗同案例通過。新增桌面／390px 操作及 axe 均通過，125 張自製圖核對 244 個缺項可完整定位，沒有作者圖審查／訓練或生成。見 [操作](docs/training/workspace.md#t07-缺項導覽)與[驗收](docs/validation/training-workspace-20261025.md#t07-navigation)。
+739 項後端（1 既有跳過）、格式／型別／建置與契約通過；完整 Chromium 117 項通過、1 項既有模型庫案例在最後唯讀 `/qa/state` 遇到 ECONNRESET，獨立重驗同案例通過。新增桌面／390px 操作及 axe 均通過，125 張自製圖核對 244 個缺項可完整定位，沒有作者圖審查／訓練或生成。見 [操作](../training/workspace.md#t07-缺項導覽)與[驗收](../validation/training-workspace-20261025.md#t07-navigation)。
 
 <a id="t07"></a>
 
@@ -288,7 +296,7 @@ T05 資料審查加入圖片 ID／檔名／群組搜尋、用途／已保存缺�
 
 ## 2026-10-25 · 離線 HTML 圖文使用教學
 
-新增 [圖文教學](docs/guide/index.html)，依操作目的說明啟動、生成、單張參考、T05 資料審查、T06 訓練／停止／續訓、產物比較與備份，包含五張真實介面截圖、流程圖、參數解釋與疑難排解。支援桌面／窄視窗、圖片放大、鍵盤操作與列印／另存 PDF，不依賴外部資源；圖片明確區分隔離示範與幾何圖技術驗收，未使用作者圖。README／文件索引新增入口，深入規格仍連回既有 Markdown。
+新增 [圖文教學](../guide/index.html)，依操作目的說明啟動、生成、單張參考、T05 資料審查、T06 訓練／停止／續訓、產物比較與備份，包含五張真實介面截圖、流程圖、參數解釋與疑難排解。支援桌面／窄視窗、圖片放大、鍵盤操作與列印／另存 PDF，不依賴外部資源；圖片明確區分隔離示範與幾何圖技術驗收，未使用作者圖。README／文件索引新增入口，深入規格仍連回既有 Markdown。
 
 ## 2026-10-25 · T06 原生訓練控制與產物操作網頁
 
@@ -296,7 +304,7 @@ T05 已先以 `29715e7` commit／push，再接上 T03 的凍結準備、明確�
 
 RTX 3060 原生網頁實測自製幾何圖：原 run 保存至第 2 步後停止，從 step-1 建新 run，明確開始剩餘 5 更新並確認全程 step 6、程序／租約釋放、產物 hash／安裝、來源回登及六份方案保存；沒有生成比較圖或訓練作者圖。只啟停自己的驗收平台／引擎，原本離線的引擎狀態已恢復。另補 T05 候選圖不可在審查後轉為未曝光 final test，按既有主題統一操作按鈕。
 
-739 項完整後端（1 既有跳過）、型別／建置／契約／靜態及 116 項 Chromium 通過；最後審查保護及 UI 整理另完成 44 項相關後端、4 項含 axe 的桌面／390px 回歸。Windows CI fixture 時間修正為 `7ed76e9`，本項包含其格式同步。見 [操作與中斷恢復](docs/training/workspace.md)、[有限實機驗收](docs/validation/training-workspace-20261025.md#t06-control)。
+739 項完整後端（1 既有跳過）、型別／建置／契約／靜態及 116 項 Chromium 通過；最後審查保護及 UI 整理另完成 44 項相關後端、4 項含 axe 的桌面／390px 回歸。Windows CI fixture 時間修正為 `7ed76e9`，本項包含其格式同步。見 [操作與中斷恢復](../training/workspace.md)、[有限實機驗收](../validation/training-workspace-20261025.md#t06-control)。
 
 <a id="t06"></a>
 
@@ -312,7 +320,7 @@ T05 的 Windows CI 在既有 delayed readiness 案例失敗；該案例僅有 1 
 
 使用者確認新增 T05 → T06。訓練工作區沿用 T02 清單與出口，提供逐張原圖預覽、caption／來源／角色審查、不可變修訂與下載、409 保留編輯、來源重驗及 train-only 封存。保留圖不能轉 train、曝光不可降級；最終評估圖不提供預覽，避免提前曝光。匯入／出口以原 UUID 查回，失敗不覆寫或自動重做；Q07 增加審查 hash 與已完成出口檔案關聯檢查。
 
-隔離本機平台匯入兩份既有作者清單，22 個原檔 hash 不變，20／30 個缺項保持待審查；只有自製色塊完成審查與出口，沒有訓練或作者品質認列。730 項完整後端（1 既有跳過）、18 項最終審查／備份回歸、建置／契約／靜態檢查通過；完整 Chromium 113 項通過，另一項受並行輸出目錄清理影響，改用獨立目錄後與兩個新增含 axe 的案例共三項重跑通過。操作與證據見 [訓練工作區](docs/training/workspace.md)、[T05 驗收](docs/validation/training-workspace-20261025.md#t05-review)。
+隔離本機平台匯入兩份既有作者清單，22 個原檔 hash 不變，20／30 個缺項保持待審查；只有自製色塊完成審查與出口，沒有訓練或作者品質認列。730 項完整後端（1 既有跳過）、18 項最終審查／備份回歸、建置／契約／靜態檢查通過；完整 Chromium 113 項通過，另一項受並行輸出目錄清理影響，改用獨立目錄後與兩個新增含 axe 的案例共三項重跑通過。操作與證據見 [訓練工作區](../training/workspace.md)、[T05 驗收](../validation/training-workspace-20261025.md#t05-review)。
 
 <a id="t05"></a>
 
@@ -324,7 +332,7 @@ T05 的 Windows CI 在既有 delayed readiness 案例失敗；該案例僅有 1 
 
 D01 已先以 `bd82a59` commit／push，再加入固定基底的多階段映像、非 root／唯讀平台、loopback Compose 與獨立 DATA／協調鎖卷。容器入口只適配明確 bridge peer，保留 Host／Origin 與原生入口的存取邊界；系統頁分開容器可見資訊與 Windows 引擎，原生安裝檢查明確標示需在 Windows 執行。
 
-Windows Docker Desktop／WSL2 與 RTX 3060 完成實際 CUDA sample、選用 GPU observer、連原生 ComfyUI 生成一件固定案例，保存精確 seed／workflow／模型資訊。容器重建、使用中備份拒絕、停機備份／verify、新卷還原及引擎離線原作品查閱皆通過；正式 DATA／作者圖未使用。722 項後端（1 既有跳過）、型別／建置／契約與 112 項 Chromium 通過，最後 UI 提示另定向重跑兩項及建置／靜態檢查。見 [操作與原生差異](docs/operations/docker.md)、[限定驗收](docs/validation/docker-deployment-20261025.md)。
+Windows Docker Desktop／WSL2 與 RTX 3060 完成實際 CUDA sample、選用 GPU observer、連原生 ComfyUI 生成一件固定案例，保存精確 seed／workflow／模型資訊。容器重建、使用中備份拒絕、停機備份／verify、新卷還原及引擎離線原作品查閱皆通過；正式 DATA／作者圖未使用。722 項後端（1 既有跳過）、型別／建置／契約與 112 項 Chromium 通過，最後 UI 提示另定向重跑兩項及建置／靜態檢查。見 [操作與原生差異](../operations/docker.md)、[限定驗收](../validation/docker-deployment-20261025.md)。
 
 <a id="d02"></a>
 
@@ -338,7 +346,7 @@ Windows Docker Desktop／WSL2 與 RTX 3060 完成實際 CUDA sample、選用 GPU
 
 使用者確認維持同一台電腦使用。平台新增全域來源 IP／Host／完整 Origin 檢查，拒絕非 loopback、重複標頭、DNS rebinding 型 Host 與跨站 API 寫入；原啟動腳本停用 forwarded-header 信任。系統頁顯示本機模式，分開平台／引擎／儲存來源，失敗保留上次資料。沒有新增遠端帳號認證，本機使用者與程式仍視為可信。
 
-718 項後端（1 既有跳過）、前端建置／契約及 108 項既有 Chromium 通過。新增兩項桌面／390px 案例最初誤把 mock-engine.invalid 預期為本機引擎，修正測試後兩項定向重跑通過；七項邊界測試及真正 loopback HTTP 隔離驗收通過。正式 DATA／GPU 工作未變更。操作與限制見 [部署說明](docs/operations/setup-and-operations.md#local-access)、[驗收](docs/validation/local-deployment-20261025.md)。
+718 項後端（1 既有跳過）、前端建置／契約及 108 項既有 Chromium 通過。新增兩項桌面／390px 案例最初誤把 mock-engine.invalid 預期為本機引擎，修正測試後兩項定向重跑通過；七項邊界測試及真正 loopback HTTP 隔離驗收通過。正式 DATA／GPU 工作未變更。操作與限制見 [部署說明](../operations/setup-and-operations.md#local-access)、[驗收](../validation/local-deployment-20261025.md)。
 
 <a id="d01"></a>
 
@@ -360,7 +368,7 @@ T03 已先以 `db7ab91` commit／push，再接入完整產物及最終狀態核�
 
 T03 幾何技術 LoRA 在 RTX 3060 原生載入成功，候選有 UNet 722 patches、CLIP 0 patches；只生成兩件 512／4 steps 基準／候選，保存、精確 seed、完整設定與權重快照還原通過。暫停閒置引擎後，兩組原紀錄 GET 查回也通過且沒有重送，原引擎已恢復。使用隔離平台 DATA，作者圖未訓練、12 件畫風品質比較未執行。
 
-最終 711 項後端（1 項既有跳過）、18 項產物／run 定向重跑與靜態檢查通過；前端程式未變更，沿用 T03 同次已通過的建置／契約及 108 Chromium。ROADMAP T04 流程完成，剩餘 18 主項／28 子項。見 [回登與比較操作](docs/training/artifacts.md)、[技術驗收與限制](docs/validation/training-artifacts-20261025.md)。
+最終 711 項後端（1 項既有跳過）、18 項產物／run 定向重跑與靜態檢查通過；前端程式未變更，沿用 T03 同次已通過的建置／契約及 108 Chromium。ROADMAP T04 流程完成，剩餘 18 主項／28 子項。見 [回登與比較操作](../training/artifacts.md)、[技術驗收與限制](../validation/training-artifacts-20261025.md)。
 
 ## 2026-10-25 · T03 獨立 SDXL 訓練環境與資源協調
 
@@ -368,23 +376,23 @@ T03 幾何技術 LoRA 在 RTX 3060 原生載入成功，候選有 UNet 722 patch
 
 只用自製 512 幾何圖片進行 RTX 3060 技術驗收：在線引擎拒絕、保存後停止、資源釋放、從 step 1 完整恢復至 step 3。發現並保留上游續訓重設步數的失敗結果，整合層明確計算剩餘更新並核對最終 state；不修改固定上游 checkout。PyTorch 配置峰值約 5.2 GiB、程序 RAM 峰值約 20.9 GiB，不推論為 1024／RTX 4080／畫風品質需求。驗收後原 ComfyUI 恢復；作者圖片未訓練，仍需 T02 審查及最終保留集。
 
-701 項後端（1 項既有跳過）、前端建置／契約與 108 項 Chromium 回歸通過；最終 19 項訓練／互斥測試另重跑。ROADMAP T03 完成，剩餘 19 主項／29 子項；T04 待 T03 commit、push 後才實作。操作及實測見 [訓練 runtime](docs/training/runtime.md)、[驗收與量測](docs/validation/training-runtime-20261025.md)。
+701 項後端（1 項既有跳過）、前端建置／契約與 108 項 Chromium 回歸通過；最終 19 項訓練／互斥測試另重跑。ROADMAP T03 完成，剩餘 19 主項／29 子項；T04 待 T03 commit、push 後才實作。操作及實測見 [訓練 runtime](../training/runtime.md)、[驗收與量測](../validation/training-runtime-20261025.md)。
 
 ## 2026-10-24 · 系統資訊目錄卡片與開啟資料夾
 
-目錄與磁碟容量改為摘要、使用率與精簡目錄列，支援長路徑及窄視窗；每列新增資料夾圖示，可從 Windows 本機平台頁面開啟對應檔案總管目錄。未建立目錄停用按鈕，更新失敗保留舊快照；後端只開啟清單中的既有本機目錄，驗證來源與實際位置，不接受任意開啟路徑或自動建立目錄。操作及契約見 [目錄與磁碟容量](docs/development/architecture.md#storage-capacity)。
+目錄與磁碟容量改為摘要、使用率與精簡目錄列，支援長路徑及窄視窗；每列新增資料夾圖示，可從 Windows 本機平台頁面開啟對應檔案總管目錄。未建立目錄停用按鈕，更新失敗保留舊快照；後端只開啟清單中的既有本機目錄，驗證來源與實際位置，不接受任意開啟路徑或自動建立目錄。操作及契約見 [目錄與磁碟容量](../development/architecture.md#storage-capacity)。
 
-31 項相關後端與 6 項瀏覽器／系統頁無障礙回歸、建置及靜態檢查通過；另在隔離平台由瀏覽器實際點擊，Windows 接受開啟要求。舊平台程序會提示重新啟動，測試版面與實機範圍見 [驗收紀錄](docs/validation/storage-overview-20261024.md)。
+31 項相關後端與 6 項瀏覽器／系統頁無障礙回歸、建置及靜態檢查通過；另在隔離平台由瀏覽器實際點擊，Windows 接受開啟要求。舊平台程序會提示重新啟動，測試版面與實機範圍見 [驗收紀錄](../validation/storage-overview-20261024.md)。
 
 ## 2026-10-24 · Windows 雙啟動批次修正與自動開頁
 
-修正 `start-all.bat` 的 UTF-8 中文內容在真實 cmd.exe 被截斷，導致兩個啟動指令未執行的問題。批次訊息改為 ASCII、Git 固定 CRLF；PowerShell 加入 `-NoExit`，保留啟動錯誤供查看。真實批次入口在繁中／UTF-8 字碼頁、含空白路徑及缺少 PowerShell 分支通過回歸；平台與 ComfyUI 腳本也分別啟動並以 HTTP 驗證成功。操作與排錯見 [雙啟動捷徑](docs/operations/setup-and-operations.md#雙啟動捷徑與錯誤視窗)。
+修正 `start-all.bat` 的 UTF-8 中文內容在真實 cmd.exe 被截斷，導致兩個啟動指令未執行的問題。批次訊息改為 ASCII、Git 固定 CRLF；PowerShell 加入 `-NoExit`，保留啟動錯誤供查看。真實批次入口在繁中／UTF-8 字碼頁、含空白路徑及缺少 PowerShell 分支通過回歸；平台與 ComfyUI 腳本也分別啟動並以 HTTP 驗證成功。操作與排錯見 [雙啟動捷徑](../operations/setup-and-operations.md#雙啟動捷徑與錯誤視窗)。
 
 雙啟動後等待平台健康檢查及首頁成功回應，再以預設瀏覽器開啟 `http://127.0.0.1:8000/`；約 60 秒未就緒或開頁失敗保留英文提示。新增延遲就緒、平台失敗、前端未就緒及開頁失敗的回歸，不等待 ComfyUI 載入。
 
 ## 2026-10-23 · GitHub Actions 暫存路徑別名回歸
 
-修正 R02／T02 新增測試以未解析的 Windows TEMP 路徑比較既有長路徑輸出的問題；近期 CI 兩個失敗已在本機真實 8.3 別名環境重現。兩個預期值使用完整實體路徑，並加入既有短路徑子程序回歸；產品目錄與越界防護不變。15 項相關測試與格式／靜態檢查通過，詳見 [失敗來源與重跑方式](docs/validation/windows-ci.md#windows-temp-alias-20261023)。
+修正 R02／T02 新增測試以未解析的 Windows TEMP 路徑比較既有長路徑輸出的問題；近期 CI 兩個失敗已在本機真實 8.3 別名環境重現。兩個預期值使用完整實體路徑，並加入既有短路徑子程序回歸；產品目錄與越界防護不變。15 項相關測試與格式／靜態檢查通過，詳見 [失敗來源與重跑方式](../validation/windows-ci.md#windows-temp-alias-20261023)。
 
 ## 2026-10-23 · R03 Fooocus 專用修補與有限品質比較
 
@@ -392,13 +400,13 @@ R01 已先以 `855714d` commit／push，再接入獨立 Fooocus SDXL v3 模板�
 
 兩張動漫生成素材各比較 A0／A16／B16 與一般 v2 A16，共八件 RTX3060 結果。遮罩外像素差皆 0，引擎停止後八組僅 GET／hash 核對及 DATA 健全性通過。Fooocus 有矩形色塊、色偏、花紋／物件提示不符，未優於一般 v2，因此標示實驗選項並保持一般修補預設。第一次新版 COMBO 介面檢查失敗保留原紀錄，修正後使用新 UUID；沒有自動重送。
 
-新增六項後端及兩項桌面／390px 瀏覽器回歸；675 後端（1 既有跳過）、建置／契約與 103 Chromium 通過；最終兩項預覽／原設定還原另重跑通過。見 [操作與限制](docs/features/fooocus-inpainting.md)、[逐圖證據](docs/validation/fooocus-inpainting-20261023.md)。ROADMAP 剩餘 20 主項／31 子項，T03／T04 仍另排，沒有啟動訓練。
+新增六項後端及兩項桌面／390px 瀏覽器回歸；675 後端（1 既有跳過）、建置／契約與 103 Chromium 通過；最終兩項預覽／原設定還原另重跑通過。見 [操作與限制](../features/fooocus-inpainting.md)、[逐圖證據](../validation/fooocus-inpainting-20261023.md)。ROADMAP 剩餘 20 主項／31 子項，T03／T04 仍另排，沒有啟動訓練。
 
 ## 2026-10-23 · R01 SDXL 姿勢／相對深度
 
 依上游選型接入固定 controlnet_aux、DWPose／Depth Anything V2 Small 與兩種匹配 SDXL ControlNet，新增專用 v3 提交、結構類型選項、完整快照／精確還原、同次條件圖明確匯入與離線下載。保留 Canny v1／v2 及原 UUID 恢復，條件圖不匯入作品；完整備份／健全性核對涵蓋新目錄。
 
-兩種 Animagine／RTX3060 固定案例均完成唯一生成、條件圖、唯一作品與重建平台後 GET 核對。人工保留骨架缺漏、姿勢偏離、衣著／背景變化與深度構圖分界，沒有訓練或角色一致性保證。669 後端測試（1 既有跳過）、前端建置／契約與 101 Chromium 通過；另有四項桌面／390px 遺失回應恢復測試，以及15項新流程／備份回歸。操作、固定來源與完整證據見 [R01](docs/features/structure-reference.md)。ROADMAP 剩餘 21 主項／33 子項，下一項 R03。
+兩種 Animagine／RTX3060 固定案例均完成唯一生成、條件圖、唯一作品與重建平台後 GET 核對。人工保留骨架缺漏、姿勢偏離、衣著／背景變化與深度構圖分界，沒有訓練或角色一致性保證。669 後端測試（1 既有跳過）、前端建置／契約與 101 Chromium 通過；另有四項桌面／390px 遺失回應恢復測試，以及15項新流程／備份回歸。操作、固定來源與完整證據見 [R01](../features/structure-reference.md)。ROADMAP 剩餘 21 主項／33 子項，下一項 R03。
 
 ## 2026-10-23 · T02 資料契約與訓練工具介面
 
@@ -406,13 +414,13 @@ R01 已先以 `855714d` commit／push，再接入獨立 Fooocus SDXL v3 模板�
 
 既有 22 檔／20 不同內容／19 群組各建畫風與角色清單，10 張候選、6 張開發評估、6 張排除。caption／來源用途及角色身分仍待審查，真實資料出口正確拒絕；三張合成圖片的 train-only 出口與核對通過。新增 33 測試，完整格式／靜態、663 後端（1 跳過）、Vue 建置／契約與 97 Chromium 通過；原圖與正式 DATA 八檔 hash 不變。
 
-README／索引／圖片備註與 ROADMAP 同步，T02 及其子項完成，剩餘 22 主項／35 子項。需要圖片時的審查／補齊提醒已記錄；後續依指定順序 R01 → R03，T03／T04 另排。見 [契約與 CLI](docs/training/dataset-contract.md)、[官方工具介面](docs/training/tool-interface-research.md)、[T02 驗收](docs/validation/training-dataset-20261023.md)。
+README／索引／圖片備註與 ROADMAP 同步，T02 及其子項完成，剩餘 22 主項／35 子項。需要圖片時的審查／補齊提醒已記錄；後續依指定順序 R01 → R03，T03／T04 另排。見 [契約與 CLI](../training/dataset-contract.md)、[官方工具介面](../training/tool-interface-research.md)、[T02 驗收](../validation/training-dataset-20261023.md)。
 
 ## 2026-10-23 · T01 訓練需求與驗收範圍
 
 依使用者的作者畫風／棕髮綠眼角色目標與 R02 偏差，記錄分開的 SDXL UNet LoRA 候選，固定 Animagine 基底身分、用途／排除範圍、兩路徑各 12 件未來比較與四面向人工判準。明確區分推論調整、單張參考、資料整理及實際訓練，保留現有分組／曝光紀錄與必要補圖時點；沒有啟動訓練或新增 GPU 工作。
 
-README／索引／開發計畫與 ROADMAP 同步；文件連結、23 主項／36 子項計數、基底 manifest 與題材／seed 一致性核對通過。T01 及其子項完成，下一項 T02 在本項推送後開始，之後維持 R01 → R03；T03／T04 另排。見 [需求 v1](docs/training/requirements.md)、[T01 驗收](docs/validation/training-requirements-20261023.md)。
+README／索引／開發計畫與 ROADMAP 同步；文件連結、23 主項／36 子項計數、基底 manifest 與題材／seed 一致性核對通過。T01 及其子項完成，下一項 T02 在本項推送後開始，之後維持 R01 → R03；T03／T04 另排。見 [需求 v1](../training/requirements.md)、[T01 驗收](../validation/training-requirements-20261023.md)。
 
 ## 2026-10-23 · R02 單張畫風／角色參考
 
@@ -420,39 +428,39 @@ README／索引／開發計畫與 ROADMAP 同步；文件連結、23 主項／36
 
 使用者提供 22 檔、20 個不同內容並確認棕髮綠眼角色；本輪沒有訓練，只選一張畫風圖及一張角色圖分別作單張推論，另留 6 張評估。12 組 RTX 3060 比較保存原圖、完整來源與四面向觀察；粉髮、服裝帶入、張傘、雙人與背景弱化保留，不宣稱作者畫風或身份完全重現。
 
-停引擎、改登記與重啟平台後 12 報告只 GET，1440px／390px 下載／精確還原與完整 630 後端（1 跳過）、Vue 建置／契約及 97 Chromium 通過；正式 DATA 八檔 hash 與 22 張原圖均不變。R02 與兩子項關閉的是接入及有限品質比較，剩餘 24 主項／37 子項。後續依使用者指定 **T01 → T02 → R01 → R03**，不自動開始 T03 訓練。見 [R02 驗收](docs/validation/reference-adapter-20261023.md)、[圖片用途與未訓練備註](docs/validation/reference-inputs-20261023.md)。
+停引擎、改登記與重啟平台後 12 報告只 GET，1440px／390px 下載／精確還原與完整 630 後端（1 跳過）、Vue 建置／契約及 97 Chromium 通過；正式 DATA 八檔 hash 與 22 張原圖均不變。R02 與兩子項關閉的是接入及有限品質比較，剩餘 24 主項／37 子項。後續依使用者指定 **T01 → T02 → R01 → R03**，不自動開始 T03 訓練。見 [R02 驗收](../validation/reference-adapter-20261023.md)、[圖片用途與未訓練備註](../validation/reference-inputs-20261023.md)。
 
 ## 2026-10-23 · L01 更多畫風、順序、強度與 seed
 
 新增固定像素畫 LoRA 來源，查出原檔在 ComfyUI 0.34.0 的 1120 個鍵未載入，四組出圖保留為格式失敗證據。新增只改 header 鍵名的固定來源轉換，原 tensor payload／原檔保留，另建有獨立版本／hash／provenance 的排他相容副本。原生工具在 Animagine 完成 14 組單／雙／三 LoRA、正反順序、兩種強度／seed 及兩題材，保存原圖和四面向觀察；沒有新增通用品質預設。
 
-六筆多 LoRA 條件追加至歷史 registry，原三筆低對比紀錄完整保留；LCM 模糊、造型偏移、裁切及無 CLIP 張量等限制分開記錄。14 份報告停引擎／平台重啟後僅 GET 核對，正式 DATA 八檔 hash 不變；格式／靜態、615 後端（1 跳過）、Vue 建置／契約及 93 Chromium 通過。安裝器先以 `2107d14` 獨立格式整理，AST 一致且 27 項既有回歸通過（1 跳過）。L01 及兩子項完成，剩餘 25 主項／39 子項；指定作者／使用者角色品質與 M01 保留。見 [L01 驗收](docs/validation/style-matrix-20261023.md)。
+六筆多 LoRA 條件追加至歷史 registry，原三筆低對比紀錄完整保留；LCM 模糊、造型偏移、裁切及無 CLIP 張量等限制分開記錄。14 份報告停引擎／平台重啟後僅 GET 核對，正式 DATA 八檔 hash 不變；格式／靜態、615 後端（1 跳過）、Vue 建置／契約及 93 Chromium 通過。安裝器先以 `2107d14` 獨立格式整理，AST 一致且 27 項既有回歸通過（1 跳過）。L01 及兩子項完成，剩餘 25 主項／39 子項；指定作者／使用者角色品質與 M01 保留。見 [L01 驗收](../validation/style-matrix-20261023.md)。
 
 ## 2026-10-23 · R05 動漫基準與提示詞比較
 
 新增獨立動漫 v1 三案例、UI／API 測試集選取、正／反向完整提示詞比較與單組驗收 CLI；保留通用 v1 bytes／hash、舊方案及精確 seed，新文字軸沿 schema 2 保存模型登記快照。兩模型／三題材／兩 seed 與品質標籤完成 14 件文字生成，兩種自產素材各比較 denoise 0.3／0.6 共 4 件，保存原圖、完整設定／版本／hash 及四面向觀察。
 
-雙人、開書、裁切、跨場景身份變動及高 denoise 臉／手扭曲均保留，不建立全面品質推薦；指定作者／使用者角色品質仍待圖片。18 份報告停引擎及平台重啟後僅 GET 核對，正式 DATA 八檔 hash 不變。格式／靜態、605 項後端（1 既有跳過）、Vue 建置／契約與 91 項 Chromium 通過。R05 關閉範圍為本輪有限比較與限制紀錄，剩餘 26 主項／41 子項；見 [R05 驗收](docs/validation/anime-baseline-20261023.md)。
+雙人、開書、裁切、跨場景身份變動及高 denoise 臉／手扭曲均保留，不建立全面品質推薦；指定作者／使用者角色品質仍待圖片。18 份報告停引擎及平台重啟後僅 GET 核對，正式 DATA 八檔 hash 不變。格式／靜態、605 項後端（1 既有跳過）、Vue 建置／契約與 91 項 Chromium 通過。R05 關閉範圍為本輪有限比較與限制紀錄，剩餘 26 主項／41 子項；見 [R05 驗收](../validation/anime-baseline-20261023.md)。
 
 ## 2026-10-23 · R04 Pony Canny v2 與其他 LoRA 實機驗收
 
 RTX 3060 完成無 LoRA、IKEA、LCM、LCM → IKEA 與反向五個獨立 UUID，固定原素材、控制權重、seed 及各組取樣條件；全檔驗證權重，保存同次原邊緣、唯一作品、完整 workflow 與有序版本／強度。新增單次驗收 CLI、可重跑來源 PNG 及精簡證據 JSON，已有報告拒絕重跑，離線驗證僅 GET。
 
-五組整合／保存還原通過，材質與畫風仍有中空、平面線框等偏差，不建立品質預設。1440px／390px 實際下載與還原、引擎離線／改登記／平台重啟核對通過，生成總數仍為五；正式 DATA 八檔 hash 不變。本機完整品質入口通過格式／靜態、599 項後端（1 項既有權限跳過）、Vue 建置／四組契約及 89 項瀏覽器。R04 與兩子項完成，剩餘 27 主項／43 子項；M01 與 V01-02 保留。來源、量測、人工觀察與重跑見 [R04 驗收](docs/validation/pony-canny-v2-20261023.md)。
+五組整合／保存還原通過，材質與畫風仍有中空、平面線框等偏差，不建立品質預設。1440px／390px 實際下載與還原、引擎離線／改登記／平台重啟核對通過，生成總數仍為五；正式 DATA 八檔 hash 不變。本機完整品質入口通過格式／靜態、599 項後端（1 項既有權限跳過）、Vue 建置／四組契約及 89 項瀏覽器。R04 與兩子項完成，剩餘 27 主項／43 子項；M01 與 V01-02 保留。來源、量測、人工觀察與重跑見 [R04 驗收](../validation/pony-canny-v2-20261023.md)。
 
 
 ## 2026-10-23 · R06 模型與取樣參數比較軸
 
 新增 checkpoint、sampler_name、scheduler 三軸，涵蓋文生圖及單張圖生圖；單一變因最多 8 組、逐組手動載入與生成。schema 2 保存模型登記來源／版本／hash 與完整基準，交易內核對模型身分，變更登記須建立新方案；原 UUID 恢復不重送。原 schema 1、精確 seed、有序 LoRA 及圖片輸入保留，未知不補成已驗證。
 
-9 項新增後端整合及 1440px／390px 瀏覽器驗收涵蓋保存、實際下載／檔案匯入、載入、一次明確生成及任務／作品／報告追溯；另修正 schema 2 跨 Python／瀏覽器整數浮點表示的 hash 一致性。相關模組先以 `ab41b8a` 獨立格式提交。R06 與兩子項完成，剩餘 28 主項／45 子項；能力邊界與證據見 [R06 驗收](docs/validation/extended-comparisons-20261023.md)。
+9 項新增後端整合及 1440px／390px 瀏覽器驗收涵蓋保存、實際下載／檔案匯入、載入、一次明確生成及任務／作品／報告追溯；另修正 schema 2 跨 Python／瀏覽器整數浮點表示的 hash 一致性。相關模組先以 `ab41b8a` 獨立格式提交。R06 與兩子項完成，剩餘 28 主項／45 子項；能力邊界與證據見 [R06 驗收](../validation/extended-comparisons-20261023.md)。
 
 
 ## 2026-10-23 · R07 專用格式評估與資料遺失保護
 
 完成局部編輯／羽化／Canny v1、v2 的專用草稿、設定交換與比較方案評估，新增唯讀版本別能力 API 及工作台支援說明。決策維持三項操作未支援，須完整保存雙輸入、羽化／控制參數、來源及版本後才能啟用；完整原設定載入與 workflow 下載保留，未借用一般 schema 丟棄資訊。
 
-修正一般草稿曾回傳 201 卻默默捨棄遮罩參數的問題：POST／PUT、一般交換與比較明確拒絕專用設定，不部分寫入；保留既有回讀／複製生成 body 的有限封套相容，封套不選擇草稿或任務 UUID。新增 5 項後端整合及 5 項瀏覽器案例，四版本原設定、完整 workflow 與精確 seed 保留。core_api／settings_transfer／experiment_plans 先以 `80abccc` 獨立格式提交，Python AST 與 23 項既有回歸一致。R07 與兩子項完成，剩餘 29 主項／47 子項；M01 授權適用仍待釐清，V01-02 實機觸控保留。方案、拒絕與驗收範圍見 [R07 文件](docs/development/specialized-workflow-formats.md)。
+修正一般草稿曾回傳 201 卻默默捨棄遮罩參數的問題：POST／PUT、一般交換與比較明確拒絕專用設定，不部分寫入；保留既有回讀／複製生成 body 的有限封套相容，封套不選擇草稿或任務 UUID。新增 5 項後端整合及 5 項瀏覽器案例，四版本原設定、完整 workflow 與精確 seed 保留。core_api／settings_transfer／experiment_plans 先以 `80abccc` 獨立格式提交，Python AST 與 23 項既有回歸一致。R07 與兩子項完成，剩餘 29 主項／47 子項；M01 授權適用仍待釐清，V01-02 實機觸控保留。方案、拒絕與驗收範圍見 [R07 文件](../development/specialized-workflow-formats.md)。
 
 完整品質入口通過格式／靜態、585 項後端（1 項既有權限跳過）、Vue 建置／四組契約及 87 項瀏覽器；檢視兩工作台 1440px／390px 截圖可讀。未新增 GPU 生成或實體觸控驗收。
 
@@ -460,55 +468,55 @@ RTX 3060 完成無 LoRA、IKEA、LCM、LCM → IKEA 與反向五個獨立 UUID�
 
 補齊 Pony manifest 的固定模型卡、39 bytes／SHA256、發布檔案清單、標準完整條文與參考 hash、現有 workflow 依賴及未提供的上游元件版本。查出相同權重 SHA256 的 Civitai 發布頁列出修改版 Fair AI Public License 1.0-SD 與變現推論限制，與固定 Hugging Face 的 OpenRAIL-M 標記不同；`terms_verified=false`，不替發布者解決適用條款，也不改舊 provenance／作品快照。
 
-69 項既有安裝、模型登記／預設與生成驗收回歸通過（1 項既有權限跳過）；未下載／重寫權重或生成。查核結果、完整官方參考與限制見 [M01 文件](docs/models/pony-v6-xl-license.md)。來源差異及依賴授權鏈未核實，M01 與 M01-01 保持未完成，未完成數維持 30 主項／49 子項。
+69 項既有安裝、模型登記／預設與生成驗收回歸通過（1 項既有權限跳過）；未下載／重寫權重或生成。查核結果、完整官方參考與限制見 [M01 文件](../models/pony-v6-xl-license.md)。來源差異及依賴授權鏈未核實，M01 與 M01-01 保持未完成，未完成數維持 30 主項／49 子項。
 
 ## 2026-10-23 · E05 連續資源取樣與峰值歸屬評估
 
 新任務開始提交後，由平台背景查詢凍結的原引擎 `/system_stats`，每輪至少 2 秒、最多 16 項／每項 1 小時或 1800 次，保留最近 120 個時間點及全期觀察最高值。journal 不改 job revision，終態交易凍結、延遲回應丟棄，作品與離線閱讀沿用；舊資料不回填。裝置 total−free 含引擎可回收快取語意，與 nvidia-smi 整卡用量不同，任務專用峰值固定未知。
 
-RTX 3060／Animagine 實際一個 UUID 取得 22 次成功觀察；保存作品、停引擎後凍結及 1440px／390px UI 核對通過。新增 6 項後端及 2 項瀏覽器回歸，另調整診斷唯讀斷言，區分獨立取樣投影；多筆取樣使用 group 避免重複地標。完整品質入口通過格式／靜態、580 項後端（1 項既有權限跳過）、Vue 建置／四組契約及 82 項瀏覽器。量測模組先以 `55e2cb2` 獨立格式提交，AST／Vue／TypeScript 語意一致。E05 及兩子項完成，剩餘 30 主項／49 子項；實際數值、重跑與限制見 [E05 驗收](docs/validation/resource-sampling-20261023.md)。
+RTX 3060／Animagine 實際一個 UUID 取得 22 次成功觀察；保存作品、停引擎後凍結及 1440px／390px UI 核對通過。新增 6 項後端及 2 項瀏覽器回歸，另調整診斷唯讀斷言，區分獨立取樣投影；多筆取樣使用 group 避免重複地標。完整品質入口通過格式／靜態、580 項後端（1 項既有權限跳過）、Vue 建置／四組契約及 82 項瀏覽器。量測模組先以 `55e2cb2` 獨立格式提交，AST／Vue／TypeScript 語意一致。E05 及兩子項完成，剩餘 30 主項／49 子項；實際數值、重跑與限制見 [E05 驗收](../validation/resource-sampling-20261023.md)。
 
 ## 2026-10-23 · V06 全站視覺與無障礙補驗
 
 新增 21 項瀏覽器回歸，逐頁覆蓋六主頁／四流程的九個入口在 1440px／390px 的標籤、鍵盤、焦點、對比、非顏色狀態與展開內容；另驗證硬體／離線／舊資料、四類模型編輯、作品收藏與對話框、素材空白／讀取／錯誤、診斷 JSON 及圖生圖／遮罩。鎖定 axe Playwright 4.14.0，保存 violations 與 incomplete、逐頁截圖與漸層端點對比；不以零自動錯誤宣稱完整 WCAG 認證或實體讀屏通過。
 
-修正側欄／GPU 標記／畫布說明文字對比、收藏 0／1 的 ARIA 值、Checkpoint 標題層級、窄版品牌名稱、素材分頁語意及 FLUX 表格／診斷預覽焦點。CreationStudio／theme 先以 `6b17b17` 獨立格式提交並核對編譯語意，再加入修正與明確品質 scope。完整品質入口通過格式／靜態、574 項後端（1 項既有權限跳過）、Vue 建置／四組契約及 80 項瀏覽器。瀏覽器總預算調為八分鐘，單案 45 秒與零重試維持；V06 與兩子項完成，剩餘 31 主項／51 子項。V01-02 實機觸控保留，未生成圖片或修改正式資料；逐頁矩陣、證據與限制見 [V06 驗收](docs/validation/ui-accessibility-20261023.md)。
+修正側欄／GPU 標記／畫布說明文字對比、收藏 0／1 的 ARIA 值、Checkpoint 標題層級、窄版品牌名稱、素材分頁語意及 FLUX 表格／診斷預覽焦點。CreationStudio／theme 先以 `6b17b17` 獨立格式提交並核對編譯語意，再加入修正與明確品質 scope。完整品質入口通過格式／靜態、574 項後端（1 項既有權限跳過）、Vue 建置／四組契約及 80 項瀏覽器。瀏覽器總預算調為八分鐘，單案 45 秒與零重試維持；V06 與兩子項完成，剩餘 31 主項／51 子項。V01-02 實機觸控保留，未生成圖片或修改正式資料；逐頁矩陣、證據與限制見 [V06 驗收](../validation/ui-accessibility-20261023.md)。
 
 ## 2026-10-23 · V05 創作設定下載、匯入與窄視窗補驗
 
 新增十二項 1440px／390px 瀏覽器回歸，實際下載 checkpoint、圖生圖、FLUX 與作品來源設定，保存檔案並比對 API 原 bytes／檔名、精確 seed 及 workflow 大整數字串；檔案選擇器與真正剪貼簿貼上皆先預覽、可取消，明確套用及保存才建立新草稿，原草稿不變。另覆蓋過期驗證、保存中停用、跨流程／非法文件及原引擎／素材提示。
 
-修正過大新檔失敗後仍留下舊候選、File.text 非嚴格 UTF-8 解碼，以及讀取中的操作／過期回覆保護。元件先以 `36f4e99` 獨立格式提交並核對 script／模板／CSS 語意，再加入修正及明確品質 scope；示範作品 fixture 改用完整正式 workflow builder。格式／靜態、574 項後端（1 項既有權限跳過）、Vue 建置／四組契約與 59 項瀏覽器通過，沒有新 GPU 推論或正式資料變更。V05 與兩子項完成，剩餘 32 主項／53 子項；證據與限制見 [V05 驗收](docs/validation/settings-transfer-20261023.md)。
+修正過大新檔失敗後仍留下舊候選、File.text 非嚴格 UTF-8 解碼，以及讀取中的操作／過期回覆保護。元件先以 `36f4e99` 獨立格式提交並核對 script／模板／CSS 語意，再加入修正及明確品質 scope；示範作品 fixture 改用完整正式 workflow builder。格式／靜態、574 項後端（1 項既有權限跳過）、Vue 建置／四組契約與 59 項瀏覽器通過，沒有新 GPU 推論或正式資料變更。V05 與兩子項完成，剩餘 32 主項／53 子項；證據與限制見 [V05 驗收](../validation/settings-transfer-20261023.md)。
 
 ## 2026-10-23 · V04 比較與量測介面補驗
 
 新增八項 1440px／390px 瀏覽器回歸，核對正反 8 步多 LoRA 歷史條件與品質限制、指定 LoRA model／CLIP 強度軸及錯誤、兩個 checkpoint 的固定四案例逐組載入，以及任務／作品的原量測來源、零與未知值。隔離 fixture 使用固定 manifest 登記與合成圖片，驗收後還原登記及移除本組紀錄，避免影響其他回歸。
 
-另從既有 GPU 報告建立唯讀離線副本，核對 11 件原作品、兩種寬度共八次四案例跨模型並排與 22 次原設定還原；原資料庫／原圖／workflow 不變，真實量測 UI 顯示平台 27.311／引擎 26.029 秒，舊紀錄保持未知。未新增生成、品質預設或產品 API，未回填舊方案關聯。完整品質入口通過格式／靜態、574 項後端（1 項既有權限跳過）、Vue 建置／四組契約與 47 項瀏覽器。V04 及四子項完成，剩餘 33 主項／55 子項；證據及限制見 [V04 驗收](docs/validation/comparison-measurements-20261023.md)。
+另從既有 GPU 報告建立唯讀離線副本，核對 11 件原作品、兩種寬度共八次四案例跨模型並排與 22 次原設定還原；原資料庫／原圖／workflow 不變，真實量測 UI 顯示平台 27.311／引擎 26.029 秒，舊紀錄保持未知。未新增生成、品質預設或產品 API，未回填舊方案關聯。完整品質入口通過格式／靜態、574 項後端（1 項既有權限跳過）、Vue 建置／四組契約與 47 項瀏覽器。V04 及四子項完成，剩餘 33 主項／55 子項；證據及限制見 [V04 驗收](../validation/comparison-measurements-20261023.md)。
 
 ## 2026-10-23 · V03 作品整理、並排與人工評分窄視窗補驗
 
 新增五項 390 × 844 瀏覽器回歸，實際操作作品庫的搜尋／收藏／筆記／封存還原、未保存保護、雙分頁筆記與評分 409、明確重新讀取、保存中與 503 不重送。原圖並排核對完整 PNG／workflow bytes、相鄰最大 64 位 seed、參數差異及有序 LoRA／強度，涵蓋四件選取上限、跨篩選保留及清空。
 
-修正無結果篩選誤提示先生成、預覽保存按鈕在清單讀取期間可點卻無回應，以及比較區缺少鍵盤焦點；兩個 Vue 模組先以 `940dab1` 獨立格式提交，再加入修正與明確品質 scope。完整品質入口通過格式／靜態、574 項後端（1 項既有權限跳過）、Vue 建置／四組契約及 39 項瀏覽器。臨時合成作品不提供 GPU／觸控或影像品質結論；V03 及兩子項完成，剩餘 34 主項／59 子項，V01 實機觸控仍保留。重跑及證據見 [V03 驗收](docs/validation/artwork-library-20261023.md)。
+修正無結果篩選誤提示先生成、預覽保存按鈕在清單讀取期間可點卻無回應，以及比較區缺少鍵盤焦點；兩個 Vue 模組先以 `940dab1` 獨立格式提交，再加入修正與明確品質 scope。完整品質入口通過格式／靜態、574 項後端（1 項既有權限跳過）、Vue 建置／四組契約及 39 項瀏覽器。臨時合成作品不提供 GPU／觸控或影像品質結論；V03 及兩子項完成，剩餘 34 主項／59 子項，V01 實機觸控仍保留。重跑及證據見 [V03 驗收](../validation/artwork-library-20261023.md)。
 
 ## 2026-10-23 · V02 v1／v2 原提交恢復瀏覽器補驗
 
 加入 v1／v2 × 1440px／390px × 引擎回覆遺失／平台異常 JSON 的 8 項真實瀏覽器案例，以及未知版本保護；核對重新載入後原 pending、UUID／端點／body bytes、精確 seed、雙素材與原羽化輸入。原 v1 不被新表單升為 v2，v2 保留原半徑；手動恢復只返回原 UUID 帳本，引擎仍僅一次提交且不重傳圖片。
 
-修正成功 JSON 或明確錯誤含其他任務 ID 時誤清除 pending；六種生成端點均加入缺失／其他 id、異常 JSON 與錯誤 job_id 契約。fixture 先以 `98b8964` 獨立格式提交並比對 AST，再加入精確節點、multipart 回執及有界呼叫紀錄。574 項後端（1 項既有權限跳過）、建置／四組前端契約與 34 項瀏覽器通過；原請求、任務 JSON、呼叫／輸入雜湊與畫面見 [V02 驗收](docs/validation/inpaint-recovery-20261023.md)。V02 完成，剩餘 35 主項／61 子項，V01 實機觸控仍待驗收。
+修正成功 JSON 或明確錯誤含其他任務 ID 時誤清除 pending；六種生成端點均加入缺失／其他 id、異常 JSON 與錯誤 job_id 契約。fixture 先以 `98b8964` 獨立格式提交並比對 AST，再加入精確節點、multipart 回執及有界呼叫紀錄。574 項後端（1 項既有權限跳過）、建置／四組前端契約與 34 項瀏覽器通過；原請求、任務 JSON、呼叫／輸入雜湊與畫面見 [V02 驗收](../validation/inpaint-recovery-20261023.md)。V02 完成，剩餘 35 主項／61 子項，V01 實機觸控仍待驗收。
 
 ## 2026-10-23 · V01 遮罩瀏覽器補驗與筆畫保留
 
 修正同素材清單重讀／切頁返回清空未保存畫布、取消更換原圖／遮罩後選單值未復原，以及非 PNG 冒充遮罩被載入。指標停用、取消與工具操作會結束筆畫，限制主指標；狀態區分未選原圖、載入與保存。格式整理先獨立提交 `875496e`，再加入操作修正與 6 項瀏覽器回歸。
 
-1440px／390px 完成筆刷、擦除、反相、PNG 選檔／保存與未保存保護；保存後從素材 API 解碼及重新整理後重選的 RGBA 雜湊一致。574 項後端（1 項既有權限跳過）、建置／四組前端契約與 25 項瀏覽器回歸通過。使用者確認目前沒有實體觸控裝置；模擬第二指／取消不能視為實機通過，僅關閉 V01-01，V01-02 與主項保留。證據見 [V01 驗收](docs/validation/mask-editor-20261023.md)，剩餘 36 主項／63 子項。
+1440px／390px 完成筆刷、擦除、反相、PNG 選檔／保存與未保存保護；保存後從素材 API 解碼及重新整理後重選的 RGBA 雜湊一致。574 項後端（1 項既有權限跳過）、建置／四組前端契約與 25 項瀏覽器回歸通過。使用者確認目前沒有實體觸控裝置；模擬第二指／取消不能視為實機通過，僅關閉 V01-01，V01-02 與主項保留。證據見 [V01 驗收](../validation/mask-editor-20261023.md)，剩餘 36 主項／63 子項。
 
 ## 2026-10-23 · Q10 高風險流程格式、靜態檢查與維護規則
 
 Ruff／Prettier／CSS-tree 精確鎖版，16 檔明確 scope 的格式／少量靜態檢查接入 Q06 與 CI；runtime 安裝與品質 dev lock 分開。格式整理獨立提交 `c465726`，Python AST、TypeScript／Vue 編譯結果及 CSS 內容相同，第二次格式零差異；未全庫格式化。靜態錯誤探針與五階段 fail-fast 通過，npm ci／pip check 通過，npm audit 為 0。
 
-後續重構以具名函式區分凍結保存、原版本端點、確認清除、既有請求核對與活躍提交保護。四流程實際元件驗證保存失敗不 POST、處理中不重送、未知回覆保留原 UUID／精確 seed、已修改／blocked 表單不影響恢復、明確 409 才清除；各 workflow 驗證與公開資料格式不變。完整品質入口 574 項後端（1 項既有權限跳過）、建置／四組契約與 19 項瀏覽器通過。規則、操作邊界與證據見 [維護指南](docs/development/quality-checks.md#static-checks)、[Q10 驗收](docs/validation/maintenance-20261023.md)。Q01–Q10 完成，剩餘 36 主項／64 子項。
+後續重構以具名函式區分凍結保存、原版本端點、確認清除、既有請求核對與活躍提交保護。四流程實際元件驗證保存失敗不 POST、處理中不重送、未知回覆保留原 UUID／精確 seed、已修改／blocked 表單不影響恢復、明確 409 才清除；各 workflow 驗證與公開資料格式不變。完整品質入口 574 項後端（1 項既有權限跳過）、建置／四組契約與 19 項瀏覽器通過。規則、操作邊界與證據見 [維護指南](../development/quality-checks.md#static-checks)、[Q10 驗收](../validation/maintenance-20261023.md)。Q01–Q10 完成，剩餘 36 主項／64 子項。
 
 ## 2026-10-23 · Q07 備份檔案上限邊界
 
@@ -518,13 +526,13 @@ Ruff／Prettier／CSS-tree 精確鎖版，16 檔明確 scope 的格式／少量�
 
 加入每 app 的限量記憶體診斷，串聯平台 request ID、原 job UUID、流程、API／引擎階段、耗時與固定錯誤分類。恢復原提交與新增提交分開，過期觀察記錄被拒絕的狀態及保留終態；作品讀取／筆記衝突亦關聯原任務。狀態分開呈現平台、資料與引擎，沿用原 health 契約。
 
-設定頁提供 UUID 篩選、唯讀狀態檢查、預覽後下載相同 JSON。最多 500 筆／256 KiB／24 小時，重啟清空，預設排除提示詞、圖片、完整 workflow、憑證、模型名及個人路徑。573 項後端（1 項既有權限跳過）、前端建置／四組契約與 19 項瀏覽器通過，後續 28 項針對追蹤／作品關聯的回歸亦通過。離線、遺失回應、409、提交後磁碟錯誤、過期觀察、隱私／保留與 1440px／390px 下載驗證見 [診斷說明](docs/operations/diagnostics.md)。剩餘 37 主項／66 子項。
+設定頁提供 UUID 篩選、唯讀狀態檢查、預覽後下載相同 JSON。最多 500 筆／256 KiB／24 小時，重啟清空，預設排除提示詞、圖片、完整 workflow、憑證、模型名及個人路徑。573 項後端（1 項既有權限跳過）、前端建置／四組契約與 19 項瀏覽器通過，後續 28 項針對追蹤／作品關聯的回歸亦通過。離線、遺失回應、409、提交後磁碟錯誤、過期觀察、隱私／保留與 1440px／390px 下載驗證見 [診斷說明](../operations/diagnostics.md)。剩餘 37 主項／66 子項。
 
 ## 2026-10-23 · Q08 網址導覽、首次使用與能力層級
 
 頁面、四種流程及作品匯入任務使用可還原 hash URL；返回／前進、錯誤網址、焦點、目前導覽與作品筆記取消離頁一致。保留 KeepAlive 與 Q05 保護，開啟網址不自動提交。新增連線→選模型→創作指引，生成區區分處理中、缺條件、表單預檢可提交及原提交待確認，實機／未知能力另行明示。
 
-566 項後端（1 項既有權限跳過）、前端建置／四組契約與 17 項隔離瀏覽器回歸通過；1440px／390px 完成模擬生成、原任務匯入與引擎離線預覽。檢視兩種寬度截圖，未拆包或宣稱 V06 全站驗收，大小比較與操作見 [導覽說明](docs/development/frontend-api.md#navigation)。剩餘 38 主項／68 子項。
+566 項後端（1 項既有權限跳過）、前端建置／四組契約與 17 項隔離瀏覽器回歸通過；1440px／390px 完成模擬生成、原任務匯入與引擎離線預覽。檢視兩種寬度截圖，未拆包或宣稱 V06 全站驗收，大小比較與操作見 [導覽說明](../development/frontend-api.md#navigation)。剩餘 38 主項／68 子項。
 
 ## 2026-10-23 · Q07 Windows CLI 編碼相容
 
@@ -534,37 +542,37 @@ Ruff／Prettier／CSS-tree 精確鎖版，16 檔明確 scope 的格式／少量�
 
 加入唯讀 check、backup、verify、restore 與明確指定 DATA 啟動入口。全 DATA、外置 DB 與選定證據使用逐檔 SHA256 manifest；程序鎖、SQLite 排他交易與複製前後盤點拒絕不一致快照。只寫入新目錄，失敗保留 incomplete，既有資料不覆寫、不修復、不重新生成；權重與引擎資料另備份。
 
-隔離 CLI 與離線 API 還原核對任務／作品、精確 seed、來源／遮罩／羽化遮罩與 Canny 邊緣，並覆蓋忙碌、損壞／缺檔、壞紀錄、路徑穿越、空間不足與中途來源變動。完整品質入口：566 項後端（1 項既有權限跳過）、前端建置／四組契約、9 項瀏覽器通過。操作、切換及限制見 [完整備份工具](docs/operations/data-backup.md)。剩餘 39 主項／70 子項。
+隔離 CLI 與離線 API 還原核對任務／作品、精確 seed、來源／遮罩／羽化遮罩與 Canny 邊緣，並覆蓋忙碌、損壞／缺檔、壞紀錄、路徑穿越、空間不足與中途來源變動。完整品質入口：566 項後端（1 項既有權限跳過）、前端建置／四組契約、9 項瀏覽器通過。操作、切換及限制見 [完整備份工具](../operations/data-backup.md)。剩餘 39 主項／70 子項。
 
 ## 2026-10-22 · Q04 摘要分頁、跨頁比較與資料成長基準
 
 作品、任務及素材提供預設 40／上限 100 的 library API，固定本次查詢成員、穩定排序、後端搜尋與組合篩選，詳情及比較快照按需讀取。介面支援上下頁、較早任務、跨頁比較與素材選取保留；原陣列 API 相容保留。沒有 schema／歷史 JSON 遷移，快取有限且過期明示。
 
-同機 100／1,000／10,000 合成資料的 API／回應 bytes／Python 峰值／RSS／UI 指標通過預算；10,000 作品首批約 565 ms、19.3 KB、Python 峰值 1.6 MB，後續約 21 ms，UI 可搜尋約 1.8 秒；舊 UI 首卡等待逾時如實保留。完整品質入口、558 項後端（1 項既有權限跳過）、9 項瀏覽器及新增的分頁／舊 JSON 不變回歸通過，量測限制與回退見 [說明](docs/development/list-pagination.md)。剩餘 40 主項／72 子項。
+同機 100／1,000／10,000 合成資料的 API／回應 bytes／Python 峰值／RSS／UI 指標通過預算；10,000 作品首批約 565 ms、19.3 KB、Python 峰值 1.6 MB，後續約 21 ms，UI 可搜尋約 1.8 秒；舊 UI 首卡等待逾時如實保留。完整品質入口、558 項後端（1 項既有權限跳過）、9 項瀏覽器及新增的分頁／舊 JSON 不變回歸通過，量測限制與回退見 [說明](../development/list-pagination.md)。剩餘 40 主項／72 子項。
 
 ## 2026-10-22 · Q06 Windows CI 長／短路徑相容
 
-遠端 runner 的 8.3 TEMP 別名使三個路徑斷言與一個故障注入比較未命中。以子程序短路徑重現四項失敗，正規化測試預期／注入目標後，42 項相關測試通過；新增別名回歸，不放寬產品目錄邊界。此修正獨立於 Q04，見 [診斷與證據](docs/validation/windows-ci.md#windows-temp-alias-20261022)。
+遠端 runner 的 8.3 TEMP 別名使三個路徑斷言與一個故障注入比較未命中。以子程序短路徑重現四項失敗，正規化測試預期／注入目標後，42 項相關測試通過；新增別名回歸，不放寬產品目錄邊界。此修正獨立於 Q04，見 [診斷與證據](../validation/windows-ci.md#windows-temp-alias-20261022)。
 
 ## 2026-10-22 · Q06 可重跑品質入口與瀏覽器 CI
 
-加入 fail-fast 品質入口，串接後端、前端建置／四組契約及 8 項 Playwright 瀏覽器回歸。fixture 使用全新臨時資料與 MockTransport，涵蓋原請求恢復、409、真實 workflow 下載、鍵盤焦點與 390px 操作；CI 以 lock 安裝並保存失敗畫面／錄影／trace。全新隔離 venv 與 npm ci 的完整驗證通過（後端 550 項，1 項既有權限跳過）；失敗注入確認非零退出及證據。相容修補 Vite／source-map-js 後 npm audit 為 0；TestClient 棄用與故障注入警告明示保留，不宣稱 GPU／全站 UI 驗收完成。詳見 [品質指南](docs/development/quality-checks.md)。剩餘 41 主項／74 子項。
+加入 fail-fast 品質入口，串接後端、前端建置／四組契約及 8 項 Playwright 瀏覽器回歸。fixture 使用全新臨時資料與 MockTransport，涵蓋原請求恢復、409、真實 workflow 下載、鍵盤焦點與 390px 操作；CI 以 lock 安裝並保存失敗畫面／錄影／trace。全新隔離 venv 與 npm ci 的完整驗證通過（後端 550 項，1 項既有權限跳過）；失敗注入確認非零退出及證據。相容修補 Vite／source-map-js 後 npm audit 為 0；TestClient 棄用與故障注入警告明示保留，不宣稱 GPU／全站 UI 驗收完成。詳見 [品質指南](../development/quality-checks.md)。剩餘 41 主項／74 子項。
 
 ## 2026-10-22 · Q05 四工作台未保存內容保護
 
-共用離頁監聽與保存狀態提示，涵蓋 KeepAlive 隱藏表單、草稿保存中與筆刷／遮罩保存；FLUX 載入原設定保持未保存狀態。未提供新的專用草稿格式，生成不會清除 dirty，離開也不提交任務。前端建置、四組檢查及隔離 Chrome 四流程驗證通過，模擬引擎生成呼叫為 0；行動瀏覽器限制與操作證據見 [說明](docs/development/frontend-api.md#unsaved-changes)。剩餘 42 主項／76 子項。
+共用離頁監聽與保存狀態提示，涵蓋 KeepAlive 隱藏表單、草稿保存中與筆刷／遮罩保存；FLUX 載入原設定保持未保存狀態。未提供新的專用草稿格式，生成不會清除 dirty，離開也不提交任務。前端建置、四組檢查及隔離 Chrome 四流程驗證通過，模擬引擎生成呼叫為 0；行動瀏覽器限制與操作證據見 [說明](../development/frontend-api.md#unsaved-changes)。剩餘 42 主項／76 子項。
 
 ## 2026-10-22 · Q03 前端 HTTP 契約與可取消載入
 
 App、四工作台、作品庫與 GenerationPanel 採用共用 HTTP／ApiError，解析字串、結構化與欄位陣列錯誤；HTML／異常 JSON、連線與取消分開處理。共用 request scope 統一取代／離頁／卸載失效；設定與方案交換使用原文字路徑，原始 workflow／圖片／報告 bytes 驗證保留。
 
-submitOnce 僅執行一次凍結請求；只有可確認回覆才清除 pending，傳輸失敗／異常回覆保留原 UUID／body／端點。check:api 直接執行實際 Vue SFC setup／KeepAlive、四流程 GenerationPanel、作品 409 筆記保留，以及六種新舊端點／seed／LoRA／不重試檢查。型別／建置、check:api 與既有三組檢查通過；隔離真實瀏覽器的 422、四流程切換與未知生成狀態通過，模擬引擎提交一次，服務已停止。未重新進行 GPU 出圖或全站無障礙驗收。Q03 及兩子項完成，剩餘 43 主項／78 子項；詳見 [契約與驗證](docs/development/frontend-api.md)。
+submitOnce 僅執行一次凍結請求；只有可確認回覆才清除 pending，傳輸失敗／異常回覆保留原 UUID／body／端點。check:api 直接執行實際 Vue SFC setup／KeepAlive、四流程 GenerationPanel、作品 409 筆記保留，以及六種新舊端點／seed／LoRA／不重試檢查。型別／建置、check:api 與既有三組檢查通過；隔離真實瀏覽器的 422、四流程切換與未知生成狀態通過，模擬引擎提交一次，服務已停止。未重新進行 GPU 出圖或全站無障礙驗收。Q03 及兩子項完成，剩餘 43 主項／78 子項；詳見 [契約與驗證](../development/frontend-api.md)。
 
 ## 2026-10-22 · Q02 明確配置與應用程式工廠
 
 新增 create_app 與每 app 的 AppContext，將目錄／SQLite 初始化移至 lifespan；主入口保留 backend.main:app。純請求型別移至 schemas，核心端點移至 core_api，其餘功能逐個以 context 組裝，不再傳入整個 main 模組。引擎 HTTP 可注入，現有 timeout／來源綁定與重送保護保留。
 
-既有 API 測試改用工廠與自身臨時資料／context，不再 patch main 全域路徑。新增雙 app 同時運作、匯入不建立資料、重開舊資料不改寫測試；548 項後端回歸（547 通過、1 項既有 symlink 權限跳過）、編譯與文件連結檢查通過。無 schema／資料遷移，配置及回退見 [說明](docs/development/architecture.md#application-factory)。Q02 及兩子項完成，剩餘 44 主項／80 子項。
+既有 API 測試改用工廠與自身臨時資料／context，不再 patch main 全域路徑。新增雙 app 同時運作、匯入不建立資料、重開舊資料不改寫測試；548 項後端回歸（547 通過、1 項既有 symlink 權限跳過）、編譯與文件連結檢查通過。無 schema／資料遷移，配置及回退見 [說明](../development/architecture.md#application-factory)。Q02 及兩子項完成，剩餘 44 主項／80 子項。
 
 ## 2026-10-22 · Q01 文件入口與現況一致性
 
@@ -576,7 +584,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 
 在 ComfyUI 程序內加入專案維護的唯讀裝置回報，以目前設定的裝置選取與明確的後端可用性結果為依據；nonce、版本、來源與格式不符時保持未知。標準／直接 workflow、圖生圖、局部編輯 v1／v2、Canny v1／v2 與 FLUX 在新任務取得明確不可用證據時，於上傳／提交前保存失敗，原 UUID 不重探測或重送。CPU 模式、草稿保存、離線作品與 CPU 預覽保留可用；系統資訊及任務／作品快照顯示回報來源。
 
-545 項後端測試（544 通過、1 項既有 symlink 權限跳過）、前端型別／建置與三組邏輯檢查通過。隔離真實 ComfyUI CPU 模式、實際 aiohttp 路由故障注入、API 整合及瀏覽器三態顯示驗證完成；沒有停用或破壞真實 GPU／驅動。E01 主項及兩個驗收子項已關閉；剩餘 46 主項／84 子項。詳見 [操作說明](docs/development/runtime-observability.md#execution-device)與 [驗收紀錄](docs/validation/execution-device-20261022.md)。以下歷史歸檔維持原始時點的敘述與數量。
+545 項後端測試（544 通過、1 項既有 symlink 權限跳過）、前端型別／建置與三組邏輯檢查通過。隔離真實 ComfyUI CPU 模式、實際 aiohttp 路由故障注入、API 整合及瀏覽器三態顯示驗證完成；沒有停用或破壞真實 GPU／驅動。E01 主項及兩個驗收子項已關閉；剩餘 46 主項／84 子項。詳見 [操作說明](../development/runtime-observability.md#execution-device)與 [驗收紀錄](../validation/execution-device-20261022.md)。以下歷史歸檔維持原始時點的敘述與數量。
 
 <a id="review-2026-10-03"></a>
 
@@ -617,7 +625,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 
 ## 已完成 ROADMAP 的原驗收條目（2026-10-25）
 
-依使用者要求，將已完成條目的原驗收敘述、提醒與證據移至此處；不新增驗收或改動原結論。來源為 [33512b8 的 ROADMAP](https://github.com/Zimkjdv/Model-Atelier/blob/33512b8df02d35206a3b27a90f6918a8b56b4534/ROADMAP.md)。日期與測試數均屬各次歷史紀錄；最新未完成工作見 [ROADMAP.md](docs/planning/roadmap.md)。
+依使用者要求，將已完成條目的原驗收敘述、提醒與證據移至此處；不新增驗收或改動原結論。來源為 [33512b8 的 ROADMAP](https://github.com/Zimkjdv/Model-Atelier/blob/33512b8df02d35206a3b27a90f6918a8b56b4534/ROADMAP.md)。日期與測試數均屬各次歷史紀錄；最新未完成工作見 [ROADMAP.md](../planning/roadmap.md)。
 
 ### 2026-10-22 整體檢視與改善計畫
 
@@ -656,7 +664,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - 作法：README 保留快速開始、現有功能與限制、日常操作與文件索引；功能細節以各 docs 為準，歷史數據連到驗收紀錄／CHANGELOG。補一份架構及資料流說明，標示任務狀態、原引擎綁定與資料存放位置。
   - [x] 驗收 Q01-01：README 改為現行功能／限制，完整舊文保存在有明確日期及來源 commit 的歷史快照；架構資料流、操作指南及文件索引分工。
   - [x] 驗收 Q01-02：依腳本／端點核對 lock 安裝、啟動、首次生成、離線與備份步驟，130 個本地連結／錨點通過；固定模型唯讀預檢通過，來源／硬體及 ComfyUI 非完整 lock 限制已記錄。
-  - 2026-10-22：本次為文件整理與命令／來源對照，未重新下載依賴／權重或宣稱新主機 GPU 驗收；現行入口見 [文件索引](docs/README.md)，舊 README 全文見 [歷史快照](#readme-before-q01)。
+  - 2026-10-22：本次為文件整理與命令／來源對照，未重新下載依賴／權重或宣稱新主機 GPU 驗收；現行入口見 [文件索引](../README.md)，舊 README 全文見 [歷史快照](#readme-before-q01)。
 
 <a id="q02"></a>
 
@@ -665,7 +673,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - 作法：先引入可注入 data root／資料庫／引擎存取的 `create_app` 與小型 context，再逐個模組移轉；初始化放在明確啟動階段。維持既有路由與本機部署，不要求換資料庫或引入完整 ORM。
   - [x] 驗收 Q02-01：create_app 與 AppContext 明確配置資料／DB／引擎 HTTP；雙 app 同時運作隔離設定、相同 UUID 任務、素材與快取；匯入不 mkdir／connect，測試改用自身 context。
   - [x] 驗收 Q02-02：548 項回歸（547 通過、1 項既有權限跳過）；所有 install 模組移轉 context，啟動入口不變，重開 app 及舊 JSON／seed 不改寫驗證通過。
-  - 2026-10-22：未改 SQLite schema、資料 key、工作流程或 HTTP 格式；回退僅切換程式版本並重啟。配置與重跑指令見 [應用程式工廠](docs/development/architecture.md#application-factory)。
+  - 2026-10-22：未改 SQLite schema、資料 key、工作流程或 HTTP 格式；回退僅切換程式版本並重啟。配置與重跑指令見 [應用程式工廠](../development/architecture.md#application-factory)。
 
 <a id="q03"></a>
 
@@ -674,7 +682,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - 作法：先統一 HTTP 狀態、字串／結構化 422、非 JSON 回應、AbortSignal 與錯誤型別；抽出確實重複的載入狀態。普通 JSON 與保留大整數的原始 bytes／workflow 下載分開，避免 seed 精度流失。
   - [x] 驗收 Q03-01：共用 ApiError／HTTP 解析與 request scope 覆蓋離線、409／422／500、非 JSON、取消及過期回覆；實際四種 SFC 的 KeepAlive／卸載回歸與瀏覽器未保存內容保留通過。
   - [x] 驗收 Q03-02：四流程實際 GenerationPanel 遺失回應恢復，以及修補／Canny v1、v2 原端點與字串 seed／LoRA 順序通過；原 bytes／文字下載不重新序列化，生成／停止／取消無自動重試。
-  - 2026-10-22：前端型別／正式建置與 check:api、既有三組邏輯檢查通過；作品 409 保留筆記／修訂號，真實瀏覽器驗證 422 與四流程切換，模擬引擎只收到一次生成。契約、涵蓋範圍與重跑見 [前端 API](docs/development/frontend-api.md)。
+  - 2026-10-22：前端型別／正式建置與 check:api、既有三組邏輯檢查通過；作品 409 保留筆記／修訂號，真實瀏覽器驗證 422 與四流程切換，模擬引擎只收到一次生成。契約、涵蓋範圍與重跑見 [前端 API](../development/frontend-api.md)。
 
 <a id="q04"></a>
 
@@ -684,7 +692,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - [x] 驗收 Q04-01：分頁搜尋、收藏／模型／封存組合篩選、跨頁選取比較與最新任務可用；新增／更新資料時沒有重複或漏項，既有 API 相容策略明確。
   - [x] 驗收 Q04-02：在相同硬體／資料集記錄前後指標與事先訂定的效能預算；如果遷移，驗證重跑、失敗回退、舊紀錄與不可變快照，不先宣稱效能提升幅度。
 
-- 2026-10-22：新增三類有上限的摘要 API，作品／任務／素材介面改用分頁、後端搜尋與按需詳情；固定查詢成員避免更新位移，跨頁比較及已選素材保留。100／1,000／10,000 同機合成資料前後 API／流量／記憶體及 UI 指標已記錄並通過預算；舊 API 保留，無 schema／JSON 遷移，詳見 [分頁與驗收證據](docs/development/list-pagination.md)。
+- 2026-10-22：新增三類有上限的摘要 API，作品／任務／素材介面改用分頁、後端搜尋與按需詳情；固定查詢成員避免更新位移，跨頁比較及已選素材保留。100／1,000／10,000 同機合成資料前後 API／流量／記憶體及 UI 指標已記錄並通過預算；舊 API 保留，無 schema／JSON 遷移，詳見 [分頁與驗收證據](../development/list-pagination.md)。
 
 <a id="q05"></a>
 
@@ -694,7 +702,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - [x] 驗收 Q05-01：在真實瀏覽器分別測四流程未保存、已保存、正在保存、筆刷編輯後的重新整理／關頁與站內切換；支援時出現警示，記錄行動瀏覽器不保證觸發的限制。
   - [x] 驗收 Q05-02：提示取消後內容不變；確認離開不觸發生成；未確認提交的原 UUID／端點仍可恢復，且 dirty 提示不把已提交內容誤稱為可自動恢復草稿。與 V01／V02 共用操作證據。
 
-- 2026-10-22：四工作台共用 dirty／保存中離頁保護，KeepAlive 隱藏內容仍受保護；Chrome 隔離資料驗證重新整理／關頁取消、保存中與保存後、實際筆刷及確認離開，模擬引擎提交 0 次。前端建置與四組檢查通過，行動限制及範圍見 [說明與證據](docs/development/frontend-api.md#unsaved-changes)。
+- 2026-10-22：四工作台共用 dirty／保存中離頁保護，KeepAlive 隱藏內容仍受保護；Chrome 隔離資料驗證重新整理／關頁取消、保存中與保存後、實際筆刷及確認離開，模擬引擎提交 0 次。前端建置與四組檢查通過，行動限制及範圍見 [說明與證據](../development/frontend-api.md#unsaved-changes)。
 
 <a id="q06"></a>
 
@@ -704,7 +712,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - [x] 驗收 Q06-01：乾淨安裝使用 lock 檔可重跑，任何子檢查失敗回傳非零；測試不讀寫使用者作品、不啟動真實推論，明列跳過原因及依賴警告處理結果。
   - [x] 驗收 Q06-02：自動覆蓋遺失回應只恢復原請求、修訂衝突保留內容、實際 JSON 下載、鍵盤預覽開關與 390px 基本操作；失敗保存可追溯證據，V01–V06 仍逐項驗收，不一鍵宣稱全站通過。
 
-- 2026-10-22：單一 fail-fast 品質入口、精確鎖版 Playwright、臨時 DATA／模擬引擎與 Windows CI 已加入；乾淨安裝、550 項後端（1 權限跳過）、型別／建置、四組契約及 8 項瀏覽器回歸通過，失敗探針確認非零與證據保存。TestClient 警告保留並記錄相容性，Vite／source-map-js 更新修補版後 npm audit 為 0；範圍及重跑見 [品質指南](docs/development/quality-checks.md)。
+- 2026-10-22：單一 fail-fast 品質入口、精確鎖版 Playwright、臨時 DATA／模擬引擎與 Windows CI 已加入；乾淨安裝、550 項後端（1 權限跳過）、型別／建置、四組契約及 8 項瀏覽器回歸通過，失敗探針確認非零與證據保存。TestClient 警告保留並記錄相容性，Vite／source-map-js 更新修補版後 npm audit 為 0；範圍及重跑見 [品質指南](../development/quality-checks.md)。
 
 <a id="q07"></a>
 
@@ -714,7 +722,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - [x] 驗收 Q07-01：在隔離目錄完成備份→還原→引擎離線讀取，核對任務／作品數、精確 seed、來源、遮罩、邊緣圖與圖片 hash；若不能保證一致快照，拒絕備份並說明停機需求。
   - [x] 驗收 Q07-02：損壞／缺檔／空間不足能報告且不覆寫原資料；盤點只讀，修復或清理須另行明確操作，不以重新生成取代遺失的歷史檔案。
 
-- 2026-10-23：新增停機 check／backup／verify／restore 與明確資料啟動命令；全 DATA、外置 DB、選定證據及 SHA256 manifest，目的地只接受新目錄。隔離還原、離線來源／遮罩／邊緣及精確 seed、程序鎖、損壞／缺檔／空間不足／來源變動回歸通過；操作與限制見 [完整備份工具](docs/operations/data-backup.md)。
+- 2026-10-23：新增停機 check／backup／verify／restore 與明確資料啟動命令；全 DATA、外置 DB、選定證據及 SHA256 manifest，目的地只接受新目錄。隔離還原、離線來源／遮罩／邊緣及精確 seed、程序鎖、損壞／缺檔／空間不足／來源變動回歸通過；操作與限制見 [完整備份工具](../operations/data-backup.md)。
 
 <a id="q08"></a>
 
@@ -724,7 +732,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - [x] 驗收 Q08-01：直接開啟、返回／前進、重新整理與錯誤網址均有明確結果；站內切換保留表單，重新整理遵守 Q05，焦點與目前導覽標記一致，沒有因恢復網址自動提交。
   - [x] 驗收 Q08-02：以桌面與 390px 完成首次連線、選流程、生成後找到作品、離線查閱；保留未知／未驗證能力提示。共用 token、對比、按鈕狀態與鍵盤操作沿 V06 驗收；若拆包，另比對首屏與切頁耗時。
 
-- 2026-10-23：頁面／四流程／原匯入任務採用 hash URL，返回前進、錯誤網址、焦點及筆記取消離頁驗證通過；KeepAlive／Q05 保留，無自動提交。1440px／390px 隔離首用、明確生成、匯入及引擎離線原圖通過；能力分層、未知／未驗證與大小比較見 [導覽說明](docs/development/frontend-api.md#navigation)，未拆包或宣稱 V06 全部完成。
+- 2026-10-23：頁面／四流程／原匯入任務採用 hash URL，返回前進、錯誤網址、焦點及筆記取消離頁驗證通過；KeepAlive／Q05 保留，無自動提交。1440px／390px 隔離首用、明確生成、匯入及引擎離線原圖通過；能力分層、未知／未驗證與大小比較見 [導覽說明](../development/frontend-api.md#navigation)，未拆包或宣稱 V06 全部完成。
 
 <a id="q09"></a>
 
@@ -734,7 +742,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - [x] 驗收 Q09-01：用模擬離線、遺失回應、409 及磁碟錯誤追蹤同一任務；原 UUID 恢復不被誤記為新提交，過期觀察與終態區分清楚。
   - [x] 驗收 Q09-02：預設診斷不包含提示詞、圖片、完整 workflow、憑證或不必要的個人路徑；記錄有大小／保留期限限制，產生診斷不連帶修改任務或重新生成。
 
-- 2026-10-23：新增限量記憶體 request／job／workflow／stage／耗時追蹤、明確恢復與過期觀察事件，以及平台／資料／引擎狀態分離。模擬離線、遺失回應、409、提交後磁碟失敗保持原 UUID 且不重送；1440px／390px 預覽與逐字下載、不改任務及敏感值排除通過。保留上限、API／UI 與驗證見 [診斷說明](docs/operations/diagnostics.md)。
+- 2026-10-23：新增限量記憶體 request／job／workflow／stage／耗時追蹤、明確恢復與過期觀察事件，以及平台／資料／引擎狀態分離。模擬離線、遺失回應、409、提交後磁碟失敗保持原 UUID 且不重送；1440px／390px 預覽與逐字下載、不改任務及敏感值排除通過。保留上限、API／UI 與驗證見 [診斷說明](../operations/diagnostics.md)。
 
 <a id="q10"></a>
 
@@ -744,7 +752,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - [x] 驗收 Q10-01：格式命令可重跑且第二次無差異，檢查入口納入 Q06；整理後能清楚辨識未送出、送出結果未知、確認中與終態的操作邊界。
   - [x] 驗收 Q10-02：純格式／重構與功能改動分開審閱，現有相關測試與前端檢查通過；不為追求抽象而合併不同 workflow 的驗證或更改公開資料格式。
 
-- 2026-10-23：以鎖版 Ruff／Prettier／CSS-tree 建立明確範圍的格式與少量靜態檢查，接入 Q06／CI；16 檔第二次格式零差異、格式語意比對及錯誤探針通過。格式與具名提交／恢復／確認狀態重構分開提交，四流程保存失敗不送出、原 UUID／版本端點恢復、明確回覆清除及後端 revision／終態回歸通過；規則與證據見 [維護指南](docs/development/quality-checks.md#static-checks) 與 [Q10 驗收](docs/validation/maintenance-20261023.md)。
+- 2026-10-23：以鎖版 Ruff／Prettier／CSS-tree 建立明確範圍的格式與少量靜態檢查，接入 Q06／CI；16 檔第二次格式零差異、格式語意比對及錯誤探針通過。格式與具名提交／恢復／確認狀態重構分開提交，四流程保存失敗不送出、原 UUID／版本端點恢復、明確回覆清除及後端 revision／終態回歸通過；規則與證據見 [維護指南](../development/quality-checks.md#static-checks) 與 [Q10 驗收](../validation/maintenance-20261023.md)。
 
 #### 與原待辦的去重與依賴
 
@@ -760,7 +768,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **E01 · 可靠辨識無可用執行裝置**
   - [x] 驗收 E01-01：引擎程序內的專案唯讀回報確認目前設定的裝置；nonce／版本／來源驗證，空裝置清單、離線、缺回報及異常資料保持未知，CPU 是有效裝置。
   - [x] 驗收 E01-02：標準／直接 workflow／圖生圖／修補 v1、v2／Canny v1、v2／FLUX 只在新提交取得明確不可用證據時阻擋，保留失敗 UUID；草稿、離線作品、CPU 預覽與原有相容性保護均已回歸。
-  - 2026-10-22：545 項後端測試（544 通過、1 項既有 symlink 權限跳過）、前端型別／建置與三組邏輯檢查通過；真實隔離 ComfyUI CPU 模式回報可用、HTTP 故障注入及三種瀏覽器提示通過。未刻意破壞真實 GPU／驅動；見 [操作與限制](docs/development/runtime-observability.md#execution-device)、[驗收證據](docs/validation/execution-device-20261022.md)。
+  - 2026-10-22：545 項後端測試（544 通過、1 項既有 symlink 權限跳過）、前端型別／建置與三組邏輯檢查通過；真實隔離 ComfyUI CPU 模式回報可用、HTTP 故障注入及三種瀏覽器提示通過。未刻意破壞真實 GPU／驅動；見 [操作與限制](../development/runtime-observability.md#execution-device)、[驗收證據](../validation/execution-device-20261022.md)。
 
 ### E05
 
@@ -769,7 +777,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **E05 · 連續資源取樣與任務專用峰值評估**
   - [x] 驗收 E05-01：先定義取樣範圍、頻率與程序歸屬，區分整卡用量、提交前快照及任務專用峰值。
   - [x] 驗收 E05-02：以實際任務驗證量測、保存與顯示；無法可靠歸屬時標示限制，不把單次快照當峰值。
-  - 2026-10-23：新任務從首次提交起背景查詢原引擎，獨立 journal 有界保存時間點／缺口及觀察最高值，終態凍結並隨作品保存；不改 revision、不重送生成、不回填歷史。RTX 3060／Animagine 實際取得 22 次取樣，任務與作品一致，離線和 1440px／390px 顯示核對通過。引擎裝置用量不同於 nvidia-smi 整卡用量，任務專用峰值仍為未知；見 [範圍](docs/development/runtime-observability.md#job-measurements)、[E05 證據](docs/validation/resource-sampling-20261023.md)。
+  - 2026-10-23：新任務從首次提交起背景查詢原引擎，獨立 journal 有界保存時間點／缺口及觀察最高值，終態凍結並隨作品保存；不改 revision、不重送生成、不回填歷史。RTX 3060／Animagine 實際取得 22 次取樣，任務與作品一致，離線和 1440px／390px 顯示核對通過。引擎裝置用量不同於 nvidia-smi 整卡用量，任務專用峰值仍為未知；見 [範圍](../development/runtime-observability.md#job-measurements)、[E05 證據](../validation/resource-sampling-20261023.md)。
 
 ### V02
 
@@ -779,7 +787,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - [x] 驗收 V02-01：在隔離資料實際製造未知／遺失回應，核對原 UUID、端點、遮罩／半徑與重新載入後恢復。
   - [x] 驗收 V02-02：確認只查詢原請求、不自動重送，v1 不被新表單改為 v2；保留原證據。
 
-  2026-10-23：1440px／390px 的 v1／v2 × 引擎回覆遺失／平台異常 JSON 共 8 案例，以及未知版本保護通過。原 pending、完整 body／端點、精確 seed、雙素材與處理輸入／羽化半徑保持一致；重載及輪詢不送生成，手動恢復只返回原 UUID 帳本，引擎每案例仍僅一次提交。修正成功 JSON 或明確錯誤攜帶其他任務 ID 時誤清除 pending；原始請求、任務 JSON、呼叫紀錄與畫面保留於測試證據。見 [V02 驗收紀錄](docs/validation/inpaint-recovery-20261023.md)。V01 實機觸控仍待驗收。
+  2026-10-23：1440px／390px 的 v1／v2 × 引擎回覆遺失／平台異常 JSON 共 8 案例，以及未知版本保護通過。原 pending、完整 body／端點、精確 seed、雙素材與處理輸入／羽化半徑保持一致；重載及輪詢不送生成，手動恢復只返回原 UUID 帳本，引擎每案例仍僅一次提交。修正成功 JSON 或明確錯誤攜帶其他任務 ID 時誤清除 pending；原始請求、任務 JSON、呼叫紀錄與畫面保留於測試證據。見 [V02 驗收紀錄](../validation/inpaint-recovery-20261023.md)。V01 實機觸控仍待驗收。
 
 ### V03
 
@@ -788,7 +796,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **V03 · 作品整理、並排比較與人工評分的窄視窗補驗**
   - [x] 驗收 V03-01：在 390px 實際完成篩選、收藏、筆記、封存／還原、未保存保護及修訂衝突處理。
   - [x] 驗收 V03-02：操作原圖並排、參數差異及人工評分的保存／衝突；不以比較報告結果頁的 390px 驗收替代。
-  - 2026-10-23：五項 390 × 844 瀏覽器操作完成，雙分頁筆記／評分 409、明確重讀、保存中與 503 保護，以及原圖／workflow bytes、精確 seed 與 LoRA 順序核對通過。修正空篩選提示、預覽保存忙碌狀態與比較區鍵盤捲動；使用臨時合成作品，沒有 GPU 推論或正式資料變更。證據及重跑見 [V03 驗收](docs/validation/artwork-library-20261023.md)；實機觸控與全站 UI 仍依 V01／V06 待驗收。
+  - 2026-10-23：五項 390 × 844 瀏覽器操作完成，雙分頁筆記／評分 409、明確重讀、保存中與 503 保護，以及原圖／workflow bytes、精確 seed 與 LoRA 順序核對通過。修正空篩選提示、預覽保存忙碌狀態與比較區鍵盤捲動；使用臨時合成作品，沒有 GPU 推論或正式資料變更。證據及重跑見 [V03 驗收](../validation/artwork-library-20261023.md)；實機觸控與全站 UI 仍依 V01／V06 待驗收。
 
 ### V04
 
@@ -799,7 +807,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
   - [x] 驗收 V04-02：實際操作指定 LoRA 的 model／CLIP 強度軸，確認其餘強度、順序、精確 seed 及錯誤處理。
   - [x] 驗收 V04-03：核對固定四案例跨模型結果及案例設定載入，不以兩個 denoise 方案的 UI 驗收概括四案例。
   - [x] 驗收 V04-04：核對任務與作品的量測來源、平台／引擎耗時及未知值顯示，不把效能條件快照等同量測 UI。
-  - 2026-10-23：1440px／390px 八項回歸覆蓋有序 8 步品質條件、指定 LoRA 兩種強度軸、四案例逐組載入，以及任務／作品原來源、零與未知量測。另在歷史唯讀副本核對 11 件原作品、八次跨模型並排及 22 次設定還原，來源 DB／原圖／workflow 不變；未新增 GPU 推論或品質預設。證據及限制見 [V04 驗收](docs/validation/comparison-measurements-20261023.md)。
+  - 2026-10-23：1440px／390px 八項回歸覆蓋有序 8 步品質條件、指定 LoRA 兩種強度軸、四案例逐組載入，以及任務／作品原來源、零與未知量測。另在歷史唯讀副本核對 11 件原作品、八次跨模型並排及 22 次設定還原，來源 DB／原圖／workflow 不變；未新增 GPU 推論或品質預設。證據及限制見 [V04 驗收](../validation/comparison-measurements-20261023.md)。
 
 ### V05
 
@@ -808,7 +816,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **V05 · 一般創作設定交換的實際下載與窄視窗補驗**
   - [x] 驗收 V05-01：在能觀察下載結果的瀏覽器核對創作設定 JSON 檔案、原 bytes、精確 seed 及匯入預覽。
   - [x] 驗收 V05-02：在 390px 驗證匯出、檔案選取／貼上、取消及套用保護；比較方案 JSON 的驗收不替代此格式。
-  - 2026-10-23：1440px／390px 十二項瀏覽器回歸核對 checkpoint、圖生圖、FLUX 及作品來源的實際下載、檔名／磁碟 bytes／精確 seed、檔案選擇器與剪貼簿貼上、取消、舊預覽失效及另存新草稿。修正失敗新檔仍保留舊候選、非嚴格 UTF-8 與讀取期間保護；未生成圖片或改正式資料。證據與限制見 [V05 驗收](docs/validation/settings-transfer-20261023.md)。
+  - 2026-10-23：1440px／390px 十二項瀏覽器回歸核對 checkpoint、圖生圖、FLUX 及作品來源的實際下載、檔名／磁碟 bytes／精確 seed、檔案選擇器與剪貼簿貼上、取消、舊預覽失效及另存新草稿。修正失敗新檔仍保留舊候選、非嚴格 UTF-8 與讀取期間保護；未生成圖片或改正式資料。證據與限制見 [V05 驗收](../validation/settings-transfer-20261023.md)。
 
 ### V06
 
@@ -817,7 +825,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **V06 · 全站視覺規範與無障礙補驗**
   - [x] 驗收 V06-01：逐頁核對視覺狀態、標籤、鍵盤操作、焦點、可讀對比與非顏色狀態提示。
   - [x] 驗收 V06-02：保存各頁桌面／窄視窗的結果及限制；既有工作台與主要導覽驗收不代表全站通過。
-  - 2026-10-23：新增 21 項 Chromium 回歸，逐一驗證六主頁／四流程的九個入口與展開、編輯、預覽、讀取、空白及錯誤狀態，保存 1440px／390px 的截圖與 axe JSON。修正文字／漸層對比、收藏 ARIA 值、標題層級、窄版品牌名稱及可捲區焦點。保留 incomplete 判讀與瀏覽器／讀屏限制，不宣稱完整 WCAG 認證；V01-02 實機觸控仍未完成。頁面矩陣及重跑見 [V06 驗收](docs/validation/ui-accessibility-20261023.md)。
+  - 2026-10-23：新增 21 項 Chromium 回歸，逐一驗證六主頁／四流程的九個入口與展開、編輯、預覽、讀取、空白及錯誤狀態，保存 1440px／390px 的截圖與 axe JSON。修正文字／漸層對比、收藏 ARIA 值、標題層級、窄版品牌名稱及可捲區焦點。保留 incomplete 判讀與瀏覽器／讀屏限制，不宣稱完整 WCAG 認證；V01-02 實機觸控仍未完成。頁面矩陣及重跑見 [V06 驗收](../validation/ui-accessibility-20261023.md)。
 
 ### L01
 
@@ -826,8 +834,8 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **L01 · 更多多 LoRA 組合及其他畫風品質比較**
   - [x] 驗收 L01-01：固定像素 LoRA 原來源及獨立鍵名相容副本；Animagine 上完成 14 組原生單／雙／三 LoRA、正反順序、model／CLIP 強度、兩個精確 seed 與兩題材，保存完整版本、原圖、設定及逐圖觀察。
   - [x] 驗收 L01-02：原格式四組雖出圖但全鍵未載入，另存拒絕證據；原生批次零未載入警告，LCM 模糊、造型偏移與裁切等品質限制保留。新六筆歷史條件及舊三筆低對比紀錄分開保存，不當成當前畫風品質通過。
-  - 2026-10-23：新增固定來源、排他／可追溯 header 轉換、單組工具與 10 項後端／2 項瀏覽器回歸；615 後端（1 跳過）、建置／契約及 93 Chromium 通過。14 份報告停引擎／平台重啟後僅 GET 核對，正式 DATA 八檔 hash 不變。見 [L01 實測與限制](docs/validation/style-matrix-20261023.md)。
-  - 圖片提醒：優先沿用 R05 已確認的畫風目標圖；換畫風或樣本不足時，品質比對前主動提醒使用者補齊，見 [圖片提供提醒](docs/planning/anime-style-development.md#image-input-reminders)。
+  - 2026-10-23：新增固定來源、排他／可追溯 header 轉換、單組工具與 10 項後端／2 項瀏覽器回歸；615 後端（1 跳過）、建置／契約及 93 Chromium 通過。14 份報告停引擎／平台重啟後僅 GET 核對，正式 DATA 八檔 hash 不變。見 [L01 實測與限制](../validation/style-matrix-20261023.md)。
+  - 圖片提醒：優先沿用 R05 已確認的畫風目標圖；換畫風或樣本不足時，品質比對前主動提醒使用者補齊，見 [圖片提供提醒](../planning/anime-style-development.md#image-input-reminders)。
 
 ### R01
 
@@ -836,7 +844,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **R01 · depth／pose 等其他結構參考流程**
   - [x] 驗收 R01-01：逐種核對前處理、控制模型、架構、版本與條件；Canny 的既有驗收不代表其他類型可用。
   - [x] 驗收 R01-02：完成各流程的提交、快照、結果、精確設定還原及實機驗收。
-  - 2026-10-23：SDXL pose／depth v3、固定 aux／估計器與控制權重，兩種 RTX3060 唯一生成、同次條件圖／作品及完整還原通過；動漫骨架缺漏、姿勢偏離及深度構圖分界保留。見 [R01 操作與證據](docs/features/structure-reference.md)。
+  - 2026-10-23：SDXL pose／depth v3、固定 aux／估計器與控制權重，兩種 RTX3060 唯一生成、同次條件圖／作品及完整還原通過；動漫骨架缺漏、姿勢偏離及深度構圖分界保留。見 [R01 操作與證據](../features/structure-reference.md)。
 
 ### R02
 
@@ -845,8 +853,8 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **R02 · 畫風與角色參考 adapter**
   - [x] 驗收 R02-01：固定 SDXL Plus ViT-H／編碼器／節點，接入單張嚴格流程、元件登記、來源／224 方圖前處理及完整快照；權重 0／0.6／1 與兩個精確 seed 分開比較。
   - [x] 驗收 R02-02：使用已確認的棕髮綠眼角色，另外比較肖像／書店／公園，12 組 RTX 3060 原圖保存；保留粉髮、服裝帶入、雙人、張傘與背景弱化，不保證身份鎖定或作者畫風完全重現。
-  - 2026-10-23：630 項後端（1 既有跳過）、建置／契約與 97 Chromium 通過；12 報告停引擎／改登記／平台重啟後只 GET，1440px／390px 實際下載與精確權重／seed 還原通過，正式 DATA 八檔 hash 不變。見 [R02 證據與限制](docs/validation/reference-adapter-20261023.md)。本輪沒有訓練，每次只用一張參考；22 檔／20 不同內容與 6 張保留評估見 [圖片用途](docs/validation/reference-inputs-20261023.md)。
-  - 圖片提醒：真實畫風驗收前核對參考／保留評估圖，缺少時提醒使用者提供；角色驗收另確認同一角色的圖片，不借用不同角色的畫風樣本。見 [圖片提供提醒](docs/planning/anime-style-development.md#image-input-reminders)。
+  - 2026-10-23：630 項後端（1 既有跳過）、建置／契約與 97 Chromium 通過；12 報告停引擎／改登記／平台重啟後只 GET，1440px／390px 實際下載與精確權重／seed 還原通過，正式 DATA 八檔 hash 不變。見 [R02 證據與限制](../validation/reference-adapter-20261023.md)。本輪沒有訓練，每次只用一張參考；22 檔／20 不同內容與 6 張保留評估見 [圖片用途](../validation/reference-inputs-20261023.md)。
+  - 圖片提醒：真實畫風驗收前核對參考／保留評估圖，缺少時提醒使用者提供；角色驗收另確認同一角色的圖片，不借用不同角色的畫風樣本。見 [圖片提供提醒](../planning/anime-style-development.md#image-input-reminders)。
 
 ### R03
 
@@ -855,7 +863,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **R03 · 專用 inpainting 模型與更多羽化／修補品質**
   - [x] 驗收 R03-01：選定並核對專用模型來源與相容性；完成載入、生成、保存及還原驗證。
   - [x] 驗收 R03-02：比較更多素材、半徑與 seed 的接縫、邊界融合及遮罩外保留，保留色偏／截斷等觀察。
-  - 2026-10-23：固定 Fooocus head／v2.6 patch＋Animagine，六組專用修補／兩組一般 v2 對照通過生成、唯一作品與完整還原；引擎停止後八組 GET／hash 核對通過。遮罩外像素差皆 0，但 Fooocus 未優於一般修補，色塊／色偏及提示偏離保留；維持實驗選項而非預設。見 [R03 操作](docs/features/fooocus-inpainting.md)、[逐圖驗收](docs/validation/fooocus-inpainting-20261023.md)。
+  - 2026-10-23：固定 Fooocus head／v2.6 patch＋Animagine，六組專用修補／兩組一般 v2 對照通過生成、唯一作品與完整還原；引擎停止後八組 GET／hash 核對通過。遮罩外像素差皆 0，但 Fooocus 未優於一般修補，色塊／色偏及提示偏離保留；維持實驗選項而非預設。見 [R03 操作](../features/fooocus-inpainting.md)、[逐圖驗收](../validation/fooocus-inpainting-20261023.md)。
 
 ### R04
 
@@ -864,7 +872,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **R04 · Pony 搭配 Canny v2 及其他 LoRA 的實測**
   - [x] 驗收 R04-01：另以 Pony v2 完成無 LoRA、IKEA、LCM、LCM → IKEA 與反向五組 RTX 3060 實測，固定控制權重、原素材、seed、各組取樣條件及順序／強度；不借用舊模型證據推定通過。
   - [x] 驗收 R04-02：五份原邊緣／完整 workflow／唯一作品／快照與設定還原通過；1440px／390px 實際下載、引擎離線／改登記／平台重啟核對不重送。各組另記中空材質與平面線框等品質限制，未建立品質推薦。
-  - 2026-10-23：新增單次驗收 CLI、固定可重跑椅子 fixture 及精簡證據 JSON；5 任務／5 作品／5 原邊緣、零自動重試，正式 DATA 8 檔 hash 不變。見 [R04 驗收與限制](docs/validation/pony-canny-v2-20261023.md)。
+  - 2026-10-23：新增單次驗收 CLI、固定可重跑椅子 fixture 及精簡證據 JSON；5 任務／5 作品／5 原邊緣、零自動重試，正式 DATA 8 檔 hash 不變。見 [R04 驗收與限制](../validation/pony-canny-v2-20261023.md)。
 
 ### R05
 
@@ -873,8 +881,8 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **R05 · 更多模型、seed、素材與作者提示格式的品質比較**
   - [x] 驗收 R05-01：獨立動漫 v1 測試集、正／反向完整文字比較與單組 CLI；Pony／Animagine 三題材、兩個精確 seed、品質標籤與兩種新素材 denoise 0.3／0.6，共 18 件 GPU 原圖及完整設定／版本／hash 保存。
   - [x] 驗收 R05-02：逐圖記錄提示服從、角色一致、畫風與構圖；保留雙人、開書、裁切及高 denoise 臉／手扭曲等失敗。18 份報告停引擎／平台重啟後僅 GET 核對；有限基準不代表全面模型、作者畫風或角色品質通過。
-  - 2026-10-23：6 項新增後端及 1440px／390px 操作驗收，完整 605 項後端（1 跳過）、建置／契約與 91 項瀏覽器通過；正式 DATA 八檔 hash 不變。見 [R05 證據與限制](docs/validation/anime-baseline-20261023.md)。
-  - 圖片提醒：指定作者／畫風品質比對前主動核對使用者的目標圖與資料分組；缺圖時可先做無參考基準，該畫風品質保持待驗收。見 [圖片提供提醒](docs/planning/anime-style-development.md#image-input-reminders)。
+  - 2026-10-23：6 項新增後端及 1440px／390px 操作驗收，完整 605 項後端（1 跳過）、建置／契約與 91 項瀏覽器通過；正式 DATA 八檔 hash 不變。見 [R05 證據與限制](../validation/anime-baseline-20261023.md)。
+  - 圖片提醒：指定作者／畫風品質比對前主動核對使用者的目標圖與資料分組；缺圖時可先做無參考基準，該畫風品質保持待驗收。見 [圖片提供提醒](../planning/anime-style-development.md#image-input-reminders)。
 
 ### R06
 
@@ -883,7 +891,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **R06 · 更多模型／工作流程／參數比較軸**
   - [x] 驗收 R06-01：新增 checkpoint 模型、sampler_name、scheduler 三軸，涵蓋文生圖／單張圖生圖；單一變因最多 8 組。schema 2 保存原模型登記與完整設定，舊六軸 schema 1 不改寫。
   - [x] 驗收 R06-02：保存／匯入／匯出、逐組載入與任務／作品／報告追溯通過；生成交易核對原登記，原 UUID 恢復不重送，未生成組保持空，無自動批次／重試／品質評分。
-  - 2026-10-23：9 項新增後端整合及 1440px／390px 瀏覽器操作，保留精確 seed、停用 LoRA、原素材與未知版本；來源快照非權重驗證。邊界與證據見 [R06 驗收](docs/validation/extended-comparisons-20261023.md)。
+  - 2026-10-23：9 項新增後端整合及 1440px／390px 瀏覽器操作，保留精確 seed、停用 LoRA、原素材與未知版本；來源快照非權重驗證。邊界與證據見 [R06 驗收](../validation/extended-comparisons-20261023.md)。
 
 ### R07
 
@@ -892,7 +900,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **R07 · 局部編輯／結構流程的一般草稿、設定交換及比較方案評估**
   - [x] 驗收 R07-01：評估專用格式與能力描述，完整保存雙輸入、羽化／控制參數及版本；不借用舊格式丟棄資訊。
   - [x] 驗收 R07-02：支援時另驗證保存／匯入／還原／比較；尚未支援時維持明確拒絕與完整 workflow 下載。
-  - 2026-10-23：完成四版本的專用格式方案、唯讀能力 API 與桌面／390px 工作台說明；目前三種操作維持不支援。修正一般草稿默默丟棄遮罩／控制參數的問題，POST／PUT、交換及比較明確拒絕且不部分寫入；有限保留既有回讀封套相容。四版本原任務／作品完整還原及 workflow／64 位 seed 保留通過。R07 是評估及拒絕邊界驗收，不表示專用草稿／交換／比較已上線；見 [R07 決策與證據](docs/development/specialized-workflow-formats.md)。
+  - 2026-10-23：完成四版本的專用格式方案、唯讀能力 API 與桌面／390px 工作台說明；目前三種操作維持不支援。修正一般草稿默默丟棄遮罩／控制參數的問題，POST／PUT、交換及比較明確拒絕且不部分寫入；有限保留既有回讀封套相容。四版本原任務／作品完整還原及 workflow／64 位 seed 保留通過。R07 是評估及拒絕邊界驗收，不表示專用草稿／交換／比較已上線；見 [R07 決策與證據](../development/specialized-workflow-formats.md)。
 
 ### T01
 
@@ -900,7 +908,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 
 - [x] **T01 · 確認實際訓練需求**
   - [x] 驗收 T01-01：依 R02 偏差決定畫風／角色分開的 SDXL UNet LoRA 候選，固定 Animagine 基底身分、用途／排除範圍、兩路徑各 12 件未來比較及四面向人工判準；推論參數、參考圖、資料準備與實際權重更新明確區分。
-  - 2026-10-23：需求 v1 與圖片提醒／曝光界線完成，未安裝 trainer、未訓練或新增 GPU 工作；T02 之後仍依使用者排序 R01 → R03，T03／T04 另排。見 [訓練需求](docs/training/requirements.md)、[T01 驗收](docs/validation/training-requirements-20261023.md)。
+  - 2026-10-23：需求 v1 與圖片提醒／曝光界線完成，未安裝 trainer、未訓練或新增 GPU 工作；T02 之後仍依使用者排序 R01 → R03，T03／T04 另排。見 [訓練需求](../training/requirements.md)、[T01 驗收](../validation/training-requirements-20261023.md)。
   - 圖片提醒：決定試訓後依 T02 缺項提醒使用者完成審查或補齊訓練／獨立評估圖；需求討論不要求先備齊訓練集。
 
 ### T02
@@ -909,8 +917,8 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 
 - [x] **T02 · 資料集、標註、版本與訓練工具介面評估**
   - [x] 驗收 T02-01：完成 v1 清單／Schema、單行 caption／角色／來源審查、原作分組／固定分割／曝光、版本 hash 與本機檢查／不可覆寫出口；評估固定 sd-scripts 資料介面並保留可追溯紀錄。
-  - 2026-10-23：既有 22 檔各建畫風／角色清單，10 張訓練候選、6 張開發評估、6 張排除；caption／來源與角色身分未完成，真實資料出口正確拒絕。合成資料出口與驗證通過，沒有安裝 trainer 或開始訓練。見 [契約與操作](docs/training/dataset-contract.md)、[工具介面](docs/training/tool-interface-research.md)、[T02 驗收](docs/validation/training-dataset-20261023.md)。
-  - 圖片提醒：實際訓練前核對每種畫風的訓練／評估分割、標註與來源，先沿用適用的既有資料，只提醒補齊缺少部分；T04 最終驗收另確認保留集未被反覆調參使用。見 [圖片提供提醒](docs/planning/anime-style-development.md#image-input-reminders)。
+  - 2026-10-23：既有 22 檔各建畫風／角色清單，10 張訓練候選、6 張開發評估、6 張排除；caption／來源與角色身分未完成，真實資料出口正確拒絕。合成資料出口與驗證通過，沒有安裝 trainer 或開始訓練。見 [契約與操作](../training/dataset-contract.md)、[工具介面](../training/tool-interface-research.md)、[T02 驗收](../validation/training-dataset-20261023.md)。
+  - 圖片提醒：實際訓練前核對每種畫風的訓練／評估分割、標註與來源，先沿用適用的既有資料，只提醒補齊缺少部分；T04 最終驗收另確認保留集未被反覆調參使用。見 [圖片提供提醒](../planning/anime-style-development.md#image-input-reminders)。
 
 ### T03
 
@@ -919,7 +927,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 - [x] **T03 · 訓練獨立環境與 GPU 資源協調**
   - [x] 驗收 T03-01：規劃與平台／推論分離的環境，驗證佔用與釋放、衝突及失敗恢復。
   - [x] 驗收 T03-02：記錄訓練專用資源需求，與 E04 聯動，不讓訓練干擾既有生成任務。
-  - 2026-10-25：固定獨立 Windows trainer／依賴／tokenizer，提供封存 run、明確停止／完整狀態續訓及本機生成互斥；RTX 3060 自製幾何資料實測拒絕衝突、停止釋放及新 UUID 續訓至 step 3。上游步數重設失敗保留，修正後核對最終 state。作者圖片未訓練，1024／RTX 4080／畫風品質與 E04 其餘工作負載未認列。見 [操作](docs/training/runtime.md)、[實測與資源](docs/validation/training-runtime-20261025.md)。
+  - 2026-10-25：固定獨立 Windows trainer／依賴／tokenizer，提供封存 run、明確停止／完整狀態續訓及本機生成互斥；RTX 3060 自製幾何資料實測拒絕衝突、停止釋放及新 UUID 續訓至 step 3。上游步數重設失敗保留，修正後核對最終 state。作者圖片未訓練，1024／RTX 4080／畫風品質與 E04 其餘工作負載未認列。見 [操作](../training/runtime.md)、[實測與資源](../validation/training-runtime-20261025.md)。
 
 ### T04
 
@@ -927,7 +935,7 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 
 - [x] **T04 · 訓練產物回登與評估**
   - [x] 驗收 T04-01：定義模型庫回登、來源／版本／hash／訓練條件及固定比較流程，保存品質限制。
-  - 2026-10-25：T03 `db7ab91` 先 commit／push 後實作；完整產物／狀態驗證、來源 sidecar、原生 LoRA 模型庫回登、三題材兩 seed 的 12 格比較與人工模板完成。合成 LoRA 在 RTX 3060 原生載入、保存及引擎離線查回／完整還原通過；只實際生成兩件技術案例，作者品質與最終保留圖仍未認列。見 [操作](docs/training/artifacts.md)、[技術驗收](docs/validation/training-artifacts-20261025.md)。
+  - 2026-10-25：T03 `db7ab91` 先 commit／push 後實作；完整產物／狀態驗證、來源 sidecar、原生 LoRA 模型庫回登、三題材兩 seed 的 12 格比較與人工模板完成。合成 LoRA 在 RTX 3060 原生載入、保存及引擎離線查回／完整還原通過；只實際生成兩件技術案例，作者品質與最終保留圖仍未認列。見 [操作](../training/artifacts.md)、[技術驗收](../validation/training-artifacts-20261025.md)。
 
 <a id="v01-01"></a>
 
@@ -935,4 +943,4 @@ README 收斂為安裝、首次生成、現有功能／限制與日常操作入�
 
 - [x] 驗收 V01-01：實際操作筆刷、擦除、反相、PNG 載入與保存，核對縮放座標及未保存保護。
 
-2026-10-23 的 [瀏覽器驗收](docs/validation/mask-editor-20261023.md)已完成；V01-02 實機觸控與 V01 主項仍留在 ROADMAP，沒有因移動而關閉。
+2026-10-23 的 [瀏覽器驗收](../validation/mask-editor-20261023.md)已完成；V01-02 實機觸控與 V01 主項仍留在 ROADMAP，沒有因移動而關閉。

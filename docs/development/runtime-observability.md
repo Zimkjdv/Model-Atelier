@@ -47,7 +47,7 @@ SQLite 在原任務 `validating` 且快照尚未保存時，透過一次交易�
 
 2026-10-05 的固定 Animagine／LCM RTX 3060 任務 `6e767729-a4ab-49c8-9853-4e947ad58e6a` 與作品 `1975697f-d9d0-5f71-b552-39d7c37e65ab` 保存 ComfyUI 0.34.0、引擎 Python 3.12.10、PyTorch 2.14.0+cu130 與五個 Comfy 套件；引擎停止、平台重啟後，快照、原圖、完整 JSON、精確 seed 與設定 GET 保持相同。原隔離證據記錄位置為 `runtime/style-live-data-20261005/runtime-snapshot.json` 與 `runtime/runtime-version-ui-20261005.png`；它們是當時本機證據，不是目前環境版本或正式資料新增生成的聲明。
 
-當時另修正 Windows Python 3.12 並行建立目錄偶爾保留 `\\?\` 前綴的等價路徑誤拒絕，仍解析實體位置並核對 runtime 範圍及 symlink／junction；跨程序測試核對只有一份報告可授權生成且失敗回收全部子程序。效能條件測試涵蓋精確 seed、有序 LoRA、素材流程尺寸、未知／衝突／私密 argv 與原 UUID 不重探測。歷史通過數見 [CHANGELOG](../../CHANGELOG.md)，不能代替目前重跑或其他硬體的驗收。
+當時另修正 Windows Python 3.12 並行建立目錄偶爾保留 `\\?\` 前綴的等價路徑誤拒絕，仍解析實體位置並核對 runtime 範圍及 symlink／junction；跨程序測試核對只有一份報告可授權生成且失敗回收全部子程序。效能條件測試涵蓋精確 seed、有序 LoRA、素材流程尺寸、未知／衝突／私密 argv 與原 UUID 不重探測。歷史通過數見 [CHANGELOG](../history/changelog.md)，不能代替目前重跑或其他硬體的驗收。
 
 <a id="execution-device"></a>
 
@@ -57,7 +57,7 @@ E01 使用正在執行的 ComfyUI 程序回報目前設定的裝置，不使用�
 
 ### 安裝與查看
 
-受管理本機引擎由 `start-comfyui.ps1` 在啟動前執行 `scripts/install_execution_device.py`，將本專案的 `comfyui_extensions/model_atelier_execution_device` 兩個檔案更新到受管理 ComfyUI 的同名 `custom_nodes` 目錄。其他擴充不被更動，不下載第三方程式，也不改寫 ComfyUI 原始碼；重新啟動才會載入。重新執行安裝不重寫相同內容，路徑重新導向／符號連結會拒絕。
+受管理本機引擎由 `scripts/start-comfyui.ps1` 在啟動前執行 `scripts/install_execution_device.py`，將本專案的 `comfyui_extensions/model_atelier_execution_device` 兩個檔案更新到受管理 ComfyUI 的同名 `custom_nodes` 目錄。其他擴充不被更動，不下載第三方程式，也不改寫 ComfyUI 原始碼；重新啟動才會載入。重新執行安裝不重寫相同內容，路徑重新導向／符號連結會拒絕。
 
 遠端或自行啟動的 ComfyUI：將上述完整目錄放到該引擎的 `custom_nodes/` 並重新啟動；若使用 `--disable-all-custom-nodes`，需明確加上 `--whitelist-custom-nodes model_atelier_execution_device`。未安裝或被停用時保持未知，既有生成流程仍可用。這是唯讀回報擴充，`NODE_CLASS_MAPPINGS` 為空，不提供生成節點。
 

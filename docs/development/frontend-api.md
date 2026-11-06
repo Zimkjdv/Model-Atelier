@@ -111,4 +111,4 @@ npm.cmd run check:control
 
 瀏覽器回歸另在臨時 DATA／模擬引擎檢查網址直達／刷新／返回、焦點、未保存筆記返回確認、重新整理／關頁警示、保存成功與失敗、遮罩筆畫、未知結果與原請求恢復；fixture 成功圖片為合成 PNG，不代表真實推論。入口與目前範圍見[品質檢查](quality-checks.md)。
 
-Q03／Q05／Q08 的原始四工作台、1440px／390px 與 bundle 數字屬當時歷史，不是目前測試總數或效能保證，見 [CHANGELOG](../../CHANGELOG.md)。2026-10-23 新增第五個參考工作台的遺失回應、重新整理、完整還原與切頁保留另見 [R02 驗收](../validation/reference-adapter-20261023.md)；六種 descriptor 與 v1／v2 失敗恢復見 [V02](../validation/inpaint-recovery-20261023.md)。GPU、實體觸控及全站視覺仍須各自驗收。
+Q03／Q05／Q08 的原始四工作台、1440px／390px 與 bundle 數字屬當時歷史，不是目前測試總數或效能保證，見 [CHANGELOG](../history/changelog.md)。2026-10-23 新增第五個參考工作台的遺失回應、重新整理、完整還原與切頁保留另見 [R02 驗收](../validation/reference-adapter-20261023.md)；六種 descriptor 與 v1／v2 失敗恢復見 [V02](../validation/inpaint-recovery-20261023.md)。GPU、實體觸控及全站視覺仍須各自驗收。

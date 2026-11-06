@@ -303,7 +303,7 @@ class ModelPathTests(unittest.TestCase):
         shutil.copytree(REPOSITORY / 'comfyui_extensions', self.root / 'comfyui_extensions', ignore=shutil.ignore_patterns('__pycache__'))
         shutil.copy2(REPOSITORY / 'backend' / 'model_paths.py', backend)
         (backend / '__init__.py').write_text('', encoding='utf-8')
-        shutil.copy2(REPOSITORY / 'start-comfyui.ps1', self.root)
+        shutil.copy2(REPOSITORY / 'scripts/start-comfyui.ps1', scripts)
         comfy = self.root / 'runtime' / 'ComfyUI'
         python = comfy / '.venv' / 'Scripts' / 'python.exe'
         python.parent.mkdir(parents=True)
@@ -311,7 +311,7 @@ class ModelPathTests(unittest.TestCase):
         shutil.copy2(Path(sys.executable).parents[1] / 'pyvenv.cfg', comfy / '.venv' / 'pyvenv.cfg')
         (comfy / 'main.py').write_text('import json,sys\nfrom pathlib import Path\nPath("observed-arguments.json").write_text(json.dumps(sys.argv[1:]),encoding="utf-8")\n', encoding='utf-8')
         self.cli_database(dict(revision=1, updated_at=None, paths=[str(self.first)]))
-        command = [shell, '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', str(self.root / 'start-comfyui.ps1')]
+        command = [shell, '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', str(self.root / 'scripts/start-comfyui.ps1')]
         result = subprocess.run(command, capture_output=True, text=True, errors="replace", timeout=30, creationflags=subprocess.CREATE_NO_WINDOW,
                                 env=os.environ | {'PYTHONDONTWRITEBYTECODE': '1'})
         self.assertEqual(result.returncode, 0, result.stderr)
