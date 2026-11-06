@@ -7,7 +7,7 @@ R05 另提供動漫集 `experiments/anime-illustration-v1.json`，不改寫通�
 .\.venv\Scripts\python.exe -m scripts.verify_anime_suite --model animagine-xl-4.0-opt --case anime-portrait --seed 18446744073709551615 --prompt-format quality-tags --platform http://127.0.0.1:8001 --expected-engine http://127.0.0.1:8188 --report runtime/anime-portrait-new.json --verify-report
 ```
 
-一指令一個 UUID、獨占新報告、完整權重驗檔、原圖與原設定核對、失去回應只查原 UUID 及 `--verify-report` 僅 GET 的規則與通用工具相同。這個入口不自行建立批次；本輪有限矩陣及人工原圖觀察另記驗收文件。指定作者畫風與角色身份結論需要使用者目標圖；依[圖片提醒](anime-style-development.md#image-input-reminders)補資料後另驗，不由標籤或成功出圖推論。
+一指令一個 UUID、獨占新報告、完整權重驗檔、原圖與原設定核對、失去回應只查原 UUID 及 `--verify-report` 僅 GET 的規則與通用工具相同。這個入口不自行建立批次；本輪有限矩陣及人工原圖觀察另記驗收文件。指定作者畫風與角色身份結論需要使用者目標圖；依[圖片提醒](../planning/anime-style-development.md#image-input-reminders)補資料後另驗，不由標籤或成功出圖推論。
 
 一般插畫測試集 v1 可從創作頁的比較方案選取，也可用 `scripts.verify_illustration_suite` 對已安裝、固定來源的 Pony V6 XL／Animagine XL 4.0 Opt 執行一次單案例 GPU 驗收。
 
@@ -24,6 +24,6 @@ R05 另提供動漫集 `experiments/anime-illustration-v1.json`，不改寫通�
 
 成功後匯入單張圖片，核對 PNG、大小、完整 workflow、精確 seed、設定還原、原模型／環境及量測快照。`--verify-report` 只做既有記錄 GET，不驗本機權重、不同步、匯入或生成；報告的模型／案例／測試集 hash 不符時拒絕驗證。品質不是 CLI 的自動通過條件，仍需查看原圖及案例要點。
 
-2026-10-08 已完成兩個模型 × 四個案例的 RTX 3060 GPU 實測、原圖觀察及引擎停止後保存核對，見 [結果與限制](validation/general-illustration-suite-rtx3060.md)。此批資料位於 `runtime/roadmap-live-data-20261008`，不混入正式作品庫。作品筆記登記案例及開發助手的視覺觀察，分數保持未評分；可使用既有作品並排與人工評分功能自行比較。這批歷史任務早於[保存方案的結果關聯](experiment-plans.md#runs-and-artworks)，不依相同提示詞回填關聯；目前可另行保存新方案並明確逐組生成。沒有自動批次或自動品質評分。更多 seed、模型、參考引導及 RTX 4080 仍待實測。
+2026-10-08 已完成兩個模型 × 四個案例的 RTX 3060 GPU 實測、原圖觀察及引擎停止後保存核對，見 [結果與限制](../validation/general-illustration-suite-rtx3060.md)。此批資料位於 `runtime/roadmap-live-data-20261008`，不混入正式作品庫。作品筆記登記案例及開發助手的視覺觀察，分數保持未評分；可使用既有作品並排與人工評分功能自行比較。這批歷史任務早於[保存方案的結果關聯](../features/experiment-plans.md#runs-and-artworks)，不依相同提示詞回填關聯；目前可另行保存新方案並明確逐組生成。沒有自動批次或自動品質評分。更多 seed、模型、參考引導及 RTX 4080 仍待實測。
 
-2026-10-23 · V04：補齊 1440px／390px 的四案例跨模型原圖並排及原設定載入，另逐組驗證固定案例預覽；沒有新增 GPU 任務，詳見 [V04 驗收](validation/comparison-measurements-20261023.md)。
+2026-10-23 · V04：補齊 1440px／390px 的四案例跨模型原圖並排及原設定載入，另逐組驗證固定案例預覽；沒有新增 GPU 任務，詳見 [V04 驗收](../validation/comparison-measurements-20261023.md)。

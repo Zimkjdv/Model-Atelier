@@ -8,9 +8,9 @@
 
 ## 階段 1：理解專案與限制
 
-已閱讀 [AGENTS.md](../../AGENTS.md)、[REQUIREMENTS.md](../../REQUIREMENTS.md)、[AGENTS-MAINTENANCE.md](../../AGENTS-MAINTENANCE.md)，以及架構、部署、資料保存、前端契約和維護文件。需求明確，沒有需要額外釐清的規則衝突。
+已閱讀 [AGENTS.md](../../AGENTS.md)、[REQUIREMENTS.md](../contributing/requirements-clarification.md)、[AGENTS-MAINTENANCE.md](../contributing/agent-maintenance.md)，以及架構、部署、資料保存、前端契約和維護文件。需求明確，沒有需要額外釐清的規則衝突。
 
-目前是 Windows 本機單人工作台：Vue → FastAPI → SQLite／本機圖片，另接獨立 ComfyUI；Docker 為選用部署方式。參考 [架構與資料流](../architecture.md)、[應用程式工廠](../architecture.md#application-factory)、[部署邊界](../setup-and-operations.md#local-access)、[維護規則](../quality-checks.md#static-checks)。
+目前是 Windows 本機單人工作台：Vue → FastAPI → SQLite／本機圖片，另接獨立 ComfyUI；Docker 為選用部署方式。參考 [架構與資料流](../development/architecture.md)、[應用程式工廠](../development/architecture.md#application-factory)、[部署邊界](../operations/setup-and-operations.md#local-access)、[維護規則](../development/quality-checks.md#static-checks)。
 
 主要入口及相容責任：
 
@@ -60,7 +60,7 @@
 
 ### B2：修正品質文件的現況／歷史混寫
 
-風險：低。位置：[docs/quality-checks.md](../quality-checks.md):11、51。
+風險：低。位置：[docs/quality-checks.md](../development/quality-checks.md):11、51。
 
 - 直接證據：文件寫「目前 24 份 spec、四批」，實際有 25 份；[browser_stages](../../scripts/check_quality.py):13 每六份分批，因此目前為五批。V06 的「現有 80 項」應標為當時數字，而非覆寫原驗收數。
 - 只修正文句，不改品質工具或測試。效益是避免錯誤操作預期；最壞是誤改歷史紀錄。
@@ -179,7 +179,7 @@ CLI 基線使用 `python -X utf8 -B -m <module> --help`，模組為 `scripts.ins
 
 ## B2 執行紀錄（2026-10-27）
 
-B1 已先以 `aee2162` 提交並推送；使用者另行批准接續 B2 後，修正 `docs/quality-checks.md` 的兩處敘述：將瀏覽器規格數更新為截至 2026-10-27 的 25 份、五批（6＋6＋6＋6＋1），並說明批數由檔案清單動態計算；V06 的 80 項改標為「當時」，原驗收數與其餘歷史內容保留。同步記錄本報告的授權狀態及結果。
+B1 已先以 `aee2162` 提交並推送；使用者另行批准接續 B2 後，修正 `docs/development/quality-checks.md` 的兩處敘述：將瀏覽器規格數更新為截至 2026-10-27 的 25 份、五批（6＋6＋6＋6＋1），並說明批數由檔案清單動態計算；V06 的 80 項改標為「當時」，原驗收數與其餘歷史內容保留。同步記錄本報告的授權狀態及結果。
 
 驗證時僅載入 `scripts/check_quality.py` 並呼叫純分批函式 `browser_stages`，沒有執行 npm、服務或瀏覽器：實際取得五批、大小 6／6／6／6／1，25 份 spec 依序各出現一次，各批使用不同埠。另比對修改前後文件，確認品質指南僅有上述兩處文字差異，並核對兩份文件的 35 個本機連結路徑／大小寫及 `git diff --check`，全部通過。
 

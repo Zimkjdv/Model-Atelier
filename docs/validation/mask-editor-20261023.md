@@ -14,7 +14,7 @@ Set-Location ..
 .\.venv\Scripts\python.exe scripts/check_quality.py
 ```
 
-檢查入口、乾淨安裝與失敗證據見 [品質指南](../quality-checks.md)。測試位於 `frontend/tests/mask-editor.spec.ts`，6 項案例不重試；完整瀏覽器回歸共 25 項。成功案例亦保存 `inpaint-1440.png`／`inpaint-390.png` 全頁、`mask-1440.png`／`mask-390.png` 遮罩截圖及 `pixel-evidence` JSON 附件，位於忽略的 `runtime/quality/browser-results/` 與 HTML 報告。下一次執行會更新該目錄，需要保留時先另存；圖片不加入版本庫。
+檢查入口、乾淨安裝與失敗證據見 [品質指南](../development/quality-checks.md)。測試位於 `frontend/tests/mask-editor.spec.ts`，6 項案例不重試；完整瀏覽器回歸共 25 項。成功案例亦保存 `inpaint-1440.png`／`inpaint-390.png` 全頁、`mask-1440.png`／`mask-390.png` 遮罩截圖及 `pixel-evidence` JSON 附件，位於忽略的 `runtime/quality/browser-results/` 與 HTML 報告。下一次執行會更新該目錄，需要保留時先另存；圖片不加入版本庫。
 
 ## 操作與像素證據
 
@@ -36,7 +36,7 @@ Set-Location ..
 1. 先以瀏覽器重現取消原圖後選單值錯誤，以及 JPEG 冒充 PNG 被載入。選取事件先復原原值，再依確認結果修改表單；PNG 在解碼前核對 8-byte 檔頭，尺寸與圖片解碼仍需通過。
 2. 後續回歸重現切頁返回會清空未保存筆畫：原 watch 每次收到同 ID 的新素材物件，都回傳新的陣列而重載畫布。改用個別 ID／封存狀態監聽，素材清單重讀不再重設畫布。
 3. 指標開始／移動共用可編輯條件；停用、工具操作、取消與失去捕獲先結束筆畫並二值化。只在實際結束筆畫時計數，避免每次無關狀態更新重掃整張圖。狀態文字區分沒有原圖、載入中、尚未保存與已保存，避免空畫布顯示「使用已保存遮罩」。
-4. 依 [維護規則](../quality-checks.md#static-checks)，MaskEditor／InpaintStudio 及新瀏覽器測試納入明確格式範圍。兩個產品模組的格式整理先獨立提交 `875496e`；TypeScript 編譯腳本、Vue 編譯模板與 CSS 正規化前後相同，建置通過，再提交功能修正。
+4. 依 [維護規則](../development/quality-checks.md#static-checks)，MaskEditor／InpaintStudio 及新瀏覽器測試納入明確格式範圍。兩個產品模組的格式整理先獨立提交 `875496e`；TypeScript 編譯腳本、Vue 編譯模板與 CSS 正規化前後相同，建置通過，再提交功能修正。
 
 完整品質入口：格式／靜態檢查、574 項後端（1 項既有 Windows symlink 建立權限跳過）、Vue 型別／建置、四組前端契約及 25 項瀏覽器回歸。沒有增加執行期依賴、變更生成協定或覆寫既有素材；保存仍建立新素材。
 
@@ -44,4 +44,4 @@ Set-Location ..
 
 需要有實際觸控螢幕／觸控筆的裝置。記錄裝置、作業系統、瀏覽器版本與指標類型，在桌面與 390px 視窗實際操作筆刷／擦除、邊緣拖曳、放開後續畫、第二指與中斷後的新筆畫，核對畫布與保存 PNG；確認頁面不隨畫布拖曳捲動，取消離頁仍保留內容。若另測行動瀏覽器，記錄其離頁提示限制，不能承諾系統強制關閉時有警示。
 
-取得上述證據後才勾選 [ROADMAP V01-02](../../ROADMAP.md#v01) 與 V01 主項；本次只關閉 V01-01。剩餘 36 主項／63 子項，共 99 個未勾選框。
+取得上述證據後才勾選 [ROADMAP V01-02](../planning/roadmap.md#v01) 與 V01 主項；本次只關閉 V01-01。剩餘 36 主項／63 子項，共 99 個未勾選框。

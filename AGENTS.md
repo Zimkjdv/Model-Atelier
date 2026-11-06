@@ -9,9 +9,11 @@
 - Do not require interviews, specifications, plans, or subagents for every task. Match the depth of work to the risk.
 - Stop only for genuine blockers, such as a major trade-off that the user must decide, missing necessary permissions, irreversible operations, or information that cannot be obtained independently.
 
+When adding, moving, or consolidating documentation, follow the [documentation layout and ownership](docs/README.md#文件維護).
+
 ## Requirement Clarification: Conditional Reading
 
-Read [`REQUIREMENTS.md`](REQUIREMENTS.md) in the same directory and use its questioning method only when requirements contain **unresolved matters that would materially change the outcome**, such as:
+Read [the requirements clarification guide](docs/contributing/requirements-clarification.md) and use its questioning method only when requirements contain **unresolved matters that would materially change the outcome**, such as:
 
 - Conflicting product goals or acceptance criteria;
 - Major trade-offs involving architecture, data integrity, security, external integrations, or cost;
@@ -51,7 +53,7 @@ If the request is clear, any ambiguity can be resolved safely and reversibly, or
 
 ## Rule Maintenance: Conditional Reading
 
-Read [`AGENTS-MAINTENANCE.md`](AGENTS-MAINTENANCE.md) only when the current work **establishes or changes long-term project conventions** (such as actual testing commands, core interfaces, directory conventions, or major security/compatibility constraints) to determine whether a small update to this document is warranted.
+Read [the agent rule maintenance guide](docs/contributing/agent-maintenance.md) only when the current work **establishes or changes long-term project conventions** (such as actual testing commands, core interfaces, directory conventions, or major security/compatibility constraints) to determine whether a small update to this document is warranted.
 
 - Do not routinely rewrite this document for a one-off feature, bug, temporary decision, or at the end of every task.
 - Do not duplicate other guides or turn task logs or unconfirmed assumptions into permanent rules.

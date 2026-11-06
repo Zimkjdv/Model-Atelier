@@ -2,7 +2,7 @@
 
 <a id="scope"></a>
 
-2026-10-29 整理。原提案始於 2026-10-27，以下保留使用者已確認的規格，移除互相覆寫的修訂流水帳。正式交付狀態見 [整合紀錄](INTEGRATION-NOTES.md)，功能保留依 [盤點表](FEATURE-INVENTORY.md)，實際驗證見 [驗收紀錄](ACCEPTANCE.md)。規格存在不表示已實作；N05／N06／N07 仍見 [獨立待辦](BACKEND-CAPABILITIES-BACKLOG.md)。
+2026-10-29 整理。原提案始於 2026-10-27，以下保留使用者已確認的規格，移除互相覆寫的修訂流水帳。正式交付狀態見 [整合紀錄](INTEGRATION-NOTES.md)，功能保留依 [盤點表](FEATURE-INVENTORY.md)，實際驗證見 [驗收紀錄](ACCEPTANCE.md)。規格存在不表示已實作；N05／N06／N07 仍見 [獨立待辦](../planning/roadmap.md#backend-backlog)。
 
 視覺基準是使用者提供的 `model-atelier-ui-v2.html`、`ui-review-suggestions-v2.md`，系統頁另以後來提供的 `system-page-redesign.html` 與補充說明為準。本庫核准 [preview.html](preview.html) 保持原樣；不能改預覽來配合正式版遺漏。原型只有記憶體示意，不連 API、不生成、不訓練、不上傳、不保存正式資料。
 

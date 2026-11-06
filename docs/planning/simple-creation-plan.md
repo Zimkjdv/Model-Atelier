@@ -10,11 +10,11 @@
 
 新增「套用像素風格 LoRA」及「參考一張圖片的畫風」簡易任務。LoRA 固定原生鍵名版本與 MODEL 1／CLIP 1；參考任務固定 SDXL Plus ViT-H，可選圖／上傳／使用自產示範圖、修改描述與參考程度。兩者附原有真實對照，另各完成一次帶模板來源的真實生成。缺少基底或元件不退回普通文生圖，處理入口開啟正確分類。參考任務沿用專用提交／原請求恢復、任務與作品還原，沒有新增一般草稿或 JSON 交換。
 
-第 9 節已成為實際簡易入口；任意中文翻譯、更多比例與未知流程組合仍是第 10 節的後續選項，並非必須藉此開放的功能。完整原圖及本輪實測見[新增配方與畫風任務驗收](validation/simple-recipes-20261030.md)。下方較早階段的進度保留其當時範圍。
+第 9 節已成為實際簡易入口；任意中文翻譯、更多比例與未知流程組合仍是第 10 節的後續選項，並非必須藉此開放的功能。完整原圖及本輪實測見[新增配方與畫風任務驗收](../validation/simple-recipes-20261030.md)。下方較早階段的進度保留其當時範圍。
 
 ## 第一版實作進度（2026-10-30）
 
-已提供「簡易創作／進階工作台」、模式偏好記憶、三份起始配方、登記模型／四元件匹配、現有 profile 參數帶入、英文描述編輯、固定比例、精確 Seed、設定轉交、共用生成／原請求恢復及直接保存作品。實際操作見 [前端文件](frontend-api.md#navigation) 與 [使用者導覽](guide/index.html#generate)。
+已提供「簡易創作／進階工作台」、模式偏好記憶、三份起始配方、登記模型／四元件匹配、現有 profile 參數帶入、英文描述編輯、固定比例、精確 Seed、設定轉交、共用生成／原請求恢復及直接保存作品。實際操作見 [前端文件](../development/frontend-api.md#navigation) 與 [使用者導覽](../guide/index.html#generate)。
 
 此版提供起始配方，尚未交付真實成果圖、任意中文翻譯、更多比例、風格 LoRA／IP-Adapter 簡易模板或新手實際操作觀察；也未修正進階工作台原有驗證摘要來源問題。人物及 FLUX 插畫品質仍需固定配置 GPU 驗收。下列清單保留完整方案，不因分頁完成而將所有品質與操作條件勾選為通過。
 
@@ -32,7 +32,7 @@
 
 摘要及詳情改用後端同一份驗證說明，另列目前參數修改、LoRA 與圖片流程的範圍。HTML 補上三卡完整配方，以及兩份進階練習模板：固定像素 LoRA 的有／無對照、使用本輪自產圖的 IP-Adapter 權重 0／0.6 對照。練習模板在既有進階工作台操作，尚未新增為簡易模式的一鍵任務卡；第 9 節的後續產品方向仍保留。
 
-新增簡易截圖，更新進階及修補截圖，將真實成果與隔離介面示範分開標示。原圖檢視包含提示落差、髮色／背景被參考帶入、手部未入鏡及書本／手部瑕疵，不把檢視等同品質全面通過。詳見[本輪實測與限制](validation/simple-content-20261030.md)。
+新增簡易截圖，更新進階及修補截圖，將真實成果與隔離介面示範分開標示。原圖檢視包含提示落差、髮色／背景被參考帶入、手部未入鏡及書本／手部瑕疵，不把檢視等同品質全面通過。詳見[本輪實測與限制](../validation/simple-content-20261030.md)。
 
 ## 1. 目標與評估結論
 
@@ -87,7 +87,7 @@
 - 讓使用者看到「此範例缺少影像編碼器 → 查看安裝方式」，詳細 hash、節點版本與歷史證據放入展開區。
 - 「可使用」僅表示目前可用性檢查結果，不能表示品質已驗證、授權已核實或本機一定不會記憶體不足。
 
-依據：[平台總覽](../README.md)、[LoRA](models/lora-library.md)、[IP-Adapter](models/ipadapter-reference.md)、[FLUX 擴充](models/flux-extensions.md)、[專用格式邊界](specialized-workflow-formats.md)。
+依據：[平台總覽](../../README.md)、[LoRA](../models/lora-library.md)、[IP-Adapter](../models/ipadapter-reference.md)、[FLUX 擴充](../models/flux-extensions.md)、[專用格式邊界](../development/specialized-workflow-formats.md)。
 
 ## 4. 現有介面的評估
 
@@ -105,7 +105,7 @@
 
 ## 5. 第一次就成功畫出動漫圖片：導覽改善
 
-現有 [HTML 導覽](guide/index.html)對五種目的、模型分類、生成／匯入區別、FLUX 限制及訓練階段大致符合實作。它目前較適合完整操作查閱，仍缺少一條從範例到真實成果的入門路線。
+現有 [HTML 導覽](../guide/index.html)對五種目的、模型分類、生成／匯入區別、FLUX 限制及訓練階段大致符合實作。它目前較適合完整操作查閱，仍缺少一條從範例到真實成果的入門路線。
 
 ### 5.1 優先補齊的內容
 
@@ -121,7 +121,7 @@
 
 ### 5.2 提示詞語言：中文介面不等於模型中文能力
 
-目前標準流程將 `prompt` 與 `negative_prompt` 直接送入 `CLIPTextEncode`，沒有看到自動翻譯步驟。依據：[標準 workflow](../backend/workflows.py)。
+目前標準流程將 `prompt` 與 `negative_prompt` 直接送入 `CLIPTextEncode`，沒有看到自動翻譯步驟。依據：[標準 workflow](../../backend/workflows.py)。
 
 **中文介面不代表模型具備同等中文理解能力。** Animagine 官方提供以英文標籤為主的提示方式；中文描述不能被當作穩定重現其效果的等價輸入。
 
@@ -139,7 +139,7 @@
 
 ### 6.1 原先辨識的不一致
 
-[CreationStudio.vue](../frontend/src/CreationStudio.vue) 原 `presetValidationLabel` 對未啟用 LoRA、且非 Pony 專屬預設的情況，曾顯示概括的「起始參數，尚未逐模型實測」。但 [model_profiles.py](../backend/model_profiles.py) 的 Animagine 預設已有固定 RTX 3060、1024×1024、28 steps、單張風景與離線作品讀取的驗收說明。本輪已依 6.2 實作共同顯示來源，見 [presetEvidence.ts](../frontend/src/presetEvidence.ts)。
+[CreationStudio.vue](../../frontend/src/CreationStudio.vue) 原 `presetValidationLabel` 對未啟用 LoRA、且非 Pony 專屬預設的情況，曾顯示概括的「起始參數，尚未逐模型實測」。但 [model_profiles.py](../../backend/model_profiles.py) 的 Animagine 預設已有固定 RTX 3060、1024×1024、28 steps、單張風景與離線作品讀取的驗收說明。本輪已依 6.2 實作共同顯示來源，見 [presetEvidence.ts](../../frontend/src/presetEvidence.ts)。
 
 兩種文字的範圍原本未說清楚；現在摘要與詳情共用後端 `preset.validation`，另外呈現當前設定差異，不再用 Pony ID 特判。
 
@@ -199,7 +199,7 @@
 | 動漫場景與角色 | Pony V6 XL；768×768、20 steps、CFG 5.5、DPM++ 2M／Karras | 使用 Pony 專屬提示詞；首版可先沿用已驗風景，再補人物。只有風景成果時，卡片應先命名為「動漫場景」，避免宣稱角色已驗 |
 | FLUX 插畫實驗 | FLUX.1 Schnell；固定四元件、512×512、4 steps、CFG 1、Euler／simple；沿用已驗 FP8 e4m3fn 主模型／CPU 編碼器配置 | 展示自然語句及不同架構；標明不是 Kontext。動漫或插畫成果需另行評估，不以固定配置可執行代替畫質驗收 |
 
-依據：[現有模型預設](../backend/model_profiles.py)、[Animagine 配置](models/animagine-xl-4.0-opt.md)、[FLUX 固定配置](models/flux-workflow.md)。
+依據：[現有模型預設](../../backend/model_profiles.py)、[Animagine 配置](../models/animagine-xl-4.0-opt.md)、[FLUX 固定配置](../models/flux-workflow.md)。
 
 ### 8.1 每張卡的必要內容
 
@@ -255,7 +255,7 @@
 
 11.1／11.2 後續驗收：110 項相關後端測試、前端 `npm test`、型別／正式建置及格式／靜態檢查通過。最終兩份簡易模式瀏覽器測試共 14 項通過；作品詳情與素材帶入另 6 項通過，合計 20 個不同案例。涵蓋原配方唯讀／編輯／還原確認、缺項修復返回、進階草稿重載、離線來源查閱、作品還原再生成、舊快照不變，以及 1440／390px 無橫溢及所選 axe 自動規則。最終簡易模式報告／截圖在忽略的 `runtime/quality/simple-11-delivery-report`、`simple-11-delivery-results`，另六項在 `simple-11-final-report`、`simple-11-final-results`。這些結果不代表 GPU 畫質或真人新手驗收。
 
-2026-10-30 第一版驗收：型別與正式建置、`npm test`、格式／靜態檢查通過；[簡易模式瀏覽器案例](../frontend/tests/simple-creation.spec.ts)最終 9 項通過。勾選僅表示目前已交付範圍的程式／隔離功能驗證，不代表 GPU 畫質或真人新手測試。最終 HTML 報告與截圖在忽略的 `runtime/quality/simple-creation-delivery-report`、`simple-creation-delivery-results`。
+2026-10-30 第一版驗收：型別與正式建置、`npm test`、格式／靜態檢查通過；[簡易模式瀏覽器案例](../../frontend/tests/simple-creation.spec.ts)最終 9 項通過。勾選僅表示目前已交付範圍的程式／隔離功能驗證，不代表 GPU 畫質或真人新手測試。最終 HTML 報告與截圖在忽略的 `runtime/quality/simple-creation-delivery-report`、`simple-creation-delivery-results`。
 
 擴大回歸另有 23／24 項通過；未通過的是既有 `ui-redesign.spec.ts` 訓練案例仍查找「資料出口檢查」標題，目前未修改的訓練頁標題為「匯出資料包」。此失敗保留於 `runtime/quality/simple-creation-results`，不列為通過，也不影響下列簡易模式專項的 9 項結果。
 
@@ -305,7 +305,7 @@
 - [x] LoRA 與風格參考模板 v1 保留真實對照及完整設定，現已提供簡易任務入口，明示相容組合及內容轉移限制，不承諾完全複製畫風。
 - [x] HTML 導覽的按鈕、操作順序及圖片已對應目前正式介面；新增簡易圖、重拍進階及修補圖，真實成果與 fixture 介面示範分開標示。
 
-11.3 七項已依上述範圍驗收。23 項後端、20 個不同產品瀏覽器案例、4 項四尺寸離線導覽案例，以及前端測試／建置／格式檢查通過。固定環境的有限品質觀察不等於所有模型、題材或使用者目標已通過；[完整證據與原圖](validation/simple-content-20261030.md)另列真人觀察、身份及作者相似度限制。
+11.3 七項已依上述範圍驗收。23 項後端、20 個不同產品瀏覽器案例、4 項四尺寸離線導覽案例，以及前端測試／建置／格式檢查通過。固定環境的有限品質觀察不等於所有模型、題材或使用者目標已通過；[完整證據與原圖](../validation/simple-content-20261030.md)另列真人觀察、身份及作者相似度限制。
 
 ### 11.4 驗證方式
 
@@ -325,7 +325,7 @@
 - [x] 簡易轉交相符進階工作台，保留描述、完整設定與來源；取消取代保留兩邊未保存內容。
 - [x] 導覽補十二份完整配方及簡易畫風任務操作，維持離線閱讀、原圖及對照限制說明。
 
-真人新手操作觀察仍使用 11.1 的獨立未勾選項目，不由開發助手或自動測試代填。驗證方式及限制見本輪[實測紀錄](validation/simple-recipes-20261030.md)。
+真人新手操作觀察仍使用 11.1 的獨立未勾選項目，不由開發助手或自動測試代填。驗證方式及限制見本輪[實測紀錄](../validation/simple-recipes-20261030.md)。
 
 本輪 50 項相關後端、33 個不同產品瀏覽器案例與四尺寸離線導覽最終通過，另有前端測試、型別／建置及格式／靜態檢查。新增十四份模板各實際生成一次並保存。瀏覽器先前失敗、修正原因、最終報告位置與品質限制均留於實測紀錄，不把測試執行次數累加成不同案例。
 
@@ -335,10 +335,10 @@
 - [x] 離線錯誤與已保存圖片，在 1280／1440／1920／2732／390px 均維持正確排列、可重試且無整頁橫溢，長模型檔名可換行。
 - [x] 回歸簡易配方、LoRA／圖片參考、保存、修改與原請求恢復；更新圖片參考導覽截圖。
 
-本輪 23 個瀏覽器案例與前端型別／建置／格式／lint 通過，見[版面驗收紀錄](validation/simple-preview-20261031.md)。11.1 真人操作觀察依使用者回覆「下次再測試」延後，仍保留未勾選。
+本輪 23 個瀏覽器案例與前端型別／建置／格式／lint 通過，見[版面驗收紀錄](../validation/simple-preview-20261031.md)。11.1 真人操作觀察依使用者回覆「下次再測試」延後，仍保留未勾選。
 
 ## 12. 本文件的交付邊界
 
 本文保留改善方案與未完成驗收條件；已交付範圍以開頭的實作進度及第 11 節清單為準。此次未新增模型或翻譯服務；後續實作仍需分別更新使用者導覽、功能文件與實際驗收紀錄。
 
-相關入口：[文件索引](index.md)、[使用者導覽](guide/index.html)、[導覽截圖來源](guide/README.md)、[動漫畫風驗證方向](anime-style-development.md)。
+相關入口：[文件索引](../README.md)、[使用者導覽](../guide/index.html)、[導覽截圖來源](../guide/README.md)、[動漫畫風驗證方向](anime-style-development.md)。

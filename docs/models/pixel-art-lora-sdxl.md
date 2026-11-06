@@ -42,4 +42,4 @@ L01 選用 [Hadimeeee 的固定修訂](https://huggingface.co/Hadimeeee/pixel-ar
 
 固定作者模型卡標記 Apache-2.0；該修訂清單未附獨立 LICENSE，基礎模型及資料適用鏈未在本輪完整核實，兩份 manifest 均保持 `terms_verified=false`。轉換保留原來源狀態，沒有把未知改成已驗證；權重不納入 Git。
 
-本輪只驗證 RTX 3060／固定 Animagine／指定 LoRA 條件。使用者的作者目標及同角色圖片仍未提供；需要指定畫風品質結論時，依[圖片提醒](../anime-style-development.md#image-input-reminders)補資料後另驗，不借用這批結果。
+本輪只驗證 RTX 3060／固定 Animagine／指定 LoRA 條件。使用者的作者目標及同角色圖片仍未提供；需要指定畫風品質結論時，依[圖片提醒](../planning/anime-style-development.md#image-input-reminders)補資料後另驗，不借用這批結果。

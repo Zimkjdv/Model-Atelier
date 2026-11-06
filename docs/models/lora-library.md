@@ -2,7 +2,7 @@
 
 目前支援的[有序 LoRA 串接](#ordered-lora)與[歷史條件查詢](#historical-evidence)集中於本文後半。前半「創作頁與草稿」「單一 LoRA 提交」等段落是擴充前的分階段驗收紀錄，其中單一 LoRA 的數量與模板限制只描述當時版本；目前最多四個，並依下方完整有序契約驗證。
 
-目前創作流程已擴充為最多四個不同 LoRA 的有序串接、排序、強度、快照及完整還原，見 [有序流程說明](lora-library.md#ordered-lora)。下方階段紀錄保留各次驗收範圍；單一實測不代表多 LoRA 的 GPU 或畫風品質已驗證。
+目前創作流程已擴充為最多四個不同 LoRA 的有序串接、排序、強度、快照及完整還原，見 [有序流程說明](#ordered-lora)。下方階段紀錄保留各次驗收範圍；單一實測不代表多 LoRA 的 GPU 或畫風品質已驗證。
 
 2026-10-04：模型庫新增獨立 LoRA 區塊。從目前選定 ComfyUI 的 `/object_info/LoraLoader` 讀取 `lora_name` 選項，依完整引擎網址存入 SQLite `loras:<engine_url>`，與 checkpoint、任務及作品分開。只處理名稱及登記資料，不下載、讀取權重、載入 GPU 或提交任務。
 
@@ -88,7 +88,7 @@ Animagine XL 4.0 Opt＋既有 LCM SDXL 在 RTX 3060 完成 1024×1024、4 steps�
 
 直接 JSON 提交、作品與失敗任務還原只接受完整 7～11 節點模板。還原沿 MODEL 連線解析，核對完整 CLIP 鏈，不依 JSON 排列猜順序；循環、額外分支、重複名稱、部分 CLIP 路徑或多於四個項目整體拒絕。保留精確 64 位 seed、兩種強度、有序快照與原始 workflow。
 
-單一 Pony＋LCM 的實測證據不涵蓋多個 LoRA。2026-10-05 創作頁及資源提示已接入[有序組合紀錄](lora-library.md#historical-evidence)，比對 checkpoint 與全部啟用 LoRA 的 hash／架構／順序，另核對強度與取樣條件；未匹配組合保持未驗證，不沿用單一 LoRA 或七節點 checkpoint 的結論。固定 Animagine＋LCM→黑白畫風九節點已完成 RTX 3060 GPU 載入及離線還原；4 步結果對比不足，畫風品質仍待調整，見 [實機紀錄](../validation/animagine-multi-lora-rtx3060.md)。其他組合、硬體與品質仍待驗證。
+單一 Pony＋LCM 的實測證據不涵蓋多個 LoRA。2026-10-05 創作頁及資源提示已接入[有序組合紀錄](#historical-evidence)，比對 checkpoint 與全部啟用 LoRA 的 hash／架構／順序，另核對強度與取樣條件；未匹配組合保持未驗證，不沿用單一 LoRA 或七節點 checkpoint 的結論。固定 Animagine＋LCM→黑白畫風九節點已完成 RTX 3060 GPU 載入及離線還原；4 步結果對比不足，畫風品質仍待調整，見 [實機紀錄](../validation/animagine-multi-lora-rtx3060.md)。其他組合、硬體與品質仍待驗證。
 
 驗收：290 項後端測試（289 通過、1 項既有 Windows 權限跳過）與 Vue 型別／建置通過。涵蓋 2／3／4 個項目、有序鏈、停用、異動中的架構、第二個名稱遺失、重複與超額、循環／分支拒絕、作品及任務還原、immutable metadata 與 UUID 恢復。8001 隔離 SQLite／模擬引擎的瀏覽器驗收完成新增、強度、上移、草稿保存／重載、停用及一次九節點提交；原正式模型、草稿與作品不變。畫面證據保存在本機 `runtime/multi-lora-ui-20261004.jpg`。
 

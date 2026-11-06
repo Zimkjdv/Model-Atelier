@@ -54,4 +54,4 @@
 - `runtime/inpaint-pony-20261009.json`、`runtime/inpaint-animagine-20261009.json`：完整条件／workflow／模型與環境／量測／原圖 hash／還原及差值。
 - `runtime/inpaint-recovery-20261009.json`：離線原 ID 恢復、409、重啟前後 hash 與正式資料數量。
 
-以上 runtime 為被 Git 忽略的本機證據，不推送圖片、SQLite 或模型權重。操作及可重跑 CLI 見 [局部編輯說明](../inpainting.md)。
+以上 runtime 為被 Git 忽略的本機證據，不推送圖片、SQLite 或模型權重。操作及可重跑 CLI 見 [局部編輯說明](../features/inpainting.md)。

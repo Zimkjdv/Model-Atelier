@@ -37,7 +37,7 @@ ollama pull qwen3.5:2b
 
 可攜版未安裝時不影響原平台啟動；使用原生安裝的 Ollama 仍需先啟動它自己的服務。權重只會在明確執行下載指令時下載，UI 不會自動下載、切換模型或轉用遠端服務。
 
-第一版要求 CPU（`num_gpu=0`）、8,192 context、關閉思考、`keep_alive=0` 完成即卸載。CPU 路線目的是減少與繪圖的顯存競爭；尚未驗證繪圖同時運作的容量或速度。首輪 Qwen3.5-2B 實際是 Q8_0，不以模型名稱猜測量化或檔案大小，見[實測](validation/prompt-converter-20261031.md)。
+第一版要求 CPU（`num_gpu=0`）、8,192 context、關閉思考、`keep_alive=0` 完成即卸載。CPU 路線目的是減少與繪圖的顯存競爭；尚未驗證繪圖同時運作的容量或速度。首輪 Qwen3.5-2B 實際是 Q8_0，不以模型名稱猜測量化或檔案大小，見[實測](../validation/prompt-converter-20261031.md)。
 
 ## 邊界與錯誤
 
@@ -70,4 +70,4 @@ npx.cmd playwright test tests/prompt-converter.spec.ts
 
 上游介面依 [Ollama Chat API](https://docs.ollama.com/api/chat) 與 [Qwen3.5-2B 模型頁](https://ollama.com/library/qwen3.5:2b)。
 
-整併後的介面、鍵盤與窄視窗驗收見 [2026-11-07 UI 紀錄](validation/prompt-editor-20261107.md)；原模型語意與 CPU 量測仍以 2026-10-31 紀錄為準。
+整併後的介面、鍵盤與窄視窗驗收見 [2026-11-07 UI 紀錄](../validation/prompt-editor-20261107.md)；原模型語意與 CPU 量測仍以 2026-10-31 紀錄為準。

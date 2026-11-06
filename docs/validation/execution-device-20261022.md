@@ -48,4 +48,4 @@ CPU 模式驗證的是實際擴充載入與回報；不可用情境使用真實 
 
 ## 可追溯入口
 
-契約與重跑指令見 [執行裝置說明](../execution-device.md)；回歸來源為 `backend/test_execution_device.py`、`scripts/verify_execution_device.py`。硬體更多負載、RTX 4080 與其他流程品質仍依 E02–E05 及各自驗收，不由本次通過推定。
+契約與重跑指令見 [執行裝置說明](../development/runtime-observability.md#execution-device)；回歸來源為 `backend/test_execution_device.py`、`scripts/verify_execution_device.py`。硬體更多負載、RTX 4080 與其他流程品質仍依 E02–E05 及各自驗收，不由本次通過推定。

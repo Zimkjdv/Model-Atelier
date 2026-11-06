@@ -1,6 +1,6 @@
 # E05 · 原引擎連續資源取樣驗收
 
-2026-10-23，在全新 `runtime/e05-live-20261023/data` 和獨立 input／output／user／temp 啟動本機 ComfyUI 與平台，使用現有權重，只提交一個 UUID；未改正式 DATA 或權重。範圍、頻率、程序歸屬與保留界限見 [量測契約](../job-measurements.md#e05-連續觀察的範圍與界限)。
+2026-10-23，在全新 `runtime/e05-live-20261023/data` 和獨立 input／output／user／temp 啟動本機 ComfyUI 與平台，使用現有權重，只提交一個 UUID；未改正式 DATA 或權重。範圍、頻率、程序歸屬與保留界限見 [量測契約](../development/runtime-observability.md#e05-連續觀察的範圍與界限)。
 
 ## 真實任務
 

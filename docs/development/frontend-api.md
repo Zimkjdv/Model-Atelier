@@ -31,9 +31,9 @@ generationRequest.ts 的 submitOnce 接收既有凍結 path／body 與清除 pen
 
 localStorage 保存失敗時不送請求；恢復使用原 UUID、設定、LoRA 順序與修補／Canny v1、v2 marker 選出的原端點。submitOnce 不讀現在表單、不自動重送；取消、停止及刷新也不由 client 重試。後端仍以原 UUID 帳本處理查詢／恢復，不新增重複 GPU 工作。
 
-V02 的原始 pending、v1／v2 端點、相同 body、遮罩／半徑、錯誤任務 ID 與未知版本已補上真實瀏覽器回歸；六種生成端點的 Node 契約另覆蓋異常成功 JSON 與錯誤回覆中的其他 job_id。見 [V02 驗收](validation/inpaint-recovery-20261023.md)。
+V02 的原始 pending、v1／v2 端點、相同 body、遮罩／半徑、錯誤任務 ID 與未知版本已補上真實瀏覽器回歸；六種生成端點的 Node 契約另覆蓋異常成功 JSON 與錯誤回覆中的其他 job_id。見 [V02 驗收](../validation/inpaint-recovery-20261023.md)。
 
-E05 的 `measurements.continuous_resources` 為選填的新任務觀察欄位。後端取樣 journal 不改 job revision；GET 詳情可在 revision 相同時回傳更新的時間點，不能以整個回應物件相等判斷任務狀態是否遭改動。列表／SSE 沿用最近狀態轉移的快照，終態後所有量測凍結；作品保留相同觀察，歷史缺欄位不回填，見 [量測契約](job-measurements.md)。
+E05 的 `measurements.continuous_resources` 為選填的新任務觀察欄位。後端取樣 journal 不改 job revision；GET 詳情可在 revision 相同時回傳更新的時間點，不能以整個回應物件相等判斷任務狀態是否遭改動。列表／SSE 沿用最近狀態轉移的快照，終態後所有量測凍結；作品保留相同觀察，歷史缺欄位不回填，見 [量測契約](runtime-observability.md#job-measurements)。
 
 <a id="navigation"></a>
 
@@ -56,7 +56,7 @@ E05 的 `measurements.continuous_resources` 為選填的新任務觀察欄位。
 
 創作頁上方提供「簡易創作／進階工作台」。首次點主要導覽的「創作」預設進入簡易模式，之後以瀏覽器 `atelier-creation-mode-v1` 記住所選模式；明確工作台網址、模型／素材帶入及作品還原仍導向指定流程。儲存不可用時只在本次頁面記住偏好。
 
-簡易模式先選 Animagine 4.0 Opt、Pony V6 XL 或 FLUX.1 Schnell，再選模型內的五份 v1 配方，共十五份；每個模型保留原卡並新增四份。另提供「套用像素風格 LoRA」「參考一張圖片的畫風」兩個任務。模型依既有 manifest 的登記 SHA256／架構匹配，FLUX 逐一匹配四元件；同名檔案不當成相符證據。Checkpoint 取樣參數取自現有模型 profile，FLUX 使用固定 512²／4 steps／FP8／CPU 配置，尺寸先保留原始正方形。所有配方附真實原圖與有限觀察，詳見[新增配方及畫風任務驗收](validation/simple-recipes-20261030.md)，不外推成通用品質通過。
+簡易模式先選 Animagine 4.0 Opt、Pony V6 XL 或 FLUX.1 Schnell，再選模型內的五份 v1 配方，共十五份；每個模型保留原卡並新增四份。另提供「套用像素風格 LoRA」「參考一張圖片的畫風」兩個任務。模型依既有 manifest 的登記 SHA256／架構匹配，FLUX 逐一匹配四元件；同名檔案不當成相符證據。Checkpoint 取樣參數取自現有模型 profile，FLUX 使用固定 512²／4 steps／FP8／CPU 配置，尺寸先保留原始正方形。所有配方附真實原圖與有限觀察，詳見[新增配方及畫風任務驗收](../validation/simple-recipes-20261030.md)，不外推成通用品質通過。
 
 `simpleExamples.ts` 合併原三份與新增十四份的版本化範例索引；Vite 將原始 PNG 與完整 JSON 作為本地靜態資產。卡片預覽、原圖與「真實範例、完整配方與觀察」不發出生成。下載紀錄保存精確 Seed、原 workflow／元件／環境，不作一般設定交換匯入；目前設定修改時另行提示。原模板發佈文字與快照維持不可變，新增觀察不回填歷史任務。
 
@@ -64,7 +64,7 @@ LoRA 任務固定 Animagine 4.0 Opt、原生鍵名像素 LoRA、觸發詞 `pixel
 
 進階預設的摘要及詳情都經 `presetEvidence.ts` 使用後端 `preset.validation`，額外列出取樣參數變更、啟用 LoRA、圖片輸入及目前題材未判定；不再以 Pony ID 決定是否顯示實測。歷史基底證據與目前檔案未驗證可以同時成立。
 
-載入配方不生成、不下載模型。「載入起始配方」使用原始描述並保持唯讀；「套用後修改」或「編輯描述」開啟編輯，「還原配方設定」恢復原描述及固定 Seed，取代未保存修改前需確認。描述欄是實際送入模型的英文提示詞，與一般 Checkpoint／基礎 FLUX 共用整併編輯區；標題旁的「中文轉英文」開啟[本機提示詞助手](prompt-converter.md)，預覽並明確套用回同一欄位，上方中文配方說明不會自動更新英文。格式、保留詞與 LLM 設定預設收起；助手關閉保留草稿與已完成預覽，切換工作台／模型仍會丟棄過期結果。可換 Seed 後明確再生成、查看完整設定、直接保存結果，或帶到對應進階工作台。四步進度區分選卡、確認、生成與保存；改動表單後，既有結果另顯示提示，不將舊圖計為新表單的成果。
+載入配方不生成、不下載模型。「載入起始配方」使用原始描述並保持唯讀；「套用後修改」或「編輯描述」開啟編輯，「還原配方設定」恢復原描述及固定 Seed，取代未保存修改前需確認。描述欄是實際送入模型的英文提示詞，與一般 Checkpoint／基礎 FLUX 共用整併編輯區；標題旁的「中文轉英文」開啟[本機提示詞助手](../features/prompt-converter.md)，預覽並明確套用回同一欄位，上方中文配方說明不會自動更新英文。格式、保留詞與 LLM 設定預設收起；助手關閉保留草稿與已完成預覽，切換工作台／模型仍會丟棄過期結果。可換 Seed 後明確再生成、查看完整設定、直接保存結果，或帶到對應進階工作台。四步進度區分選卡、確認、生成與保存；改動表單後，既有結果另顯示提示，不將舊圖計為新表單的成果。
 
 未就緒時逐項列名缺少或登記不匹配的 Checkpoint／FLUX／LoRA／參考元件，按處理入口會開啟模型庫對應分類。返回後保留選卡與描述，按「重新檢查」更新可用性及原引擎取樣選項；不自動安裝、換模型或生成。進階已有未保存內容時，轉交先確認，取消會保留兩邊設定；簡易設定站內保留，Checkpoint／FLUX 可轉交進階保存草稿。圖片參考仍無草稿或一般交換，生成後可從任務／作品還原。預檢、提交、精確 Seed、原請求恢復、結果預覽與作品保存沿用現有模組。相同流程的簡易／進階工作台共用原提交恢復欄位，快取面板重新啟用時會重讀原請求。
 
@@ -80,7 +80,7 @@ LoRA 任務固定 Animagine 4.0 Opt、原生鍵名像素 LoRA、觸發詞 `pixel
 
 系統、設定與工作台提供「連線 → 選模型 → 建立作品」指引，工作台預設收合以保留表單空間。連線顯示已連線、離線或未知；模型同步／登記不代表已載入權重。生成區依原本的 blocking 條件呈現「載入／處理中」「尚缺必要條件」「表單預檢可提交」及「原提交待確認」，沿用既有 disabled 判斷，不另建較寬鬆的提交規則。實際缺項提示保留於下方，詳細能力範圍可展開。
 
-FLUX 的固定配置與 GPU 驗收見[平台接入紀錄](models/flux-workflow.md#generation-acceptance)，不外推到其他配置。各流程只按對應文件的硬體、模型、參數與日期判讀；版本／來源／檔案 hash／執行裝置無法取得時保持未知。模型與任務的詳細來源／版本快照沿用原有展開區。沒有以「可提交」替代品質、授權或 GPU 驗收。
+FLUX 的固定配置與 GPU 驗收見[平台接入紀錄](../models/flux-workflow.md#generation-acceptance)，不外推到其他配置。各流程只按對應文件的硬體、模型、參數與日期判讀；版本／來源／檔案 hash／執行裝置無法取得時保持未知。模型與任務的詳細來源／版本快照沿用原有展開區。沒有以「可提交」替代品質、授權或 GPU 驗收。
 
 <a id="unsaved-changes"></a>
 
@@ -111,4 +111,4 @@ npm.cmd run check:control
 
 瀏覽器回歸另在臨時 DATA／模擬引擎檢查網址直達／刷新／返回、焦點、未保存筆記返回確認、重新整理／關頁警示、保存成功與失敗、遮罩筆畫、未知結果與原請求恢復；fixture 成功圖片為合成 PNG，不代表真實推論。入口與目前範圍見[品質檢查](quality-checks.md)。
 
-Q03／Q05／Q08 的原始四工作台、1440px／390px 與 bundle 數字屬當時歷史，不是目前測試總數或效能保證，見 [CHANGELOG](../CHANGELOG.md)。2026-10-23 新增第五個參考工作台的遺失回應、重新整理、完整還原與切頁保留另見 [R02 驗收](validation/reference-adapter-20261023.md)；六種 descriptor 與 v1／v2 失敗恢復見 [V02](validation/inpaint-recovery-20261023.md)。GPU、實體觸控及全站視覺仍須各自驗收。
+Q03／Q05／Q08 的原始四工作台、1440px／390px 與 bundle 數字屬當時歷史，不是目前測試總數或效能保證，見 [CHANGELOG](../../CHANGELOG.md)。2026-10-23 新增第五個參考工作台的遺失回應、重新整理、完整還原與切頁保留另見 [R02 驗收](../validation/reference-adapter-20261023.md)；六種 descriptor 與 v1／v2 失敗恢復見 [V02](../validation/inpaint-recovery-20261023.md)。GPU、實體觸控及全站視覺仍須各自驗收。

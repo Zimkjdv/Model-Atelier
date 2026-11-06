@@ -1,6 +1,6 @@
 # 一般插畫固定測試集／RTX 3060（2026-10-08）
 
-兩個既有固定來源 checkpoint × 四個自編案例，共八個單張 GPU 任務。CLI 見 [使用說明](../illustration-suite.md)；每個 invocation 各別保存一個原 UUID，不自動重送。原圖、模型／環境／量測快照、精確 workflow 及設定還原均核對，ComfyUI 停止後再使用 GET 驗證八份報告通過。
+兩個既有固定來源 checkpoint × 四個自編案例，共八個單張 GPU 任務。CLI 見 [使用說明](../development/illustration-suite.md)；每個 invocation 各別保存一個原 UUID，不自動重送。原圖、模型／環境／量測快照、精確 workflow 及設定還原均核對，ComfyUI 停止後再使用 GET 驗證八份報告通過。
 
 測試集 `general-illustration` v1，SHA256 `3adada6b8ce0aa69313ee0604dc280e96a6db6616b5e892d6b4f3f5feefe6ff7`。共同條件：1024×1024、28 steps、CFG 5、euler_ancestral／normal、denoise 1、seed `9007199254740993`、無 LoRA／參考素材；共同負提示詞為 `blurry, low quality, text, watermark`。只有 checkpoint 與案例正提示詞不同，沒有模型專用標籤優化。
 
@@ -23,7 +23,7 @@
 
 Animagine 在此批呈現較清楚的輪廓與場景光影，Pony 的畫面筆觸較柔和；兩者都能保留旅人的共同外觀要素，但衣著及臉部細節仍改變。山湖構圖與木椅指示仍有偏差，不能將八次生成成功視為提示完全符合或畫風品質認證。
 
-平台秒數包含佇列與查詢間隔；引擎起訖包括載入／快取。各模型首個案例有不同載入／初始化條件，單次結果不作速度排名或純 GPU benchmark。提交前記憶體快照可在原任務／作品查看；整卡取樣不是任務專用峰值或最低 VRAM，詳見 [量測定義](../job-measurements.md)。
+平台秒數包含佇列與查詢間隔；引擎起訖包括載入／快取。各模型首個案例有不同載入／初始化條件，單次結果不作速度排名或純 GPU benchmark。提交前記憶體快照可在原任務／作品查看；整卡取樣不是任務專用峰值或最低 VRAM，詳見 [量測定義](../development/runtime-observability.md#job-measurements)。
 
 ## 保存與驗收
 

@@ -1,14 +1,14 @@
 # 上游選型、原碼證據與採用邊界
 
-研究日期2026-10-23，另保留2026-10-25 F04補記；2026-10-29合併三份研究。本次只整理既有內容，沒有重新上網查版本／授權、安裝、下載權重或執行上游。以下固定SHA、維護狀態、成本及優先次序都屬研究當時判斷；最新完成狀態以[ROADMAP](../../ROADMAP.md)及各項驗收為準，不以找到原碼宣稱整合或品質通過。
+研究日期2026-10-23，另保留2026-10-25 F04補記；2026-10-29合併三份研究。本次只整理既有內容，沒有重新上網查版本／授權、安裝、下載權重或執行上游。以下固定SHA、維護狀態、成本及優先次序都屬研究當時判斷；最新完成狀態以[ROADMAP](../planning/roadmap.md)及各項驗收為準，不以找到原碼宣稱整合或品質通過。
 
 <a id="reuse-assessment"></a>
 
 ## 採用策略與固定來源
 
-後續實作紀錄：2026-10-23 已按此策略完成 [R01 pose／depth 整合與有限實測](../structure-reference.md)，保留動漫骨架缺漏與構圖偏差；以下選型文字保留研究時判斷，實作狀態以 ROADMAP 與驗收文件為準。
+後續實作紀錄：2026-10-23 已按此策略完成 [R01 pose／depth 整合與有限實測](../features/structure-reference.md)，保留動漫骨架缺漏與構圖偏差；以下選型文字保留研究時判斷，實作狀態以 ROADMAP 與驗收文件為準。
 
-R03 後續：[Fooocus 專用修補與八組比較](../fooocus-inpainting.md)已完成。功能可載入、生成、保存／離線還原，但本次動漫素材未得到優於一般 v2 的品質證據；不採用為預設或品質推薦，保留明確選擇的實驗入口與逐圖失敗觀察。LaMa／MAT、自動選區與 refine 仍是未接入候選，不由 R03 狀態推定完成。
+R03 後續：[Fooocus 專用修補與八組比較](../features/fooocus-inpainting.md)已完成。功能可載入、生成、保存／離線還原，但本次動漫素材未得到優於一般 v2 的品質證據；不採用為預設或品質推薦，保留明確選擇的實驗入口與逐圖失敗觀察。LaMa／MAT、自動選區與 refine 仍是未接入候選，不由 R03 狀態推定完成。
 
 ### 優先採用決策
 
@@ -49,9 +49,9 @@ R03 後續：[Fooocus 專用修補與八組比較](../fooocus-inpainting.md)已�
 | 複製修改程式 | 邊界清楚且確實比自行實作省工的局部 | 逐檔核對授權／NOTICE／上游來源，記錄修改與測試，承擔後續維護 |
 | 整套 UI／任務引擎移植 | 本輪不建議 | 同時引入另一套執行與持久化語義，未有證據顯示可節省總整合成本 |
 
-平台已有 Vue → FastAPI → SQLite／本地檔案 → 獨立 ComfyUI 的分工，且不接受任意第三方節點圖；各專用流程需要完整模板與能力檢查。借用節點不改變此邊界，見[既有架構](../architecture.md)。
+平台已有 Vue → FastAPI → SQLite／本地檔案 → 獨立 ComfyUI 的分工，且不接受任意第三方節點圖；各專用流程需要完整模板與能力檢查。借用節點不改變此邊界，見[既有架構](../development/architecture.md)。
 
-保留 UUID 冪等、原引擎關聯、不可變提交快照、精確 seed、未知提交結果的查核，以及訓練資料契約。上游的「重試」按鈕或新任務語義，不能直接取代平台的未知結果處理。[架構與任務狀態](../architecture.md)、[T02 資料契約](../training/dataset-contract.md)。
+保留 UUID 冪等、原引擎關聯、不可變提交快照、精確 seed、未知提交結果的查核，以及訓練資料契約。上游的「重試」按鈕或新任務語義，不能直接取代平台的未知結果處理。[架構與任務狀態](../development/architecture.md)、[T02 資料契約](../training/dataset-contract.md)。
 
 ### R01：優先評估現成 pose／depth 前處理
 
@@ -74,7 +74,7 @@ R03 後續：[Fooocus 專用修補與八組比較](../fooocus-inpainting.md)已�
 - refine 的 `latent_inpaint` 與 `latent_samples` 接線不同；遮罩降噪強度與最終合成遮罩也有不同目的。錯接可能產生品質問題，應保存處理版本與各參數。[conditioning](https://github.com/Acly/comfyui-inpaint-nodes/blob/5b7681746fe19e563113d27366ba85236bc1ba5b/README.md#inpaint-conditioning)、[合成遮罩](https://github.com/Acly/comfyui-inpaint-nodes/blob/5b7681746fe19e563113d27366ba85236bc1ba5b/README.md#denoise-to-compositing-mask)。
 - 色彩匹配節點針對整張輸出都出現色偏的情形；不能當作每次必開的品質保證。遮罩外保留與色偏仍依固定案例實測。[色彩匹配適用條件](https://github.com/Acly/comfyui-inpaint-nodes/blob/5b7681746fe19e563113d27366ba85236bc1ba5b/README.md#color-match-masked)。
 
-驗收沿用 R03：同素材、同模型、同 seed 比較基準與候選；保存原遮罩、處理後遮罩、半徑與合成方式，記錄接縫、色偏、截斷及遮罩外改變。安裝成功或產生一張圖不能取代品質比較。[R03 原定範圍](../../ROADMAP.md)。
+驗收沿用 R03：同素材、同模型、同 seed 比較基準與候選；保存原遮罩、處理後遮罩、半徑與合成方式，記錄接縫、色偏、截斷及遮罩外改變。安裝成功或產生一張圖不能取代品質比較。[R03 原定範圍](../planning/roadmap.md)。
 
 ### Krita AI Diffusion：借用工作流程設計
 
@@ -129,7 +129,7 @@ WD14 可減少第一次人工輸入標籤，但只寫待審草稿，不自動確
 
 每個新功能先查 2–3 個貼近現有架構的候選，先讀原碼與限制，再選外部依賴、局部複用或介面借鏡。以「選型＋適配＋驗收＋未來維護」評估總成本；功能清單、星數與截圖只能當線索，不能代替成本或品質證據。
 
-每個實作項目留下簡短採用紀錄：需求與基準 → 候選及固定 SHA → 採用節點／原碼位置與授權 → 相容依賴／權重 → 最小有限案例結果 → 平台封裝與回歸 → 是否採納。先在獨立引擎環境驗證，不把上游整套 requirements 合併進 FastAPI；若沒有品質或總維護成本的改善，就保留現有功能並記錄不採用原因。需要使用者補圖片時，沿用[圖片提醒](../anime-style-development.md#image-input-reminders)及 T02 的資料用途審查，不因標籤工具可讀取整個資料夾就把圖片全納入訓練。
+每個實作項目留下簡短採用紀錄：需求與基準 → 候選及固定 SHA → 採用節點／原碼位置與授權 → 相容依賴／權重 → 最小有限案例結果 → 平台封裝與回歸 → 是否採納。先在獨立引擎環境驗證，不把上游整套 requirements 合併進 FastAPI；若沒有品質或總維護成本的改善，就保留現有功能並記錄不採用原因。需要使用者補圖片時，沿用[圖片提醒](../planning/anime-style-development.md#image-input-reminders)及 T02 的資料用途審查，不因標籤工具可讀取整個資料夾就把圖片全納入訓練。
 
 未完成的 R01／R03 先用這個方式減少底層重造；T03／T04 仍另排並沿用 T02 契約。已完成項目只在具體痛點、缺陷或可量測改善成立時開局部改動，保留原工作流程與歷史資料格式；避免為外觀接近其他平台而全面改寫。每項實作仍依使用者約定，驗收、commit、push 後才進下一項。
 
@@ -222,7 +222,7 @@ S／C由當時官方commit API固定：[SwarmUI](https://api.github.com/repos/mc
 | Q07 備份還原 | 完成 | 無直接適配的已核實元件 | 保留 SQLite＋對應檔案一致性工具，上游模型搬移不等於備份。 |
 | Q08 導覽與狀態 | 完成 | S 的 Generate／工作流分層、I Gallery，借鏡 | 具體使用問題出現後才改；保持能力可用與否的明確狀態。 |
 | Q09 診斷 | 完成 | C 裝置資訊與 S 能力集合，借鏡 | 保留可控診斷及去敏感資訊；引擎訊息不當成實測。 |
-| Q10 維護規則 | 完成 | 無需上游替換 | 持續遵守[維護邊界](../architecture.md#submission-invariants)的格式、狀態與功能分開提交。 |
+| Q10 維護規則 | 完成 | 無需上游替換 | 持續遵守[維護邊界](../development/architecture.md#submission-invariants)的格式、狀態與功能分開提交。 |
 | E01 裝置辨識 | 完成 | C model_management，交叉查證 | 保留既有裝置驗證；遠端引擎和平台裝置不可混用。 |
 | E02 RTX 4080 實測 | 未完成 | C 僅作設定參考 | 必須取得指定主機並實測，原碼不能補足。 |
 | E03 雙機比較 | 未完成 | C 僅作環境對照 | 相同權重／seed／流程的實機數據仍必要。 |
@@ -263,4 +263,4 @@ S／C由當時官方commit API固定：[SwarmUI](https://api.github.com/repos/mc
 
 ### 契約上的具體差異
 
-上游方法先依原碼、最小輸入／輸出與有限案例選型，不改變Vue→FastAPI→SQLite／本地檔案→獨立ComfyUI。例：Krita的generate_seed因Qt限制只產生32-bit，不能取代本平台64-bit字串。硬體、觸控、權重來源與品質仍需各自驗收；已完成項只因可重現缺陷或量測改善修改。以上研究未改勾選、下載模型或執行第三方程式，實作沿用[架構](../architecture.md)及[維護規則](../quality-checks.md#static-checks)。
+上游方法先依原碼、最小輸入／輸出與有限案例選型，不改變Vue→FastAPI→SQLite／本地檔案→獨立ComfyUI。例：Krita的generate_seed因Qt限制只產生32-bit，不能取代本平台64-bit字串。硬體、觸控、權重來源與品質仍需各自驗收；已完成項只因可重現缺陷或量測改善修改。以上研究未改勾選、下載模型或執行第三方程式，實作沿用[架構](../development/architecture.md)及[維護規則](../development/quality-checks.md#static-checks)。

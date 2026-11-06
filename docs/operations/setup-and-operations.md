@@ -4,7 +4,7 @@
 
 ## 平台
 
-依 [README 快速開始](../README.md#快速開始) 建立 `.venv`、安裝 `requirements.lock.txt`，frontend 使用 `npm.cmd ci`、`npm.cmd run build`。`start-local.ps1` 先確認 Python 與前端 dist 存在，再以 localhost:8000 啟動，優雅關閉等待上限 5 秒。PowerShell 不允許腳本時可執行相同命令：
+依 [README 快速開始](../../README.md#快速開始) 建立 `.venv`、安裝 `requirements.lock.txt`，frontend 使用 `npm.cmd ci`、`npm.cmd run build`。`start-local.ps1` 先確認 Python 與前端 dist 存在，再以 localhost:8000 啟動，優雅關閉等待上限 5 秒。PowerShell 不允許腳本時可執行相同命令：
 
 ```powershell
 .\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --no-proxy-headers --timeout-graceful-shutdown 5
@@ -29,7 +29,7 @@ python -m venv runtime/ComfyUI/.venv
 .\start-comfyui.ps1
 ```
 
-ComfyUI 依賴未完整 lock，重建可能解析到不同套件，需重新核對環境。硬體條件見 [Pony 實測](validation/pony-v6-xl-rtx3060.md)。啟動腳本綁定 localhost:8188，停用自動開頁及 API 節點，匯出模型目錄、核對條件化停止能力並安裝 [E01 唯讀裝置回報](execution-device.md)。升級後停止能力不匹配時停用，正常生成仍可用。
+ComfyUI 依賴未完整 lock，重建可能解析到不同套件，需重新核對環境。硬體條件見 [Pony 實測](../validation/pony-v6-xl-rtx3060.md)。啟動腳本綁定 localhost:8188，停用自動開頁及 API 節點，匯出模型目錄、核對條件化停止能力並安裝 [E01 唯讀裝置回報](../development/runtime-observability.md#execution-device)。升級後停止能力不匹配時停用，正常生成仍可用。
 
 模型可放在 `runtime/ComfyUI/models/checkpoints/`，或登記額外目錄。固定來源工具先唯讀預檢，再明確下載：
 
@@ -38,7 +38,7 @@ ComfyUI 依賴未完整 lock，重建可能解析到不同套件，需重新核�
 .\.venv\Scripts\python.exe -m scripts.install_model animagine-xl-4.0-opt
 ```
 
-`--check` 不連網、不寫入，不等於已安裝或 GPU 驗收；正式安裝驗證大小／SHA256。Pony 固定 Hugging Face 修訂僅附授權標記，相同 SHA256 的 Civitai 發布頁卻列出不同條款及變現推論限制，`terms_verified` 維持 false，見 [M01 查核與限制](models/pony-v6-xl-license.md)。FLUX 預檢不表示取得權重。來源與操作見 [模型文件](index.md#模型與-flux)。
+`--check` 不連網、不寫入，不等於已安裝或 GPU 驗收；正式安裝驗證大小／SHA256。Pony 固定 Hugging Face 修訂僅附授權標記，相同 SHA256 的 Civitai 發布頁卻列出不同條款及變現推論限制，`terms_verified` 維持 false，見 [M01 查核與限制](../models/pony-v6-xl-license.md)。FLUX 預檢不表示取得權重。來源與操作見 [模型文件](../README.md#模型與-flux)。
 
 ## 第一次使用與恢復
 
@@ -46,7 +46,7 @@ ComfyUI 依賴未完整 lock，重建可能解析到不同套件，需重新核�
 
 離線先確認原網址與服務；遺失提交回應應查詢／恢復原 ID，不能用新 ID 重送。確認失敗後才調整設定建立新任務。引擎裝置未知不推定無 GPU；缺模型／節點或不相容架構仍阻擋提交。變更設定頁不會把舊任務轉到新引擎。
 
-取消佇列與停止執行是不同操作；停止需匹配的原子能力與歷史確認，不使用會影響其他任務的全域 interrupt。狀態見 [架構](architecture.md#任務與原引擎)。
+取消佇列與停止執行是不同操作；停止需匹配的原子能力與歷史確認，不使用會影響其他任務的全域 interrupt。狀態見 [架構](../development/architecture.md#任務與原引擎)。
 
 <a id="local-access"></a>
 
@@ -74,7 +74,7 @@ ComfyUI 依賴未完整 lock，重建可能解析到不同套件，需重新核�
 python -m scripts.verify_local_access --output runtime/my-local-access-check.json
 ```
 
-此命令啟動自己的短暫 loopback 平台與隔離 DATA，以真實 HTTP 檢查 Host／Origin／跨站拒絕、同來源寫入及未信任 forwarding headers，結束只停止自己的程序。ASGI 回歸另涵蓋非本機 peer、IPv6、重複 headers、WebSocket、資料不變及原引擎角色。限定實測見 [D01 驗收](validation/local-deployment-20261025.md)；參考 [Starlette Host middleware](https://github.com/Kludex/starlette/blob/main/starlette/middleware/trustedhost.py) 與 [Uvicorn 設定](https://github.com/Kludex/uvicorn/blob/main/docs/settings.md)。本專案另外核對來源 IP 與完整 Origin，沒有引入其他平台的帳號或佇列模組。
+此命令啟動自己的短暫 loopback 平台與隔離 DATA，以真實 HTTP 檢查 Host／Origin／跨站拒絕、同來源寫入及未信任 forwarding headers，結束只停止自己的程序。ASGI 回歸另涵蓋非本機 peer、IPv6、重複 headers、WebSocket、資料不變及原引擎角色。限定實測見 [D01 驗收](../validation/local-deployment-20261025.md)；參考 [Starlette Host middleware](https://github.com/Kludex/starlette/blob/main/starlette/middleware/trustedhost.py) 與 [Uvicorn 設定](https://github.com/Kludex/uvicorn/blob/main/docs/settings.md)。本專案另外核對來源 IP 與完整 Origin，沒有引入其他平台的帳號或佇列模組。
 
 ## 額外 checkpoint 目錄
 
@@ -96,8 +96,8 @@ GET／PUT `/api/local-model-paths` 使用修訂號保護。data 備份保存路�
 
 1. 舊機先完成生成／訓練、停止平台及相關寫入者，依 [完整備份工具](data-backup.md)備份與驗證整份 DATA。需要 ComfyUI input／output、完整訓練 run／bundle 或外部作者圖片時另存；不要只複製 SQLite。
 2. 新機安裝 Git、Python 3.12、Node.js 與合適的 NVIDIA 驅動，clone 本專案並確認所需 commit。日後更新程式使用 `git pull`；Git 不會取得舊機的 data、模型或 runtime。
-3. 依 README 快速開始重新建立平台 `.venv`、安裝 lock 與 `npm.cmd ci`／build；依本頁固定 ComfyUI 來源重建引擎環境。訓練有需要時再依 [T03](training/runtime.md)重建獨立環境。PyTorch／CUDA 與驅動相容性要在新機實測，舊機安裝成功不能替代。
-4. 從可信舊機複製 `runtime/ComfyUI/models/` 權重及需要的 `.provenance.json`，外部權重另搬；依各流程文件重建固定自訂節點與依賴。不要沿用舊機的 `.venv/`、ComfyUI／training 的 `.venv/` 或 `frontend/node_modules/`。FLUX 可用 [離線 verify](models/flux-installation.md)重新核對四份完整檔案；其他模型依個別固定來源工具核對。
+3. 依 README 快速開始重新建立平台 `.venv`、安裝 lock 與 `npm.cmd ci`／build；依本頁固定 ComfyUI 來源重建引擎環境。訓練有需要時再依 [T03](../training/runtime.md)重建獨立環境。PyTorch／CUDA 與驅動相容性要在新機實測，舊機安裝成功不能替代。
+4. 從可信舊機複製 `runtime/ComfyUI/models/` 權重及需要的 `.provenance.json`，外部權重另搬；依各流程文件重建固定自訂節點與依賴。不要沿用舊機的 `.venv/`、ComfyUI／training 的 `.venv/` 或 `frontend/node_modules/`。FLUX 可用 [離線 verify](../models/flux-installation.md)重新核對四份完整檔案；其他模型依個別固定來源工具核對。
 5. 新機保持平台停止，驗證備份、restore 到新目錄後用 `scripts/serve_local.py --data <還原的data目錄> --port 8001` 試讀；不要覆寫既有 DATA。預設 `start-all.bat` 仍讀專案 `data/`，自訂還原位置須按備份文件明確切換。核對作品／原圖／素材與數量後才開始新工作。
 6. 逐項核對額外 checkpoint 目錄、來源圖片、訓練 run／bundle 與其他絕對路徑。Windows 帳號、磁碟代號或資料夾不同時，不保證舊紀錄能直接續訓；保留舊 run，不批次改寫歷史 manifest。新工作應以新主機驗證過的來源及環境準備。
 7. 確認本機引擎網址與節點、同步模型庫，以小型固定案例生成並在裝置回報核對實際 RTX 4080；保存 GPU／VRAM／RAM、驅動／Torch／CUDA／引擎版本及結果，才作為 E02／E03 的新機證據。新機的 FLUX 精度與卸載仍須另測，不能只憑顯卡型號保證原始 BF16 全部常駐顯存。
@@ -125,4 +125,4 @@ GET／PUT `/api/local-model-paths` 使用修訂號保護。data 備份保存路�
 
 若出現 `'cho'`、`'-NoProfile'` 不是命令，請更新本專案的批次檔。2026-10-24 在真實 `cmd.exe` 重現舊版 UTF-8 中文批次內容被截斷，兩個 PowerShell 腳本單獨執行則能正常啟動。現行批次內容使用 ASCII 訊息，並以 `.gitattributes` 固定 CRLF 換行；維護時請保持此格式。回歸測試透過無視窗探針驗證繁中字碼頁 950、UTF-8 字碼頁 65001、含空白路徑與缺少 PowerShell 的錯誤分支，不會啟動實際生成服務。
 
-本頁為現行操作；歷史服務、磁碟與測試數不代表即時狀態。[整理前全文](../CHANGELOG.md#readme-before-q01) 保留原說明；功能細節見 [索引](index.md)。
+本頁為現行操作；歷史服務、磁碟與測試數不代表即時狀態。[整理前全文](../../CHANGELOG.md#readme-before-q01) 保留原說明；功能細節見 [索引](../README.md)。

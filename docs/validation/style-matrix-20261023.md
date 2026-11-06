@@ -2,7 +2,7 @@
 
 本輪新增一個固定來源像素畫 LoRA、可追溯的原生鍵名相容副本，以及一指令一組的 `scripts.verify_style_matrix`。RTX 3060 完成 14 組原生比較，另保留 4 組原始格式未套用成功的嘗試；兩批的資料、UUID 與載入判斷分開，沒有把成功出圖當成權重成功載入或畫風品質通過。
 
-完整設定、版本、原圖／workflow／報告 hash、轉換 provenance、引擎未載入警告及逐圖觀察見[證據 JSON](style-matrix-20261023.json)。使用者的目標作者／同角色圖片仍未提供；指定目標品質仍待資料，沿用[圖片提醒](../anime-style-development.md#image-input-reminders)。
+完整設定、版本、原圖／workflow／報告 hash、轉換 provenance、引擎未載入警告及逐圖觀察見[證據 JSON](style-matrix-20261023.json)。使用者的目標作者／同角色圖片仍未提供；指定目標品質仍待資料，沿用[圖片提醒](../planning/anime-style-development.md#image-input-reminders)。
 
 ## 新來源與格式失敗
 

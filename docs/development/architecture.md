@@ -53,7 +53,7 @@ with TestClient(app) as client:  # 執行啟動與關閉生命週期
 | data_root | root/data，決定素材、作品、job_inputs、control_edges 等保存位置 |
 | database | data_root/atelier.sqlite3，可指定既有資料庫；若分離至其他目錄，備份須另包含該檔 |
 | engine_client_factory | 預設建立 httpx.AsyncClient；可注入相同 async context manager 介面的實作，接收原 timeout／trust_env／follow_redirects 參數 |
-| prompt_client_factory | 選用的本機 Ollama client，獨立於 ComfyUI；轉換僅回英文預覽，不建立圖片任務，見[轉換器](prompt-converter.md) |
+| prompt_client_factory | 選用的本機 Ollama client，獨立於 ComfyUI；轉換僅回英文預覽，不建立圖片任務，見[轉換器](../features/prompt-converter.md) |
 
 AppContext 位於 `app.state.context`，各 app 的路徑、引擎網址讀取、環境快取、路由鎖與進度 Hub 均獨立。功能模組依原有順序逐項註冊，不再讀取整個 main 模組；純請求型別在 schemas.py，舊的 main.DraftInput 等純型別匯出保留。一般產品程式透過工廠與 HTTP 使用，不需修改 context 內部欄位。
 
@@ -74,7 +74,7 @@ AppContext 位於 `app.state.context`，各 app 的路徑、引擎網址讀取�
 
 主路徑為 `validating → uploading_input（有參考圖時）→ submitting → queued → running → completed／failed`。遺失提交回應為 unknown，只查詢原請求；百分比不是終態證據。取消使用 cancelling／cancel_unknown，確認後 cancelled；停止使用 stopping／stop_unknown，確認後 stopped，也可能經歷史確定 completed／failed。修訂號避免舊觀察覆寫新結果。
 
-任務保存 engine_url 與 prompt／client ID，設定頁改引擎不移動舊任務。作品匯入讀取原引擎記錄的輸出。SSE 送摘要，上游 WebSocket 共用並以 SQLite 租約保護；二進位預覽不當作作品。快照與限制見 [版本](runtime-versions.md)、[裝置](execution-device.md)。
+任務保存 engine_url 與 prompt／client ID，設定頁改引擎不移動舊任務。作品匯入讀取原引擎記錄的輸出。SSE 送摘要，上游 WebSocket 共用並以 SQLite 租約保護；二進位預覽不當作作品。快照與限制見 [版本](runtime-observability.md#runtime-snapshots)、[裝置](runtime-observability.md#execution-device)。
 
 <a id="submission-invariants"></a>
 
@@ -97,7 +97,7 @@ AppContext 位於 `app.state.context`，各 app 的路徑、引擎網址讀取�
 
 配方內容以版本識別；變更已發佈配方時應新增版本及對應解析支援，不沿用舊版本改寫內容。Checkpoint 取樣參數目前沿用 profile，配方摘要亦涵蓋解析後參數；若 profile 改變造成起始配方變化，也需更新模板版本。歷史快照永遠讀原紀錄，不以現在的登記或證據文件取代。前端來源顯示、進階草稿與設定還原保留 ID／版本，重新生成建立新快照，不能把起始來源當作品質驗收。
 
-格式、狀態重構與功能差異應分開提交。格式整理須核對 Python AST、TypeScript／Vue 編譯結果及 CSS 值，再跑既有行為回歸；狀態重構另核對原 UUID、原端點、保存失敗、未知結果、revision 與終態。格式檢查不代表 GPU、UI 或品質驗收；工具與範圍見[品質檢查](quality-checks.md#static-checks)，歷史語意比對及錯誤探針見 [Q10 紀錄](validation/maintenance-20261023.md)。
+格式、狀態重構與功能差異應分開提交。格式整理須核對 Python AST、TypeScript／Vue 編譯結果及 CSS 值，再跑既有行為回歸；狀態重構另核對原 UUID、原端點、保存失敗、未知結果、revision 與終態。格式檢查不代表 GPU、UI 或品質驗收；工具與範圍見[品質檢查](quality-checks.md#static-checks)，歷史語意比對及錯誤探針見 [Q10 紀錄](../validation/maintenance-20261023.md)。
 
 ## 資料位置與約束
 
@@ -116,7 +116,7 @@ AppContext 位於 `app.state.context`，各 app 的路徑、引擎網址讀取�
 
 seed 在表單／設定交換為字串；原始 workflow 大整數不經 JavaScript number 重新序列化下載。提交快照不可變，舊紀錄缺欄位不由目前環境回填。收藏／筆記／評分／封存等可變資訊採修訂號。
 
-備份須包含 SQLite 與對應檔案，見 [操作指南](setup-and-operations.md#備份與還原)。平台與引擎硬體分屬不同來源；資源快照、平台時間與 GPU 峰值不互相替代。
+備份須包含 SQLite 與對應檔案，見 [操作指南](../operations/setup-and-operations.md#備份與還原)。平台與引擎硬體分屬不同來源；資源快照、平台時間與 GPU 峰值不互相替代。
 
 清單使用每 app 的有限 key 快取與 SQLite 摘要投影，固定成員後逐頁讀取最新內容；舊 JSON 不遷移、圖片只檢查本頁。新舊 API、程序限制與量測見 [清單分頁](list-pagination.md)。
 
@@ -124,7 +124,7 @@ seed 在表單／設定交換為字串；原始 workflow 大整數不經 JavaScr
 
 ## 系統資訊目錄與磁碟容量
 
-`GET /api/storage` 提供唯讀目錄／磁碟快照、固定目錄 ID、Windows 開啟能力與逐目錄 `can_open`。同一實體磁碟區只計算一次；總量、可用量與使用比例描述整個磁碟區，不是資料夾遞迴大小。更新失敗保留上次快照並標示失敗；未知容量不當成零。模型／作品分類容量尚未實作，不能用磁碟已用量或預覽比例補造分類統計，見[獨立能力待辦](ui-redesign/BACKEND-CAPABILITIES-BACKLOG.md)。
+`GET /api/storage` 提供唯讀目錄／磁碟快照、固定目錄 ID、Windows 開啟能力與逐目錄 `can_open`。同一實體磁碟區只計算一次；總量、可用量與使用比例描述整個磁碟區，不是資料夾遞迴大小。更新失敗保留上次快照並標示失敗；未知容量不當成零。模型／作品分類容量尚未實作，不能用磁碟已用量或預覽比例補造分類統計，見[獨立能力待辦](../planning/roadmap.md#backend-backlog)。
 
 目錄圖示支援鍵盤及至少 44px 點擊範圍，開啟的是平台主機的本機目錄，須從該主機的 `127.0.0.1`／`localhost` 頁面使用。未建立、不可讀目錄及非 Windows 平台停用；不因點擊建立目錄或改開父目錄。容量未知但目錄可讀時仍可開啟。額外 checkpoint ID 由保存的完整路徑雜湊建立，排序變更不會把舊按鈕指向別處。
 
@@ -132,4 +132,4 @@ seed 在表單／設定交換為字串；原始 workflow 大整數不經 JavaScr
 
 等待期間停用重複操作，失敗顯示訊息且不自動重試。成功僅表示檔案總管接受要求，不能確認使用者已看見視窗。操作不讀模型內容、不提交生成、不修改資料庫。更新後須重啟後端；仍為舊版時介面保留目錄並提示重啟，不能誤判為主機不支援。
 
-原目錄／模型路徑、長路徑、遺失目錄、舊快照、鍵盤、失敗不重試與真實 Windows 開啟的限定驗收見 [2026-10-24 紀錄](validation/storage-overview-20261024.md)。測試截圖的固定容量僅示範布局。
+原目錄／模型路徑、長路徑、遺失目錄、舊快照、鍵盤、失敗不重試與真實 Windows 開啟的限定驗收見 [2026-10-24 紀錄](../validation/storage-overview-20261024.md)。測試截圖的固定容量僅示範布局。

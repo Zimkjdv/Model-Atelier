@@ -1,6 +1,6 @@
 # Windows CI 失敗調查與回歸紀錄
 
-這裡依日期集中路徑別名與瀏覽器分批的歷史調查。各輪的失敗、定向重驗、本機完整檢查與遠端 Actions 結果分開保留；沒有把後續修正回寫成先前已通過。日常命令與目前報告位置見[品質檢查](../quality-checks.md)。
+這裡依日期集中路徑別名與瀏覽器分批的歷史調查。各輪的失敗、定向重驗、本機完整檢查與遠端 Actions 結果分開保留；沒有把後續修正回寫成先前已通過。日常命令與目前報告位置見[品質檢查](../development/quality-checks.md)。
 
 - [2026-10-22：Q06 短路徑回歸](#windows-temp-alias-20261022)
 - [2026-10-23：參考安裝與資料包修正](#windows-temp-alias-20261023)
@@ -25,7 +25,7 @@
 - `ReferenceInstallTests.test_fixed_weight_categories_readonly_plan_and_source_pin`：下載計畫已解析實體長路徑，測試仍以 TEMP 的短路徑直接比較。
 - `BundleTests.test_export_only_train_and_verify_caption_toml`：TOML 已保存解析後的絕對 `image_dir`，測試仍期待 `RUNNER~1` 別名。
 
-這些是同一實體位置的不同文字表示。沿用 [既有 Windows 別名回歸](windows-ci.md#windows-temp-alias-20261022)，在子程序專用 TEMP／TMP 使用 `GetShortPathNameW` 建立的真實 8.3 路徑，新增這兩個目標後，六個子測試恰有相同兩個失敗。其餘四個既有路徑防護測試通過，無需變更安裝位置或資料集輸出。
+這些是同一實體位置的不同文字表示。沿用 [既有 Windows 別名回歸](#windows-temp-alias-20261022)，在子程序專用 TEMP／TMP 使用 `GetShortPathNameW` 建立的真實 8.3 路徑，新增這兩個目標後，六個子測試恰有相同兩個失敗。其餘四個既有路徑防護測試通過，無需變更安裝位置或資料集輸出。
 
 只將兩個預期值改成 `.resolve()` 後比較；保留完整目錄與 TOML 路徑斷言，不做包含／後綴比對。產品程式、來源固定、唯讀 `--check`、禁止越界及不覆寫契約維持。短路徑回歸、參考工具安裝及資料包共 15 項測試通過；短路徑回歸另包含六項子測試。無 8.3 支援時既有明示 skip 規則保留。
 
@@ -61,6 +61,6 @@
 
 runner 合成回歸核對每份 spec 只納入一次、批次大小、獨立埠／目錄、所有階段的失敗退出，以及後面批次失敗不重試或覆寫之前證據。本機完整結果：後端 **770 項通過（1 既有跳過）**，型別／建置／契約通過；Chromium 四批分別 **21、30、27、42 項**，合計 **120 全部通過**。最後報告路徑及模型庫文字調整另以單頁檢查確認，不把本機結果當成 GitHub runner 已通過。
 
-新的 CI 沿用同一完整入口及既有 20 分鐘 job 預算，仍需檢視推送後的實際結果。操作與報告位置見 [品質指南](../quality-checks.md)。
+新的 CI 沿用同一完整入口及既有 20 分鐘 job 預算，仍需檢視推送後的實際結果。操作與報告位置見 [品質指南](../development/quality-checks.md)。
 
 F03 補查：[F02 CI](https://github.com/Zimkjdv/Model-Atelier/actions/runs/40164681392)在後端階段因 Windows TEMP 的路徑別名比較失敗，尚未跑到瀏覽器；已將 runtime parent 與 workspace 兩側正規化，並補等價非正規路徑回歸。這是另一個具體錯誤，沒有將它歸因於瀏覽器分批。見 [F03 調查](flux-generation-20261025.md#故障邊界與調查)。

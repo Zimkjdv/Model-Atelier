@@ -10,7 +10,7 @@ Conduct a thorough but conservative health audit of the current repository. Iden
 
 ## Phase 1: Understand the project (read-only)
 
-1. Read `AGENTS.md`, `REQUIREMENTS.md`, `AGENTS-MAINTENANCE.md`, and relevant project documentation if present. Follow existing project rules; report conflicts rather than guessing.
+1. Read `AGENTS.md`, `docs/contributing/requirements-clarification.md`, `docs/contributing/agent-maintenance.md`, and relevant project documentation if present. Follow existing project rules; report conflicts rather than guessing.
 2. Understand the architecture, real product requirements, deployment model, external interfaces, supported platforms, and compatibility commitments.
 3. Inspect Git branch and working-tree status. Identify uncommitted user changes; never overwrite, reset, or discard them.
 4. Identify entry points, dynamic loading, reflection, plugin registration, dependency injection, serialization, public APIs, CLIs, background jobs, database migrations, and external integrations.

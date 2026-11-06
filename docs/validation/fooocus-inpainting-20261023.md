@@ -1,6 +1,6 @@
 # R03 專用修補與羽化品質驗收（2026-10-23）
 
-範圍：固定 Fooocus head／v2.6 patch ＋ Animagine 4.0 Opt、ComfyUI 0.34.0、RTX3060 12GB，與一般 v2 修補比較。固定版本、操作及限制見 [功能文件](../fooocus-inpainting.md)，逐組 UUID／作品／設定／PNG hash 見 [JSON 證據](fooocus-inpainting-20261023.json)。沒有訓練、作者風格學習或自動品質評分。
+範圍：固定 Fooocus head／v2.6 patch ＋ Animagine 4.0 Opt、ComfyUI 0.34.0、RTX3060 12GB，與一般 v2 修補比較。固定版本、操作及限制見 [功能文件](../features/fooocus-inpainting.md)，逐組 UUID／作品／設定／PNG hash 見 [JSON 證據](fooocus-inpainting-20261023.json)。沒有訓練、作者風格學習或自動品質評分。
 
 ## 實機與資料驗證
 

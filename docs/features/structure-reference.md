@@ -6,7 +6,7 @@
 
 獨立 ComfyUI 的 `custom_nodes/comfyui_controlnet_aux` 固定為 `a587a4c1594524c1d2de5cd1a86cd868ff448e1c`，依其 requirements 安裝在引擎 venv，重新啟動引擎。節點原碼採外部依賴，沒有複製到 FastAPI。[上游原碼／Apache-2.0](https://github.com/Fannovel16/comfyui_controlnet_aux/tree/a587a4c1594524c1d2de5cd1a86cd868ff448e1c)。
 
-控制模型：[OpenPose SDXL](../models/controlnet-openpose-sdxl-1.0.json)、[Depth SDXL FP16](../models/controlnet-depth-sdxl-1.0-fp16.json)；估計器：[固定來源、大小與 SHA256](../models/structure-preprocessors.json)。各權重與基底條款分開登記，不能由節點授權推論權重無限制。
+控制模型：[OpenPose SDXL](../../models/controlnet-openpose-sdxl-1.0.json)、[Depth SDXL FP16](../../models/controlnet-depth-sdxl-1.0-fp16.json)；估計器：[固定來源、大小與 SHA256](../../models/structure-preprocessors.json)。各權重與基底條款分開登記，不能由節點授權推論權重無限制。
 
 ```powershell
 .\.venv\Scripts\python.exe -m scripts.install_model controlnet-openpose-sdxl-1.0
@@ -35,7 +35,7 @@
 
 人工查看：pose 偵測一人，但骨架有明顯斷裂／缺少肢體，生成沒有忠實跟隨原姿勢；depth 保留抬手與傾斜上身的整體佈局，但衣著、髮型與背景有改變，左右有明顯直線分界。這是流程通過與品質限制，不是姿勢或身份一致性保證；多人、其他尺寸／模型及 RTX4080 尚未驗證。
 
-本機完整報告：`runtime/r01-live-20261023/pose.json`、`depth.json`；原圖、條件圖、作品與 SQLite 在同目錄的 DATA，另行備份。[可解析摘要](validation/structure-reference-20261023.json)。新增後端測試驗證雙類型快照／精確還原、缺節點、類型錯配、端點隔離、條件圖唯一保存／損壞拒絕與快照竄改；四項桌面／390px 瀏覽器測試確認遺失回應、重新整理、原 UUID 與完整 body 恢復且引擎僅提交一次。
+本機完整報告：`runtime/r01-live-20261023/pose.json`、`depth.json`；原圖、條件圖、作品與 SQLite 在同目錄的 DATA，另行備份。[可解析摘要](../validation/structure-reference-20261023.json)。新增後端測試驗證雙類型快照／精確還原、缺節點、類型錯配、端點隔離、條件圖唯一保存／損壞拒絕與快照竄改；四項桌面／390px 瀏覽器測試確認遺失回應、重新整理、原 UUID 與完整 body 恢復且引擎僅提交一次。
 
 重跑 CLI 每次只接受一種類型；報告先記錄 UUID 再提交一次，既有報告拒絕新生成。`--verify` 僅 GET，不能補提交、匯入或下載缺失輸出。例：
 

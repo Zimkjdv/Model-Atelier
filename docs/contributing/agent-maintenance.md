@@ -1,4 +1,4 @@
-# AGENTS.md Maintenance Guide (AGENTS-MAINTENANCE.md)
+# Agent Rule Maintenance Guide
 
 > Read this guide **only when a durable project rule may have changed**. It is not an end-of-task checklist.
 
@@ -14,7 +14,7 @@
 
 - One-off features, bug fixes, experiments, meeting notes, or unapproved proposals.
 - Reporting what happened during a task, how many times tests passed, or current progress.
-- Restating generic behaviors the agent already knows or copying `REQUIREMENTS.md`.
+- Restating generic behaviors the agent already knows or copying `docs/contributing/requirements-clarification.md`.
 - Speculation, temporary workarounds, or technology choices not yet adopted.
 
 ## Update Procedure

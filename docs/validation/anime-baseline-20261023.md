@@ -2,7 +2,7 @@
 
 本輪完成有限的品質比較與保存／還原驗收：兩個已安裝 checkpoint、三題材、兩個精確 seed、正向品質標籤條件，以及兩種新素材的 denoise 比較，共 18 個獨立 UUID／18 件作品。每張原圖均保留成功與失敗的視覺觀察，沒有自動品質分數、全面模型排名或指定作者相似度通過。
 
-使用者尚未提供目標作者／畫風及同角色參考圖。這批輸入為自行編寫提示詞及本次自產圖片，未下載作者圖片代替目標驗收。指定畫風／角色的使用者目標品質仍待提供資料，提醒規則見[開發計畫](../anime-style-development.md#image-input-reminders)。
+使用者尚未提供目標作者／畫風及同角色參考圖。這批輸入為自行編寫提示詞及本次自產圖片，未下載作者圖片代替目標驗收。指定畫風／角色的使用者目標品質仍待提供資料，提醒規則見[開發計畫](../planning/anime-style-development.md#image-input-reminders)。
 
 ## 功能與相容
 
@@ -11,7 +11,7 @@
 - 新 `prompt`／`negative_prompt` 比較軸只改一個完整文字欄位，使用 schema 2 模型登記快照。正向軸與固定案例不可同選；反向可比較空字串。保留原模型、原引擎、字串 seed、素材與有序 LoRA。模型登記變更的交易核對沿用 R06。
 - 舊 schema 1 六軸、schema 2 模型／取樣器／排程器與舊案例凍結文件保持相容。局部編輯／Canny／adapter 不冒充一般比較流程。最多 8 組、每組另載入並明確生成，沒有產品自動批次或重試。
 
-新單組 CLI、重跑與檔案獨占規則見[固定測試集](../illustration-suite.md)；API 使用見[比較方案](../experiment-plans.md)。新增高風險 CLI／測試及 UI 回歸均加入 `quality-scope.json`。
+新單組 CLI、重跑與檔案獨占規則見[固定測試集](../development/illustration-suite.md)；API 使用見[比較方案](../features/experiment-plans.md)。新增高風險 CLI／測試及 UI 回歸均加入 `quality-scope.json`。
 
 ## GPU 條件與矩陣
 

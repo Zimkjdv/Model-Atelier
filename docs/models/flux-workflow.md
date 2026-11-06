@@ -2,7 +2,7 @@
 
 本文件集中純文生圖流程、[分離元件庫](#components)及[平台生成與失敗復原](#generation-acceptance)。各日期驗收分開保留；目前有實測的固定 512 配置不代表所有精度、尺寸或硬體皆已通過。LoRA／原圖重繪仍見[獨立擴充流程](flux-extensions.md)。
 
-2026-10-25：[F01 固定安裝](flux-installation.md)與 [F02 原生節點 512 配置量測](flux-runtime-observation.md)已有實際證據；F02 使用獨立程序及明確載入順序；[F03](flux-workflow.md#generation-acceptance)另完成相同固定 512 配置的平台 HTTP、作品保存、離線還原與受控 CUDA OOM。[F04 LoRA／原生圖生圖](flux-extensions.md)另立版本與子頁，不混入本檔的純文生圖格式。下方 2026-10-05 的缺權重描述保留為歷史。
+2026-10-25：[F01 固定安裝](flux-installation.md)與 [F02 原生節點 512 配置量測](flux-runtime-observation.md)已有實際證據；F02 使用獨立程序及明確載入順序；[F03](#generation-acceptance)另完成相同固定 512 配置的平台 HTTP、作品保存、離線還原與受控 CUDA OOM。[F04 LoRA／原生圖生圖](flux-extensions.md)另立版本與子頁，不混入本檔的純文生圖格式。下方 2026-10-05 的缺權重描述保留為歷史。
 
 2026-10-05：`flux1-schnell-text2image-v1` 使用 9 個原生節點：UNETLoader、DualCLIPLoader（type=flux）、VAELoader、正／空負提示詞 CLIPTextEncode、EmptySD3LatentImage、KSampler、VAEDecode、SaveImage。
 

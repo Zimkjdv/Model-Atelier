@@ -75,24 +75,24 @@ Set-Location ..
 
 | 指令 | 範圍／原始驗收 |
 | --- | --- |
-| `npm.cmd run test:browser -- mask-editor.spec.ts` | 畫布筆刷、PNG 像素、素材重讀、捕獲／取消／第二指模擬；[V01](validation/mask-editor-20261023.md)，模擬不等於實機觸控 |
-| `npm.cmd run test:browser -- inpaint-recovery.spec.ts` | v1／v2、遺失回應、異常 JSON、未知版本、原 pending／端點／雜湊且不重送；[V02](validation/inpaint-recovery-20261023.md) |
-| `npm.cmd run test:browser -- artwork-library.spec.ts` | 修訂衝突、未保存／保存中、503 不重送、原圖／精確參數、鍵盤捲動、跨頁選取；[V03](validation/artwork-library-20261023.md) |
-| `npm.cmd run test:browser -- comparison-validation.spec.ts` | 歷史品質條件、有序 LoRA 比較軸、固定案例與量測來源、零／未知；[V04](validation/comparison-measurements-20261023.md) |
-| `npm.cmd run test:browser -- settings-transfer.spec.ts` | 真正下載／檔案選擇／貼上與取消、原 bytes／大整數、不跨流程與慢速／過大／無效 UTF-8 保護；[V05](validation/settings-transfer-20261023.md) |
-| `npm.cmd run test:browser -- ui-accessibility.spec.ts` | 逐頁標題、可讀名稱、Tab／Enter、焦點、展開／錯誤／空態與整頁溢出；[V06](validation/ui-accessibility-20261023.md) |
+| `npm.cmd run test:browser -- mask-editor.spec.ts` | 畫布筆刷、PNG 像素、素材重讀、捕獲／取消／第二指模擬；[V01](../validation/mask-editor-20261023.md)，模擬不等於實機觸控 |
+| `npm.cmd run test:browser -- inpaint-recovery.spec.ts` | v1／v2、遺失回應、異常 JSON、未知版本、原 pending／端點／雜湊且不重送；[V02](../validation/inpaint-recovery-20261023.md) |
+| `npm.cmd run test:browser -- artwork-library.spec.ts` | 修訂衝突、未保存／保存中、503 不重送、原圖／精確參數、鍵盤捲動、跨頁選取；[V03](../validation/artwork-library-20261023.md) |
+| `npm.cmd run test:browser -- comparison-validation.spec.ts` | 歷史品質條件、有序 LoRA 比較軸、固定案例與量測來源、零／未知；[V04](../validation/comparison-measurements-20261023.md) |
+| `npm.cmd run test:browser -- settings-transfer.spec.ts` | 真正下載／檔案選擇／貼上與取消、原 bytes／大整數、不跨流程與慢速／過大／無效 UTF-8 保護；[V05](../validation/settings-transfer-20261023.md) |
+| `npm.cmd run test:browser -- ui-accessibility.spec.ts` | 逐頁標題、可讀名稱、Tab／Enter、焦點、展開／錯誤／空態與整頁溢出；[V06](../validation/ui-accessibility-20261023.md) |
 
 V02 fixture 的 `/qa/engine-audit` 最多保留 1,000 筆方法／路徑與輸入雜湊；V03 `/qa/artwork-set` 只建立臨時合成作品。V04 `scripts/comparison_fixture.py` 僅用於隔離平台，完成後還原登記並移除本組紀錄；歷史 GPU 原圖與合成 fixture 的證據分開。以上都不提供正式平台測試端點，不將合成圖當成實機 GPU 品質。
 
 無障礙檢查保存 axe 的 violations 與 incomplete，漸層文字另核對主題 RGB 端點對比；自動結果不是完整 WCAG、讀屏或觸控認證。全站瀏覽器預算八分鐘、單案 45 秒、單 worker 及零重試；以實際設定與各專項驗收為準。
 
-2026-10-22 的乾淨 lock／Chromium 安裝、runner 各階段故障立即停止及臨時失敗探針的 screenshot／video／trace 已驗證；當時的後端／瀏覽器數字與各次新增案例記在 [CHANGELOG](../CHANGELOG.md) 及上述驗收，不視為目前總數。Windows 8.3 TEMP 與 CI 路徑問題的實際別名重現見[獨立診斷](validation/windows-ci.md#windows-temp-alias-20261022)，產品路徑防護未放寬。
+2026-10-22 的乾淨 lock／Chromium 安裝、runner 各階段故障立即停止及臨時失敗探針的 screenshot／video／trace 已驗證；當時的後端／瀏覽器數字與各次新增案例記在 [CHANGELOG](../../CHANGELOG.md) 及上述驗收，不視為目前總數。Windows 8.3 TEMP 與 CI 路徑問題的實際別名重現見[獨立診斷](../validation/windows-ci.md#windows-temp-alias-20261022)，產品路徑防護未放寬。
 
 歷史相容性觀察：Starlette 1.6.0 TestClient 的 httpx 0.28.1 fallback 曾印出棄用提示；Windows 故障注入／關閉 SSE 可能印出 ConnectionResetError。保留這些提示，仍以斷言與退出碼判定；目前依賴以 lock 為準，不隱藏其他錯誤、不把引擎 HTTP 傳輸任意更換。當時 Vite／source-map-js 修補後的零項 npm audit 只屬當次結果，不是完整安全稽核或目前掃描結論。GPU、實機觸控、行動瀏覽器、對比／讀屏與全站視覺各自驗收；清單成本另見[分頁量測](list-pagination.md)。
 
 ## 同組隔離資料連續驗收
 
-模型五分類／兩版型、訓練四階段、五種創作目的／Checkpoint／FLUX 的桌面三尺寸另由 `frontend/tests/desktop-acceptance-matrix.spec.ts` 驗證。此檔沿用一般隔離 fixture，會由既有分批入口自動收集，也可在 `frontend` 執行 `npx.cmd playwright test tests/desktop-acceptance-matrix.spec.ts`。視覺基準直接讀原 `preview.html`，不產生另一份基準檔；支援界線、機器證據與必要差異見 [桌面驗收矩陣](ui-redesign/ACCEPTANCE.md#desktop-matrix)。
+模型五分類／兩版型、訓練四階段、五種創作目的／Checkpoint／FLUX 的桌面三尺寸另由 `frontend/tests/desktop-acceptance-matrix.spec.ts` 驗證。此檔沿用一般隔離 fixture，會由既有分批入口自動收集，也可在 `frontend` 執行 `npx.cmd playwright test tests/desktop-acceptance-matrix.spec.ts`。視覺基準直接讀原 `preview.html`，不產生另一份基準檔；支援界線、機器證據與必要差異見 [桌面驗收矩陣](../ui-redesign/ACCEPTANCE.md#desktop-matrix)。
 
 從 `frontend` 執行以下獨立設定；每次建立新的 `--empty` 臨時資料，不沿用一般套件的預設樣本。
 
@@ -100,4 +100,4 @@ V02 fixture 的 `/qa/engine-audit` 最多保留 1,000 筆方法／路徑與輸�
 npx.cmd playwright test --config playwright.journey.config.ts
 ```
 
-此設定只執行 `isolated-journey.spec.ts`，使用正式建置的前端、真實 API／SQLite 與合成引擎，從空庫沿一張來源圖串接生成、作品匯入、詳情、比較、下載、封存還原、離線與未保存保護。此檔位於獨立的 `frontend/journey-tests/`，一般 Playwright 與分批入口只收集 `frontend/tests/`，避免在已有其他測試資料的批次假裝驗證空庫；這個獨立命令需另外執行，不含在既有 `check_quality.py` 成功宣告內。無自動重試，輸出與 HTML 報告分別位於 `runtime/quality/journey-results`、`journey-report`。詳細範圍、證據與未完成能力見 [逐流程驗收](ui-redesign/ACCEPTANCE.md#isolated-journey)。
+此設定只執行 `isolated-journey.spec.ts`，使用正式建置的前端、真實 API／SQLite 與合成引擎，從空庫沿一張來源圖串接生成、作品匯入、詳情、比較、下載、封存還原、離線與未保存保護。此檔位於獨立的 `frontend/journey-tests/`，一般 Playwright 與分批入口只收集 `frontend/tests/`，避免在已有其他測試資料的批次假裝驗證空庫；這個獨立命令需另外執行，不含在既有 `check_quality.py` 成功宣告內。無自動重試，輸出與 HTML 報告分別位於 `runtime/quality/journey-results`、`journey-report`。詳細範圍、證據與未完成能力見 [逐流程驗收](../ui-redesign/ACCEPTANCE.md#isolated-journey)。

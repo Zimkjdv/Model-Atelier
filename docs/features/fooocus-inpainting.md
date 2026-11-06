@@ -5,8 +5,8 @@
 ## 固定來源與相容範圍
 
 - 外部節點：[Acly/comfyui-inpaint-nodes](https://github.com/Acly/comfyui-inpaint-nodes/tree/5b7681746fe19e563113d27366ba85236bc1ba5b)，固定 `5b7681746fe19e563113d27366ba85236bc1ba5b`／1.4.4；[原碼與接線](https://github.com/Acly/comfyui-inpaint-nodes/blob/5b7681746fe19e563113d27366ba85236bc1ba5b/nodes.py)、[GPL v3](https://github.com/Acly/comfyui-inpaint-nodes/blob/5b7681746fe19e563113d27366ba85236bc1ba5b/LICENSE)。原碼在獨立 ComfyUI 執行，沒有搬入 FastAPI。
-- 官方權重：[head manifest](../models/fooocus-inpaint-head.json)、[v2.6 patch manifest](../models/fooocus-inpaint-v26.json)，固定作者 repository 修訂、大小與 SHA256。模型卡只標示 `openrail`，未附完整條款，manifest 保留未核實狀態；節點授權不等於權重或基底無限制使用。
-- 基底：[Animagine 4.0 Opt](models/animagine-xl-4.0-opt.md)。後端要求其固定名稱、SDXL、hash 與大小登記；登記本身不能證明遠端檔案內容，實機驗收另全檔查核。
+- 官方權重：[head manifest](../../models/fooocus-inpaint-head.json)、[v2.6 patch manifest](../../models/fooocus-inpaint-v26.json)，固定作者 repository 修訂、大小與 SHA256。模型卡只標示 `openrail`，未附完整條款，manifest 保留未核實狀態；節點授權不等於權重或基底無限制使用。
+- 基底：[Animagine 4.0 Opt](../models/animagine-xl-4.0-opt.md)。後端要求其固定名稱、SDXL、hash 與大小登記；登記本身不能證明遠端檔案內容，實機驗收另全檔查核。
 
 上游禁止 Turbo／Lightning／Hyper 等蒸餾合併版；本平台首版以固定基底及拒絕所有 LoRA 限制範圍。此模板使用 `VAEEncodeForInpaint` 接 Fooocus，因此 denoise 必須 1；上游 refine 的雙 latent 流程尚未接入，不能降低 denoise 後當成同一模板。
 
@@ -38,7 +38,7 @@
 
 每張素材明確執行：Fooocus seed A／半徑 0、A／16、B／16，以及一般 v2 seed A／16 對照，共八組。A=`9007199254740993`，B=`18446744073709551615`；A0→A16 觀察半徑，A16→B16 觀察 seed，v2→Fooocus A16 比較專用模型。各組唯一 UUID 與原圖／遮罩／處理後 PNG／模型來源／原流程分開保存，不是自動品質評分。
 
-可解析結果、逐圖觀察與限制見 [R03 驗收](validation/fooocus-inpainting-20261023.md)。本機原始報告／DATA 在 `runtime/r03-live-20261023`，權重與圖片不納入 Git，需另行備份。
+可解析結果、逐圖觀察與限制見 [R03 驗收](../validation/fooocus-inpainting-20261023.md)。本機原始報告／DATA 在 `runtime/r03-live-20261023`，權重與圖片不納入 Git，需另行備份。
 
 重跑 CLI 每次只執行一組，既有報告拒絕新生成；`--verify` 只 GET 核對原設定、輸入、遮罩與作品 hash，不補提交或匯入。例：
 

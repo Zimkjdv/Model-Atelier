@@ -1,4 +1,4 @@
-# Requirements Clarification Guide (REQUIREMENTS.md)
+# Requirements Clarification Guide
 
 > This guide is an **on-demand interview procedure**, not a required step for every task. Use it only when the material ambiguity triggers in `AGENTS.md` apply or the user explicitly requests a deep requirements interview.
 

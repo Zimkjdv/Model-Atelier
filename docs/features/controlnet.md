@@ -4,11 +4,11 @@
 
 R01 已另提供 [SDXL pose／depth v3](structure-reference.md)，使用獨立端點與前處理，並保存同次條件圖。本文的 v1／v2 仍僅接受 Canny。
 
-2026-10-23 R04：Pony Canny v2 的無 LoRA、IKEA、LCM、LCM → IKEA 與反向五組 RTX 3060 實測完成。固定原素材／seed、控制模型與各組參數；原邊緣、作品、完整 workflow、桌面／窄版下載及離線重啟還原通過。材質／畫風仍有偏差，不建立通用品質預設，詳見 [R04 實測與重跑 CLI](validation/pony-canny-v2-20261023.md)。此條件沒有套入一般文生圖的 LoRA 歷史匹配 registry。
+2026-10-23 R04：Pony Canny v2 的無 LoRA、IKEA、LCM、LCM → IKEA 與反向五組 RTX 3060 實測完成。固定原素材／seed、控制模型與各組參數；原邊緣、作品、完整 workflow、桌面／窄版下載及離線重啟還原通過。材質／畫風仍有偏差，不建立通用品質預設，詳見 [R04 實測與重跑 CLI](../validation/pony-canny-v2-20261023.md)。此條件沒有套入一般文生圖的 LoRA 歷史匹配 registry。
 
-一般草稿、設定交換及比較尚未支援 Canny 專用格式；控制參數不會被當成一般設定而部分保存。工作台可展開 v1／v2 支援範圍，原設定及完整 workflow 保留，見 [R07 格式評估](specialized-workflow-formats.md)。
+一般草稿、設定交換及比較尚未支援 Canny 專用格式；控制參數不會被當成一般設定而部分保存。工作台可展開 v1／v2 支援範圍，原設定及完整 workflow 保留，見 [R07 格式評估](../development/specialized-workflow-formats.md)。
 
-固定 `checkpoint-canny-controlnet-v1` 使用一張素材、ComfyUI 原生 Canny 與同架構的 ControlNet。支援明確登記的 SD 1.x／SDXL checkpoint，以及最多四個有序 LoRA。這是結構條件，不是畫風或角色鎖定；後端與專用工作台已整合，Pony／Animagine 的固定 RTX 3060 驗收及離線重啟核對已完成，見 [實測與品質觀察](validation/checkpoint-canny-rtx3060.md)。
+固定 `checkpoint-canny-controlnet-v1` 使用一張素材、ComfyUI 原生 Canny 與同架構的 ControlNet。支援明確登記的 SD 1.x／SDXL checkpoint，以及最多四個有序 LoRA。這是結構條件，不是畫風或角色鎖定；後端與專用工作台已整合，Pony／Animagine 的固定 RTX 3060 驗收及離線重啟核對已完成，見 [實測與品質觀察](../validation/checkpoint-canny-rtx3060.md)。
 
 ## 模型登記
 
@@ -87,7 +87,7 @@ R01 已另提供 [SDXL pose／depth v3](structure-reference.md)，使用獨立�
 
 使用原有的 pending localStorage key。沒有流程標記的舊請求仍使用 v1 端點與精確原 body；新請求保存本機 `_atelier_control_workflow_id` 標記，送 v2 時移除標記，不傳入嚴格 API。未知標記會拒絕提交且保留 pending。還原 v1／v2 原設定後，手動生成會建立新的 v2 UUID。介面切換、來源更換及卸載會取消讀取並忽略過期回覆；圖片驗證失敗不沿用舊預覽。
 
-Vue 型別／建置、Canny 請求遷移／來源檢查、既有遮罩與比較檢查通過。2026-10-09 當時瀏覽器工具無法啟動；2026-10-22 已補驗任務／作品原邊緣、實際下載 hash／還原及 390px。送出前近似 CPU 預覽亦已完成，見 [實機驗收](validation/canny-preview-rtx3060.md) 與 [預覽契約](controlnet.md#cpu-preview)。
+Vue 型別／建置、Canny 請求遷移／來源檢查、既有遮罩與比較檢查通過。2026-10-09 當時瀏覽器工具無法啟動；2026-10-22 已補驗任務／作品原邊緣、實際下載 hash／還原及 390px。送出前近似 CPU 預覽亦已完成，見 [實機驗收](../validation/canny-preview-rtx3060.md) 與 [預覽契約](#cpu-preview)。
 
 
 ## v2 固定 seed／強度實機驗收 CLI
@@ -100,7 +100,7 @@ Vue 型別／建置、Canny 請求遷移／來源檢查、既有遮罩與比較�
 
 預設 Animagine 4.0 Opt，也可明確指定 --model pony-v6-xl（本輪 v2 未實測 Pony）。四個 profile 為 seed-a-strength-05／seed-a-strength-10／seed-b-strength-05／seed-b-strength-10；seed A 9007199254740993、B 9007199254740995，強度 0.5／1.0，其餘固定為上一節 CLI 條件。生成成功後保存唯一作品與原邊緣 PNG，核對原成功歷史、PNG hash／bytes、尺寸／白色像素及解碼 RGB hash；不是品質分數。
 
-同一指令加 --verify-report 只 GET 保存證據，不能同步、匯入缺失邊緣或補提交；profile、來源、完整 workflow／原版本／hash 不符先拒絕且不改原報告。原引擎 Windows／POSIX 固定目錄的兩種分隔符均可驗證，保留原歷史拼法；不接受 ..、重複分隔符或外部路徑。完整本輪 [RTX 3060 比較與離線重啟證據](validation/canny-edges-rtx3060.md)已通過，品質偏差與限制如實記錄。
+同一指令加 --verify-report 只 GET 保存證據，不能同步、匯入缺失邊緣或補提交；profile、來源、完整 workflow／原版本／hash 不符先拒絕且不改原報告。原引擎 Windows／POSIX 固定目錄的兩種分隔符均可驗證，保留原歷史拼法；不接受 ..、重複分隔符或外部路徑。完整本輪 [RTX 3060 比較與離線重啟證據](../validation/canny-edges-rtx3060.md)已通過，品質偏差與限制如實記錄。
 
 <a id="cpu-preview"></a>
 
@@ -130,4 +130,4 @@ worker 呼叫同一環境的 `kornia.filters.canny`，float32 CPU、相同 BCHW 
 
 驗收使用 `runtime/canny-preview-live-data-20261022`：複製四份既有 Canny 任務／作品後增加一張測試素材，共 2 素材／4 任務／4 作品；預覽沒有增加任務或作品。正式資料 settings 指紋保持 `31af66ed1db203c808bee110c1007a8307ae23867df29b259636f0837502a6eb`。
 
-完整 [RTX 3060 原生比對、離線重啟與歷史下載驗收](validation/canny-preview-rtx3060.md)：兩個低閾值案例觀察到 51／15 個像素差異，因此維持近似預覽定位。四份既有任務比較與 GET-only 重啟驗證通過。
+完整 [RTX 3060 原生比對、離線重啟與歷史下載驗收](../validation/canny-preview-rtx3060.md)：兩個低閾值案例觀察到 51／15 個像素差異，因此維持近似預覽定位。四份既有任務比較與 GET-only 重啟驗證通過。

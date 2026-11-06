@@ -1,6 +1,6 @@
 # D02 Docker 本機部署驗收
 
-2026-10-25，Windows／Docker Desktop 4.95.0、WSL2 Linux containers；Docker Engine／CLI 29.8.2、Compose 5.6.0。RTX 3060 12 GiB，原生 ComfyUI 0.34.0、Python 3.12.10、PyTorch 2.14.0+cu130。容器使用 Python 3.12.15。操作見 [Docker 說明](../docker.md)，可解析摘要見 [證據 JSON](docker-deployment-20261025.json)。
+2026-10-25，Windows／Docker Desktop 4.95.0、WSL2 Linux containers；Docker Engine／CLI 29.8.2、Compose 5.6.0。RTX 3060 12 GiB，原生 ComfyUI 0.34.0、Python 3.12.10、PyTorch 2.14.0+cu130。容器使用 Python 3.12.15。操作見 [Docker 說明](../operations/docker.md)，可解析摘要見 [證據 JSON](docker-deployment-20261025.json)。
 
 ## 範圍與建置
 

@@ -40,7 +40,7 @@ docker compose -f compose.yaml -f compose.gpu.yaml up -d --build --wait
 | 平台 GPU | 容器可取得的 `nvidia-smi`，未配置／不可得保持未知 |
 | 引擎資訊 | 選定原生 ComfyUI 的 `/system_stats` 與裝置回報 |
 
-本機驗收 RTX 3060 可執行容器 CUDA sample，原生 ComfyUI 也完成一件固定案例；這不是 Docker 推論效能比較或所有 GPU／OS 的相容承諾。完整條件見 [D02 驗收](validation/docker-deployment-20261025.md)。
+本機驗收 RTX 3060 可執行容器 CUDA sample，原生 ComfyUI 也完成一件固定案例；這不是 Docker 推論效能比較或所有 GPU／OS 的相容承諾。完整條件見 [D02 驗收](../validation/docker-deployment-20261025.md)。
 
 ## 存取邊界
 

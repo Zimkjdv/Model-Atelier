@@ -1,10 +1,10 @@
 # R07 · 局部編輯與 Canny 的草稿、交換及比較格式評估
 
-2026-10-23 R03：另有 [Fooocus SDXL 專用修補 v3](fooocus-inpainting.md)，仍使用獨立內側合成遮罩。固定基底、denoise 1、無 LoRA；有限比較未優於一般修補，保留實驗選項；一般格式邊界不因此開放。
+2026-10-23 R03：另有 [Fooocus SDXL 專用修補 v3](../features/fooocus-inpainting.md)，仍使用獨立內側合成遮罩。固定基底、denoise 1、無 LoRA；有限比較未優於一般修補，保留實驗選項；一般格式邊界不因此開放。
 
 2026-10-23 決策：**必須使用專用版本格式，目前維持一般草稿／設定交換／比較方案不支援**。R07 的格式評估、能力說明及拒絕邊界完成，不表示這三項功能已上線。原任務／作品仍可完整載入保存的設定及下載完整 workflow；來源不完整時不部分還原。
 
-R02 補充：`checkpoint-ipadapter-reference-v1` 沿用相同保護，新增 `family=reference` 的唯讀能力；一般草稿、交換與比較均拒絕。模式、參考權重／起訖、adapter／ViT-H 編碼器、原素材與 224 方圖前處理須完整保存，不能套用一般 schema。完整原設定還原及原 workflow 下載已驗收；不支援多圖融合或 LoRA 組合。詳見 [參考流程契約](models/ipadapter-reference.md)、[R02 驗收](validation/reference-adapter-20261023.md)。下列四個版本與測試數為 R07 原驗收範圍。
+R02 補充：`checkpoint-ipadapter-reference-v1` 沿用相同保護，新增 `family=reference` 的唯讀能力；一般草稿、交換與比較均拒絕。模式、參考權重／起訖、adapter／ViT-H 編碼器、原素材與 224 方圖前處理須完整保存，不能套用一般 schema。完整原設定還原及原 workflow 下載已驗收；不支援多圖融合或 LoRA 組合。詳見 [參考流程契約](../models/ipadapter-reference.md)、[R02 驗收](../validation/reference-adapter-20261023.md)。下列四個版本與測試數為 R07 原驗收範圍。
 
 一般 checkpoint schema 只有單張圖生圖或文生圖欄位，FLUX 另有元件格式。實際重現發現一般草稿端點曾回傳 201，卻忽略 `mask_asset_id`、`grow_mask_by`、`feather_radius`。修正後，建立及更新均回傳 422，原草稿與 revision 不變，其他未知欄位也拒絕。歷史一般草稿的讀取與預設保持相容，不回寫歷史資料。
 
@@ -57,4 +57,4 @@ R02 補充：`checkpoint-ipadapter-reference-v1` 沿用相同保護，新增 `fa
 
 最終完整品質入口通過 scoped format／static、585 項後端（1 項既有 Windows 權限條件跳過）、Vue build、四組前端契約及 87 項 Chromium（4.4 分鐘）。檢視兩工作台的 1440px／390px 四張支援範圍截圖，文字換行可讀。完整 log 為 `runtime/r07-quality-final.log`；初次完整回歸發現舊封套回讀的相容問題，補有限相容及反冒用測試後重跑通過。
 
-R07-01／02 的格式評估及尚未支援時的保護已完成；後續專用功能啟用須另按完整契約實作與驗收。既有說明：[局部編輯](inpainting.md)、[羽化](inpainting.md#inner-feather)、[Canny](controlnet.md)、[一般交換](creation-settings-transfer.md)、[比較方案](experiment-plans.md)。
+R07-01／02 的格式評估及尚未支援時的保護已完成；後續專用功能啟用須另按完整契約實作與驗收。既有說明：[局部編輯](../features/inpainting.md)、[羽化](../features/inpainting.md#inner-feather)、[Canny](../features/controlnet.md)、[一般交換](../features/creation-settings-transfer.md)、[比較方案](../features/experiment-plans.md)。

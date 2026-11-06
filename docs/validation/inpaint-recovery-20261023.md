@@ -50,7 +50,7 @@ Set-Location ..
 .\.venv\Scripts\python.exe scripts/check_quality.py
 ```
 
-完整入口的格式／靜態檢查、574 項後端（1 項既有 Windows symlink 權限跳過）、Vue 型別／建置、四組前端契約與 34 項瀏覽器通過。9 項 V02 專用回歸亦全部通過。依賴與埠隔離見 [品質指南](../quality-checks.md)。
+完整入口的格式／靜態檢查、574 項後端（1 項既有 Windows symlink 權限跳過）、Vue 型別／建置、四組前端契約與 34 項瀏覽器通過。9 項 V02 專用回歸亦全部通過。依賴與埠隔離見 [品質指南](../development/quality-checks.md)。
 
 每個完整案例保存 pending.png／pending-panel.png、original-pending.json 與 recovery-evidence.json，包含原始 pending、平台請求 body、原始任務 JSON、恢復後原始 JSON、輸入 SHA256、實際上傳紀錄、狀態查詢及引擎計數。另保存 original-source.png／original-mask.png 原素材，以及 prepared-source.png／prepared-mask.png、v2 的 prepared-blend.png；逐份核對實際 bytes 的 SHA256 後保存，可獨立重新核對雜湊。上述檔案也附於 HTML 報告，位於忽略的 runtime/quality/browser-report 與 browser-results；CI 會保存整個 runtime/quality 14 天。下次執行會重建輸出，若需長期保留應先另存證據。
 

@@ -4,9 +4,9 @@
 
 2026-10-23 R05：新增 `anime-illustration-v1.json` 的半身、全身／服裝、車站人物與場景三案例，可在「測試集」選單與通用插畫 v1 間切換；切換清除舊案例選擇及預覽，保留創作設定。新 `prompt`／`negative_prompt` 軸以完整字串陣列比較文字／標籤格式，只改選定提示詞欄位。正向比較不可同時選固定案例，避免提示詞互相覆蓋；反向可用空字串。兩軸沿用 schema 2 的模型登記快照、保存／匯入與生成核對，不自動套用作者格式或改變其他參數。
 
-2026-10-23 R06：新增 Checkpoint 模型、Sampler 取樣器與 Scheduler 排程器軸，涵蓋 checkpoint 文生圖／單張圖生圖，精確名稱用字串陣列。模型比較需原引擎已同步且登記為相同 SD 1.x／SDXL 架構，不自動改動 LoRA。新軸使用 schema 2 保存模型登記快照，生成交易核對版本／架構／大小／hash；未知保持未知。舊六軸維持 schema 1，總數仍最多 8 組且逐組手動生成。欄位、相容規則與驗收見 [R06 紀錄](validation/extended-comparisons-20261023.md)。
+2026-10-23 R06：新增 Checkpoint 模型、Sampler 取樣器與 Scheduler 排程器軸，涵蓋 checkpoint 文生圖／單張圖生圖，精確名稱用字串陣列。模型比較需原引擎已同步且登記為相同 SD 1.x／SDXL 架構，不自動改動 LoRA。新軸使用 schema 2 保存模型登記快照，生成交易核對版本／架構／大小／hash；未知保持未知。舊六軸維持 schema 1，總數仍最多 8 組且逐組手動生成。欄位、相容規則與驗收見 [R06 紀錄](../validation/extended-comparisons-20261023.md)。
 
-局部編輯／羽化／Canny 專用設定不支援一般比較方案，預覽、文件匯入／匯出及保存均明確拒絕；不以捨棄雙輸入或控制參數的方式降成一般流程。專用格式方案與版本別能力見 [R07 評估](specialized-workflow-formats.md)。
+局部編輯／羽化／Canny 專用設定不支援一般比較方案，預覽、文件匯入／匯出及保存均明確拒絕；不以捨棄雙輸入或控制參數的方式降成一般流程。專用格式方案與版本別能力見 [R07 評估](../development/specialized-workflow-formats.md)。
 
 創作工作台的「固定測試集與參數比較」提供 checkpoint 文生圖與單張圖生圖的唯讀方案預覽。先選模型並確認完整設定，再選 Steps、CFG、Seed、圖生圖 Denoise 或指定 LoRA 的模型／CLIP 強度一個參數軸，輸入 1–4 個 JSON 值。Seed 必須使用字串，例如 `["9007199254740993", "18446744073709551615"]`；不轉成 JavaScript number。數值超界、型別不符或正規化後重複會拒絕，不自動截斷或調低設定。
 
@@ -26,7 +26,7 @@
 
 POST 輸入包含 `title`、完整的 `settings`、`axis`、`values`、`case_ids`；可另指定 `suite_id`（預設 `general-illustration`），LoRA 軸另需 `target_lora`，必須是基準中已啟用的精確名稱，其他軸不可指定。不接受 revision、任務 UUID、自訂 workflow 或未知欄位。請求最多 256 KiB，匯出文件最多 1 MiB。完整 `settings` 沿用 checkpoint 草稿欄位但排除 revision；可由創作設定匯出文件取得。不存在的案例、空模型、空目前提示詞及重複案例拒絕。圖生圖原素材遺失或封存時保留設定並提示，預覽不驗圖片 bytes、不重建圖片；生成仍由既有流程重新檢查來源 hash。測試集損壞時仍可比較目前提示詞，不能借用未驗證案例。
 
-已提供方案持久化、重載及 JSON 匯入預覽，見[保存與匯入說明](experiment-plans.md#storage-and-import)。此階段沒有自動批次提交、重試或結果自動關聯，也沒有耗時／VRAM 估算及自動品質評分。匯出的是比較方案，實際提交的完整 workflow 與模型／環境快照仍由原任務系統保存。2026-10-08 已完成 Pony／Animagine 固定四案例的 GPU 比較與原圖觀察，見 [實測結果](validation/general-illustration-suite-rtx3060.md)；已提供指定 LoRA 的強度比較方案；更多模型／seed／參數軸的 GPU 品質及 RTX 4080 仍待後續驗收。
+已提供方案持久化、重載及 JSON 匯入預覽，見[保存與匯入說明](#storage-and-import)。此階段沒有自動批次提交、重試或結果自動關聯，也沒有耗時／VRAM 估算及自動品質評分。匯出的是比較方案，實際提交的完整 workflow 與模型／環境快照仍由原任務系統保存。2026-10-08 已完成 Pony／Animagine 固定四案例的 GPU 比較與原圖觀察，見 [實測結果](../validation/general-illustration-suite-rtx3060.md)；已提供指定 LoRA 的強度比較方案；更多模型／seed／參數軸的 GPU 品質及 RTX 4080 仍待後續驗收。
 
 2026-10-05：382 項後端測試（381 通過、1 項既有 Windows 權限跳過）、Vue 型別／建置通過。桌面瀏覽器驗證四份案例／seed 方案、重複值拒絕、最大 seed 精確載入、原有 LoRA 順序、案例提示詞替換、基準快照保留與 JSON bytes／下載檔名；未驗證瀏覽器原生下載落盤及窄視窗。沒有新增 GPU 任務或正式資料；隔離資料仍為 4 任務／4 作品／2 checkpoint 草稿／1 FLUX 草稿，僅前一項人工評分保留。畫面與 JSON 證據保存在 `runtime/experiment-plan-ui-20261005.png`、`runtime/comparison-plan-ui-20261005.json`。
 
@@ -36,7 +36,7 @@ POST 輸入包含 `title`、完整的 `settings`、`axis`、`values`、`case_ids
 
 2026-10-08 比較功能優先項目 2：單張 checkpoint 圖生圖可比較 denoise、Steps／CFG／精確 Seed／LoRA 強度。來源 ID、唯一素材關聯、縮放方式及未變動設定完整保留。預覽不建任務；明確生成後的工作流程與還原設定已用隔離模擬引擎驗證。401 項後端測試（400 通過、1 項既有 Windows 權限跳過）及 Vue 型別／建置通過；本輪未新增 GPU 品質實測，UI 工具環境故障，實機操作仍待驗收。
 
-2026-10-23 · V04：1440px／390px 補驗指定 LoRA 的 model／CLIP 強度軸，載入及保存零／負強度時，其餘強度、停用項目、順序與最大 64 位字串 seed 保留；缺少／停用目標、重複值、超界及數字字串拒絕且表單不變。Pony／Animagine 各自逐組載入固定四案例，測試集版本／hash 與未變動參數核對；歷史八件 GPU 結果另外唯讀並排及還原設定。未新增生成或品質預設，見 [V04 驗收](validation/comparison-measurements-20261023.md)。
+2026-10-23 · V04：1440px／390px 補驗指定 LoRA 的 model／CLIP 強度軸，載入及保存零／負強度時，其餘強度、停用項目、順序與最大 64 位字串 seed 保留；缺少／停用目標、重複值、超界及數字字串拒絕且表單不變。Pony／Animagine 各自逐組載入固定四案例，測試集版本／hash 與未變動參數核對；歷史八件 GPU 結果另外唯讀並排及還原設定。未新增生成或品質預設，見 [V04 驗收](../validation/comparison-measurements-20261023.md)。
 
 <a id="storage-and-import"></a>
 
@@ -63,7 +63,7 @@ POST 輸入包含 `title`、完整的 `settings`、`axis`、`values`、`case_ids
 | `POST /api/experiments/plans` | `{request_id, plan}`，最多 1 MiB；新增 201，同 ID 重讀 200，不同方案 409 |
 | `PUT /api/experiments/plans/{id}` | `{revision, archived}`；僅改封存狀態，原方案不可覆寫 |
 
-現有 `/preview`、`/export` 的輸入維持 256 KiB；新鮮預覽匯出仍核對 expected_plan_sha256，案例改變時 409。已保存／匯入文件使用 document-export 保留歷史內容。所有方案每次最多 8 組，不提供自動批次、重試或品質評分。保存方案的任務／作品關聯後端已接入，見 [關聯說明](experiment-plans.md#runs-and-artworks)。
+現有 `/preview`、`/export` 的輸入維持 256 KiB；新鮮預覽匯出仍核對 expected_plan_sha256，案例改變時 409。已保存／匯入文件使用 document-export 保留歷史內容。所有方案每次最多 8 組，不提供自動批次、重試或品質評分。保存方案的任務／作品關聯後端已接入，見 [關聯說明](#runs-and-artworks)。
 
 2026-10-08：408 項後端測試（407 通過、1 項既有 Windows 權限跳過），Vue 型別／建置通過。隔離真實 HTTP 驗證精確 seed、LoRA 強度與圖生圖 denoise 三份保存方案、冪等保存、修訂衝突、來源引用，平台停止／重啟後 GET-only 原樣核對通過。證據 `runtime/experiment-api-acceptance-20261008.json`、`runtime/experiment-live-data-20261008`：3 方案／1 素材／0 任務／0 作品／0 草稿。正式 5 任務／3 作品／0 草稿／0 方案不變，所有測試服務已關閉。UI 工具 sandbox 啟動失敗，本輪畫面及實際瀏覽器下載／窄視窗仍未驗收；沒有新增 GPU 品質測試。
 
@@ -71,7 +71,7 @@ POST 輸入包含 `title`、完整的 `settings`、`axis`、`values`、`case_ids
 
 ## 比較方案的任務與作品關聯
 
-R06 新增軸使用 context 2，另凍結 `expected_model_metadata`；生成預留交易核對原方案身分、當前登記及捕獲快照，不符 409 且不建立任務。離線保存／匯入仍使用原快照，既有 UUID 恢復不重新核對登記或重送。schema 1 及原資料不改寫，見 [R06 驗收](validation/extended-comparisons-20261023.md)。
+R06 新增軸使用 context 2，另凍結 `expected_model_metadata`；生成預留交易核對原方案身分、當前登記及捕獲快照，不符 409 且不建立任務。離線保存／匯入仍使用原快照，既有 UUID 恢復不重新核對登記或重送。schema 1 及原資料不改寫，見 [R06 驗收](../validation/extended-comparisons-20261023.md)。
 
 創作頁展開「固定測試集與參數比較」，先保存方案或重載已保存方案，再按「載入這組設定」。工作台顯示方案與變體關聯；另按「生成圖片」才提交。未保存／剛匯入的方案可作一般設定載入，需先保存、重新載入組別才記錄比較結果；保存本身不追溯已載入或已生成的內容。
 
@@ -104,7 +104,7 @@ R06 新增軸使用 context 2，另凍結 `expected_model_metadata`；生成預�
 2026-10-08：後端回歸測試涵蓋交易期間封存、篡改 hash、錯誤變體／完整設定、重試不重送、失敗及未知結果、圖生圖原輸入恢復、作品快照、封存與離線唯讀、不同方案 ID 隔離及舊資料不回填。Vue 前端已接入；沒有自動批次。前端關聯保護可跑 `npm --prefix frontend run check:experiments`；涵蓋精確 seed、停用 LoRA／順序、變更設定、封存阻擋、解除關聯及原請求凍結。
 
 
-2026-10-08 實機驗收：RTX 3060／ComfyUI 0.34.0、固定 Animagine 4.0 Opt＋IKEA LoRA，在隔離平台保存模型強度 0.5／1 兩組方案，只有第一組手動提交一次；28 steps、CFG 5、1024×1024、euler_ancestral／normal、seed `9007199254740993`。任務、作品、完整工作流程、原設定及關聯快照核對通過，第二組 runs 保持空。提交至成功歷史觀察 42.985 秒，包含冷載入／網路／佇列；整卡低頻取樣最高 12,095,324,160 bytes／21 筆，包含其他程序，不是任務專用峰值或最低顯存需求。原圖品質觀察參照同參數的 [強度比較](validation/animagine-style-strength-rtx3060.md)，此驗收驗證追溯而非品質改善。
+2026-10-08 實機驗收：RTX 3060／ComfyUI 0.34.0、固定 Animagine 4.0 Opt＋IKEA LoRA，在隔離平台保存模型強度 0.5／1 兩組方案，只有第一組手動提交一次；28 steps、CFG 5、1024×1024、euler_ancestral／normal、seed `9007199254740993`。任務、作品、完整工作流程、原設定及關聯快照核對通過，第二組 runs 保持空。提交至成功歷史觀察 42.985 秒，包含冷載入／網路／佇列；整卡低頻取樣最高 12,095,324,160 bytes／21 筆，包含其他程序，不是任務專用峰值或最低顯存需求。原圖品質觀察參照同參數的 [強度比較](../validation/animagine-style-strength-rtx3060.md)，此驗收驗證追溯而非品質改善。
 
 關閉 ComfyUI 後封存方案，新 request_id 明確 409；切換隔離平台位址後原 ID 恢復同一任務、不重送。停止及重啟平台後只做 GET 核對原方案、完整任務、圖片 hash 與結果組別；包括封存狀態及來源快照。證據 `runtime/experiment-run-20261008.json`、`runtime/experiment-run-recovery-20261008.json`；隔離 1 方案／1 任務／1 作品／0 草稿，正式 5 任務／3 作品／0 草稿／0 方案不變。
 
@@ -130,7 +130,7 @@ R06 新增軸使用 context 2，另凍結 `expected_model_metadata`；生成預�
 
 九項新增後端測試涵蓋離線完整快照、不寫 DB、空／封存方案、同內容不同 ID 不推測、錯誤來源與損壞流程／關聯、大小／筆數上限、非匯出作品欄位不消耗預算、舊欄位／缺檔，以及 WAL 並行更新時仍讀取同一原快照。完整後端 530 項（529 通過、1 既有 skip），三組前端邏輯與 Vue 型別／建置通過。
 
-使用 [兩模型 denoise GPU 比較資料](validation/image-comparison-rtx3060.md) 做實際 IAB 驗收：離線重載兩個方案、查看兩個已完成變體與原作品、準備／下載 Animagine 結果報告 22,338 bytes，SHA256 aeebedb45f77b345078c0266fbc47fd37b495c159c789e76bca2e3b756d79fdb。報告包含兩個原任務、各一作品、seed 字串 9007199254740993、denoise 0.3／0.6、新效能條件與來源 hash。此 hash 僅對應該次生成時間的報告；再次準備會產生新的時間與 hash。
+使用 [兩模型 denoise GPU 比較資料](../validation/image-comparison-rtx3060.md) 做實際 IAB 驗收：離線重載兩個方案、查看兩個已完成變體與原作品、準備／下載 Animagine 結果報告 22,338 bytes，SHA256 aeebedb45f77b345078c0266fbc47fd37b495c159c789e76bca2e3b756d79fdb。報告包含兩個原任務、各一作品、seed 字串 9007199254740993、denoise 0.3／0.6、新效能條件與來源 hash。此 hash 僅對應該次生成時間的報告；再次準備會產生新的時間與 hash。
 
 原比較方案 JSON 另行下載，plan hash 4ba1b1564ec281b2b06f3498e4127ea27795be44ce1baf7d89c6069c150ed647；貼上後驗證／預覽成功，沒有保存新方案或任務。結果報告貼入方案匯入會被拒絕，原預覽仍可使用；載入 variant-2 後為圖生圖、768²、精確 seed、denoise 0.6、原素材與 Animagine。作品詳細版本區顯示效能條件，實際精度／卸載／冷熱保留未知。
 

@@ -4,9 +4,9 @@
 
 2026-10-23 R03：另有 [Fooocus SDXL 專用修補 v3](fooocus-inpainting.md)，仍使用獨立內側合成遮罩。固定基底、denoise 1、無 LoRA；有限比較未優於一般修補，保留實驗選項；一般格式邊界不因此開放。
 
-一般草稿、設定交換及比較尚未支援專用格式；建立／更新一般草稿時的遮罩等欄位會明確拒絕，避免部分保存。工作台可展開版本別支援範圍，原任務／作品完整設定及 workflow 仍可載入／下載，見 [R07 格式評估](specialized-workflow-formats.md)。
+一般草稿、設定交換及比較尚未支援專用格式；建立／更新一般草稿時的遮罩等欄位會明確拒絕，避免部分保存。工作台可展開版本別支援範圍，原任務／作品完整設定及 workflow 仍可載入／下載，見 [R07 格式評估](../development/specialized-workflow-formats.md)。
 
-平台提供自有的 `checkpoint-inpaint-v1` 模板：原圖與遮罩各一張，使用已明確登記為 SD 1.x 或 SDXL 的 checkpoint，可依原順序掛載最多四個 LoRA。後端與局部編輯工作台已整合；Pony／Animagine 的 RTX 3060 固定實機驗證已完成，修補接縫及色彩偏差如實保留。見 [驗收紀錄](validation/checkpoint-inpaint-rtx3060.md)。
+平台提供自有的 `checkpoint-inpaint-v1` 模板：原圖與遮罩各一張，使用已明確登記為 SD 1.x 或 SDXL 的 checkpoint，可依原順序掛載最多四個 LoRA。後端與局部編輯工作台已整合；Pony／Animagine 的 RTX 3060 固定實機驗證已完成，修補接縫及色彩偏差如實保留。見 [驗收紀錄](../validation/checkpoint-inpaint-rtx3060.md)。
 
 ## 輸入與遮罩
 
@@ -44,7 +44,7 @@
 
 這個專用表單在頁面切換時保留，重新整理會清除未提交的內容；沒有普通草稿保存功能。已保存遮罩是持久素材，提交後的原設定是不可變任務紀錄。引擎資料更新失敗時阻擋新的生成，不取用舊資料悄悄替換模型或取樣器。
 
-前端驗證：`npm.cmd --prefix frontend run check:inpaint`（尺寸、素材切換、精確 seed、不可變還原、CSS 座標、二值閾值／透明背景／反相）、`check:experiments` 及 Vue 型別／建置。2026-10-23 已以 Playwright Chromium 補驗 1440px／390px 的筆刷、擦除、反相、PNG 選檔／保存、縮放與未保存保護，保存後重新讀取 PNG 的 RGBA 雜湊與畫布相同。見 [V01 證據與重跑方式](validation/mask-editor-20261023.md)。實體觸控仍待驗收，CDP 模擬不能代替觸控螢幕或觸控筆。
+前端驗證：`npm.cmd --prefix frontend run check:inpaint`（尺寸、素材切換、精確 seed、不可變還原、CSS 座標、二值閾值／透明背景／反相）、`check:experiments` 及 Vue 型別／建置。2026-10-23 已以 Playwright Chromium 補驗 1440px／390px 的筆刷、擦除、反相、PNG 選檔／保存、縮放與未保存保護，保存後重新讀取 PNG 的 RGBA 雜湊與畫布相同。見 [V01 證據與重跑方式](../validation/mask-editor-20261023.md)。實體觸控仍待驗收，CDP 模擬不能代替觸控螢幕或觸控筆。
 
 素材清單更新與站內切頁返回保留未保存筆畫；取消更換原圖或已保存遮罩時，選單與畫布一併保留。載入 PNG 先核對檔頭與尺寸，錯誤檔案不取代畫布。保存、清空、反相、載入或停用編輯會先結束目前筆畫；僅主指標可開始繪製，取消／失去捕獲後不延續舊筆畫。保存失敗仍可編輯或再次手動保存；已保存遮罩不代表完整表單已保存。
 
@@ -64,7 +64,7 @@
 
 ## v2 內側羽化局部編輯
 
-`checkpoint-inpaint-feather-v2` 是獨立十一節點流程（啟用的 LoRA 另計），不改寫 `checkpoint-inpaint-v1`。後端與專用工作台已完成；RTX 3060 四案例與離線重啟驗收已於第三項完成，見 [完整紀錄](validation/inpaint-feather-rtx3060.md)。
+`checkpoint-inpaint-feather-v2` 是獨立十一節點流程（啟用的 LoRA 另計），不改寫 `checkpoint-inpaint-v1`。後端與專用工作台已完成；RTX 3060 四案例與離線重啟驗收已於第三項完成，見 [完整紀錄](../validation/inpaint-feather-rtx3060.md)。
 
 <a id="inner-feather-mask-semantics"></a>
 
@@ -107,7 +107,7 @@ FLUX P5 目前固定 BFL 主模型／VAE 來源於 2026-10-22 只讀 HEAD 回傳
 
 新生成使用 v2；localStorage 沿用原 pending key，無版本標記的舊 body 仍送 v1，精確 seed／UUID／參數原樣保留；v2 本機版本標記在提交前移除，未知標記拒絕並保留原紀錄。v1 歷史載入新表單時才加入半徑 0，不改原任務。任務／作品顯示原羽化方法、版本／Pillow、半徑、hash，可讀取／下載原合成遮罩；一般草稿／比較格式保持未支援。
 
-V02 已於 2026-10-23 在隔離 Chromium 補驗 v1／v2、1440px／390px 的遺失回應與不完整 JSON。重新載入保留原 pending，空白新表單的半徑 0 不會取代原 v2 半徑 8，無標記 v1 仍走原端點且不新增羽化遮罩。成功回覆必須核對原 UUID；缺失／其他任務 ID 或錯誤回覆中的其他 job_id 不清除 pending。明確手動恢復仍 POST 原端點／完整原 body，由後端查原 UUID 帳本返回既有任務；不重新上傳、不重新向引擎送 /prompt。未知結果以原引擎 history／queue 確認，不能把空佇列當作完成。詳見 [V02 證據、限制與重跑](validation/inpaint-recovery-20261023.md)。
+V02 已於 2026-10-23 在隔離 Chromium 補驗 v1／v2、1440px／390px 的遺失回應與不完整 JSON。重新載入保留原 pending，空白新表單的半徑 0 不會取代原 v2 半徑 8，無標記 v1 仍走原端點且不新增羽化遮罩。成功回覆必須核對原 UUID；缺失／其他任務 ID 或錯誤回覆中的其他 job_id 不清除 pending。明確手動恢復仍 POST 原端點／完整原 body，由後端查原 UUID 帳本返回既有任務；不重新上傳、不重新向引擎送 /prompt。未知結果以原引擎 history／queue 確認，不能把空佇列當作完成。詳見 [V02 證據、限制與重跑](../validation/inpaint-recovery-20261023.md)。
 
 2026-10-22 瀏覽器實際在隔離資料庫完成：引擎關閉、未選 checkpoint 仍成功預覽；1024² PNG 解碼完成、半徑 16→8 清除舊圖、65 阻擋、頁面切換保留 16 並清除暫時圖、390px 無橫向溢出。截圖 runtime/feather-preview-proof-20261022.jpg、feather-preview-narrow-20261022.jpg；隔離 UI 2 素材／0 任務／0 作品，正式 settings 指紋未變。未在本項操作筆刷觸控、生成或歷史下載點擊，GPU／新歷史介面接續驗收。
 
@@ -124,4 +124,4 @@ V02 已於 2026-10-23 在隔離 Chromium 補驗 v1／v2、1440px／390px 的遺�
 .\.venv\Scripts\python.exe -m scripts.verify_inpaint_feather --model pony-v6-xl --radius 16 --source-id <原圖UUID> --mask-id <遮罩UUID> --report runtime/feather-pony-16.json
 ```
 
-可改 --model animagine-xl-4.0-opt 或 --radius 0。既有完整報告加 --verify-report 只 GET 核對，不重新預覽／匯入／生成；不能修復缺少證據的報告。非法來源、半徑／原完整 workflow、羽化政策、灰階／PNG hash、保留範圍／邊界量測均先拒絕且不改原報告。四案例及引擎離線／平台重啟已驗收，見 [RTX 3060 實測與偏差](validation/inpaint-feather-rtx3060.md)。
+可改 --model animagine-xl-4.0-opt 或 --radius 0。既有完整報告加 --verify-report 只 GET 核對，不重新預覽／匯入／生成；不能修復缺少證據的報告。非法來源、半徑／原完整 workflow、羽化政策、灰階／PNG hash、保留範圍／邊界量測均先拒絕且不改原報告。四案例及引擎離線／平台重啟已驗收，見 [RTX 3060 實測與偏差](../validation/inpaint-feather-rtx3060.md)。
