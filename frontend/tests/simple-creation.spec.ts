@@ -104,6 +104,37 @@ test('unknown model, unavailable engine and incomplete FLUX never silently load 
   ).toContainText('引擎離線')
 })
 
+test('blank description blocks submission and the Pony square keeps its original dimensions', async ({
+  page,
+  request,
+}) => {
+  await register(request, pony)
+  const before = (await (await request.get('/qa/state')).json()).prompts
+  await page.goto('/#/studio/simple')
+  await page
+    .getByRole('group', { name: '起始配方' })
+    .getByRole('button')
+    .filter({ hasText: '動漫場景' })
+    .click()
+  await page.getByRole('button', { name: '套用後修改', exact: true }).click()
+  await expect(page.getByRole('button', { name: '1:1', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.locator('.simple-dimensions')).toHaveText('768 × 768')
+  const description = page.locator('#simple-prompt')
+  const generate = page.getByRole('button', { name: '生成圖片', exact: true })
+  await expect(generate).toBeEnabled()
+  for (const value of ['', '   ']) {
+    await description.fill(value)
+    await expect(generate).toBeDisabled()
+    await expect(description).toHaveAttribute('aria-invalid', 'true')
+  }
+  expect((await (await request.get('/qa/state')).json()).prompts).toBe(before)
+  await description.fill('A quiet mountain village')
+  await expect(generate).toBeEnabled()
+})
+
 for (const width of [1440, 390])
   test(`${width}px: full preset, explicit generation and direct artwork save`, async ({
     page,

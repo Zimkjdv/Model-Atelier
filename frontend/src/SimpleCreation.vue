@@ -589,12 +589,14 @@ const fieldProblems = computed(() => {
   const c = capabilities.value
   const reliable =
     c?.available && c.engine_matches && !c.stale && c.engine_url === form.value.engine_url
-  return generationFieldProblems(
+  const problems = generationFieldProblems(
     form.value,
     selected.value.family !== 'flux' && reliable
       ? { bounds: c.bounds, samplers: c.sampler_names, schedulers: c.schedulers }
       : {},
   )
+  if (!form.value.prompt.trim()) problems.prompt = '請輸入圖片描述。'
+  return problems
 })
 const readiness = computed(() => {
   if (loading.value) return []
@@ -966,7 +968,7 @@ onBeforeUnmount(() => {
                 :key="ratio.label"
                 type="button"
                 class="secondary"
-                :aria-pressed="form.width === ratio.width && form.height === ratio.height"
+                :aria-pressed="form.width * ratio.height === form.height * ratio.width"
                 @click="setAspectRatio(ratio.width, ratio.height)"
                 >{{ ratio.label }}</button
               >
