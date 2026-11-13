@@ -22,6 +22,7 @@ import { useUnsavedChanges } from './unsavedChanges'
 import UnsavedChangesNotice from './UnsavedChangesNotice.vue'
 import AssetChoices from './AssetChoices.vue'
 import GenerationPanel from './GenerationPanel.vue'
+import PromptConverter from './PromptConverter.vue'
 import ReferenceComponents from './ReferenceComponents.vue'
 import ReferenceComponentsSnapshot from './ReferenceComponentsSnapshot.vue'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
@@ -371,13 +372,38 @@ const preflightBlockers = computed(() => {
               <label for="reference-prompt" class="studio-field-label"
                 ><UiIcon name="text" :size="15" />描述你想創作的畫面
                 <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
-              ><textarea
-                v-field-error:prompt="fieldProblems.prompt"
-                id="reference-prompt"
-                v-model="form.prompt"
-                rows="5"
-                maxlength="20000"
-              />
+              >
+              <PromptConverter
+                editor-id="reference-prompt"
+                :current-prompt="form.prompt"
+                :context-key="
+                  JSON.stringify([
+                    form.engine_url,
+                    form.checkpoint,
+                    form.image_asset_id,
+                    form.reference_mode,
+                    form.ipadapter_name,
+                    form.clip_vision_name,
+                  ])
+                "
+                :profile="
+                  profile?.preset?.id.startsWith('pony-')
+                    ? 'pony'
+                    : profile?.preset?.id.startsWith('animagine-')
+                      ? 'animagine'
+                      : 'general'
+                "
+                :disabled="locked"
+                @apply="form.prompt = $event"
+              >
+                <textarea
+                  v-field-error:prompt="fieldProblems.prompt"
+                  id="reference-prompt"
+                  v-model="form.prompt"
+                  rows="5"
+                  maxlength="20000"
+                />
+              </PromptConverter>
               <label for="reference-checkpoint" class="studio-field-label"
                 ><UiIcon name="models" :size="15" />模型 · SDXL</label
               ><select

@@ -22,6 +22,7 @@ import {
   watch,
 } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
+import PromptConverter from './PromptConverter.vue'
 import AssetChoices from './AssetChoices.vue'
 import ControlSnapshot from './ControlSnapshot.vue'
 import CannyPreview from './CannyPreview.vue'
@@ -349,14 +350,39 @@ const preflightBlockers = computed(() => {
               <label for="control-prompt" class="studio-field-label"
                 ><UiIcon name="text" :size="15" />描述你想創作的畫面
                 <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
-              ><textarea
-                v-field-error:prompt="fieldProblems.prompt"
-                id="control-prompt"
-                v-model="form.prompt"
-                maxlength="20000"
-                rows="5"
-                placeholder="描述希望生成的物件、動作或場景"
-              />
+              >
+              <PromptConverter
+                editor-id="control-prompt"
+                :current-prompt="form.prompt"
+                :context-key="
+                  JSON.stringify([
+                    form.engine_url,
+                    form.checkpoint,
+                    form.image_asset_id,
+                    form.control_kind,
+                    form.control_net_name,
+                    form.loras,
+                  ])
+                "
+                :profile="
+                  profile?.preset?.id.startsWith('pony-')
+                    ? 'pony'
+                    : profile?.preset?.id.startsWith('animagine-')
+                      ? 'animagine'
+                      : 'general'
+                "
+                :disabled="locked"
+                @apply="form.prompt = $event"
+              >
+                <textarea
+                  v-field-error:prompt="fieldProblems.prompt"
+                  id="control-prompt"
+                  v-model="form.prompt"
+                  maxlength="20000"
+                  rows="5"
+                  placeholder="描述希望生成的物件、動作或場景"
+                />
+              </PromptConverter>
               <label for="control-checkpoint" class="studio-field-label"
                 ><UiIcon name="models" :size="15" />模型</label
               ><select

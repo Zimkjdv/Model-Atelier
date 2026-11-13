@@ -21,6 +21,7 @@ import {
   watch,
 } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
+import PromptConverter from './PromptConverter.vue'
 import AssetChoices from './AssetChoices.vue'
 import MaskEditor from './MaskEditor.vue'
 import InpaintBlendPreview from './InpaintBlendPreview.vue'
@@ -349,14 +350,39 @@ const preflightBlockers = computed(() => {
               <label for="inpaint-prompt" class="studio-field-label"
                 ><UiIcon name="text" :size="15" />描述你想創作的畫面
                 <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
-              ><textarea
-                v-field-error:prompt="fieldProblems.prompt"
-                id="inpaint-prompt"
-                v-model="form.prompt"
-                maxlength="20000"
-                rows="5"
-                placeholder="描述編輯範圍內的新物件、動作或場景"
-              />
+              >
+              <PromptConverter
+                editor-id="inpaint-prompt"
+                :current-prompt="form.prompt"
+                :context-key="
+                  JSON.stringify([
+                    form.engine_url,
+                    form.checkpoint,
+                    form.image_asset_id,
+                    form.inpaint_model,
+                    form.mask_asset_id,
+                    form.loras,
+                  ])
+                "
+                :profile="
+                  profile?.preset?.id.startsWith('pony-')
+                    ? 'pony'
+                    : profile?.preset?.id.startsWith('animagine-')
+                      ? 'animagine'
+                      : 'general'
+                "
+                :disabled="locked"
+                @apply="form.prompt = $event"
+              >
+                <textarea
+                  v-field-error:prompt="fieldProblems.prompt"
+                  id="inpaint-prompt"
+                  v-model="form.prompt"
+                  maxlength="20000"
+                  rows="5"
+                  placeholder="描述編輯範圍內的新物件、動作或場景"
+                />
+              </PromptConverter>
               <label for="inpaint-checkpoint" class="studio-field-label"
                 ><UiIcon name="models" :size="15" />模型</label
               ><select

@@ -290,3 +290,37 @@ test('short mobile dialog scrolls settings while keeping apply and close in view
   await expect(widget).not.toBeVisible()
   await expect(page.locator('#draft-prompt')).toHaveValue(converted.prompt)
 })
+
+for (const [route, field] of [
+  ['inpaint', 'inpaint'],
+  ['control', 'control'],
+  ['reference', 'reference'],
+]) {
+  test(`${route}: assistant applies only the positive prompt`, async ({ page, request }) => {
+    const before = (await (await request.get('/qa/state')).json()).prompts
+    await page.route('**/api/prompt-converter/convert', (route) =>
+      route.fulfill({ json: converted }),
+    )
+    await page.goto(`/#/studio/${route}`)
+    const editor = page.locator(`#${field}-prompt`)
+    const settingsBefore = await page
+      .locator('main select')
+      .evaluateAll((fields) => fields.map((field) => (field as HTMLSelectElement).value))
+    await expect(editor).toBeEditable()
+    await editor.fill('original prompt')
+    await page.getByRole('button', { name: '中文轉英文', exact: true }).click()
+    const widget = page.getByRole('dialog', { name: '提示詞助手' })
+    await widget.getByLabel('中文畫面描述').fill('黑貓坐在窗邊')
+    await widget.getByRole('button', { name: '轉成英文提示詞', exact: true }).click()
+    await expect(widget.getByLabel('英文提示詞預覽（可修改）')).toHaveValue(converted.prompt)
+    await expect(editor).toHaveValue('original prompt')
+    await widget.getByRole('button', { name: '套用英文提示詞', exact: true }).click()
+    await expect(editor).toHaveValue(converted.prompt)
+    expect(
+      await page
+        .locator('main select')
+        .evaluateAll((fields) => fields.map((field) => (field as HTMLSelectElement).value)),
+    ).toEqual(settingsBefore)
+    expect((await (await request.get('/qa/state')).json()).prompts).toBe(before)
+  })
+}
