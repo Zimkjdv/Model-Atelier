@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { useStudioPreferences } from './studioPreferences'
 import UiIcon from './UiIcon.vue'
 import TemplateSnapshot from './TemplateSnapshot.vue'
 import type { TemplateContext } from './templateContext'
 import OverflowText from './OverflowText.vue'
 import { vMasonry } from './masonry'
-const layout = ref('fixed')
+const display = useStudioPreferences()
+const layout = computed(() => display.value.artworks)
 const importOpen = ref(false)
 const sort = ref('latest')
 const pageSize = ref(12)
@@ -712,9 +714,15 @@ onBeforeUnmount(() => {
       ></label>
       <div class="view-switch" role="group" aria-label="作品排版"
         ><span>排版</span
-        ><button class="secondary" :aria-pressed="layout === 'masonry'" @click="layout = 'masonry'"
+        ><button
+          class="secondary"
+          :aria-pressed="layout === 'masonry'"
+          @click="display.set('artworks', 'masonry')"
           >瀑布流</button
-        ><button class="secondary" :aria-pressed="layout === 'fixed'" @click="layout = 'fixed'"
+        ><button
+          class="secondary"
+          :aria-pressed="layout === 'fixed'"
+          @click="display.set('artworks', 'fixed')"
           >固定</button
         ></div
       >

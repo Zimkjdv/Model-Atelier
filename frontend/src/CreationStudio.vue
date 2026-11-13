@@ -798,8 +798,7 @@ watch(
               >捨棄變更並載入</button
             ></div
           >
-          <p v-if="display.error.value" class="notice" role="status">{{ display.error.value }}</p
-          ><form
+          <form
             id="studio-editor"
             v-show="!editorCollapsed"
             class="panel editor"
@@ -1174,11 +1173,9 @@ watch(
                     @click="emit('assets')"
                     >管理／上傳參考圖 →</button
                   >
-                  <details
-                    v-else
-                    :open="display.value.references"
-                    @toggle="display.toggle('references', $event)"
-                    ><summary>參考素材（{{ form.reference_ids.length }} / 8）</summary
+                  <details v-else :open="display.value.references"
+                    ><summary @click.prevent="display.toggle('references', $event)"
+                      >參考素材（{{ form.reference_ids.length }} / 8）</summary
                     ><p class="footnote"
                       >文生圖的素材關聯僅為草稿記錄；生成前需取消選取。要使用圖片請選擇圖生圖流程。</p
                     ><button class="secondary" type="button" @click="emit('assets')"
@@ -1207,10 +1204,9 @@ watch(
                       >尚無素材，可先到參考素材頁上傳圖片。</p
                     ></details
                   >
-                  <details
-                    :open="display.value.advanced"
-                    @toggle="display.toggle('advanced', $event)"
-                    ><summary>進階設定</summary><label for="seed">Seed</label
+                  <details :open="display.value.advanced"
+                    ><summary @click.prevent="display.toggle('advanced', $event)">進階設定</summary
+                    ><label for="seed">Seed</label
                     ><div class="seed-field"
                       ><input
                         v-field-error:seed="fieldProblems.seed"

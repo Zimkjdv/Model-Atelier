@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useStudioPreferences } from './studioPreferences'
 import { outputPresets } from './outputPresets'
 import PageTabs from './PageTabs.vue'
 import ReferenceLibrary from './ReferenceLibrary.vue'
@@ -41,11 +42,12 @@ const emit = defineEmits<{
 }>()
 const props = defineProps<{ initialCategory?: string }>()
 const category = ref(
-    ['flux', 'lora', 'reference'].includes(props.initialCategory || '')
-      ? props.initialCategory!
-      : 'checkpoint',
-  ),
-  view = ref('list')
+  ['flux', 'lora', 'reference'].includes(props.initialCategory || '')
+    ? props.initialCategory!
+    : 'checkpoint',
+)
+const display = useStudioPreferences()
+const view = computed(() => display.value.models)
 const loraLibrary = ref<InstanceType<typeof LoraLibrary> | null>(null)
 const controlLibrary = ref<InstanceType<typeof ControlLibrary> | null>(null)
 const referenceLibrary = ref<InstanceType<typeof ReferenceLibrary> | null>(null)
@@ -239,9 +241,15 @@ onMounted(() => {
       ><PageTabs id="models" v-model="category" label="模型分類" :items="categories" />
       <div class="view-switch" role="group" aria-label="模型排版"
         ><span>顯示</span
-        ><button class="secondary" :aria-pressed="view === 'list'" @click="view = 'list'"
+        ><button
+          class="secondary"
+          :aria-pressed="view === 'list'"
+          @click="display.set('models', 'list')"
           >清單</button
-        ><button class="secondary" :aria-pressed="view === 'cards'" @click="view = 'cards'"
+        ><button
+          class="secondary"
+          :aria-pressed="view === 'cards'"
+          @click="display.set('models', 'cards')"
           >卡片</button
         ></div
       >

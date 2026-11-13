@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useStudioPreferences } from './studioPreferences'
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
@@ -235,6 +236,18 @@ const navIcons = [
 ]
 const navLabels = ['創作', '作品庫', '比較', '素材', '模型', '訓練', '系統', '設定']
 const settingsTab = ref('connection')
+const display = useStudioPreferences()
+const displayReset = ref(false)
+function resetDisplay() {
+  displayReset.value = display.reset()
+}
+watch(
+  () => ({ ...display.value }),
+  () => {
+    displayReset.value = false
+  },
+  { flush: 'sync' },
+)
 const transferRequest = ref<{ family: 'checkpoint' | 'flux'; token: number } | null>(null)
 function openSettingsTransfer(family: 'checkpoint' | 'flux') {
   if (navigate('創作工作台', family)) transferRequest.value = { family, token: Date.now() }
@@ -361,6 +374,7 @@ async function testConnection() {
             : undefined
         "
       >
+        <p v-if="display.error.value" class="notice" role="status">{{ display.error.value }}</p>
         <p v-if="routeNotice" class="notice" role="status">{{ routeNotice }}</p>
         <template v-if="page === '創作工作台' && studioMode !== 'simple'"
           ><div class="studio-navigation"
@@ -590,9 +604,9 @@ async function testConnection() {
                       ></dd
                     ></div
                   ></dl
-                ><p class="appearance-note"
-                  >目前僅提供深色與繁體中文，其他主題及語言尚未開放。</p
-                ></section
+                ><p class="appearance-note">目前僅提供深色與繁體中文，其他主題及語言尚未開放。</p>
+                <button type="button" class="secondary" @click="resetDisplay">重設顯示偏好</button>
+                <p v-if="displayReset" role="status">已恢復預設排版與區塊展開狀態。</p> </section
               ><section
                 v-show="settingsTab === 'privacy'"
                 id="settings-panel-privacy"

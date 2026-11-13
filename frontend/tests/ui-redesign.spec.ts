@@ -228,9 +228,9 @@ test('training export step preserves live annotations and test images remain pro
   })
   await page.getByRole('button', { name: '匯入待審查清單', exact: true }).click()
   await page.getByLabel('內容標註', { exact: true }).fill('preserved across export sub-step')
-  await expect(page.getByRole('heading', { name: '資料出口檢查', exact: true })).toBeHidden()
+  await expect(page.getByRole('heading', { name: '匯出資料包', exact: true })).toBeHidden()
   await page.getByRole('button', { name: '2 匯出資料包 建立固定版本', exact: true }).click()
-  await expect(page.getByRole('heading', { name: '資料出口檢查', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '匯出資料包', exact: true })).toBeVisible()
   await expect(
     page.getByRole('button', { name: '匯出已審查訓練資料包', exact: true }),
   ).toBeDisabled()
@@ -351,4 +351,69 @@ test('reference component metadata refreshes after an explicit save in the model
   await selector.selectOption('')
   await selector.selectOption(key)
   await expect(page.locator('#reference-metadata-version')).toHaveValue('redesign metadata refresh')
+})
+
+test('display preferences survive reload and reset without touching drafts or pending requests', async ({
+  page,
+}) => {
+  const legacyKey = 'atelier-studio-display-v1'
+  const pendingKey = 'atelier-pending-submission'
+  const pending =
+    '{"request_id":"00000000-0000-4000-8000-000000000001","seed":"18446744073709551615"}'
+  await page.goto('/#/system')
+  await page.evaluate(
+    ({ legacyKey, pendingKey, pending }) => {
+      localStorage.setItem(legacyKey, JSON.stringify({ advanced: true, references: false }))
+      localStorage.setItem(pendingKey, pending)
+    },
+    { legacyKey, pendingKey, pending },
+  )
+  await page.goto('/#/studio/checkpoint')
+  await page.reload()
+  await expect(page.locator('#seed').locator('xpath=ancestor::details[1]')).toHaveAttribute(
+    'open',
+    '',
+  )
+  const nav = page.getByRole('navigation', { name: '主要導覽' })
+  await nav.getByRole('button', { name: '模型庫' }).click()
+  const models = page.getByRole('group', { name: '模型排版' })
+  await models.getByRole('button', { name: '卡片' }).click()
+  await nav.getByRole('button', { name: '作品庫' }).click()
+  const artworks = page.getByRole('group', { name: '作品排版' })
+  await artworks.getByRole('button', { name: '瀑布流' }).click()
+  await page.reload()
+  await expect(artworks.getByRole('button', { name: '瀑布流' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await nav.getByRole('button', { name: '模型庫' }).click()
+  await expect(models.getByRole('button', { name: '卡片' })).toHaveAttribute('aria-pressed', 'true')
+  await nav.getByRole('button', { name: '設定' }).click()
+  await page.getByRole('tab', { name: '外觀與語言' }).click()
+  await page.getByRole('button', { name: '重設顯示偏好' }).click()
+  await expect(page.getByText('已恢復預設排版與區塊展開狀態。')).toBeVisible()
+  await nav.getByRole('button', { name: '模型庫' }).click()
+  await expect(models.getByRole('button', { name: '清單' })).toHaveAttribute('aria-pressed', 'true')
+  await nav.getByRole('button', { name: '作品庫' }).click()
+  await expect(artworks.getByRole('button', { name: '固定' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  expect(await page.evaluate((key) => localStorage.getItem(key), pendingKey)).toBe(pending)
+})
+
+test('unknown display preference version falls back without overwriting storage', async ({
+  page,
+}) => {
+  const key = 'atelier-display-preferences-v2'
+  const invalid = '{"version":999,"models":"cards"}'
+  await page.goto('/#/system')
+  await page.evaluate(({ key, invalid }) => localStorage.setItem(key, invalid), { key, invalid })
+  await page.goto('/#/models')
+  await page.reload()
+  await expect(
+    page.getByRole('group', { name: '模型排版' }).getByRole('button', { name: '清單' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByText('無法讀取顯示偏好，已使用預設排版。')).toBeVisible()
+  expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(invalid)
 })

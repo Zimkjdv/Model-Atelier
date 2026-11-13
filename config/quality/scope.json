@@ -179,6 +179,7 @@
     "config/quality/scope.json",
     "config/quality/prettier.json",
     "frontend/src/App.vue",
+    "frontend/src/studioPreferences.ts",
     "frontend/src/navigation.ts",
     "frontend/src/SimpleCreation.vue",
     "frontend/src/simpleCreation.ts",
