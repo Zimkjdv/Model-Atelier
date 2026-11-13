@@ -10,6 +10,14 @@
 
 Edge Chromium 的作品庫、作品詳情與批次選取共 16 項通過。原 390px 案例通過整頁寬度、搜尋與篩選、收藏、筆記、封存與還原、原圖與設定檔逐位元核對。報告與截圖位於 `runtime/quality/gallery-o01-20261114-report` 及 `gallery-o01-20261114-results`。原問題證據在 `runtime/quality/audit-20261114-results`。 [原回歸案例](../../frontend/tests/artwork-library.spec.ts)
 
+<a id="o01"></a>
+
+## 2026-11-14 · O01 羽化預覽錯誤回覆大小限制
+
+羽化預覽以串流讀取 HTTP 錯誤回覆，超過 64 KiB 時取消讀取並顯示上限。有效 JSON 的 `detail` 字串顯示原訊息，空白或格式無效時顯示通用錯誤。讀取取消會保留原本的中止行為。成功的 PNG 維持 32 MiB 上限及尺寸、半徑與 SHA256 核對。 [羽化預覽契約](../features/inpainting.md#inner-feather-studio-and-history) · [原稽核 B4](codebase-audit-20261027.md#b4限制羽化預覽的錯誤回應大小)
+
+前端契約測試涵蓋跨分塊 UTF-8、恰好 64 KiB、超限後停止讀取、空白與無效 JSON、取消及正常 PNG。型別、建置、格式與 lint 通過。Fooocus 瀏覽器案例補上展開進階設定、自訂尺寸、遮罩預覽與任務歷史的操作後，1440px 與 390px 兩項均通過 PNG 預覽和原任務恢復。隔離報告位於 `runtime/quality/o01-fooocus-20261114-report`。驗收使用模擬引擎。 [Fooocus 回歸案例](../../frontend/tests/fooocus-recovery.spec.ts)
+
 ## 2026-11-14 · 整體分析與完成項目歸檔
 
 完成程式、架構、文件、功能與 UI 的整體抽查；[ROADMAP](../planning/roadmap.md#audit-20261114)新增 O01–O08 的依據、優先級與完成條件，保留 15 個既有主線／17 個子項。將已完成 E02–E04、UX01／UX02、F01–F04 與 N05–N07 的長篇敘述移出待辦，保留舊錨點；原交付日期與證據不變。本項代表分析與文件整理完成，不代表候選優化已交付。

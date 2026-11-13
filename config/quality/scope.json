@@ -171,6 +171,7 @@
     "frontend/tests/mask-editor.spec.ts",
     "frontend/src/MaskEditor.vue",
     "frontend/src/InpaintStudio.vue",
+    "frontend/src/inpaintPreview.ts",
     "frontend/src/GenerationPanel.vue",
     "frontend/src/generationRequest.ts",
     "frontend/src/jobEvents.ts",

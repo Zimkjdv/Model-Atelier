@@ -9,7 +9,7 @@
 
 這裡維護目前尚待實作、驗收及外部證據的工作。已完成條目的證據見 [CHANGELOG](../history/changelog.md#roadmap-completed-20261025)，原清單的去向見 [歷史索引](../history/changelog.md#unchecked-index)。規格、操作與各次驗收條件由原主題文件保存。
 
-截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **8 個優化候選（O01–O08）**。作品庫窄視窗驗收已移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout)
+截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **7 個優化候選（O02–O08）**。已完成的作品庫窄視窗與 O01 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01)
 
 ## 目前進度與接續條件
 
@@ -166,13 +166,11 @@ N05 生成任務抽屜、N06 同瀏覽器顯示偏好與 N07 分類容量已移�
 
 ### 建議順序與完成條件
 
-先完成 O01，再做 O02 的載入量測及 O03／O04。O05–O08 依維護與使用頻率選擇。官方 API 依既定順序最後實作，真人觀察依使用者安排。
+接續 O02 的載入量測，再分批安排 O03／O04。O05–O08 依維護與使用頻率選擇。官方 API 依既定順序最後實作，真人觀察依使用者安排。
 
 <a id="o01"></a>
 
-- [ ] **O01 · P1／程式可靠性：羽化預覽錯誤回覆有界讀取**（整併原 B4）
-  - 依據：羽化預覽在 HTTP 錯誤分支直接呼叫 `response.json()`。成功 PNG 已限制 32 MiB，錯誤 JSON 需要獨立上限。 [inpaintPreview.ts](../../frontend/src/inpaintPreview.ts)
-  - 完成條件：限制串流大小並取消超限讀取。驗證分塊、超大及無效 JSON、空回覆、取消和正常 `detail`。保留成功 PNG 的尺寸、SHA256 與過期預覽保護。
+O01（原 B4）已通過驗收。 [CHANGELOG](../history/changelog.md#o01)
 
 <a id="o02"></a>
 
@@ -246,5 +244,4 @@ N05 生成任務抽屜、N06 同瀏覽器顯示偏好與 N07 分類容量已移�
 | 訓練額外配置 | 依實際訓練需求補多圖、長時間、其他 rank／主機等容量與資源驗收。既有 E04 證據是 RTX 4080 的 512／1024 短程幾何技術訓練。 | [T03 實測限制](../validation/training-runtime-20261025.md)、[E04 量測](../validation/hardware-resources-20261026.md) |
 | Docker／跨系統搬移 | 有跨 OS 搬移需求時，驗證 Windows 路徑、原圖與資料包重新綁定及還原。容器 cgroup RAM 配額換算、trainer 與跨 OS GPU 租約另行評估。 | [Docker 範圍](../operations/docker.md)、[D02 驗收](../validation/docker-deployment-20261025.md) |
 | B3 · FLUX URL 驗證依賴 | 直接引用純 schema，保留主程式相容匯出，驗證 URL 契約及匯入副作用。本輪整併至 [O07](#o07)，未實作。 | [原稽核 B3](../history/codebase-audit-20261027.md#b3讓-flux-url-驗證直接依賴純-schema) |
-| B4 · 羽化預覽錯誤大小限制 | 納入 O01。 | [O01](#o01) |
 | B5／B6 · 預覽與測試工具整理 | B5 評估 Canny／羽化共用有界串流讀取，B6 評估 Node 契約測試共用純 TS 載入。依各原契約驗證。B5 仍待評估，B6 已整併至 [O07](#o07)；均未實作。 | [原稽核 B5](../history/codebase-audit-20261027.md#b5抽取預覽串流讀取的共用機制)、[原稽核 B6](../history/codebase-audit-20261027.md#b6共用-node-契約測試的純-ts-載入助手) |

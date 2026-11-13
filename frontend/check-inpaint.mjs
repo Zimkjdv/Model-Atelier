@@ -64,6 +64,59 @@ for(const change of [{'X-Atelier-SHA256':'a'.repeat(64)},{'X-Atelier-Width':'65'
 const wrong=new Uint8Array(raw);wrong[19]=65
 await assert.rejects(()=>checkedBlendPreview(new Response(wrong,{headers}),input),/尺寸/)
 await assert.rejects(()=>checkedBlendPreview(Response.json({detail:'missing source'},{status:422}),input),/missing source/)
+const errorLimit = 64 * 1024
+const encoder = new TextEncoder()
+const detail = '找不到原圖'
+const json = JSON.stringify({ detail })
+const encoded = encoder.encode(json)
+const split = encoded.indexOf(encoder.encode('找')[0]) + 1
+const chunkedError = new ReadableStream({
+  start(controller) {
+    controller.enqueue(encoded.slice(0, split))
+    controller.enqueue(encoded.slice(split))
+    controller.close()
+  },
+})
+await assert.rejects(checkedBlendPreview(new Response(chunkedError, { status: 422 }), input), {
+  message: detail,
+})
+const paddedError = json + ' '.repeat(errorLimit - encoded.byteLength)
+await assert.rejects(checkedBlendPreview(new Response(paddedError, { status: 422 }), input), {
+  message: detail,
+})
+let cancelled = false
+let nextChunk = 0
+const errorChunks = [encoder.encode(paddedError), encoder.encode(' '), encoder.encode(' ')]
+const oversizedError = new ReadableStream({
+  pull(controller) {
+    if (nextChunk < errorChunks.length) controller.enqueue(errorChunks[nextChunk++])
+    else controller.close()
+  },
+  cancel() {
+    cancelled = true
+  },
+}, { highWaterMark: 0 })
+await assert.rejects(checkedBlendPreview(new Response(oversizedError, { status: 502 }), input), {
+  message: '預覽錯誤回應超過 64 KiB。',
+})
+assert.equal(cancelled, true)
+assert.equal(nextChunk, 2)
+assert.equal(oversizedError.locked, false)
+for (const body of [null, '', '<html>Bad gateway</html>', 'null', '{"detail":42}', '{"detail":', Uint8Array.of(0xff)]) {
+  await assert.rejects(checkedBlendPreview(new Response(body, { status: 502 }), input), {
+    message: '合成遮罩預覽失敗。',
+  })
+}
+const abortError = new DOMException('Preview cancelled', 'AbortError')
+const abortedError = new ReadableStream({
+  pull(controller) {
+    controller.error(abortError)
+  },
+})
+await assert.rejects(checkedBlendPreview(new Response(abortedError, { status: 502 }), input), {
+  name: 'AbortError',
+})
+assert.equal(abortedError.locked, false)
 const streamBody=new ReadableStream({pull(controller){controller.enqueue(new Uint8Array(1024*1024))}})
 await assert.rejects(()=>checkedBlendPreview(new Response(streamBody,{headers}),input),/32 MiB/)
 const identity=blendPreviewIdentity(input)
