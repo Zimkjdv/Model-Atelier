@@ -14,6 +14,68 @@ async function seed(page: Page, request: APIRequestContext) {
   return listing.items.map((item: any) => result.items.find((record: any) => record.id === item.id))
 }
 
+test('populated gallery keeps pagination and filters reachable across desktop window sizes', async ({
+  page,
+  request,
+}, info) => {
+  for (let i = 0; i < 3; i++) expect((await request.post('/qa/artwork-set')).ok()).toBe(true)
+  await page.goto('/#/gallery')
+  const footer = page.locator('.library-footer')
+  const pagination = footer.getByRole('group', { name: '作品分頁' })
+  await expect(pagination.getByRole('button', { name: '下一頁' })).toBeEnabled()
+  for (const width of [390, 768, 1280, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 900 })
+    expect(
+      await page.evaluate(() => ({
+        width: innerWidth,
+        scroll: document.documentElement.scrollWidth,
+      })),
+    ).toEqual({ width, scroll: width })
+    for (const control of [
+      page.getByLabel('搜尋作品', { exact: true }),
+      page.getByLabel('模型篩選', { exact: true }),
+      footer.getByRole('combobox', { name: '每頁作品筆數' }),
+      pagination.getByRole('button', { name: '下一頁' }),
+      footer.getByRole('button', { name: '重新整理' }),
+      footer.getByText('清單與篩選說明', { exact: true }),
+    ]) {
+      const box = await control.boundingBox()
+      expect(box?.x).toBeGreaterThanOrEqual(0)
+      expect(box!.x + box!.width).toBeLessThanOrEqual(width)
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 })
+  const size = footer.getByRole('combobox', { name: '每頁作品筆數' })
+  await size.selectOption('4')
+  await expect(page.locator('.artwork-card')).toHaveCount(4)
+  const next = pagination.getByRole('button', { name: '下一頁' })
+  await next.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('.gallery-list-meta')).toContainText('第 2 /')
+  const previous = pagination.getByRole('button', { name: '上一頁' })
+  await previous.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('.gallery-list-meta')).toContainText('第 1 /')
+  const help = footer.getByText('清單與篩選說明', { exact: true })
+  await help.focus()
+  await page.keyboard.press('Enter')
+  await expect(footer.getByLabel('作品狀態')).toBeVisible()
+  await help.screenshot({ path: info.outputPath('pagination-help.png') })
+  await footer.getByRole('button', { name: '重新整理' }).click()
+  const firstArtwork = page.locator('.artwork-cover').first()
+  await firstArtwork.click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByRole('heading', { level: 2 })).toBeVisible()
+  await dialog.getByRole('tab', { name: '生成與來源' }).click()
+  await expect(dialog.getByRole('link', { name: '下載完整工作流程' })).toBeVisible()
+  await dialog.getByRole('button', { name: '關閉', exact: true }).click()
+  await expect(firstArtwork).toBeFocused()
+  const search = page.getByLabel('搜尋作品', { exact: true })
+  await search.fill('o04-no-matching-artwork')
+  await expect(page.getByRole('heading', { name: '沒有符合的作品' })).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390)
+})
+
 for (const viewport of [
   { width: 1280, height: 800 },
   { width: 1440, height: 900 },

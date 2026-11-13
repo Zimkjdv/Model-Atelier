@@ -3,6 +3,37 @@ import AxeBuilder from '@axe-core/playwright'
 
 test.use({ viewport: { width: 1440, height: 900 } })
 
+test('narrow desktop windows keep architecture controls in the workbench flow', async ({
+  page,
+  request,
+}, info) => {
+  const before = (await (await request.get('/qa/state')).json()).prompts
+  for (const width of [390, 768]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/#/studio/checkpoint')
+    const prompt = page.locator('#draft-prompt')
+    await expect(prompt).toBeVisible()
+    const architecture = page.locator('.architecture-switch > summary')
+    await architecture.focus()
+    await page.keyboard.press('Enter')
+    const flux = page.getByRole('button', { name: 'FLUX.1 [schnell]', exact: true })
+    const chooser = await flux.boundingBox()
+    const editor = await page.locator('.studio-settings').boundingBox()
+    expect(chooser!.y + chooser!.height).toBeLessThanOrEqual(editor!.y)
+    await flux.focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#flux-prompt')).toBeVisible()
+    const extensions = page.getByRole('button', { name: 'FLUX LoRA／圖生圖', exact: true })
+    const toolbar = await extensions.boundingBox()
+    const settings = await page.locator('.studio-settings:visible').boundingBox()
+    expect(toolbar!.y + toolbar!.height).toBeLessThanOrEqual(settings!.y)
+    expect(toolbar!.x + toolbar!.width).toBeLessThanOrEqual(width)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
+    await page.screenshot({ path: info.outputPath('flux-' + width + '.png') })
+  }
+  expect((await (await request.get('/qa/state')).json()).prompts).toBe(before)
+})
+
 test('compatibility entries reveal the actual limits and focus their summary in every studio', async ({
   page,
   request,

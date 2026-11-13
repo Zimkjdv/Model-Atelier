@@ -2,6 +2,16 @@
 
 本檔保存已完成變更與當時的驗收條件；歷史測試數、未完成數及環境描述均屬該日期。現行操作見 [README](../../README.md) 與 [文件索引](../README.md)，尚未完成工作見 [ROADMAP](../planning/roadmap.md)。
 
+<a id="o04"></a>
+
+## 2026-11-14 · O04 收斂作品庫與工作台的版面規則
+
+作品庫頁尾依寬度換行，分頁按鈕及清單說明保持可操作。超過一頁時，390px 視窗的頁面寬度由 430px 恢復為 390px。詳情標題列可增高，讓收藏、封存與關閉操作在窄視窗完整顯示。清單摘要、對話框外框與工作台欄位的覆蓋規則已合併。窄視窗的架構選單與 FLUX 模式列改為隨內容排列。 [樣式維護](../development/frontend-api.md#layout-styles)
+
+以 390／768／1280／1440／1920px 比對實際尺寸及 computed style。五種寬度的作品庫、詳情、Checkpoint、FLUX 與簡易創作均通過整頁寬度檢查，1280px 以上的量測位置及尺寸一致。分頁測試先重現 430px，再驗證每頁筆數、鍵盤翻頁、重新整理、清單說明、詳情關閉焦點及空搜尋結果。原始量測與失敗證據位於 `runtime/quality/o04-layout` 和 `runtime/quality/o04-before-report`。
+
+型別、建置、格式、lint、前端契約與 33 項相關 Chromium 案例通過。作品庫案例含長名稱、遺失原圖、保存失敗及累積資料時的資源取樣。工作台案例含鍵盤切換架構、條件預覽錯誤、遮罩對齊、簡易創作及 FLUX／Fooocus 原任務恢復。FLUX 擴充與缺模型案例分開使用隔離資料，因前者會登記後者要驗證缺少的模型。報告位於 `runtime/quality/o04-final-gallery-report`、`o04-final-studio-report` 及 `o04-final-flux-report`。
+
 <a id="o03"></a>
 
 ## 2026-11-14 · O03 拆分作品詳情的生成與來源面板

@@ -1082,15 +1082,13 @@ onBeforeUnmount(() => {
   background: linear-gradient(120deg, #253b2d, #191d20);
 }
 .import-controls,
-.artwork-toolbar,
 .artwork-actions {
   display: flex;
   align-items: end;
   gap: 12px;
   flex-wrap: wrap;
 }
-.import-controls label,
-.artwork-toolbar label {
+.import-controls label {
   display: grid;
   gap: 9px;
   font-size: 12px;
@@ -1105,13 +1103,6 @@ onBeforeUnmount(() => {
   background: var(--surface-input);
   color: var(--text-primary);
   font: inherit;
-}
-.artwork-toolbar {
-  margin: 24px 0;
-}
-.artwork-toolbar .muted {
-  align-self: center;
-  font-size: 12px;
 }
 .artwork-grid {
   display: grid;
@@ -1158,53 +1149,8 @@ onBeforeUnmount(() => {
 .missing {
   color: #ebc4a1;
 }
-.artwork-dialog {
-  background: #191f20;
-  color: var(--text-primary);
-  border: 1px solid var(--border-control);
-  border-radius: 14px;
-  padding: 24px;
-  width: min(1160px, 94vw);
-  max-height: 90vh;
-}
-.artwork-dialog::backdrop {
-  background: #000b;
-}
-.preview-heading {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-.preview-heading h2 {
-  font-size: 18px;
-  overflow-wrap: anywhere;
-}
 .preview-heading button {
   flex-shrink: 0;
-}
-.preview-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: 24px;
-}
-.preview-image {
-  background: #101617;
-  display: grid;
-  place-items: center;
-  align-self: start;
-  min-height: 200px;
-}
-.preview-image img {
-  max-width: 100%;
-  max-height: 70vh;
-  object-fit: contain;
-}
-.artwork-info {
-  font-size: 12px;
-  min-width: 0;
-  overflow-wrap: anywhere;
 }
 .artwork-info h3 {
   font-size: 13px;
@@ -1233,28 +1179,12 @@ onBeforeUnmount(() => {
   }
 }
 @media (max-width: 700px) {
-  .artwork-grid,
-  .preview-grid {
+  .artwork-grid {
     grid-template-columns: 1fr;
   }
-  .import-controls label,
-  .artwork-toolbar label {
+  .import-controls label {
     flex-basis: 100%;
   }
-  .artwork-dialog {
-    padding: 16px;
-  }
-  .preview-heading h2 {
-    font-size: 14px;
-  }
-}
-.artwork-toolbar .favorite-filter {
-  white-space: nowrap;
-  min-width: 90px;
-}
-.favorite-filter input {
-  width: auto;
-  flex-shrink: 0;
 }
 .organization-panel select {
   display: block;
@@ -1262,18 +1192,6 @@ onBeforeUnmount(() => {
   margin-top: 8px;
   padding: 10px;
   font: inherit;
-}
-.artwork-toolbar select {
-  width: 100%;
-  min-width: 0;
-  padding: 11px;
-  font-size: 12px;
-}
-.artwork-toolbar .favorite-filter {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 0 0 auto;
 }
 .card-title {
   display: flex;
