@@ -22,6 +22,7 @@ from backend import (
     jobs,
     runtime_metadata,
 )
+from backend.schemas import Settings
 
 WORKFLOW_ID = 'flux1-schnell-text2image-v1'
 ROLES = [
@@ -53,9 +54,6 @@ class Input(BaseModel):
     @field_validator('engine_url')
     @classmethod
     def valid_engine(cls, value):
-        # Local import avoids a circular import while main installs routes.
-        from backend.main import Settings
-
         return Settings.validate_url(value)
 
     @field_validator('title', 'diffusion_model', 'clip_l', 't5xxl', 'vae')

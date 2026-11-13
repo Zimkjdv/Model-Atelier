@@ -58,6 +58,8 @@ with TestClient(app) as client:  # 執行啟動與關閉生命週期
 
 AppContext 位於 `app.state.context`，各 app 的路徑、引擎網址讀取、環境快取、路由鎖與進度 Hub 均獨立。功能模組依原有順序逐項註冊，不再讀取整個 main 模組；純請求型別在 schemas.py，舊的 main.DraftInput 等純型別匯出保留。一般產品程式透過工廠與 HTTP 使用，不需修改 context 內部欄位。
 
+FLUX 文生圖與附加流程共用 `backend.schemas.Settings` 的引擎 URL 驗證。直接建立這些輸入物件時無須載入 `backend.main` 或初始化 DATA。既有 `backend.main.Settings` 仍匯出同一型別。 [請求 schema](../../backend/schemas.py)
+
 引擎 HTTP 使用 context.http_client；預檢及後續查詢仍使用任務保存的原網址，取消、停止與原 UUID 恢復規則不變。WebSocket 仍由每 app 的進度 Hub 依原 client ID 連線；沒有將裝置快照當全域提交許可。
 
 測試透過工廠建立臨時資料，不 patch `main.DB／DATA／ROOT`。在同一 TestClient 回呼模擬另一請求的測試，可先明確執行自身 `context.initialize` 再建立短生命週期 TestClient，避免同一 portal 執行緒重入；正常服務仍由 lifespan 初始化。回歸核對兩 app 的設定、相同 UUID／不同原引擎任務、素材、環境快取及 client 互不混用，import 不建立資料，重開 app 保留原 JSON 與精確 seed。

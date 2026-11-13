@@ -9,7 +9,7 @@
 
 這裡維護目前尚待實作、驗收及外部證據的工作。已完成條目的證據見 [CHANGELOG](../history/changelog.md#roadmap-completed-20261025)，原清單的去向見 [歷史索引](../history/changelog.md#unchecked-index)。規格、操作與各次驗收條件由原主題文件保存。
 
-截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **2 個優化候選（O07–O08）**。已完成的作品庫窄視窗與 O01–O06 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02) · [O03](../history/changelog.md#o03) · [O04](../history/changelog.md#o04) · [O05](../history/changelog.md#o05) · [O06](../history/changelog.md#o06)
+截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **1 個優化候選（O08）**。已完成的作品庫窄視窗與 O01–O07 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02) · [O03](../history/changelog.md#o03) · [O04](../history/changelog.md#o04) · [O05](../history/changelog.md#o05) · [O06](../history/changelog.md#o06) · [O07](../history/changelog.md#o07)
 
 ## 目前進度與接續條件
 
@@ -166,7 +166,7 @@ N05 生成任務抽屜、N06 同瀏覽器顯示偏好與 N07 分類容量的交�
 
 ### 建議順序與完成條件
 
-O07–O08 依維護與使用頻率選擇。官方 API 依既定順序最後實作，真人觀察依使用者安排。
+O08 依維護與使用需求安排。官方 API 依既定順序最後實作，真人觀察依使用者安排。
 
 <a id="o01"></a>
 
@@ -194,9 +194,7 @@ O06 任務抽屜的未完成任務分頁及最早任務定位已完成。 [CHANG
 
 <a id="o07"></a>
 
-- [ ] **O07 · P3／測試與依賴：逐步收斂工具重複及 schema 反向依賴**（整併原 B3／B6）
-  - 依據：[flux_workflows.py](../../backend/flux_workflows.py) 的 URL validator 仍從 main 匯入 Settings，純型別已在 schemas；[check-inpaint.mjs](../../frontend/check-inpaint.mjs)與[check-control.mjs](../../frontend/check-control.mjs)重複 TS transpile／data URL 載入流程。品質 scope 是明列清單，不能把局部格式通過當全庫覆蓋。
-  - 完成條件：各以小變更處理，保留 main 相容匯出與不建立 DATA 的 import 契約；共用載入器保留相依順序與錯誤非零退出，既有斷言不弱化。實質修改時按現行規則納入品質 scope；不為整齊一次格式化全庫。
+O07 已完成 FLUX 驗證依賴與 Node 契約測試載入器整理（原 B3／B6）。 [CHANGELOG](../history/changelog.md#o07)
 
 <a id="o08"></a>
 
@@ -232,5 +230,4 @@ O06 任務抽屜的未完成任務分頁及最早任務定位已完成。 [CHANG
 | 專用設定的圖片套件 | 目前的專用 JSON 使用本機素材 ID 與指紋。若要讓跨主機設定附帶原圖與遮罩，先定義檔案大小、解壓／路徑限制與逐角色 hash 驗證。 | [R07 設計](../development/specialized-workflow-formats.md#r07-專用格式設計草案) |
 | 訓練額外配置 | 依實際訓練需求補多圖、長時間、其他 rank／主機等容量與資源驗收。既有 E04 證據是 RTX 4080 的 512／1024 短程幾何技術訓練。 | [T03 實測限制](../validation/training-runtime-20261025.md)、[E04 量測](../validation/hardware-resources-20261026.md) |
 | Docker／跨系統搬移 | 有跨 OS 搬移需求時，驗證 Windows 路徑、原圖與資料包重新綁定及還原。容器 cgroup RAM 配額換算、trainer 與跨 OS GPU 租約另行評估。 | [Docker 範圍](../operations/docker.md)、[D02 驗收](../validation/docker-deployment-20261025.md) |
-| B3 · FLUX URL 驗證依賴 | 直接引用純 schema，保留主程式相容匯出，驗證 URL 契約及匯入副作用。本輪整併至 [O07](#o07)，未實作。 | [原稽核 B3](../history/codebase-audit-20261027.md#b3讓-flux-url-驗證直接依賴純-schema) |
-| B5／B6 · 預覽與測試工具整理 | B5 評估 Canny／羽化共用有界串流讀取，B6 評估 Node 契約測試共用純 TS 載入。依各原契約驗證。B5 仍待評估，B6 已整併至 [O07](#o07)；均未實作。 | [原稽核 B5](../history/codebase-audit-20261027.md#b5抽取預覽串流讀取的共用機制)、[原稽核 B6](../history/codebase-audit-20261027.md#b6共用-node-契約測試的純-ts-載入助手) |
+| B5 · 預覽串流讀取 | 評估 Canny／羽化共用有界串流讀取，依各原契約驗證。 | [原稽核 B5](../history/codebase-audit-20261027.md#b5抽取預覽串流讀取的共用機制) |

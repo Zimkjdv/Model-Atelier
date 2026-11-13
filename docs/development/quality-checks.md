@@ -51,6 +51,12 @@
 
 格式、狀態重構與行為驗收的邊界見[架構維護規則](architecture.md#submission-invariants)。
 
+<a id="node-contract-loader"></a>
+
+## Node 契約測試
+
+API、修補、控制與實驗的 Node 測試共用純 TypeScript 載入器。呼叫端依相依順序列出 `frontend/src` 的模組，載入器轉譯後依序載入，僅替換實際執行時的匯入。漏列相依、相依順序錯誤或來源讀取失敗會讓該支測試以非零退出。Vue 工作台測試沿用原本的 SFC 編譯與元件替身。 [純 TypeScript 載入器](../../frontend/load-contract-modules.mjs)
+
 ## 乾淨安裝
 
 Python 3.12、Node.js 24、Git；在新的 checkout 執行：

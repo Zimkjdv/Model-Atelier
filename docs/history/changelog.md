@@ -2,6 +2,16 @@
 
 本檔保存已完成變更與當時的驗收條件；歷史測試數、未完成數及環境描述均屬該日期。現行操作見 [README](../../README.md) 與 [文件索引](../README.md)，尚未完成工作見 [ROADMAP](../planning/roadmap.md)。
 
+<a id="o07"></a>
+
+## 2026-11-14 · O07 FLUX 驗證依賴與 Node 契約測試整理
+
+FLUX 文生圖、LoRA 與圖生圖使用 `backend.schemas.Settings` 驗證引擎 URL，保留 `backend.main.Settings` 相容匯出。以新程序核對 HTTP／HTTPS、尾斜線正規化及帳密、查詢、片段和無效連接埠的拒絕行為，直接驗證輸入時未載入主程式、建立 DATA 或開啟 SQLite。 [原稽核 B3](codebase-audit-20261027.md#b3讓-flux-url-驗證直接依賴純-schema)
+
+API、修補、控制與實驗四支 Node 測試共用載入器。逐支執行並核對原有 158 個斷言，漏列相依、順序錯誤及來源不存在均以退出碼 1 結束。這四支測試、載入器與新增的匯入回歸納入品質清單。 [載入契約](../development/quality-checks.md#node-contract-loader) · [原稽核 B6](codebase-audit-20261027.md#b6共用-node-契約測試的純-ts-載入助手)
+
+後端共 873 項，872 項通過、1 項跳過。文件連結、格式、靜態檢查、Vue 型別、正式建置及 `npm test` 均通過。本輪略過瀏覽器階段。
+
 <a id="o06"></a>
 
 ## 2026-11-14 · O06 未完成任務分頁與定位
