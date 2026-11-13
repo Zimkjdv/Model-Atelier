@@ -9,7 +9,7 @@
 
 這裡維護目前尚待實作、驗收及外部證據的工作。已完成條目的證據見 [CHANGELOG](../history/changelog.md#roadmap-completed-20261025)，原清單的去向見 [歷史索引](../history/changelog.md#unchecked-index)。規格、操作與各次驗收條件由原主題文件保存。
 
-截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **1 個優化候選（O08）**。已完成的作品庫窄視窗與 O01–O07 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02) · [O03](../history/changelog.md#o03) · [O04](../history/changelog.md#o04) · [O05](../history/changelog.md#o05) · [O06](../history/changelog.md#o06) · [O07](../history/changelog.md#o07)
+截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**。作品庫窄視窗與本輪 O01–O08 優化已完成並歸檔。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02) · [O03](../history/changelog.md#o03) · [O04](../history/changelog.md#o04) · [O05](../history/changelog.md#o05) · [O06](../history/changelog.md#o06) · [O07](../history/changelog.md#o07) · [O08](../history/changelog.md#o08)
 
 ## 目前進度與接續條件
 
@@ -166,7 +166,7 @@ N05 生成任務抽屜、N06 同瀏覽器顯示偏好與 N07 分類容量的交�
 
 ### 建議順序與完成條件
 
-O08 依維護與使用需求安排。官方 API 依既定順序最後實作，真人觀察依使用者安排。
+官方 API 依既定順序最後實作，真人觀察依使用者安排。
 
 <a id="o01"></a>
 
@@ -198,9 +198,7 @@ O07 已完成 FLUX 驗證依賴與 Node 契約測試載入器整理（原 B3／B
 
 <a id="o08"></a>
 
-- [ ] **O08 · P3／UI 與素材：範例圖的按需載入**
-  - 依據：[SimpleExample.vue](../../frontend/src/SimpleExample.vue) 在 details 中直接放原圖 img，沒有 lazy／展開後掛載策略；本輪輸出有多個約 1–1.9 MB 的 PNG。[simpleExamples.ts](../../frontend/src/simpleExamples.ts)的 eager URL 登記本身不等於全部圖片已下載，須先觀察 network。
-  - 完成條件：量測簡易模式初訪／切配方／展開範例的圖片請求與 bytes，再選 lazy loading、展開時掛載或另外產生預覽圖。未展開的非必要圖片不搶首載；原圖、配方下載、來源 hash 與精確 seed 保持可追溯，預覽載入預留比例且有錯誤文字。不得改寫既有實測原圖冒充優化預覽。
+O08 已完成起始配方卡縮圖與範例原圖按需載入。 [CHANGELOG](../history/changelog.md#o08)
 
 ### 初次稽核的驗證與限制
 

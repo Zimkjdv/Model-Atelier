@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import SimpleExampleImage from './SimpleExampleImage.vue'
 import loraBefore from '../../docs/guide/images/examples/lora-baseline.png?url'
 import loraAfter from '../../docs/guide/images/examples/lora-style.png?url'
 import referenceBefore from '../../docs/guide/images/examples/reference-zero.png?url'
@@ -7,6 +8,12 @@ import referenceAfter from '../../docs/guide/images/examples/reference-style.png
 import loraRecipe from '../../docs/guide/examples/lora-style-v1.json?url'
 import referenceRecipe from '../../docs/guide/examples/reference-style-v1.json?url'
 const props = defineProps<{ task: 'lora' | 'reference' }>()
+const open = ref(false)
+
+function onToggle(event: Event) {
+  open.value = (event.currentTarget as HTMLDetailsElement).open
+}
+
 const examples = computed(() =>
   props.task === 'lora'
     ? [
@@ -20,11 +27,11 @@ const examples = computed(() =>
 )
 </script>
 <template>
-  <details class="simple-style-example">
+  <details class="simple-style-example" @toggle="onToggle">
     <summary>查看真實作用對照與限制</summary>
     <figure v-for="item in examples" :key="item.label"
       ><a :href="item.image" target="_blank" rel="noopener"
-        ><img :src="item.image" :alt="item.label" /></a
+        ><SimpleExampleImage v-if="open" :src="item.image" :alt="item.label" /></a
       ><figcaption>{{ item.label }}</figcaption></figure
     >
     <p v-if="task === 'lora'"
@@ -52,11 +59,6 @@ const examples = computed(() =>
 }
 figure {
   margin: 16px 0;
-}
-img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
 }
 figcaption {
   font-size: 12px;

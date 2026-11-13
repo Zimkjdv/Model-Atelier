@@ -50,7 +50,8 @@ import AssetChoices from './AssetChoices.vue'
 import SimpleStyleExample from './SimpleStyleExample.vue'
 import referenceDemoImage from '../../docs/guide/images/examples/reference-source.png?url'
 import SimpleExample from './SimpleExample.vue'
-import { simpleExamples } from './simpleExamples'
+import SimpleExampleImage from './SimpleExampleImage.vue'
+import { simpleExamples, simpleExamplePreviews } from './simpleExamples'
 import { presetEvidence } from './presetEvidence'
 import { templateSelection, type TemplateSelection, type TemplateContext } from './templateContext'
 
@@ -796,10 +797,10 @@ onBeforeUnmount(() => {
         :disabled="loading || locked"
         @click="selectTemplate(item.id)"
       >
-        <img
+        <SimpleExampleImage
           class="simple-card-image"
-          :src="simpleExamples[item.id]?.image"
-          :alt="item.title + ' 原配方實際成果'"
+          :src="simpleExamplePreviews[item.id]"
+          alt=""
         />
         <span class="simple-card-model">{{ item.model }}</span
         ><strong>{{ item.title }}</strong> <span>{{ item.description }}</span
@@ -997,8 +998,13 @@ onBeforeUnmount(() => {
           </template>
           <pre>{{ JSON.stringify(form, null, 2) }}</pre>
         </details>
-        <SimpleExample v-if="simpleExamples[selectedId]" :id="selectedId" :modified="modified" />
-        <SimpleStyleExample v-if="selected.task" :task="selected.task" />
+        <SimpleExample
+          v-if="simpleExamples[selectedId]"
+          :key="selectedId"
+          :id="selectedId"
+          :modified="modified"
+        />
+        <SimpleStyleExample v-if="selected.task" :key="selected.task" :task="selected.task" />
         <details v-if="selected.family === 'reference'" class="simple-recipe"
           ><summary>選擇其他已上傳素材</summary
           ><AssetChoices
@@ -1272,11 +1278,7 @@ onBeforeUnmount(() => {
   background: var(--asoft);
 }
 .simple-card-image {
-  width: 100%;
   height: clamp(110px, 11vw, 164px);
-  object-fit: contain;
-  background: var(--bg);
-  border-radius: 8px;
 }
 .simple-card-model,
 .simple-card small {

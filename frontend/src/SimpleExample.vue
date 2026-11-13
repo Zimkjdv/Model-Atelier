@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { simpleExamples } from './simpleExamples'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { SimpleTemplateId } from './simpleCreation'
+import SimpleExampleImage from './SimpleExampleImage.vue'
+
 const props = defineProps<{ id: SimpleTemplateId; modified: boolean }>()
 const example = computed(() => simpleExamples[props.id])
+const open = ref(false)
+
+function onToggle(event: Event) {
+  open.value = (event.currentTarget as HTMLDetailsElement).open
+}
 </script>
 <template>
-  <details v-if="example" class="simple-example">
+  <details v-if="example" class="simple-example" @toggle="onToggle">
     <summary>真實範例、完整配方與觀察</summary>
     <figure>
       <a
@@ -15,7 +22,7 @@ const example = computed(() => simpleExamples[props.id])
         rel="noopener"
         :aria-label="'開啟 ' + id + ' 範例原圖'"
       >
-        <img :src="example.image" :alt="id + ' 原配方實際生成成果'" />
+        <SimpleExampleImage v-if="open" :src="example.image" :alt="id + ' 原配方實際生成成果'" />
       </a>
       <figcaption
         >原配方 v{{ example.template_version }} · 固定 Seed
@@ -47,11 +54,6 @@ const example = computed(() => simpleExamples[props.id])
 }
 figure {
   margin: 16px 0;
-}
-img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
 }
 figcaption {
   font-size: 12px;

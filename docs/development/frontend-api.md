@@ -72,7 +72,7 @@ E05 的 `measurements.continuous_resources` 為選填的新任務觀察欄位。
 
 簡易模式先選 Animagine 4.0 Opt、Pony V6 XL 或 FLUX.1 Schnell，再選模型內的五份 v1 配方，共十五份；每個模型保留原卡並新增四份。另提供「套用像素風格 LoRA」「參考一張圖片的畫風」兩個任務。模型依既有 manifest 的登記 SHA256／架構匹配，FLUX 逐一匹配四元件；同名檔案不當成相符證據。Checkpoint 取樣參數取自現有模型 profile，FLUX 使用固定 512²／4 steps／FP8／CPU 配置，尺寸先保留原始正方形。所有配方附真實原圖與有限觀察，詳見[新增配方及畫風任務驗收](../validation/simple-recipes-20261030.md)，不外推成通用品質通過。
 
-`simpleExamples.ts` 合併原三份與新增十四份的版本化範例索引；Vite 將原始 PNG 與完整 JSON 作為本地靜態資產。卡片預覽、原圖與「真實範例、完整配方與觀察」不發出生成。下載紀錄保存精確 Seed、原 workflow／元件／環境，不作一般設定交換匯入；目前設定修改時另行提示。原模板發佈文字與快照維持不可變，新增觀察不回填歷史任務。
+`simpleExamples.ts` 合併原三份與新增十四份的版本化範例索引。起始配方卡使用從原圖縮小的 WebP。展開「真實範例、完整配方與觀察」或「查看真實作用對照與限制」時才掛載對應 PNG，切換配方會收合相關區塊。原圖預留正方形空間，讀取失敗時顯示文字並保留原圖連結。下載的原始 JSON 保存精確 Seed、workflow、元件與環境，供查閱原配方；目前設定修改時另行提示。 [圖片請求量測](../validation/simple-example-loading-20261114.md)
 
 LoRA 任務固定 Animagine 4.0 Opt、原生鍵名像素 LoRA、觸發詞 `pixel art` 及 MODEL 1／CLIP 1，只編輯描述；強度與多 LoRA 留在進階工作台。圖片任務固定 Animagine／SDXL Plus ViT-H／CLIP Vision ViT-H、style、fit、起始 0／結束 1；可上傳或選已存素材，也可使用自產示範圖，參考程度 0–1（步距 0.1）。只有 0／0.6 有固定對照，其他程度標記修改。圖片是可變輸入，來源與預處理保存在任務／作品，不宣稱任意換圖能重現示範。圖片任務仍不組合 LoRA、多圖、FaceID、結構或局部編輯。
 

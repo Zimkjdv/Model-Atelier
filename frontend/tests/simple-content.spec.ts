@@ -211,14 +211,15 @@ for (const width of [1440, 390])
     )
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/#/studio/simple')
-    await expect(page.locator('.simple-card-image')).toHaveCount(3)
-    expect(
-      await page
-        .locator('.simple-card-image')
-        .evaluateAll((nodes: HTMLImageElement[]) =>
-          nodes.every((node) => node.complete && node.naturalWidth >= 512),
+    const previews = page.locator('.simple-card-image img')
+    await expect(previews).toHaveCount(3)
+    await expect
+      .poll(() =>
+        previews.evaluateAll((nodes: HTMLImageElement[]) =>
+          nodes.every((node) => node.complete && node.naturalWidth === 328),
         ),
-    ).toBe(true)
+      )
+      .toBe(true)
     await page.getByRole('button', { name: '載入起始配方', exact: true }).click()
     await page.locator('.simple-intro').scrollIntoViewIfNeeded()
     await page.screenshot({ path: info.outputPath('simple-creation-guide.png'), fullPage: false })

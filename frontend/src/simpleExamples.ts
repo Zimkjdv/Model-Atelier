@@ -1,6 +1,15 @@
 import source from '../../models/simple-creation-examples-v1.json?raw'
 import extraSource from '../../models/simple-creation-extra-examples-v1.json?raw'
+import animaginePreview from './assets/simple-example-previews/animagine.webp?url'
+import ponyPreview from './assets/simple-example-previews/pony.webp?url'
+import fluxPreview from './assets/simple-example-previews/flux.webp?url'
 import type { SimpleTemplateId } from './simpleCreation'
+
+export const simpleExamplePreviews: Partial<Record<SimpleTemplateId, string>> = {
+  animagine: animaginePreview,
+  pony: ponyPreview,
+  flux: fluxPreview,
+}
 
 type Example = {
   template_id: SimpleTemplateId
