@@ -2,6 +2,14 @@
 
 本檔保存已完成變更與當時的驗收條件；歷史測試數、未完成數及環境描述均屬該日期。現行操作見 [README](../../README.md) 與 [文件索引](../README.md)，尚未完成工作見 [ROADMAP](../planning/roadmap.md)。
 
+<a id="gallery-narrow-layout"></a>
+
+## 2026-11-14 · 桌面作品庫工具列換行
+
+搜尋、收藏與封存篩選、模型篩選、版型選項、清單摘要與排序依可用寬度換行。修正前 390px 視窗因工具列固定同列而將頁面撐到 634px。修正後頁面寬度為 390px，768px 也無橫向溢出，1024／1280／1440／1920px 的工具列維持單列。專案使用範圍為桌面，390px 保留作為窄視窗回歸。 [ROADMAP](../planning/roadmap.md)
+
+Edge Chromium 的作品庫、作品詳情與批次選取共 16 項通過。原 390px 案例通過整頁寬度、搜尋與篩選、收藏、筆記、封存與還原、原圖與設定檔逐位元核對。報告與截圖位於 `runtime/quality/gallery-o01-20261114-report` 及 `gallery-o01-20261114-results`。原問題證據在 `runtime/quality/audit-20261114-results`。 [原回歸案例](../../frontend/tests/artwork-library.spec.ts)
+
 ## 2026-11-14 · 整體分析與完成項目歸檔
 
 完成程式、架構、文件、功能與 UI 的整體抽查；[ROADMAP](../planning/roadmap.md#audit-20261114)新增 O01–O08 的依據、優先級與完成條件，保留 15 個既有主線／17 個子項。將已完成 E02–E04、UX01／UX02、F01–F04 與 N05–N07 的長篇敘述移出待辦，保留舊錨點；原交付日期與證據不變。本項代表分析與文件整理完成，不代表候選優化已交付。

@@ -2383,6 +2383,10 @@
   margin: 22px 0;
   min-height: 44px;
 }
+#app .atelier-shell .gallery-browser-tools,
+#app .atelier-shell .gallery-browser-tools .purpose-tabs {
+  flex-wrap: wrap;
+}
 #app
   .atelier-shell
   :is(.asset-browser-tools, .gallery-browser-tools, .model-browser-tools)
@@ -2404,10 +2408,12 @@
 }
 #app .atelier-shell .gallery-search {
   width: 280px;
+  max-width: 100%;
   flex: none;
 }
 #app .atelier-shell .gallery-model {
   width: 170px;
+  max-width: 100%;
 }
 #app .atelier-shell .gallery-browser-tools .view-switch {
   margin-left: auto;
@@ -2437,6 +2443,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
   margin: -8px 0 14px;
   min-height: 30px;
 }
