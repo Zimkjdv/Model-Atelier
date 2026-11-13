@@ -4,9 +4,19 @@ import PageTabs from './PageTabs.vue'
 import UiIcon from './UiIcon.vue'
 import EngineEnvironment from './EngineEnvironment.vue'
 import StorageOverview from './StorageOverview.vue'
+import StorageCategories from './StorageCategories.vue'
 import LocalEnvironmentCheck from './LocalEnvironmentCheck.vue'
 import DeploymentStatus from './DeploymentStatus.vue'
-import { gb, usedPercent, type HostSystem, type StorageReport } from './systemTypes'
+import {
+  categoryGb,
+  gb,
+  storageCategoryNames,
+  usedPercent,
+  type HostSystem,
+  type StorageCategory,
+  type StorageCategoryReport,
+  type StorageReport,
+} from './systemTypes'
 import type { EngineReport } from './environmentTypes'
 const props = defineProps<{
   system: HostSystem | null
@@ -19,6 +29,8 @@ const props = defineProps<{
 const emit = defineEmits<{ refresh: []; settings: []; paths: [] }>()
 const tab = ref('overview'),
   storage = ref<StorageReport | null>(null),
+  categories = ref<StorageCategoryReport | null>(null),
+  categoryError = ref(false),
   localStatus = ref('not_checked'),
   storageState = ref({ stale: false, error: '' })
 const items = [
@@ -27,6 +39,21 @@ const items = [
   { id: 'storage', label: '儲存與目錄' },
   { id: 'installation', label: '安裝與部署' },
 ]
+function categoryLabel(category: StorageCategory) {
+  const report = categories.value
+  const current = report?.scan?.scope.version === report?.scope.version ? report?.scan : null
+  const status = current?.categories?.[category].status
+  const known = report?.known[category]
+  if (known) {
+    if (known.stale_reason || categoryError.value) return categoryGb(known.bytes) + ' · 已過期'
+    if (status === 'partial' || status === 'unavailable')
+      return categoryGb(known.bytes) + ' · 上次可靠值'
+    return categoryGb(known.bytes)
+  }
+  if (report?.scope.unavailable.includes(category) || status === 'unavailable') return '無法統計'
+  if (status === 'partial') return '掃描不完整'
+  return categoryError.value ? '暫無回報' : '尚未統計'
+}
 const hostOs = computed(() => {
   const raw = props.system?.os || '未知'
   const windows = /^Windows-([^-]+)-(.+)$/.exec(raw)
@@ -222,12 +249,13 @@ async function select(value: string, focus = false) {
           :aria-label="'已用 ' + gb(used) + '，總量 ' + gb(total)"
           ><span :style="{ width: (percent || 0) + '%' }"></span></div
         ><div class="storage-legend"
-          ><div><span>模型</span><strong>尚未統計</strong></div
-          ><div><span>作品</span><strong>尚未統計</strong></div
+          ><div v-for="(name, category) in storageCategoryNames" :key="category"
+            ><span>{{ name }}</span
+            ><strong>{{ categoryLabel(category) }}</strong></div
           ><div><span>其他</span><strong>未知</strong></div></div
-        ><p class="footnote">分類統計尚無回報；磁碟合計不當作資料夾用量。</p
+        ><p class="footnote">模型與作品按檔案邏輯大小統計。</p
         ><button class="summary-link" @click="select('storage', true)"
-          >查看目錄與磁碟 →</button
+          >查看容量與分類掃描 →</button
         ></section
       >
     </div>
@@ -345,6 +373,11 @@ async function select(value: string, focus = false) {
         :refresh-key="system?.updated_at"
         @report="storage = $event"
         @state="storageState = $event"
+      /><StorageCategories
+        :visible="tab === 'storage'"
+        :engine-url="selectedUrl"
+        @report="categories = $event"
+        @error="categoryError = $event"
       /><button class="secondary" @click="emit('paths')">管理額外模型目錄</button></div
     >
     <div

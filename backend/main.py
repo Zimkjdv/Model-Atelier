@@ -1,5 +1,6 @@
 """Application factory. Importing this module never creates user data."""
 
+import asyncio
 import csv
 import io
 import math
@@ -15,6 +16,7 @@ from backend import (
     validation_records,
     generation_advice,
     storage,
+    storage_categories,
     loras,
     lora_compatibility,
     lora_validation,
@@ -115,8 +117,11 @@ def create_app(
     async def lifespan(app):
         with DataLease([data, db]):
             context.initialize()
-            async with Monitor(context):
-                yield
+            try:
+                async with Monitor(context):
+                    yield
+            finally:
+                await asyncio.to_thread(category_scans.shutdown)
 
     app = FastAPI(title='Model Atelier', version='0.1.0', lifespan=lifespan)
     app.state.context = context
@@ -164,6 +169,7 @@ def create_app(
     validation_records.install(app, context)
     generation_advice.install(app, context)
     storage.install(app, context)
+    category_scans = storage_categories.install(app, context)
     loras.install(app, context)
     lora_compatibility.install(app, context)
     lora_validation.install(app, context)

@@ -76,6 +76,16 @@ python -m scripts.verify_local_access --output runtime/my-local-access-check.jso
 
 此命令啟動自己的短暫 loopback 平台與隔離 DATA，以真實 HTTP 檢查 Host／Origin／跨站拒絕、同來源寫入及未信任 forwarding headers，結束只停止自己的程序。ASGI 回歸另涵蓋非本機 peer、IPv6、重複 headers、WebSocket、資料不變及原引擎角色。限定實測見 [D01 驗收](../validation/local-deployment-20261025.md)；參考 [Starlette Host middleware](https://github.com/Kludex/starlette/blob/main/starlette/middleware/trustedhost.py) 與 [Uvicorn 設定](https://github.com/Kludex/uvicorn/blob/main/docs/settings.md)。本專案另外核對來源 IP 與完整 Origin，沒有引入其他平台的帳號或佇列模組。
 
+<a id="storage-categories"></a>
+
+## 分類容量
+
+在「系統資訊 → 儲存與目錄 → 分類容量」選擇「開始分類掃描」。掃描在背景執行，可離開頁面後返回查看，或用「取消掃描」停止。展開「掃描範圍與計量」可查看此次使用的目錄。目錄設定有變更或可靠快取超過一小時時，可重新掃描。
+
+原生平台統計受管理的 `runtime/ComfyUI/models`、已登記的額外 checkpoint 目錄與 DATA 中的 `artworks`。外部引擎的檔案無法從平台讀取。Docker 部署只統計平台可讀的作品庫。掃描略過連結和重新分析點，若有無法讀取或歸屬不明的項目，畫面會標示不完整並保留上次可靠值。
+
+分類容量以檔案的邏輯 bytes 換算 GB。磁碟已用量以實際空間計算，其他用量維持未知。
+
 ## 額外 checkpoint 目錄
 
 設定頁可登記最多八個既有可讀本機絕對目錄，每行一個。預設 checkpoint 目錄保留；不搬移、上傳或刪除權重。保存後：原 ComfyUI Ctrl+C → 重跑 `scripts/start-comfyui.ps1` → 同步模型庫。
