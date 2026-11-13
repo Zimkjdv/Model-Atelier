@@ -89,7 +89,8 @@ export function useJobEvents(
     retryTimers.delete(id)
   }
   function stop() {
-    for (const id of new Set([...streams.keys(), ...retryTimers.keys()])) close(id)
+    for (const id of Object.keys(connections.value)) close(id)
+    retries.clear()
     visible.value = false
   }
   function open(id: string) {
@@ -145,14 +146,13 @@ export function useJobEvents(
   function sync() {
     if (!visible.value) return
     const targets = new Set(eligible().map((job) => job.id))
-    for (const id of new Set([...streams.keys(), ...retryTimers.keys()]))
-      if (!targets.has(id)) close(id)
+    for (const id of Object.keys(connections.value)) if (!targets.has(id)) close(id)
+    for (const id of retries.keys()) if (!targets.has(id)) retries.delete(id)
     for (const id of targets) open(id)
   }
   async function resume() {
     if (!active || !enabled() || document.visibilityState !== 'visible' || visible.value) return
     visible.value = true
-    retries.clear()
     await reload().catch(() => {})
     sync()
   }
@@ -162,8 +162,6 @@ export function useJobEvents(
   }
   function reconnect() {
     stop()
-    retries.clear()
-    connections.value = {}
     void resume()
   }
   watch(

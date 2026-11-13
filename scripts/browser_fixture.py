@@ -700,6 +700,47 @@ def fixture(data, count=None, legacy_ui=False, empty=False):
         seed(context, 125)
         return {'ok': True}
 
+    task_drawer_keys = []
+
+    @wrapper.post('/qa/task-drawer-jobs')
+    def task_drawer_jobs():
+        active_ids = [str(uuid4()) for _ in range(25)]
+        other_engine = 'http://previous-engine.invalid:8189'
+        rows = []
+        for index, identifier in enumerate([*active_ids, *(str(uuid4()) for _ in range(41))]):
+            status = 'running' if index < 25 else 'completed'
+            job = dict(
+                id=identifier,
+                prompt_id=identifier,
+                status='unknown' if index == 0 else status,
+                engine_url=other_engine if index % 2 == 0 else ENGINE,
+                checkpoint='demo.safetensors',
+                workflow={},
+                created_at=f'2025-01-01T00:{index // 60:02d}:{index % 60:02d}+00:00',
+                revision=1,
+            )
+            rows.append(('job:' + identifier, json.dumps(job)))
+        with closing(sqlite3.connect(context.DB)) as db, db:
+            db.executemany('INSERT INTO settings VALUES (?, ?)', rows)
+        task_drawer_keys.extend((key,) for key, _ in rows)
+        return dict(active_ids=active_ids, other_engine=other_engine)
+
+    @wrapper.post('/qa/task-drawer-jobs/finish-five')
+    def finish_task_drawer_jobs():
+        with closing(sqlite3.connect(context.DB)) as db, db:
+            db.executemany(
+                "UPDATE settings SET value=json_set(value,'$.status','completed') WHERE key=?",
+                task_drawer_keys[20:25],
+            )
+        return {'ok': True}
+
+    @wrapper.post('/qa/task-drawer-jobs/reset')
+    def reset_task_drawer_jobs():
+        with closing(sqlite3.connect(context.DB)) as db, db:
+            db.executemany('DELETE FROM settings WHERE key=?', task_drawer_keys)
+        task_drawer_keys.clear()
+        return {'ok': True}
+
     wrapper.mount('/', app)
     return wrapper
 

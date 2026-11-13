@@ -40,22 +40,57 @@ class ListingTests(unittest.TestCase):
         self.assertEqual(len(self.client.get('/api/jobs').json()), 125)
         self.assertEqual(len(self.client.get('/api/assets').json()), 125)
 
-    def test_task_overview_counts_older_active_jobs_without_loading_workflows(self):
+    def test_task_overview_reaches_oldest_unfinished_job_across_engines(self):
         self.populate(45)
         rows = self.page('jobs', limit=45)['items']
         with closing(sqlite3.connect(self.db)) as db, db:
             for index, row in enumerate(rows):
-                status = 'completed' if index < 20 else 'unknown' if index == 44 else 'running'
+                if index < 20:
+                    status = ('completed', 'failed', 'cancelled', 'stopped')[index % 4]
+                else:
+                    status = {43: None, 44: 'unknown'}.get(index, 'running')
+                engine = f'http://engine-{index % 2}.invalid:8188'
                 db.execute(
-                    "UPDATE settings SET value=json_set(value,'$.status',?) WHERE key=?",
-                    (status, 'job:' + row['id']),
+                    "UPDATE settings SET value=json_set(value,'$.status',?,'$.engine_url',?) WHERE key=?",
+                    (status, engine, 'job:' + row['id']),
                 )
-        result = self.client.get('/api/library/jobs/overview').json()
-        self.assertEqual(result['active_total'], 25)
-        self.assertEqual(len(result['items']), 30)
-        self.assertTrue(all(row['status'] == 'running' for row in result['items'][:20]))
-        self.assertTrue(all(row['status'] == 'completed' for row in result['items'][20:]))
-        self.assertTrue(all('workflow' not in row for row in result['items']))
+            before = db.execute('SELECT * FROM settings ORDER BY key').fetchall()
+
+        endpoint = '/api/library/jobs/overview'
+        with patch('backend.jobs.list_all', side_effect=AssertionError('no full read')):
+            first = self.client.get(endpoint).json()
+            last = self.client.get(endpoint, params={'active_page': 'last'}).json()
+        self.assertEqual(
+            (first['active_total'], first['active_page'], first['active_limit']), (25, 1, 20)
+        )
+        self.assertEqual(
+            (last['active_total'], last['active_page'], last['active_limit']), (25, 2, 20)
+        )
+        self.assertEqual(len(first['items']), 30)
+        self.assertEqual([row['id'] for row in first['items'][20:]], [row['id'] for row in rows[:10]])
+        unfinished = first['items'][:20] + last['items']
+        self.assertEqual([row['id'] for row in unfinished], [row['id'] for row in rows[20:]])
+        self.assertEqual([row['status'] for row in unfinished[-2:]], ['unknown', 'unknown'])
+        self.assertEqual(
+            {row['engine_url'] for row in last['items']},
+            {'http://engine-0.invalid:8188', 'http://engine-1.invalid:8188'},
+        )
+        self.assertTrue(all('workflow' not in row for row in first['items'] + last['items']))
+        self.assertEqual(self.client.get(endpoint, params={'active_page': 99}).json(), last)
+        for invalid in [0, -1, 'abc']:
+            self.assertEqual(self.client.get(endpoint, params={'active_page': invalid}).status_code, 422)
+
+        with closing(sqlite3.connect(self.db)) as db, db:
+            self.assertEqual(db.execute('SELECT * FROM settings ORDER BY key').fetchall(), before)
+            db.executemany(
+                "UPDATE settings SET value=json_set(value,'$.status','completed') WHERE key=?",
+                [('job:' + row['id'],) for row in unfinished[:5]],
+            )
+        clamped = self.client.get(endpoint, params={'active_page': 2}).json()
+        self.assertEqual((clamped['active_total'], clamped['active_page']), (20, 1))
+        self.assertEqual(
+            [row['id'] for row in clamped['items'][:20]], [row['id'] for row in unfinished[5:]]
+        )
 
     def test_fixed_membership_has_no_duplicates_or_gaps_after_insert_or_updates(self):
         self.populate()

@@ -9,7 +9,7 @@
 
 這裡維護目前尚待實作、驗收及外部證據的工作。已完成條目的證據見 [CHANGELOG](../history/changelog.md#roadmap-completed-20261025)，原清單的去向見 [歷史索引](../history/changelog.md#unchecked-index)。規格、操作與各次驗收條件由原主題文件保存。
 
-截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **3 個優化候選（O06–O08）**。已完成的作品庫窄視窗與 O01–O05 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02) · [O03](../history/changelog.md#o03) · [O04](../history/changelog.md#o04) · [O05](../history/changelog.md#o05)
+截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **2 個優化候選（O07–O08）**。已完成的作品庫窄視窗與 O01–O06 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02) · [O03](../history/changelog.md#o03) · [O04](../history/changelog.md#o04) · [O05](../history/changelog.md#o05) · [O06](../history/changelog.md#o06)
 
 ## 目前進度與接續條件
 
@@ -166,7 +166,7 @@ N05 生成任務抽屜、N06 同瀏覽器顯示偏好與 N07 分類容量的交�
 
 ### 建議順序與完成條件
 
-O06–O08 依維護與使用頻率選擇。官方 API 依既定順序最後實作，真人觀察依使用者安排。
+O07–O08 依維護與使用頻率選擇。官方 API 依既定順序最後實作，真人觀察依使用者安排。
 
 <a id="o01"></a>
 
@@ -190,9 +190,7 @@ O05 已完成現行掃描契約及文件連結檢查。 [CHANGELOG](../history/c
 
 <a id="o06"></a>
 
-- [ ] **O06 · P2／功能：大量未完成任務的可達性**
-  - 依據：[listing.py 的 job_overview](../../backend/listing.py)只回最近 20 個未完成及 10 個終態；[TaskDrawer.vue](../../frontend/src/TaskDrawer.vue)有截斷提示，但沒有載入較早未完成任務的控制。這是既定摘要範圍的擴充候選，並非已證明任務遺失。
-  - 完成條件：用至少 25 個未完成任務（含 unknown 與不同原引擎）驗證分頁／完整任務入口能定位最舊任務；計數與清單一致、連線有界，查閱不觸發提交或取消。只有實際累積需求時擴充，訓練／安裝整合仍另行評估。
+O06 任務抽屜的未完成任務分頁及最早任務定位已完成。 [CHANGELOG](../history/changelog.md#o06)
 
 <a id="o07"></a>
 

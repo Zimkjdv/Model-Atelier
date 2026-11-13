@@ -180,6 +180,7 @@
     "frontend/src/generationRequest.ts",
     "frontend/src/jobEvents.ts",
     "frontend/src/TaskDrawer.vue",
+    "frontend/tests/task-drawer-pagination.spec.ts",
     "frontend/src/generationNavigation.ts",
     "frontend/src/style.css",
     "frontend/check-style.mjs",

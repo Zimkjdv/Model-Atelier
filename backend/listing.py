@@ -220,33 +220,45 @@ class Pager:
             )
         return Snapshot(tuple(row[0] for row in rows), query, now + TTL, models, all_total)
 
-    def job_overview(self):
+    def job_overview(self, active_page=1):
         active = (
-            "key GLOB 'job:*' AND COALESCE(json_extract(value,'$.status'),'unknown') "
+            "COALESCE(json_extract(value,'$.status'),'unknown') "
             "NOT IN ('completed','failed','cancelled','stopped')"
         )
+        where = " WHERE key GLOB 'job:*' AND "
         order = " ORDER BY json_extract(value,'$.created_at') DESC, key DESC"
+        limit = 20
         with closing(sqlite3.connect(self.path)) as db:
             db.execute('BEGIN')
-            count = db.execute('SELECT COUNT(*) FROM settings WHERE ' + active).fetchone()[0]
+            count = db.execute('SELECT COUNT(*) FROM settings' + where + active).fetchone()[0]
+            last_page = max(1, (count + limit - 1) // limit)
+            active_page = last_page if active_page == 'last' else min(active_page, last_page)
             active_keys = [
                 row[0]
                 for row in db.execute(
-                    'SELECT key FROM settings WHERE ' + active + order + ' LIMIT 20'
+                    'SELECT key FROM settings' + where + active + order + ' LIMIT ? OFFSET ?',
+                    (limit, (active_page - 1) * limit),
                 )
             ]
-            recent_keys = [
-                row[0]
-                for row in db.execute(
-                    "SELECT key FROM settings WHERE key GLOB 'job:*' AND NOT ("
-                    + active
-                    + ')'
-                    + order
-                    + ' LIMIT 10'
-                )
-            ]
+            recent_keys = []
+            if active_page == 1:
+                recent_keys = [
+                    row[0]
+                    for row in db.execute(
+                        'SELECT key FROM settings'
+                        + where
+                        + 'NOT ('
+                        + active
+                        + ')'
+                        + order
+                        + ' LIMIT 10'
+                    )
+                ]
             items, _ = self._summaries('jobs', active_keys + recent_keys, db=db)
-        return dict(items=items, active_total=count)
+        for item in items:
+            if item['status'] is None:
+                item['status'] = 'unknown'
+        return dict(items=items, active_total=count, active_page=active_page, active_limit=limit)
 
     def _summaries(self, kind, keys, *, db=None):
         if not keys:

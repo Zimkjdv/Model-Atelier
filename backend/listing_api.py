@@ -1,5 +1,6 @@
-from typing import Literal
+from typing import Annotated, Literal
 from fastapi import HTTPException, Query
+from pydantic import Field
 from backend.listing import Pager, ListingError
 
 
@@ -7,8 +8,8 @@ def install(app, host):
     pager = Pager(host.DB)
 
     @app.get('/api/library/jobs/overview')
-    def job_overview():
-        return pager.job_overview()
+    def job_overview(active_page: Annotated[int, Field(ge=1)] | Literal['last'] = 1):
+        return pager.job_overview(active_page)
 
     @app.get('/api/library/{kind}')
     def page(
