@@ -1208,6 +1208,15 @@ onBeforeUnmount(() => {
                 :href="`/api/artworks/${selected.id}/settings-export`"
                 >匯出創作設定（含來源快照）</a
               >
+              <a
+                v-if="
+                  isInpaintWorkflow(selected.workflow_id) ||
+                  isControlWorkflow(selected.workflow_id) ||
+                  selected.workflow_id === referenceWorkflowId
+                "
+                :href="`/api/specialized/artworks/${selected.id}/settings`"
+                >匯出專用設定（含來源快照）</a
+              >
               <ControlSnapshot
                 v-if="isControlWorkflow(selected.workflow_id)"
                 :items="selected.component_metadata"

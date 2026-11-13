@@ -1,6 +1,7 @@
 from typing import Literal
 from types import SimpleNamespace
 from uuid import UUID
+from backend import experiment_context
 from fastapi import HTTPException
 from pydantic import ConfigDict,Field,model_validator
 from starlette.concurrency import run_in_threadpool
@@ -24,19 +25,22 @@ def install(app,host,submissions):
             if self.control_start>=self.control_end or self.canny_low>=self.canny_high: raise ValueError('起始／低閾值必須小於結束／高閾值')
             return self
     host.ControlInput=Input
-    class Generate(Input): request_id:UUID
+    class Generate(Input):
+        request_id: UUID
+        experiment: experiment_context.Selection | None = None
     @app.get('/api/control/workflow')
     def descriptor():
         return dict(id=flow.ID,name='Canny 結構參考',architectures=['sd1','sdxl'],image_count=1,lora=True,implemented=True,preprocessor='ComfyUI native Canny',batch_size=1,denoise=1,comparison=False)
     async def submit(value,adapter):
         from backend import diagnostics
         diagnostics.bind_submission(value.request_id, adapter.ID)
-        settings=value.model_dump(mode='json',exclude={'request_id','revision'})
+        settings=value.model_dump(mode='json',exclude={'request_id','revision','experiment'})
+        experiment = value.experiment.model_dump(mode='json') if getattr(value, 'experiment', None) else None
         async with submissions.job_lock(value.request_id):
             try: existing=jobs.get(host.DB,str(value.request_id))
             except KeyError: existing=None
             if existing is not None:
-                if existing.get('workflow_id')!=adapter.ID or existing.get('reference_settings')!=settings or existing.get('experiment_context') is not None: raise HTTPException(409,'此 UUID 已用於不同的結構參考設定')
+                if existing.get('workflow_id')!=adapter.ID or existing.get('reference_settings')!=settings or not experiment_context.matches(existing.get('experiment_context'), experiment, settings): raise HTTPException(409,'此 UUID 已用於不同的結構參考設定')
                 diagnostics.record_job('submission_recovered', existing)
                 return existing
             if not value.checkpoint: raise HTTPException(422,'請選擇 checkpoint')
@@ -49,7 +53,7 @@ def install(app,host,submissions):
             components=[control_catalog.capture(record)]
             def recheck(job): control_catalog.recheck(host.DB,value.engine_url,value.checkpoint,job['component_metadata'],job['model_metadata'],kind=settings.get('control_kind','canny'))
             submission=SimpleNamespace(request_id=value.request_id,engine_url=value.engine_url,checkpoint=value.checkpoint,workflow=adapter.build(settings,value.request_id))
-            return await submissions.submit_locked(submission,reference=dict(settings=settings,snapshot=snapshot,encoded=encoded,adapter=adapter,workflow_id=adapter.ID,component_metadata=components,recheck=recheck))
+            return await submissions.submit_locked(submission,experiment=experiment, generation_settings=settings, reference=dict(settings=settings,snapshot=snapshot,encoded=encoded,adapter=adapter,workflow_id=adapter.ID,component_metadata=components,recheck=recheck))
 
     @app.post('/api/control/generate')
     async def generate(value:Generate): return await submit(value,flow)
@@ -75,7 +79,9 @@ def install(app,host,submissions):
             if not self.control_net_name.strip() or not self.image_asset_id or self.reference_ids!=[self.image_asset_id] or self.control_start>=self.control_end: raise ValueError('需單張結構素材與有效控制範圍')
             return self
     host.StructureInput=StructureInput
-    class StructureGenerate(StructureInput): request_id:UUID
+    class StructureGenerate(StructureInput):
+        request_id: UUID
+        experiment: experiment_context.Selection | None = None
     @app.get('/api/structure/workflow')
     def structure_descriptor():
         return dict(id=structure_workflows.ID,name='SDXL 姿勢／深度參考',architectures=['sdxl'],kinds=['pose','depth'],implemented=True,batch_size=1,expected_aux_revision=structure_workflows.AUX_REVISION,outputs=dict(artwork='7',condition='16'))

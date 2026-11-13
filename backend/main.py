@@ -170,6 +170,9 @@ def create_app(
     flux_plan.install(app, context)
     flux_catalog.install(app, context)
     settings_transfer.install(app, context)
+    from backend import specialized_settings
+
+    specialized_settings.install(app, context)
     stack_validation.install(app, context)
     experiment_plans.install(app, context)
     from backend import training_review_api

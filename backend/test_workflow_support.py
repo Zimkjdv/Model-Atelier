@@ -85,6 +85,7 @@ class WorkflowSupportTests(unittest.TestCase):
                 )
                 for row in value['workflows']:
                     all_ids.append(row['id'])
+                    self.assertTrue(all(row['specialized_capabilities'].values()))
                     self.assertFalse(row['capabilities']['draft'])
                     self.assertFalse(row['capabilities']['settings_import'])
                     self.assertFalse(row['capabilities']['settings_export'])

@@ -1,5 +1,6 @@
+import { readFile } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
 for (const width of [1440, 390]) {
   for (const family of ['inpaint', 'control'] as const) {
@@ -16,6 +17,7 @@ for (const width of [1440, 390]) {
       expect(response.ok()).toBe(true)
       const report = await response.json()
       await page.goto('/#/studio/' + family)
+      await page.getByRole('button', { name: '任務與歷史資訊', exact: true }).click()
       const panel = page.locator('.format-support')
       await panel.locator('summary').focus()
       await panel.locator('summary').press('Enter')
@@ -81,6 +83,7 @@ for (const width of [1440, 390]) {
         expect(JSON.stringify(settings)).toBe(original)
       }
       await page.locator('#' + family + '-prompt').fill('R07 unsubmitted form')
+      await page.locator('.studio-advanced > summary').click()
       await page.locator('#' + family + '-seed').fill('18446744073709551615')
       const audit = await new AxeBuilder({ page })
         .include('.format-support')
@@ -93,13 +96,13 @@ for (const width of [1440, 390]) {
       await panel.screenshot({ path: info.outputPath('format-support.png') })
       await page
         .getByRole('button', {
-          name: family === 'inpaint' ? 'Canny 結構參考' : '局部編輯',
+          name: family === 'inpaint' ? '結構引導' : '局部修補',
           exact: true,
         })
         .click()
       await page
         .getByRole('button', {
-          name: family === 'inpaint' ? '局部編輯' : 'Canny 結構參考',
+          name: family === 'inpaint' ? '局部修補' : '結構引導',
           exact: true,
         })
         .click()
@@ -123,6 +126,7 @@ test('support read failure and retry preserve the unsaved form', async ({ page }
   )
   await page.goto('/#/studio/inpaint')
   await page.locator('#inpaint-prompt').fill('keep this prompt')
+  await page.getByRole('button', { name: '任務與歷史資訊', exact: true }).click()
   const panel = page.locator('.format-support')
   await panel.locator('summary').click()
   await expect(panel.getByRole('alert')).toContainText('支援範圍暫時無法讀取')
@@ -130,4 +134,94 @@ test('support read failure and retry preserve the unsaved form', async ({ page }
   await panel.getByRole('button', { name: '重新讀取支援範圍', exact: true }).click()
   await expect(panel.getByRole('listitem')).toHaveCount(3)
   await expect(page.locator('#inpaint-prompt')).toHaveValue('keep this prompt')
+})
+
+async function openSpecializedTools(page: Page) {
+  await page.getByRole('button', { name: '草稿與設定交換', exact: true }).click()
+  const tools = page.locator('.specialized-settings')
+  await tools.locator('summary').click()
+  await expect(tools.getByRole('button', { name: '另存專用草稿' })).toBeEnabled()
+  return tools
+}
+
+test('inpaint draft, exchange and manual comparison preserve the mask, seed and job association', async ({
+  page,
+  request,
+}) => {
+  const before = await (await request.get('/qa/state')).json()
+  await page.goto('/#/studio/inpaint')
+  await page.locator('#inpaint-checkpoint').selectOption('demo.safetensors')
+  await expect(page.locator('#inpaint-source')).toBeEnabled()
+  await page.locator('#inpaint-source').selectOption(before.asset_id)
+  await page.locator('.studio-advanced > summary').click()
+  await page.locator('#inpaint-mask').selectOption(before.mask_asset_id)
+  await page.locator('#inpaint-title').fill('Feather comparison')
+  await page.locator('.custom-size > summary').click()
+  await page.locator('#inpaint-width').fill('128')
+  await page.locator('#inpaint-height').fill('64')
+  await page.locator('#inpaint-seed').fill('18446744073709551615')
+  await page.locator('#inpaint-prompt').fill('Original landscape')
+  await page.locator('#inpaint-feather').fill('4')
+  const tools = await openSpecializedTools(page)
+  await tools.getByRole('button', { name: '另存專用草稿' }).click()
+  await expect(tools.getByRole('status')).toContainText('已保存專用草稿')
+  await page.reload()
+  await openSpecializedTools(page)
+  await page.locator('.studio-advanced > summary').click()
+  await tools.getByLabel('已保存草稿').selectOption({ index: 1 })
+  await tools.getByRole('button', { name: '載入專用草稿' }).click()
+  await expect(page.locator('#inpaint-feather')).toHaveValue('4')
+  await expect(page.locator('#inpaint-mask')).toHaveValue(before.mask_asset_id)
+  await expect(page.locator('#inpaint-seed')).toHaveValue('18446744073709551615')
+
+  const pending = page.waitForEvent('download')
+  await tools.getByRole('button', { name: '匯出專用設定 JSON' }).click()
+  const downloaded = await pending
+  const path = await downloaded.path()
+  expect(path).toBeTruthy()
+  await page.locator('#inpaint-prompt').fill('Unsaved edit')
+  await tools.getByLabel('匯入專用設定 JSON').setInputFiles({
+    name: 'specialized.json',
+    mimeType: 'application/json',
+    buffer: await readFile(path!),
+  })
+  const imported = tools.getByRole('region', { name: '專用匯入預覽' })
+  await expect(imported).toContainText('checkpoint-inpaint-feather-v2')
+  await expect(page.locator('#inpaint-prompt')).toHaveValue('Unsaved edit')
+  page.once('dialog', (dialog) => dialog.dismiss())
+  await imported.getByRole('button', { name: '套用匯入設定' }).click()
+  await expect(page.locator('#inpaint-prompt')).toHaveValue('Unsaved edit')
+  page.once('dialog', (dialog) => dialog.accept())
+  await imported.getByRole('button', { name: '套用匯入設定' }).click()
+  await expect(page.locator('#inpaint-prompt')).toHaveValue('Original landscape')
+
+  await tools.getByLabel('比較參數').selectOption('feather_radius')
+  await tools.getByLabel('比較值（2–4 個，以逗號分隔）').fill('0, 4')
+  await tools.getByRole('button', { name: '預覽專用比較方案' }).click()
+  await expect(tools.getByLabel('比較方案預覽')).toContainText('0、4')
+  await tools.getByRole('button', { name: '保存專用比較方案' }).click()
+  page.once('dialog', (dialog) => dialog.accept())
+  await tools.getByRole('button', { name: '載入比較組 0', exact: true }).click()
+  await expect(page.locator('#inpaint-feather')).toHaveValue('0')
+  expect((await (await request.get('/qa/state')).json()).prompts).toBe(before.prompts)
+
+  const response = page.waitForResponse(
+    (value) =>
+      value.url().endsWith('/api/inpaint-feather/generate') && value.request().method() === 'POST',
+  )
+  await page.getByRole('button', { name: '生成圖片', exact: true }).click()
+  const submitted = await response
+  expect(submitted.ok(), await submitted.text()).toBeTruthy()
+  const job = await submitted.json()
+  expect(job.experiment_context).toMatchObject({ variant_id: 'variant-1', axis: 'feather_radius' })
+  expect(job.reference_settings).toMatchObject({
+    mask_asset_id: before.mask_asset_id,
+    feather_radius: 0,
+    seed: '18446744073709551615',
+  })
+  await tools.getByRole('button', { name: '重讀已保存結果' }).click()
+  await expect(tools.getByRole('link', { name: '原任務紀錄' })).toHaveAttribute(
+    'href',
+    '/api/jobs/' + job.id,
+  )
 })

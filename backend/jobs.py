@@ -11,6 +11,7 @@ from backend import (
     diagnostics,
     resource_sampling,
     template_context,
+    workflow_support,
 )
 
 
@@ -127,7 +128,24 @@ def _reserve(
             workflow_id,
             lora_metadata,
         )
-        context = experiment_context.freeze(db, experiment, generation_settings, model_metadata)
+        if (
+            experiment is not None
+            and reference_settings is not None
+            and workflow_id in workflow_support.IDS
+        ):
+            from backend.specialized_settings import freeze
+
+            context = freeze(
+                db,
+                experiment,
+                generation_settings,
+                workflow_id,
+                reference_metadata,
+                model_metadata,
+                lora_metadata,
+            )
+        else:
+            context = experiment_context.freeze(db, experiment, generation_settings, model_metadata)
         if workflow_id == 'checkpoint-fooocus-inpaint-v3':
             from backend.fooocus_workflows import validate_model
 

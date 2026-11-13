@@ -3,6 +3,7 @@
 from types import SimpleNamespace
 from typing import Literal
 from uuid import UUID
+from backend import experiment_context
 
 from fastapi import HTTPException
 from pydantic import ConfigDict, Field, model_validator
@@ -48,6 +49,7 @@ def install(app, host, submissions):
 
     class Generate(Input):
         request_id: UUID
+        experiment: experiment_context.Selection | None = None
         template_selection: template_context.Selection | None = None
 
     @app.get('/api/reference/workflow')
@@ -76,7 +78,10 @@ def install(app, host, submissions):
     async def generate(value: Generate):
         diagnostics.bind_submission(value.request_id, flow.ID)
         settings = value.model_dump(
-            mode='json', exclude={'request_id', 'revision', 'template_selection'}
+            mode='json', exclude={'request_id', 'revision', 'template_selection', 'experiment'}
+        )
+        experiment = (
+            value.experiment.model_dump(mode='json') if getattr(value, 'experiment', None) else None
         )
         async with submissions.job_lock(value.request_id):
             try:
@@ -90,7 +95,9 @@ def install(app, host, submissions):
                         existing.get('template_context'), value.template_selection
                     )
                     or existing.get('reference_settings') != settings
-                    or existing.get('experiment_context') is not None
+                    or not experiment_context.matches(
+                        existing.get('experiment_context'), experiment, settings
+                    )
                 ):
                     raise HTTPException(409, '此 UUID 已用於不同參考流程設定')
                 diagnostics.record_job('submission_recovered', existing)
@@ -138,6 +145,7 @@ def install(app, host, submissions):
             return await submissions.submit_locked(
                 submission,
                 generation_settings=settings,
+                experiment=experiment,
                 reference=dict(
                     settings=settings,
                     snapshot=snapshot,

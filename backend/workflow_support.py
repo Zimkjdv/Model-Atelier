@@ -132,6 +132,12 @@ def describe(family):
         workflows=[
             dict(
                 deepcopy(flow),
+                specialized_capabilities=dict(
+                    draft=True,
+                    settings_export=True,
+                    settings_import=True,
+                    comparison_plan=True,
+                ),
                 capabilities=dict(
                     draft=False,
                     settings_export=False,
@@ -144,7 +150,7 @@ def describe(family):
             for flow in FLOWS
             if flow['family'] == family
         ],
-        note='一般草稿、設定交換與比較方案尚未啟用專用格式；不會捨棄雙輸入、羽化或控制參數。'
+        note='專用草稿、設定交換與比較使用各流程的版本化格式。一般格式拒絕專用欄位。'
         '可載入完整已保存設定（需本機素材可用）及下載原始 workflow；workflow 不包含素材圖片。',
     )
 

@@ -9,6 +9,12 @@ type Support = {
   workflows: {
     id: string
     name: string
+    specialized_capabilities?: {
+      draft: boolean
+      settings_export: boolean
+      settings_import: boolean
+      comparison_plan: boolean
+    }
     capabilities: {
       draft: boolean
       settings_export: boolean
@@ -54,6 +60,9 @@ const status = (enabled: boolean) => (enabled ? '已提供' : '尚未支援')
     >
     <template v-else-if="support">
       <p>{{ support.note }}</p>
+      <p v-if="support.workflows.some((workflow) => workflow.specialized_capabilities?.draft)"
+        >專用草稿、匯入匯出與比較可在工作台工具區操作。</p
+      >
       <ul>
         <li v-for="workflow in support.workflows" :key="workflow.id">
           <strong>{{ workflow.name }}</strong
@@ -67,8 +76,7 @@ const status = (enabled: boolean) => (enabled ? '已提供' : '尚未支援')
         </li>
       </ul>
       <p
-        >未提交的表單及未保存的遮罩筆畫仍只保留於本頁。新生成使用
-        v2；載入舊版設定不會改寫原任務、原版本或待確認請求。</p
+        >請先保存遮罩，再保存專用草稿。從專用文件載入時保留其流程版本；原任務及待確認請求保有原設定。</p
       >
     </template>
     <p v-else role="status">正在讀取支援範圍…</p>

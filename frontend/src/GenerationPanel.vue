@@ -7,6 +7,7 @@ import {
   type PreflightBlocker,
 } from './generationPreflight'
 import { api as request, ApiError } from './apiClient'
+import { specializedBody, type SpecializedForm } from './specializedSettings'
 import { submitOnce } from './generationRequest'
 import { computed, onActivated, onBeforeUnmount, ref, watch } from 'vue'
 import ExperimentSnapshot from './ExperimentSnapshot.vue'
@@ -53,6 +54,7 @@ const props = defineProps<{
   templateSelection?: TemplateSelection | null
   form: CreationForm | FluxForm | FluxExtensionForm | InpaintForm | ControlForm | ReferenceForm
   experiment?: ExperimentLoad | null
+  specializedWorkflowId?: string
   workflow?: 'flux' | 'flux-addon' | 'inpaint' | 'control' | 'reference'
   fieldProblems?: FieldProblems
   blockers?: PreflightBlocker[]
@@ -207,32 +209,32 @@ const connectionLabels = {
   offline: '即時進度暫不可用',
 }
 function freezeCurrentSubmission(): Record<string, unknown> {
+  const form = props.specializedWorkflowId
+    ? specializedBody(props.form as SpecializedForm, props.specializedWorkflowId)
+    : props.form
   const experiment =
-    props.workflow === 'inpaint' ||
-    props.workflow === 'control' ||
-    props.workflow === 'reference' ||
-    props.workflow === 'flux-addon'
-      ? null
-      : experimentForSubmission(props.experiment, props.form)
+    props.workflow === 'flux-addon' ? null : experimentForSubmission(props.experiment, form)
   const candidate = {
-    ...JSON.parse(JSON.stringify(props.form)),
+    ...JSON.parse(JSON.stringify(form)),
     request_id: crypto.randomUUID(),
     ...(props.templateSelection ? { template_selection: { ...props.templateSelection } } : {}),
     ...(props.workflow === 'control'
       ? {
           [controlPendingMarker]:
-            'control_kind' in props.form && props.form.control_kind
+            props.specializedWorkflowId ??
+            ('control_kind' in props.form && props.form.control_kind
               ? structureWorkflowId
-              : controlEdgeWorkflowId,
+              : controlEdgeWorkflowId),
         }
       : {}),
     ...(props.workflow === 'reference' ? { [referencePendingMarker]: referenceWorkflowId } : {}),
     ...(props.workflow === 'inpaint'
       ? {
           [inpaintPendingMarker]:
-            'inpaint_model' in props.form && props.form.inpaint_model
+            props.specializedWorkflowId ??
+            ('inpaint_model' in props.form && props.form.inpaint_model
               ? fooocusWorkflowId
-              : inpaintFeatherWorkflowId,
+              : inpaintFeatherWorkflowId),
         }
       : {}),
     ...(experiment ? { experiment } : {}),
@@ -719,6 +721,16 @@ onBeforeUnmount(() => window.clearInterval(timer))
         <button v-if="job.status === 'completed'" class="secondary" @click="emit('gallery', job.id)"
           >前往作品庫匯入圖片 →</button
         >
+        <template
+          v-if="
+            terminal(job) &&
+            (isInpaintWorkflow(job.workflow_id) ||
+              isControlWorkflow(job.workflow_id) ||
+              job.workflow_id === referenceWorkflowId)
+          "
+        >
+          <a :href="`/api/specialized/jobs/${job.id}/settings`">匯出專用設定（含來源快照）</a> ·
+        </template>
         <a :href="`/api/jobs/${job.id}/workflow`">下載完整工作流程</a> ·
         <a :href="`/api/jobs/${job.id}`" target="_blank" rel="noopener">任務／歷史 JSON</a>
       </div>

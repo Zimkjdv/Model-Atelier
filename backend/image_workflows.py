@@ -29,6 +29,21 @@ def build(settings, job_id):
     return value
 
 
+def read_asset_bytes(data_folder, asset):
+    asset_id = asset['id']
+    path = data_folder / 'assets' / (asset_id + '.png')
+    try:
+        if path.is_symlink() or not path.resolve().is_relative_to(data_folder.resolve()) or path.stat().st_size > MAX_ENCODED:
+            raise ValueError('輸入素材檔案不符合本機來源限制')
+        with path.open('rb') as stream:
+            raw = stream.read(MAX_ENCODED + 1)
+    except OSError as exc:
+        raise ValueError('輸入素材檔案遺失或無法讀取') from exc
+    if len(raw) != asset['size'] or hashlib.sha256(raw).hexdigest() != asset['sha256']:
+        raise ValueError('輸入素材 SHA256 或大小不符，未使用已變更的檔案')
+    return raw
+
+
 def prepare(db, data_folder, settings):
     asset_id = settings.get('image_asset_id')
     if not asset_id or settings['reference_ids'] != [asset_id]:
@@ -41,16 +56,7 @@ def prepare(db, data_folder, settings):
         raise ValueError('輸入素材不存在，請重新選擇') from exc
     if asset['archived']:
         raise ValueError('輸入素材已封存，請先還原素材')
-    path = data_folder / 'assets' / (asset_id + '.png')
-    try:
-        if path.is_symlink() or not path.resolve().is_relative_to(data_folder.resolve()) or path.stat().st_size > MAX_ENCODED:
-            raise ValueError('輸入素材檔案不符合本機來源限制')
-        with path.open('rb') as stream:
-            raw = stream.read(MAX_ENCODED + 1)
-    except OSError as exc:
-        raise ValueError('輸入素材檔案遺失或無法讀取') from exc
-    if len(raw) != asset['size'] or hashlib.sha256(raw).hexdigest() != asset['sha256']:
-        raise ValueError('輸入素材 SHA256 或大小不符，未使用已變更的檔案')
+    raw = read_asset_bytes(data_folder, asset)
     try:
         with Image.open(io.BytesIO(raw)) as image:
             if image.format != 'PNG' or image.size != (asset['width'], asset['height']) or image.width * image.height > assets.MAX_PIXELS:

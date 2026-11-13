@@ -6,7 +6,7 @@ R01 已另提供 [SDXL pose／depth v3](structure-reference.md)，使用獨立�
 
 2026-10-23 R04：Pony Canny v2 的無 LoRA、IKEA、LCM、LCM → IKEA 與反向五組 RTX 3060 實測完成。固定原素材／seed、控制模型與各組參數；原邊緣、作品、完整 workflow、桌面／窄版下載及離線重啟還原通過。材質／畫風仍有偏差，不建立通用品質預設，詳見 [R04 實測與重跑 CLI](../validation/pony-canny-v2-20261023.md)。此條件沒有套入一般文生圖的 LoRA 歷史匹配 registry。
 
-一般草稿、設定交換及比較尚未支援 Canny 專用格式；控制參數不會被當成一般設定而部分保存。工作台可展開 v1／v2 支援範圍，原設定及完整 workflow 保留，見 [R07 格式評估](../development/specialized-workflow-formats.md)。
+結構引導工作台提供 Canny v1／v2 與 Pose／Depth v3 的專用草稿、設定交換及比較。見 [專用流程格式](../development/specialized-workflow-formats.md)。
 
 固定 `checkpoint-canny-controlnet-v1` 使用一張素材、ComfyUI 原生 Canny 與同架構的 ControlNet。支援明確登記的 SD 1.x／SDXL checkpoint，以及最多四個有序 LoRA。這是結構條件，不是畫風或角色鎖定；後端與專用工作台已整合，Pony／Animagine 的固定 RTX 3060 驗收及離線重啟核對已完成，見 [實測與品質觀察](../validation/checkpoint-canny-rtx3060.md)。
 
@@ -32,7 +32,7 @@ R01 已另提供 [SDXL pose／depth v3](structure-reference.md)，使用獨立�
 
 相同 UUID 與完整設定先恢復舊任務，不重新探查素材、模型或引擎；不同設定為 409。/prompt 回應遺失保留 unknown，不能自動重送。一般 /api/generate 拒絕控制參數，避免悄悄退回普通流程。
 
-任務／作品的 creation-settings 可離線完整還原控制模型、參數、來源與版本。節點、角色、前處理或控制快照不一致時拒絕部分載入。清單或版本改變只提示，不改寫原設定。普通草稿、設定交換與比較方案尚未接入，不借用舊格式丟棄控制欄位。
+任務／作品的 creation-settings 可離線完整還原控制模型、參數、來源與版本。節點、角色、前處理或控制快照不一致時拒絕部分載入。清單或版本改變只提示，不改寫原設定。控制參數可透過專用設定檔完整交換。
 
 依據：[ComfyUI 官方 ControlNet 文件](https://docs.comfy.org/tutorials/controlnet/controlnet)，以及本機固定 ComfyUI 0.34.0 原始碼。新增 12 項後端測試涵蓋登記隔離／競態、精確圖、上傳／離線／未知結果、原 UUID 恢復、有序 LoRA 及完整還原。完整後端 451 項（450 通過、1 項既有權限跳過）。
 

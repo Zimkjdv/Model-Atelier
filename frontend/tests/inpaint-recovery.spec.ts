@@ -47,7 +47,9 @@ async function prepare(page: Page, request: APIRequestContext) {
   await page.locator('#inpaint-checkpoint').selectOption('demo.safetensors')
   await expect(page.locator('#inpaint-source')).toBeEnabled()
   await page.locator('#inpaint-source').selectOption(before.asset_id)
+  await page.locator('.studio-advanced > summary').click()
   await page.locator('#inpaint-mask').selectOption(before.mask_asset_id)
+  await page.locator('.custom-size > summary').click()
   for (const [id, value] of Object.entries({
     title: 'V02 frozen inpaint',
     prompt: 'original frozen prompt',
@@ -62,6 +64,7 @@ async function prepare(page: Page, request: APIRequestContext) {
     await page.locator('#inpaint-' + id).fill(value)
   await page.locator('#inpaint-resize').selectOption('stretch')
   await expect(page.getByRole('button', { name: '生成圖片', exact: true })).toBeEnabled()
+  await page.getByRole('button', { name: '任務與歷史資訊', exact: true }).click()
   return { before, body: settings(before.asset_id, before.mask_asset_id) }
 }
 
@@ -77,6 +80,7 @@ async function reload(page: Page) {
   } finally {
     page.off('dialog', accept)
   }
+  await page.getByRole('button', { name: '任務與歷史資訊', exact: true }).click()
   await expect(recover(page)).toBeEnabled()
 }
 
@@ -275,7 +279,7 @@ for (const width of [1440, 390])
         expect(browserRequests).toHaveLength(2)
         release()
         await expect(recover(page)).toBeEnabled()
-        await expect(panel(page).getByRole('alert')).toContainText('任務 ID')
+        await expect(page.getByRole('alert')).toContainText('任務 ID')
         expect(await pending(page)).toBe(original)
         await reload(page)
         expect(await pending(page)).toBe(original)
@@ -362,12 +366,12 @@ test('unknown inpaint version stays pending across reload and never dispatches',
   await page.goto('/#/studio/inpaint')
   await expect(recover(page)).toBeEnabled()
   await recover(page).click()
-  await expect(panel(page).getByRole('alert')).toContainText('流程版本未知')
+  await expect(page.getByRole('alert')).toContainText('流程版本未知')
   expect(await pending(page)).toBe(raw)
   await reload(page)
   expect(await pending(page)).toBe(raw)
   await recover(page).click()
-  await expect(panel(page).getByRole('alert')).toContainText('流程版本未知')
+  await expect(page.getByRole('alert')).toContainText('流程版本未知')
   expect(sent).toEqual([])
   expect((await state(request)).prompts).toBe(before.prompts)
   expect((await state(request)).uploads).toBe(before.uploads)

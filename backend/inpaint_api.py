@@ -2,6 +2,7 @@
 from typing import Literal
 from types import SimpleNamespace
 from uuid import UUID
+from backend import experiment_context
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from pydantic import ConfigDict,Field,model_validator
@@ -23,6 +24,7 @@ def install(app,host,submissions):
     host.InpaintInput=Input
     class Generate(Input):
         request_id:UUID
+        experiment: experiment_context.Selection | None = None
 
     @app.get('/api/inpaint/workflow')
     def description():
@@ -33,12 +35,13 @@ def install(app,host,submissions):
     async def submit(value,adapter):
         from backend import diagnostics
         diagnostics.bind_submission(value.request_id, adapter.ID)
-        settings=value.model_dump(mode='json',exclude={'request_id','revision'})
+        settings=value.model_dump(mode='json',exclude={'request_id','revision','experiment'})
+        experiment = value.experiment.model_dump(mode='json') if getattr(value, 'experiment', None) else None
         async with submissions.job_lock(value.request_id):
             try: existing=jobs.get(host.DB,str(value.request_id))
             except KeyError: existing=None
             if existing is not None:
-                if existing.get('workflow_id')!=adapter.ID or existing.get('reference_settings')!=settings or existing.get('experiment_context') is not None:
+                if existing.get('workflow_id')!=adapter.ID or existing.get('reference_settings')!=settings or not experiment_context.matches(existing.get('experiment_context'), experiment, settings):
                     raise HTTPException(409,'此請求 ID 已用於不同局部編輯設定')
                 diagnostics.record_job('submission_recovered', existing)
                 return existing
@@ -51,7 +54,7 @@ def install(app,host,submissions):
             except ValueError as exc: raise HTTPException(422,str(exc)) from exc
             submission=SimpleNamespace(request_id=value.request_id,engine_url=value.engine_url,checkpoint=value.checkpoint,
                 workflow=adapter.build(settings,value.request_id))
-            return await submissions.submit_locked(submission,reference=dict(settings=settings,snapshots=snapshots,encoded=encoded,
+            return await submissions.submit_locked(submission,experiment=experiment, generation_settings=settings, reference=dict(settings=settings,snapshots=snapshots,encoded=encoded,
                 workflow_id=adapter.ID,adapter=adapter,**(dict(recheck=lambda job:adapter.recheck(host,value,job)) if hasattr(adapter,'recheck') else {})))
 
     @app.post('/api/inpaint/generate')

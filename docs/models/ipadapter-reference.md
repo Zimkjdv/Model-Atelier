@@ -60,11 +60,11 @@
 | `GET /api/library/jobs?workflow=reference` | 獨立分頁清單，不混入一般 checkpoint 任務 |
 | `GET /api/jobs/{id}/reference-image` | 原任務已保存的 224 方圖 |
 | `GET /api/jobs/{id}/creation-settings` | 終態原設定；作品使用對應 artwork 端點 |
-| `GET /api/reference-workflows/support?family=reference` | 草稿／交換／比較尚未開放，完整設定還原及 workflow 下載可用 |
+| `GET /api/reference-workflows/support?family=reference` | 回報專用草稿／交換／比較及原設定還原／workflow 下載能力 |
 
 完整 request 由一般 checkpoint 取樣欄位加上 `image_asset_id`、僅該 ID 的 `reference_ids`、`reference_mode`、`ipadapter_name`、`clip_vision_name`、`reference_weight`、`reference_start`、`reference_end` 構成；`workflow_mode=text2image`、`reference_resize=fit`、`loras=[]`、`denoise=1`。`seed` 一律十進位字串，完整 workflow 下載直接保留後端原 JSON，不經瀏覽器重新 stringify。
 
-一般草稿、設定交換及比較方案會明確拒絕此 ID、專用欄位與 marker，避免漏存模式、來源或元件。新增這個流程沒有開放自動批次、重新訓練或自動評分；T01／T02 另處理訓練需求及資料契約。
+一般草稿、設定交換及比較方案會明確拒絕此 ID、專用欄位與 marker，避免漏存模式、來源或元件。參考工作台的 [專用格式](../development/specialized-workflow-formats.md) 可保存模式、來源、元件及單軸比較。
 
 ## 單組 GPU 驗收
 

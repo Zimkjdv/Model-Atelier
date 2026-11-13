@@ -484,6 +484,14 @@ def install(app, host):
                     reference['recheck'](job)
                 except ValueError as exc:
                     fail(409, str(exc))
+            comparison = job.get('experiment_context') or {}
+            if expected := comparison.get('specialized_registrations'):
+                from backend.specialized_settings import verify_dispatch
+
+                try:
+                    verify_dispatch(host.DB, comparison['settings'], expected)
+                except ValueError as exc:
+                    fail(409, str(exc))
             job = cancellation.persist(host, job, status='submitting')
             try:
                 async with compute_lease.dispatch(host.ROOT, value.engine_url):

@@ -2,6 +2,7 @@
 import hashlib
 import io
 from uuid import UUID
+from backend import experiment_context
 from fastapi import HTTPException,Response
 from pydantic import Field
 from PIL import Image
@@ -13,7 +14,9 @@ def install(app,host,submissions):
     class Input(host.InpaintInput):
         feather_radius:int=Field(default=0,strict=True,ge=0,le=64)
     host.InpaintFeatherInput=Input
-    class Generate(Input): request_id:UUID
+    class Generate(Input):
+        request_id: UUID
+        experiment: experiment_context.Selection | None = None
     def validate(value): return Input.model_validate(value).model_dump(mode='json',exclude={'revision'})
     @app.get('/api/inpaint-feather/workflow')
     def description():

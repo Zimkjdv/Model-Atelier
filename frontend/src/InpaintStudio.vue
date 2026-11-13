@@ -22,6 +22,9 @@ import {
 } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import PromptConverter from './PromptConverter.vue'
+import SpecializedSettings from './SpecializedSettings.vue'
+import { specializedWorkflow, type SpecializedDocument } from './specializedSettings'
+import type { ExperimentLoad } from './experimentSettings'
 import AssetChoices from './AssetChoices.vue'
 import MaskEditor from './MaskEditor.vue'
 import InpaintBlendPreview from './InpaintBlendPreview.vue'
@@ -41,6 +44,7 @@ import {
   inpaintProblem,
   newFeatherInpaint,
   type InpaintForm,
+  type FeatherForm,
 } from './inpaintSettings'
 import { type ModelProfile, validateProfile } from './modelProfiles'
 const props = defineProps<{ restoreRequest?: { artworkId: string; token: number } | null }>()
@@ -79,6 +83,7 @@ const busy = ref(false),
   maskBusy = ref(false),
   generationBusy = ref(false),
   generationPending = ref(false)
+const maskEditorRevision = ref(0)
 const origin = ref<Restoration | null>(null),
   pendingRestore = ref<Restoration | null>(null)
 const baseline = ref(JSON.stringify(form)),
@@ -103,6 +108,35 @@ const locked = computed(
     generationPending.value ||
     !!pendingRestore.value,
 )
+const experiment = ref<ExperimentLoad | null>(null)
+const originalVersion = ref<string>()
+const specializedId = computed(() => specializedWorkflow('inpaint', form, originalVersion.value))
+function applySpecialized(value: SpecializedDocument, saved: boolean, selected?: ExperimentLoad) {
+  const settings = {
+    ...value.settings,
+    feather_radius: 'feather_radius' in value.settings ? value.settings.feather_radius : 0,
+  } as FeatherForm
+  if (
+    locked.value ||
+    specializedWorkflow('inpaint', settings, value.workflow_id) !== value.workflow_id
+  )
+    return false
+  if (dirty.value && !window.confirm('要取代目前未保存的設定嗎？')) return false
+  restores.cancel()
+  delete form.inpaint_model
+  maskDirty.value = false
+  ++maskEditorRevision.value
+  Object.assign(form, settings)
+  originalVersion.value = value.workflow_id
+  experiment.value = selected ?? null
+  origin.value = null
+  baseline.value = saved ? JSON.stringify(form) : ''
+  void load()
+  return true
+}
+function markSpecializedSaved() {
+  baseline.value = JSON.stringify(form)
+}
 const loads = createRequestScope(),
   restores = createRequestScope()
 let mounted = false,
@@ -228,6 +262,8 @@ function apply(value: Restoration) {
   if (generationBusy.value || generationPending.value || maskBusy.value) return
   const copied = copyFeatherInpaint(value.settings)
   restores.cancel()
+  originalVersion.value = undefined
+  experiment.value = null
   delete form.inpaint_model
   Object.assign(form, copied)
   origin.value = value
@@ -586,12 +622,22 @@ const preflightBlockers = computed(() => {
                     :checkpoint="form.checkpoint"
                     @blocked="loraBlock = $event" /></details
               ></details> </fieldset></form
-          ><StudioUtilityBar :drafts="false" /><UnsavedChangesNotice
+          ><StudioUtilityBar /><UnsavedChangesNotice
             :dirty="dirty"
             :saving="maskBusy"
             page-only /><details class="studio-tools"
-            ><summary>草稿、來源與設定交換</summary
-            ><div class="toolbar"
+            ><summary>草稿、來源與設定交換</summary>
+            <SpecializedSettings
+              family="inpaint"
+              :workflow-id="specializedId"
+              :form="form"
+              :disabled="locked || maskDirty"
+              :experiment="experiment"
+              :apply="applySpecialized"
+              :saved="markSpecializedSaved"
+              @detach="experiment = null"
+              @gallery="emit('gallery', $event)" />
+            <div class="toolbar"
               ><strong>Checkpoint 局部編輯</strong
               ><button class="secondary" :disabled="locked" @click="load(true)"
                 >更新清單與引擎選項</button
@@ -601,8 +647,8 @@ const preflightBlockers = computed(() => {
             <details class="studio-validation"
               ><summary>相容性與流程限制</summary
               ><p class="footnote"
-                >表單在工作台切換時保留；重新整理會清除未提交的表單。保存遮罩會寫入素材庫，生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新生成使用
-                v2；載入 v1 原設定時，羽化設為 0，不回填原任務。</p
+                >表單在工作台切換時保留；重新整理會清除未提交的表單。保存遮罩會寫入素材庫，生成後可從任務或作品載入完整原設定。請保存遮罩後使用專用草稿與比較工具。新建局部修補預設使用
+                v2。</p
               >
               <p class="footnote"
                 >原引擎 {{ form.engine_url || '讀取中' }} · 模型版本
@@ -646,6 +692,7 @@ const preflightBlockers = computed(() => {
           :height="form.height"
           title="局部修補"
           @gallery="emit('gallery', $event)" /><MaskEditor
+          :key="maskEditorRevision"
           v-show="stageView === 'source'"
           v-model:feather="form.feather_radius"
           :source="source"
@@ -669,6 +716,8 @@ const preflightBlockers = computed(() => {
           @preview="previewJob = $event"
           submit-target="#studio-submit-inpaint"
           :form="form"
+          :experiment="experiment"
+          :specialized-workflow-id="specializedId"
           workflow="inpaint"
           :blockers="preflightBlockers"
           :field-problems="fieldProblems"

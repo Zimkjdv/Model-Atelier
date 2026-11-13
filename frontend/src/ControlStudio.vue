@@ -23,6 +23,9 @@ import {
 } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
 import PromptConverter from './PromptConverter.vue'
+import SpecializedSettings from './SpecializedSettings.vue'
+import { specializedWorkflow, type SpecializedDocument } from './specializedSettings'
+import type { ExperimentLoad } from './experimentSettings'
 import AssetChoices from './AssetChoices.vue'
 import ControlSnapshot from './ControlSnapshot.vue'
 import CannyPreview from './CannyPreview.vue'
@@ -98,6 +101,32 @@ const controlModel = computed(() =>
 const locked = computed(
   () => busy.value || generationBusy.value || generationPending.value || !!pendingRestore.value,
 )
+const experiment = ref<ExperimentLoad | null>(null)
+const originalVersion = ref<string>()
+const specializedId = computed(() => specializedWorkflow('control', form, originalVersion.value))
+function applySpecialized(value: SpecializedDocument, saved: boolean, selected?: ExperimentLoad) {
+  const settings = { ...value.settings } as ControlForm
+  if (
+    locked.value ||
+    specializedWorkflow('control', settings, value.workflow_id) !== value.workflow_id
+  )
+    return false
+  if (dirty.value && !window.confirm('要取代目前未保存的設定嗎？')) return false
+  restores.cancel()
+  delete form.control_kind
+  settings.canny_low ??= 0.4
+  settings.canny_high ??= 0.8
+  Object.assign(form, settings)
+  originalVersion.value = value.workflow_id
+  experiment.value = selected ?? null
+  origin.value = null
+  baseline.value = saved ? JSON.stringify(form) : ''
+  void load()
+  return true
+}
+function markSpecializedSaved() {
+  baseline.value = JSON.stringify(form)
+}
 const loads = createRequestScope(),
   restores = createRequestScope()
 let mounted = false,
@@ -210,6 +239,8 @@ function apply(value: Restoration) {
   if (generationBusy.value || generationPending.value) return
   const copied = copyControl(value.settings)
   restores.cancel()
+  originalVersion.value = undefined
+  experiment.value = null
   delete form.control_kind
   Object.assign(form, copied)
   origin.value = value
@@ -635,11 +666,20 @@ const preflightBlockers = computed(() => {
                     :checkpoint="form.checkpoint"
                     @blocked="loraBlock = $event" /></details
               ></details> </fieldset></form
-          ><StudioUtilityBar :drafts="false" /><UnsavedChangesNotice
-            :dirty="dirty"
-            page-only /><details class="studio-tools"
-            ><summary>草稿、來源與設定交換</summary
-            ><div class="toolbar"
+          ><StudioUtilityBar /><UnsavedChangesNotice :dirty="dirty" page-only /><details
+            class="studio-tools"
+            ><summary>草稿、來源與設定交換</summary>
+            <SpecializedSettings
+              family="control"
+              :workflow-id="specializedId"
+              :form="form"
+              :disabled="locked"
+              :experiment="experiment"
+              :apply="applySpecialized"
+              :saved="markSpecializedSaved"
+              @detach="experiment = null"
+              @gallery="emit('gallery', $event)" />
+            <div class="toolbar"
               ><strong>Checkpoint 結構參考</strong
               ><button class="secondary" :disabled="locked" @click="load(true)"
                 >更新清單與引擎選項</button
@@ -649,9 +689,8 @@ const preflightBlockers = computed(() => {
             <details class="studio-validation"
               ><summary>相容性與流程限制</summary
               ><p class="footnote"
-                >表單在工作台切換時保留；重新整理會清除未提交的表單。生成後可從任務或作品載入完整原設定。目前不提供一般草稿或比較方案。新提交使用
-                Canny v2，完成後可在任務與作品明確保存／查看實際邊緣圖；舊設定重新生成會建立新的 v2
-                任務。</p
+                >表單在工作台切換時保留；重新整理會清除未提交的表單。生成後可從任務或作品載入完整原設定。新建
+                Canny 預設使用 v2，完成後可在任務與作品保存及查看實際邊緣圖。</p
               >
               <p class="footnote"
                 >原引擎 {{ form.engine_url || '讀取中' }} · 模型版本
@@ -702,6 +741,8 @@ const preflightBlockers = computed(() => {
           @preview="previewJob = $event"
           submit-target="#studio-submit-control"
           :form="form"
+          :experiment="experiment"
+          :specialized-workflow-id="specializedId"
           workflow="control"
           :blockers="preflightBlockers"
           :field-problems="fieldProblems"

@@ -23,6 +23,9 @@ import UnsavedChangesNotice from './UnsavedChangesNotice.vue'
 import AssetChoices from './AssetChoices.vue'
 import GenerationPanel from './GenerationPanel.vue'
 import PromptConverter from './PromptConverter.vue'
+import SpecializedSettings from './SpecializedSettings.vue'
+import { specializedWorkflow, type SpecializedDocument } from './specializedSettings'
+import type { ExperimentLoad } from './experimentSettings'
 import ReferenceComponents from './ReferenceComponents.vue'
 import ReferenceComponentsSnapshot from './ReferenceComponentsSnapshot.vue'
 import ReferenceSnapshot from './ReferenceSnapshot.vue'
@@ -102,6 +105,31 @@ const locked = computed(
     !!pendingRestore.value,
 )
 const source = computed(() => assets.value.find((a) => a.id === form.image_asset_id))
+const experiment = ref<ExperimentLoad | null>(null)
+const originalVersion = ref<string>()
+const specializedId = computed(() => specializedWorkflow('reference', form, originalVersion.value))
+function applySpecialized(value: SpecializedDocument, saved: boolean, selected?: ExperimentLoad) {
+  const settings = { ...value.settings } as ReferenceForm
+  if (
+    locked.value ||
+    specializedWorkflow('reference', settings, value.workflow_id) !== value.workflow_id
+  )
+    return false
+  if (dirty.value && !window.confirm('要取代目前未保存的設定嗎？')) return false
+  restores.cancel()
+  sourceTemplate.value = null
+
+  Object.assign(form, settings)
+  originalVersion.value = value.workflow_id
+  experiment.value = selected ?? null
+  origin.value = null
+  baseline.value = saved ? JSON.stringify(form) : ''
+  void load()
+  return true
+}
+function markSpecializedSaved() {
+  baseline.value = JSON.stringify(form)
+}
 const loads = createRequestScope(),
   restores = createRequestScope()
 let mounted = false,
@@ -202,6 +230,8 @@ function apply(value: Restoration) {
   if (generationBusy.value || generationPending.value || metadataBusy.value) return
   const copied = copyReference(value.settings)
   restores.cancel()
+  originalVersion.value = undefined
+  experiment.value = null
   Object.assign(form, copied)
   sourceTemplate.value = templateSelection(value.template_context)
   origin.value = value
@@ -615,11 +645,20 @@ const preflightBlockers = computed(() => {
                 ></details
               >
             </fieldset></form
-          ><StudioUtilityBar :drafts="false" /><UnsavedChangesNotice
-            :dirty="dirty"
-            page-only /><details class="studio-tools"
-            ><summary>草稿、來源與設定交換</summary
-            ><div class="toolbar"
+          ><StudioUtilityBar /><UnsavedChangesNotice :dirty="dirty" page-only /><details
+            class="studio-tools"
+            ><summary>草稿、來源與設定交換</summary>
+            <SpecializedSettings
+              family="reference"
+              :workflow-id="specializedId"
+              :form="form"
+              :disabled="locked"
+              :experiment="experiment"
+              :apply="applySpecialized"
+              :saved="markSpecializedSaved"
+              @detach="experiment = null"
+              @gallery="emit('gallery', $event)" />
+            <div class="toolbar"
               ><strong>SDXL 畫風／角色外觀參考</strong
               ><button class="secondary" :disabled="locked" @click="load(true)"
                 >更新清單與引擎選項</button
@@ -669,6 +708,8 @@ const preflightBlockers = computed(() => {
           @preview="previewJob = $event"
           submit-target="#studio-submit-reference"
           :form="form"
+          :experiment="experiment"
+          :specialized-workflow-id="specializedId"
           :template-selection="sourceTemplate"
           workflow="reference"
           :blockers="preflightBlockers"

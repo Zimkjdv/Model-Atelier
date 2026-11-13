@@ -1,4 +1,15 @@
-# R07 · 局部編輯與 Canny 的草稿、交換及比較格式評估
+# 專用流程草稿、設定交換與比較
+
+在局部修補、結構引導或畫風／角色參考工作台，開啟「草稿與設定交換」→「專用草稿、設定交換與比較」。支援局部編輯 v1、內側羽化 v2、Fooocus v3、Canny v1／v2、Pose／Depth v3 及 IP-Adapter v1。
+
+- 專用草稿可保存尚未選齊的設定。已選素材必須存在、未封存且內容符合原指紋；局部修補需先保存遮罩筆畫。載入會還原整份表單，更新會核對草稿修訂。
+- 設定檔使用 `model-atelier-specialized-creation` v1，保存流程版本、完整參數、有序 LoRA、原圖／遮罩角色與指紋，以及本機模型登記快照。任務／作品可下載含原 workflow 文字與當時前處理快照的版本。匯入先預覽不同欄位、來源與缺項，再明確套用；跨主機需要事先搬移相同素材 ID 與內容。模型登記差異會顯示提醒，生成沿用原引擎預檢。
+- 比較方案使用 `model-atelier-specialized-comparison` v1。每份方案凍結同一流程版本、素材、模型登記及基準，按一個參數建立 2–4 組。載入一組後手動生成，原任務及其作品會連到該組。可下載、匯入、封存／還原及重讀已保存結果。
+- 新建局部修補及 Canny 預設使用 v2。透過專用文件載入的 v1 在支援的設定下仍以 v1 提交，原遮罩或邊緣輸出語意可追溯。v1 局部修補調整羽化半徑後使用 v2；若當時連結了 v1 比較組，需先解除比較關聯。
+- 匯入預覽、保存與比較組載入均不執行生成。一般草稿、設定交換與比較端點繼續維持原有格式；專用格式使用 `/api/specialized/` 下的端點。
+
+## R07 歷史設計與原驗收
+
 
 2026-10-23 R03：另有 [Fooocus SDXL 專用修補 v3](../features/fooocus-inpainting.md)，仍使用獨立內側合成遮罩。固定基底、denoise 1、無 LoRA；有限比較未優於一般修補，保留實驗選項；一般格式邊界不因此開放。
 
@@ -10,7 +21,7 @@ R02 補充：`checkpoint-ipadapter-reference-v1` 沿用相同保護，新增 `fa
 
 相容既有客戶端回傳完整草稿或複製生成 body：`id`、`created_at`、`updated_at`、`model_version`、`request_id` 是已知的舊封套欄位，仍排除於草稿設定之外；不能選擇草稿 ID、修改伺服器時間／模型版本或恢復生成 UUID。revision 仍供樂觀鎖核對。此有限清單不含任何遮罩／控制／pending 欄位，其他未知欄位均拒絕。
 
-## 目前能力與版本
+## R07 當時的能力與版本
 
 `GET /api/reference-workflows/support?family=inpaint|control` 回傳 `schema_version: 1`、`scope: platform_formats` 及各版本的能力。它不查資料庫／引擎，不代表節點、權重、GPU 或品質已通過；未知 family 回傳 422。兩工作台生成區可展開「草稿、設定交換與比較的支援範圍」。
 
@@ -25,11 +36,11 @@ R02 補充：`checkpoint-ipadapter-reference-v1` 沿用相同保護，新增 `fa
 
 新生成沿用既有 v2；載入 v1 保存設定時，畫面明示新提交建立 v2 任務。原 UUID、workflow／版本、素材及待確認請求不因載入而改寫。pending 的 v1／v2 marker 與原端點屬原恢復契約，不是設定檔；未知 marker 不能改成最新版本。
 
-## 專用格式方案（設計草案，尚不可匯入）
+## R07 專用格式設計草案
 
 | 層次 | 必須保存及驗證的內容 |
 | --- | --- |
-| 文件識別 | 使用獨立 kind，例如 `model-atelier-specialized-creation`，不借用 `model-atelier-creation`／`model-atelier-comparison-plan`；獨立整數 schema_version 及明確 workflow_id，四個流程版本逐一白名單 |
+| 文件識別 | 使用獨立 kind，例如 ``model-atelier-specialized-creation``，不借用 `model-atelier-creation`／`model-atelier-comparison-plan`；獨立整數 schema_version 及明確 workflow_id，四個流程版本逐一白名單 |
 | 完整設定 | 按指定版本嚴格保存全部欄位；未知欄位／型別／重複 key／非有限數字／未知版本拒絕。v1 不默默補成 v2；升級另作差異預覽及明確選擇 |
 | 雙輸入綁定 | 保存角色、原素材 ID、SHA256、bytes 大小、尺寸及有序 reference_ids；原圖／遮罩不同、幾何相符、角色與 settings 一致。未選好的草稿可保存明確 null，但不能宣稱可提交或完整重現 |
 | 前處理／衍生物 | 保存縮放幾何、遮罩閾值／透明背景／nearest／grow mask；羽化另存半徑及單位、算法／Pillow 版本、二值與 blend hash／大小；Canny 保存原引擎、前處理 ID／版本／閾值與實際邊緣來源，缺失保持未知 |

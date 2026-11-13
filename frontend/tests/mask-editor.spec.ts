@@ -45,7 +45,7 @@ async function openEditor(page: Page, request: APIRequestContext) {
   await expect(editor(page).getByRole('button', { name: '筆刷', exact: true })).toBeEnabled()
   await expect(canvas(page)).toHaveJSProperty('width', 800)
   await page.locator('.studio-advanced > summary').click()
-  await page.getByRole('button', { name: '來源與流程資訊', exact: true }).click()
+  await page.getByRole('button', { name: '草稿與設定交換', exact: true }).click()
   return source
 }
 

@@ -10,7 +10,7 @@ async function prepare(page: Page, request: APIRequestContext) {
   const before = await (await request.get('/qa/state')).json()
   await page.goto('/#/studio/reference')
   await expect(page.getByRole('region', { name: '畫風角色參考工作台' })).toBeVisible()
-  await page.getByRole('button', { name: '來源與流程資訊', exact: true }).click()
+  await page.getByRole('button', { name: '草稿與設定交換', exact: true }).click()
   const editor = page.locator('.component-editor')
   await editor.locator('summary').click()
   await page.getByRole('button', { name: '同步 adapter 與編碼器清單', exact: true }).click()
@@ -105,7 +105,7 @@ for (const width of [1440, 390]) {
         await expect(page.locator('#reference-prompt')).toHaveValue(
           'frozen adult character in a blue coat',
         )
-        await page.getByRole('button', { name: '來源與流程資訊', exact: true }).click()
+        await page.getByRole('button', { name: '草稿與設定交換', exact: true }).click()
         await page.locator('.reference-components').first().locator('summary').click()
         await expect(page.locator('.reference-components').first()).toContainText('fixture-r02')
         await page.getByRole('button', { name: '文字創作', exact: true }).click()

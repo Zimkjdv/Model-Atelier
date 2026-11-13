@@ -1,5 +1,6 @@
 from typing import Literal
 from uuid import UUID
+from backend import experiment_context
 from pydantic import Field, model_validator
 from backend import fooocus_workflows as flow
 
@@ -19,6 +20,7 @@ def install(app, host, submissions):
 
     class Generate(Input):
         request_id: UUID
+        experiment: experiment_context.Selection | None = None
 
     @app.get('/api/fooocus-inpaint/workflow')
     def description():

@@ -2,6 +2,12 @@
 
 本檔保存已完成變更與當時的驗收條件；歷史測試數、未完成數及環境描述均屬該日期。現行操作見 [README](../../README.md) 與 [文件索引](../README.md)，尚未完成工作見 [ROADMAP](../planning/roadmap.md)。
 
+## 2026-11-13 · 簡易創作與專用工作台
+
+簡易創作在描述空白時停用生成，比例按鈕按寬高比顯示選取狀態，保留原配方的實際尺寸。局部修補、結構引導及畫風／角色參考接入提示詞助手，明確套用時更新正面提示詞。
+
+專用工作台新增草稿、設定檔與比較方案。格式保留流程版本、精確 Seed、素材指紋與模型登記；比較組由使用者手動生成，並沿用原任務 UUID 恢復與作品追溯。見[專用格式與操作](../development/specialized-workflow-formats.md)。
+
 ## 2026-11-07 · 根目錄設定與啟動入口分類
 
 根目錄保留 README、AGENTS、Git 設定與 start-all.bat。其餘部署檔移至 deploy/docker，平台依賴移至 requirements，Ruff／Prettier／品質範圍移至 config/quality，三份 PowerShell 啟動器移至 scripts，本檔移至 docs/history。同步更新 CI、明確設定載入、啟動器根目錄解析及文件命令；既有雙擊入口仍可使用。

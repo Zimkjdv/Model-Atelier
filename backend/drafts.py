@@ -12,7 +12,7 @@ def list_all(path, *, prefix='draft:'):
     return sorted((json.loads(row[0]) for row in rows), key=lambda item: item['updated_at'], reverse=True)
 
 
-def save(path, payload, draft_id=None, revision=None, *, prefix='draft:'):
+def save(path, payload, draft_id=None, revision=None, *, prefix='draft:', check=None):
     with closing(sqlite3.connect(path)) as db, db:
         db.execute('BEGIN IMMEDIATE')
         asset_ids = list(payload.get('reference_ids', []))
@@ -22,6 +22,8 @@ def save(path, payload, draft_id=None, revision=None, *, prefix='draft:'):
             row = db.execute('SELECT value FROM settings WHERE key=?', ('asset:' + asset_id,)).fetchone()
             if not row or json.loads(row[0]).get('archived'):
                 raise ValueError('參考素材不存在或已封存，請重新選擇素材')
+        if check is not None:
+            check(db)
         now = datetime.now(timezone.utc).isoformat()
         if draft_id:
             row = db.execute('SELECT value FROM settings WHERE key=?', (prefix + draft_id,)).fetchone()

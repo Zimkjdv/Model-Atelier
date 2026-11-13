@@ -24,13 +24,20 @@ def display(value):
 
 def references(db, asset_id):
     result = dict(drafts=[], jobs=[], artworks=[], experiments=[])
-    for key, raw in db.execute("SELECT key, value FROM settings WHERE key LIKE 'draft:%' OR key LIKE 'job:%' OR key LIKE 'artwork:%' OR key LIKE 'experiment:%'"):
+    groups = {
+        'draft': 'drafts', 'specialized-draft': 'drafts', 'job': 'jobs',
+        'artwork': 'artworks', 'experiment': 'experiments',
+        'specialized-experiment': 'experiments',
+    }
+    conditions = ' OR '.join('key LIKE ?' for _ in groups)
+    for key, raw in db.execute('SELECT key, value FROM settings WHERE ' + conditions,
+                               tuple(group + ':%' for group in groups)):
         value = json.loads(raw)
-        reference = value.get('plan', {}).get('baseline', {}) if key.startswith('experiment:') else value
+        reference = value.get('plan', {}).get('baseline', value.get('settings', value))
         ids = reference.get('reference_ids', [])
         snapshots = value.get('reference_metadata') or []
         if asset_id in ids or reference.get('image_asset_id') == asset_id or any(item.get('id') == asset_id for item in snapshots):
-            group = {'draft': 'drafts', 'job': 'jobs', 'artwork': 'artworks', 'experiment': 'experiments'}[key.split(':', 1)[0]]
+            group = groups[key.split(':', 1)[0]]
             result[group].append(value.get('id', key.split(':', 1)[1]))
     return result
 
