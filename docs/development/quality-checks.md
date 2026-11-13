@@ -6,15 +6,27 @@
 .\.venv\Scripts\python.exe scripts/check_quality.py
 ```
 
-依序執行範圍內格式／靜態檢查、後端 unittest、Vue 型別與正式建置、`npm test` 的前端契約檢查（API／生命週期、實驗、遮罩、控制與欄位預檢）、Playwright Chromium。格式規則見[格式與靜態檢查](#static-checks)，高風險提交邊界見[架構契約](architecture.md#submission-invariants)。`--skip-browser` 會明列跳過，不表示完整品質通過。
+依序執行文件連結、格式與靜態檢查、後端 unittest、Vue 型別與正式建置、`npm test` 的前端契約檢查及 Playwright Chromium。`--skip-browser` 只跳過瀏覽器階段。 [格式與靜態檢查](#static-checks) · [提交與恢復契約](architecture.md#submission-invariants)
 
 完整入口依檔名排序，每六份瀏覽器 spec 為一批；實際批數依 `frontend/tests/*.spec.ts` 計算，每檔自動納入一次。各批啟動新的 Playwright／Chromium 與臨時平台，使用不同埠及 `runtime/quality/browser-results/group-N`、`browser-report/group-N`。任一批失敗立即停止，單 worker、單案限制與零重試保留。此分批策略用於避免 Windows CI 的 Chromium `net::ERR_NO_BUFFER_SPACE` 與整套截止累積負荷，不代表已證明產品記憶體洩漏。
+
+<a id="document-links"></a>
+
+## 文件連結
+
+```powershell
+.\.venv\Scripts\python.exe scripts/check_doc_links.py
+```
+
+檢查器讀取 Git 已追蹤及尚未追蹤但未被忽略的 Markdown 和 HTML，核對相對路徑、目錄、圖片與 HTML 的 `href`／`src`。Markdown 標題採 GitHub 的標題錨點規則，另接受明確 HTML `id` 與舊式 `a name`。新寫的持久章節連結可使用明確 `id`。目錄的片段連結查找 `index.html`，其他檔案格式只核對檔案路徑。 [GitHub 標題連結規則](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#section-links)
+
+檢查以 Git 檔名的大小寫為準，解析百分比編碼。HTML 原始入口 `frontend/index.html` 的根路徑以 `frontend/` 解析。外部 URL、根目錄 `runtime/` 與 `data/` 內的本機證據會略過。Markdown 程式碼範例與 HTML 註解由解析器略過。遇到失效連結會印出來源、行號與目標並以非零結束。 [Markdown 解析器](https://markdown-it-py.readthedocs.io/en/latest/using.html)
 
 <a id="static-checks"></a>
 
 ## 格式與靜態檢查
 
-品質環境使用 `requirements/development.lock.txt`（包含既有 runtime lock 與 Ruff 0.17.1），frontend 使用 package-lock 精確鎖定 Prettier 3.9.10、CSS-tree 3.2.1。正式使用者安裝仍可只用 runtime lock。
+品質環境使用 `requirements/development.lock.txt`，包含 runtime lock、Ruff 及文件連結解析器。frontend 使用 package-lock 精確鎖定 Prettier 3.9.10 與 CSS-tree 3.2.1。正式使用者安裝仍可只用 runtime lock。
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements/development.lock.txt

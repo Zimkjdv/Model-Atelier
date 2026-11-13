@@ -2,6 +2,16 @@
 
 本檔保存已完成變更與當時的驗收條件；歷史測試數、未完成數及環境描述均屬該日期。現行操作見 [README](../../README.md) 與 [文件索引](../README.md)，尚未完成工作見 [ROADMAP](../planning/roadmap.md)。
 
+<a id="o05"></a>
+
+## 2026-11-14 · O05 現行掃描契約與文件連結檢查
+
+分類容量的現行端點、快照欄位、取消、可靠值與過期規則集中在開發文件。操作指南與介面文件直接連到現行契約。原始 N07 規格、錨點及歷史證據仍可查閱。 [現行掃描契約](../development/storage-scan-api.md) · [N07 歷史規格](#storage-category-api)
+
+品質入口新增本地文件連結檢查，涵蓋 Markdown 標題與 HTML 錨點、相對路徑、圖片及其他資產。外部 URL 與 Git 外的 `runtime/`、`data/` 證據略過。刻意加入失效路徑和錨點時，完整入口在第一階段以退出碼 1 停止，並印出來源位置。 [文件連結檢查](../development/quality-checks.md#document-links)
+
+最終文件檢查通過 116 份文件、1,264 條本地連結。格式、靜態檢查、Vue 型別、正式建置及前端契約均通過。後端共 872 項，871 項通過、1 項跳過。本輪略過瀏覽器階段。
+
 <a id="o04"></a>
 
 ## 2026-11-14 · O04 收斂作品庫與工作台的版面規則
@@ -1082,6 +1092,8 @@ N07 的唯一含義沿用 [UI 規格](../ui-redesign/PLAN.md#原提案編號與�
 <a id="storage-category-api"></a>
 
 ### N07：原計量、API 與驗收規格（歸檔）
+
+本節保留當時的設計與驗收條件。請查閱[現行掃描 API](../development/storage-scan-api.md#storage-category-api)取得目前端點與回覆欄位。
 
 #### 資料範圍與計量
 

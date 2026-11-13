@@ -32,6 +32,8 @@
     "backend/cancellation.py",
     "backend/stopping.py",
     "backend/test_quality_runner.py",
+    "backend/test_doc_links.py",
+    "scripts/check_doc_links.py",
     "scripts/check_quality.py",
     "scripts/check_style.py",
     "backend/workflows.py",

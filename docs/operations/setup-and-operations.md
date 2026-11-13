@@ -84,7 +84,7 @@ python -m scripts.verify_local_access --output runtime/my-local-access-check.jso
 
 原生平台統計受管理的 `runtime/ComfyUI/models`、已登記的額外 checkpoint 目錄與 DATA 中的 `artworks`。外部引擎的檔案無法從平台讀取。Docker 部署只統計平台可讀的作品庫。掃描略過連結和重新分析點，若有無法讀取或歸屬不明的項目，畫面會標示不完整並保留上次可靠值。
 
-分類容量以檔案的邏輯 bytes 換算 GB。磁碟已用量以實際空間計算，其他用量維持未知。
+分類容量以檔案的邏輯 bytes 換算 GB。磁碟已用量以實際空間計算，其他用量維持未知。 [分類容量掃描 API](../development/storage-scan-api.md#storage-category-api)
 
 ## 額外 checkpoint 目錄
 

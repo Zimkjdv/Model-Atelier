@@ -67,6 +67,7 @@
 | --- | --- |
 | 模組、應用程式工廠、持久化與提交邊界 | [架構](development/architecture.md) |
 | HTTP、導覽、取消與未保存保護 | [前端契約](development/frontend-api.md) |
+| 分類容量背景掃描、狀態與快取 | [分類容量掃描 API](development/storage-scan-api.md) |
 | 版本快照、即時裝置、耗時與連續取樣 | [執行環境與任務量測](development/runtime-observability.md) |
 | 清單成長、分頁與量測預算 | [分頁契約](development/list-pagination.md) |
 | 品質入口、格式、靜態與瀏覽器回歸 | [品質檢查](development/quality-checks.md) |
@@ -91,6 +92,7 @@ N05／N06／N07 的交付範圍見 [ROADMAP 的 UI 獨立能力](planning/roadma
 
 - 根目錄 README 保持快速開始與摘要，詳細操作及契約由各分類主題文件維護；本頁只提供分類與入口。
 - 同一能力的目前規則在主題文件維護；待辦與完成條件放 ROADMAP，完成結果放 CHANGELOG，當時的測試條件與限制保存在 validation。
+- 編修後可單獨執行文件連結檢查。 [連結檢查](development/quality-checks.md#document-links)
 - 新文件依用途放入上表分類。移動或合併時同步更新 Markdown／HTML 連結及章節錨點；保留歷史驗收的日期、數據與限制。
 - 模型 manifest、驗收 JSON、教學素材與 preview 有程式或來源指紋引用；調整目錄前先核對消費者。這些實體路徑應與消費者一同維護。
 - 根目錄保留 README、AGENTS、Git 設定及雙擊入口 start-all.bat；依賴、部署與品質設定依下表維護，搬移時同步更新實際呼叫者與測試。

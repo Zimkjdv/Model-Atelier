@@ -45,6 +45,7 @@ def run_checks(*, skip_browser=False, run=subprocess.run):
         print('Node.js/npm is required.', file=sys.stderr)
         return 1
     stages = [
+        ('document links', [sys.executable, 'scripts/check_doc_links.py'], ROOT),
         ('style and static checks', [sys.executable, 'scripts/check_style.py'], ROOT),
         (
             'backend',
@@ -74,7 +75,7 @@ def run_checks(*, skip_browser=False, run=subprocess.run):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        '--skip-browser', action='store_true', help='Explicitly run only backend/build/contracts'
+        '--skip-browser', action='store_true', help='Run all quality stages except browser tests'
     )
     args = parser.parse_args()
     try:

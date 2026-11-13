@@ -32,7 +32,7 @@ class QualityRunnerTests(unittest.TestCase):
 
     @patch('scripts.check_quality.shutil.which', return_value='npm')
     def test_every_stage_failure_is_nonzero_and_stops_subsequent_stages(self, _):
-        for failure in range(4 + len(browser_stages(ROOT, 'npm'))):
+        for failure in range(5 + len(browser_stages(ROOT, 'npm'))):
             seen = []
 
             def run(command, **options):
@@ -44,6 +44,7 @@ class QualityRunnerTests(unittest.TestCase):
                 self.assertEqual(run_checks(run=run), 7)
             self.assertIn('FAILED:', output.getvalue())
             self.assertEqual(len(seen), failure + 1)
+            self.assertEqual(seen[0][0][1:], ['scripts/check_doc_links.py'])
             self.assertTrue(all('ATELIER_TEST_PYTHON' in options['env'] for _, options in seen))
 
     @patch('scripts.check_quality.shutil.which', return_value=None)
@@ -80,11 +81,11 @@ class QualityRunnerTests(unittest.TestCase):
 
         def run(command, **options):
             seen.append((command, options))
-            return SimpleNamespace(returncode=9 if len(seen) == 6 else 0)
+            return SimpleNamespace(returncode=9 if len(seen) == 7 else 0)
 
         with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
             self.assertEqual(run_checks(run=run), 9)
-        self.assertEqual(len(seen), 6)
+        self.assertEqual(len(seen), 7)
         self.assertNotEqual(
-            seen[4][1]['env']['ATELIER_TEST_PORT'], seen[5][1]['env']['ATELIER_TEST_PORT']
+            seen[5][1]['env']['ATELIER_TEST_PORT'], seen[6][1]['env']['ATELIER_TEST_PORT']
         )

@@ -9,7 +9,7 @@
 
 這裡維護目前尚待實作、驗收及外部證據的工作。已完成條目的證據見 [CHANGELOG](../history/changelog.md#roadmap-completed-20261025)，原清單的去向見 [歷史索引](../history/changelog.md#unchecked-index)。規格、操作與各次驗收條件由原主題文件保存。
 
-截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **4 個優化候選（O05–O08）**。已完成的作品庫窄視窗與 O01–O04 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02) · [O03](../history/changelog.md#o03) · [O04](../history/changelog.md#o04)
+截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **3 個優化候選（O06–O08）**。已完成的作品庫窄視窗與 O01–O05 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02) · [O03](../history/changelog.md#o03) · [O04](../history/changelog.md#o04) · [O05](../history/changelog.md#o05)
 
 ## 目前進度與接續條件
 
@@ -148,7 +148,7 @@ T01–T08 的需求、資料契約、技術試訓、產物流程及網頁工作�
 
 ## 已完成能力的歷史入口
 
-N05 生成任務抽屜、N06 同瀏覽器顯示偏好與 N07 分類容量已移至 [CHANGELOG](../history/changelog.md#n07)。原 [N07 計量與 API 規格](../history/changelog.md#storage-category-api)保留當時條件；訓練／安裝任務、跨裝置同步及特殊磁碟實測仍為後續選項。
+N05 生成任務抽屜、N06 同瀏覽器顯示偏好與 N07 分類容量的交付見 CHANGELOG。現行分類容量端點由開發契約維護。訓練／安裝任務、跨裝置同步及特殊磁碟實測仍為後續選項。 [N07 交付](../history/changelog.md#n07) · [掃描 API](../development/storage-scan-api.md#storage-category-api)
 
 <a id="audit-20261114"></a>
 
@@ -166,7 +166,7 @@ N05 生成任務抽屜、N06 同瀏覽器顯示偏好與 N07 分類容量已移�
 
 ### 建議順序與完成條件
 
-O05–O08 依維護與使用頻率選擇。官方 API 依既定順序最後實作，真人觀察依使用者安排。
+O06–O08 依維護與使用頻率選擇。官方 API 依既定順序最後實作，真人觀察依使用者安排。
 
 <a id="o01"></a>
 
@@ -186,9 +186,7 @@ O04 作品庫與工作台 CSS 收斂、分頁溢出修正已完成。 [CHANGELOG
 
 <a id="o05"></a>
 
-- [ ] **O05 · P2／文件：現行契約與歷史證據分離、連結自動檢查**
-  - 依據：原[架構](../development/architecture.md#storage-capacity)將已交付 N07 的 API 契約連到 ROADMAP；本輪已改到歸檔規格。多份規劃／驗收文件仍交叉引用完成項目，現有品質入口沒有專門的 Markdown／HTML 本地連結驗證階段。
-  - 完成條件：現行 storage API 的權威說明歸入 operations／development，歷史驗收保留日期及限制；加入能處理相對路徑、HTML anchor 與標題錨點的文件檢查，明確排除 Git 外原始證據及外部 URL。以刻意失效的連結驗證非零退出，不改歷史 JSON 指紋、不讓待辦與交付重複計數。
+O05 已完成現行掃描契約及文件連結檢查。 [CHANGELOG](../history/changelog.md#o05)
 
 <a id="o06"></a>
 
@@ -227,7 +225,7 @@ O04 作品庫與工作台 CSS 收斂、分頁溢出修正已完成。 [CHANGELOG
 | --- | --- | --- |
 | 桌面人工無障礙 | 有指定桌面瀏覽器時補人工讀屏與無障礙檢查。桌面觸控設備的遮罩筆刷驗收由 V01-02 追蹤。 | [桌面介面驗收](../ui-redesign/ACCEPTANCE.md#rerun)、[V06 已驗範圍](../validation/ui-accessibility-20261023.md) |
 | 顯示偏好與任務範圍 | 視使用需求評估 N05 納入訓練／安裝、N06 全站密度與跨裝置同步。英文介面、淺色／跟隨系統是原提案後續選項。清快取需先定義資料範圍。 | [已交付 UI 範圍](#backend-backlog)、[設定規格](../ui-redesign/PLAN.md#設定) |
-| N07 分類容量補驗 | 若需驗收多磁碟與 NTFS 特殊檔案，使用實際多卷、junction、壓縮／稀疏檔核對歸屬、去重和邏輯大小。既有測試以替身覆蓋跨卷與重解析點判定。 | [N07 計量](#storage-category-api)、[掃描測試](../../backend/test_storage_categories.py) |
+| N07 分類容量補驗 | 若需驗收多磁碟與 NTFS 特殊檔案，使用實際多卷、junction、壓縮／稀疏檔核對歸屬、去重和邏輯大小。既有測試以替身覆蓋跨卷與重解析點判定。 | [N07 計量](../development/storage-scan-api.md#storage-category-api)、[掃描測試](../../backend/test_storage_categories.py) |
 | 簡易創作後續選項 | 依需求驗證更多比例、配方或流程組合。現有本機提示詞助手可手動預覽及套用英文，若要擴大適用範圍，另驗更多中文語意、生成品質及與繪圖同時使用的 RAM／耗時。 | [簡易方案第 10 節](simple-creation-plan.md#10-建議實作順序)、[提示詞驗收](../validation/prompt-converter-20261031.md) |
 | 擴充模型的授權與依賴 | 固定 PVC LoRA、像素風 LoRA（含轉換版）、IKEA LoRA、Pose／Depth 權重、IP-Adapter／ViT-H 與 Fooocus 權重仍有來源條款或依賴缺口。需要相應使用範圍時，逐個補正式條款及固定修訂證據，按清冊記錄。 | [模型清冊](../../models)、[FLUX PVC LoRA](../models/flux-extensions.md)、[像素風 LoRA](../models/pixel-art-lora-sdxl.md)、[IP-Adapter](../models/ipadapter-reference.md) |
 | FLUX 精度、量化與硬體 | 目標配置確認後另驗 RTX 4080、較大尺寸、32 GiB RAM 或不同精度／卸載。GGUF Q4 須先確認固定來源／hash／條款、量化 T5、節點與獨立流程。 | [3060 前置判斷](../models/flux-rtx3060-planning.md)、[F02 實測](../validation/flux-runtime-20261025.md)、[4080 實機範圍](../validation/rtx4080-workflows-20261026.md) |
