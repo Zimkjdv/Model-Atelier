@@ -379,4 +379,4 @@ npx.cmd playwright test --config playwright.journey.config.ts
 
 旅程須獨立空DATA；一般tests不能先填資料再冒充驗過空庫。模型原批亦選preview-alignment/ui-redesign的model五類／handoff／reference metadata；訓練原批選training-control、training-review-navigation、preview-alignment、secondary-gaps的四階段／explicit training／saved review issues／populated review／save-and-next／summary／empty stages。精確批次案例數見上表，列出指令不是新執行宣告。
 
-當次 390px 作品整理案例因搜尋／篩選列不換行而未通過整頁寬度斷言，Vite 也回報大包提示。作品庫窄視窗修正已另行驗收，建置大小由 O02 追蹤。GPU、權重、來源與品質依各自驗收範圍。 [作品庫修正紀錄](../history/changelog.md#gallery-narrow-layout) · [O02](../planning/roadmap.md#o02)
+當次 390px 作品整理案例因搜尋／篩選列不換行而未通過整頁寬度斷言，Vite 也回報大包提示。作品庫窄視窗與建置大小已另行驗收。GPU、權重、來源與品質依各自驗收範圍。 [作品庫修正紀錄](../history/changelog.md#gallery-narrow-layout) · [O02](../history/changelog.md#o02)

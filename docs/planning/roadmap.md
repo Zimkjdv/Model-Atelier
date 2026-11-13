@@ -9,7 +9,7 @@
 
 這裡維護目前尚待實作、驗收及外部證據的工作。已完成條目的證據見 [CHANGELOG](../history/changelog.md#roadmap-completed-20261025)，原清單的去向見 [歷史索引](../history/changelog.md#unchecked-index)。規格、操作與各次驗收條件由原主題文件保存。
 
-截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **7 個優化候選（O02–O08）**。已完成的作品庫窄視窗與 O01 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01)
+截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **6 個優化候選（O03–O08）**。已完成的作品庫窄視窗、O01 與 O02 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02)
 
 ## 目前進度與接續條件
 
@@ -166,7 +166,7 @@ N05 生成任務抽屜、N06 同瀏覽器顯示偏好與 N07 分類容量已移�
 
 ### 建議順序與完成條件
 
-接續 O02 的載入量測，再分批安排 O03／O04。O05–O08 依維護與使用頻率選擇。官方 API 依既定順序最後實作，真人觀察依使用者安排。
+接續分批安排 O03／O04。O05–O08 依維護與使用頻率選擇。官方 API 依既定順序最後實作，真人觀察依使用者安排。
 
 <a id="o01"></a>
 
@@ -174,9 +174,7 @@ O01（原 B4）已通過驗收。 [CHANGELOG](../history/changelog.md#o01)
 
 <a id="o02"></a>
 
-- [ ] **O02 · P2／載入效能：建立首載預算與按工作區拆包**
-  - 依據：[App.vue](../../frontend/src/App.vue) 靜態匯入所有主要工作區；[vite.config.ts](../../frontend/vite.config.ts) 未設定拆包。本輪正式建置主 JS **737.10 kB／gzip 231.71 kB**、CSS **169.83 kB／gzip 27.31 kB**，保留 >500 kB 提示。這是大小證據，尚未量到使用者延遲。
-  - 完成條件：固定主機／瀏覽器、冷快取與資料量，記錄首次可操作時間、初始傳輸量、切頁成本；評估非首屏工作區 async import，清楚顯示載入失敗與重試。初始 JS 目標小於 500 kB，實測操作不可退步；保留 KeepAlive、未保存阻擋、跨頁原任務定位及未知提交恢復。不可只提高警告門檻。
+O02 工作區拆包及首載大小驗收已完成。 [CHANGELOG](../history/changelog.md#o02)
 
 <a id="o03"></a>
 
@@ -234,7 +232,6 @@ O01（原 B4）已通過驗收。 [CHANGELOG](../history/changelog.md#o01)
 | 桌面人工無障礙 | 有指定桌面瀏覽器時補人工讀屏與無障礙檢查。桌面觸控設備的遮罩筆刷驗收由 V01-02 追蹤。 | [桌面介面驗收](../ui-redesign/ACCEPTANCE.md#rerun)、[V06 已驗範圍](../validation/ui-accessibility-20261023.md) |
 | 顯示偏好與任務範圍 | 視使用需求評估 N05 納入訓練／安裝、N06 全站密度與跨裝置同步。英文介面、淺色／跟隨系統是原提案後續選項。清快取需先定義資料範圍。 | [已交付 UI 範圍](#backend-backlog)、[設定規格](../ui-redesign/PLAN.md#設定) |
 | N07 分類容量補驗 | 若需驗收多磁碟與 NTFS 特殊檔案，使用實際多卷、junction、壓縮／稀疏檔核對歸屬、去重和邏輯大小。既有測試以替身覆蓋跨卷與重解析點判定。 | [N07 計量](#storage-category-api)、[掃描測試](../../backend/test_storage_categories.py) |
-| 前端建置大小 | 本輪具體量測與完成條件已整併至 O02，不重複計項。 | [O02](#o02) |
 | 簡易創作後續選項 | 依需求驗證更多比例、配方或流程組合。現有本機提示詞助手可手動預覽及套用英文，若要擴大適用範圍，另驗更多中文語意、生成品質及與繪圖同時使用的 RAM／耗時。 | [簡易方案第 10 節](simple-creation-plan.md#10-建議實作順序)、[提示詞驗收](../validation/prompt-converter-20261031.md) |
 | 擴充模型的授權與依賴 | 固定 PVC LoRA、像素風 LoRA（含轉換版）、IKEA LoRA、Pose／Depth 權重、IP-Adapter／ViT-H 與 Fooocus 權重仍有來源條款或依賴缺口。需要相應使用範圍時，逐個補正式條款及固定修訂證據，按清冊記錄。 | [模型清冊](../../models)、[FLUX PVC LoRA](../models/flux-extensions.md)、[像素風 LoRA](../models/pixel-art-lora-sdxl.md)、[IP-Adapter](../models/ipadapter-reference.md) |
 | FLUX 精度、量化與硬體 | 目標配置確認後另驗 RTX 4080、較大尺寸、32 GiB RAM 或不同精度／卸載。GGUF Q4 須先確認固定來源／hash／條款、量化 T5、節點與獨立流程。 | [3060 前置判斷](../models/flux-rtx3060-planning.md)、[F02 實測](../validation/flux-runtime-20261025.md)、[4080 實機範圍](../validation/rtx4080-workflows-20261026.md) |

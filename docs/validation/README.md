@@ -46,4 +46,5 @@
 | 模型／取樣比較軸與版本契約 | [R06](extended-comparisons-20261023.md) |
 | 視覺、無障礙與系統目錄操作 | [V06](ui-accessibility-20261023.md)、[目錄／磁碟與開啟資料夾](storage-overview-20261024.md) |
 | 格式與高風險維護回歸 | [Q10](maintenance-20261023.md) |
+| 工作區按需載入、首載預算與切頁 | [O02](workspace-loading-20261114.md) |
 | Windows CI 的不同失敗與修正 | [TEMP 別名及瀏覽器分批歷史](windows-ci.md) |

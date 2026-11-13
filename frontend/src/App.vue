@@ -2,24 +2,15 @@
 import { useStudioPreferences } from './studioPreferences'
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
-import { computed, onMounted, onUnmounted, provide, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, provide, reactive, ref, watch } from 'vue'
 import { pages, useNavigation, type Mode } from './navigation'
-import ModelLibrary from './ModelLibrary.vue'
-import CreationStudio from './CreationStudio.vue'
-import FluxStudio from './FluxStudio.vue'
-import InpaintStudio from './InpaintStudio.vue'
-import ControlStudio from './ControlStudio.vue'
-import ReferenceStudio from './ReferenceStudio.vue'
+import { lazyWorkspace } from './lazyWorkspace'
+import ArtworkLibrary from './ArtworkLibrary.vue'
 import { referenceWorkflowId } from './adapterSettings'
 import { isControlWorkflow } from './controlSettings'
 import { isInpaintWorkflow } from './inpaintSettings'
 import { fluxWorkflowId } from './fluxSettings'
 import { isFluxExtension } from './fluxExtensions'
-import AssetLibrary from './AssetLibrary.vue'
-import ArtworkLibrary from './ArtworkLibrary.vue'
-import LocalModelPaths from './LocalModelPaths.vue'
-import DiagnosticsPanel from './DiagnosticsPanel.vue'
-import TrainingWorkspace from './TrainingWorkspace.vue'
 import type { EngineReport } from './environmentTypes'
 import SystemWorkspace from './SystemWorkspace.vue'
 import PageTabs from './PageTabs.vue'
@@ -27,13 +18,25 @@ import UiIcon from './UiIcon.vue'
 import TaskDrawer from './TaskDrawer.vue'
 import { generationFamily, generationNavigation } from './generationNavigation'
 import type { Job } from './jobEvents'
-import SimpleCreation from './SimpleCreation.vue'
 import type { SimpleTransfer } from './simpleCreation'
 import type { TemplateSelection } from './templateContext'
 import type { CreationForm } from './creationSettings'
 import type { FluxForm } from './fluxSettings'
 import type { ReferenceForm } from './adapterSettings'
 import type { HostSystem as System } from './systemTypes'
+
+const SimpleCreation = lazyWorkspace(() => import('./SimpleCreation.vue'))
+const CreationStudio = lazyWorkspace(() => import('./CreationStudio.vue'))
+const FluxStudio = lazyWorkspace(() => import('./FluxStudio.vue'))
+const InpaintStudio = lazyWorkspace(() => import('./InpaintStudio.vue'))
+const ControlStudio = lazyWorkspace(() => import('./ControlStudio.vue'))
+const ReferenceStudio = lazyWorkspace(() => import('./ReferenceStudio.vue'))
+const ModelLibrary = lazyWorkspace(() => import('./ModelLibrary.vue'))
+const AssetLibrary = lazyWorkspace(() => import('./AssetLibrary.vue'))
+const TrainingWorkspace = lazyWorkspace(() => import('./TrainingWorkspace.vue'))
+const LocalModelPaths = lazyWorkspace(() => import('./LocalModelPaths.vue'))
+const DiagnosticsPanel = lazyWorkspace(() => import('./DiagnosticsPanel.vue'))
+
 const system = ref<System | null>(null),
   engine = ref<EngineReport | null>(null)
 const engineDevice = computed(() => {
@@ -258,6 +261,15 @@ const navIcons = [
 ]
 const navLabels = ['創作', '作品庫', '比較', '素材', '模型', '訓練', '系統', '設定']
 const settingsTab = ref('connection')
+const visitedSettingsTabs = reactive(new Set<string>())
+watch(
+  [page, settingsTab],
+  ([currentPage, tab]) => {
+    if (currentPage === '設定') visitedSettingsTabs.add(tab)
+    else visitedSettingsTabs.clear()
+  },
+  { immediate: true },
+)
 const display = useStudioPreferences()
 const displayReset = ref(false)
 function resetDisplay() {
@@ -469,6 +481,7 @@ async function testConnection() {
           ></template
         >
         <KeepAlive
+          include="SimpleCreation,CreationStudio,FluxStudio,InpaintStudio,ControlStudio,ReferenceStudio"
           ><SimpleCreation
             v-if="page === '創作工作台' && studioMode === 'simple'"
             @advanced="transferSimple"
@@ -598,7 +611,9 @@ async function testConnection() {
                 id="settings-panel-paths"
                 role="tabpanel"
                 aria-labelledby="settings-tab-paths"
-                ><LocalModelPaths :selected-engine-url="savedUrl" /></section
+                ><LocalModelPaths
+                  v-if="visitedSettingsTabs.has('paths')"
+                  :selected-engine-url="savedUrl" /></section
               ><section
                 v-show="settingsTab === 'appearance'"
                 id="settings-panel-appearance"
@@ -665,7 +680,8 @@ async function testConnection() {
                 id="settings-panel-diagnostics"
                 role="tabpanel"
                 aria-labelledby="settings-tab-diagnostics"
-                ><DiagnosticsPanel /></section></div></div
+                ><DiagnosticsPanel
+                  v-if="visitedSettingsTabs.has('diagnostics')" /></section></div></div
         ></template>
         <ModelLibrary
           v-if="page === '模型庫'"
