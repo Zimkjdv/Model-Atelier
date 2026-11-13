@@ -5,32 +5,31 @@
 <a id="pc02提示詞編輯區整併2026-11-07-完成"></a>
 <a id="pc01中文描述轉英文提示詞2026-10-31-完成實作與隔離驗收"></a>
 
-已完成的提示詞功能與原驗收條件統一記錄於 [PC01](../history/changelog.md#pc01)／[PC02](../history/changelog.md#pc02)；本頁追蹤下一步及尚未完成的驗收。
+這裡維護目前尚待實作、驗收及外部證據的工作。已完成條目的證據見 [CHANGELOG](../history/changelog.md#roadmap-completed-20261025)，原清單的去向見 [歷史索引](../history/changelog.md#unchecked-index)。規格、操作與各次驗收條件由原主題文件保存。
 
-下方既有主線追蹤 **10 個未完成主項、11 個待驗收子項**（共 21 個未勾選框）。已完成條目的原驗收敘述、圖片提醒與證據移至 [CHANGELOG 已完成條目](../history/changelog.md#roadmap-completed-20261025)；原 39 框去向與補回驗收可由 [固定歷史來源](../history/changelog.md#unchecked-index) 追溯。2026-10-30 已完成 UX01 與 UX02，驗收紀錄保留於 CHANGELOG。
+截至 2026-11-14，主線共有 **15 個未完成主項、17 個待驗收子項**。已交付的 [N05／N06／N07](#backend-backlog) 及[待評估提案](#conditional-followups)另有狀態紀錄。
 
-原主線的未完成項目納入下表。[UI 獨立能力](#backend-backlog)另記 N05、N06 與 N07 的交付範圍。
+## 目前進度與接續條件
 
-## 接下來的順序與條件
-
-| 順序／條件 | 目前進度 | 下一個可驗收動作 |
+| 範圍 | 目前進度 | 下一個可驗收動作 |
 | --- | --- | --- |
-| 模型來源 M01／M02 | 2026-10-26 已完成公開資料補查與本機內容指紋；兩項完整驗收仍未完成 | 取得發布者可追溯的條款適用、上游 revision 及轉檔紀錄後，再更新驗證旗標 |
-| 作者畫風／角色品質 | T01–T08 已提供需求、資料與訓練工具；作者圖片仍待審查 | 先完成 [T02 缺項](../validation/training-dataset-20261023.md)，再明確安排試訓與固定比較；最終品質驗收需獨立保留圖 |
-| 實機觸控 V01-02 | 桌面／390px 操作及模擬回歸已完成，目前無實體觸控設備 | 有設備後補實際指標互動驗收 |
-| 官方 API A01–A07 | 尚未接入，維持最後實作 | A01 查正式接入資料；A02 先確認確切模型與提供者，再依 A03–A07 建立服務能力 |
+| 作品庫窄版 | 390px 既有案例仍出現整頁橫向溢出 | 修正搜尋／篩選列後，重跑[窄版整理案例](#gallery-narrow-layout)與桌面回歸 |
+| 簡易創作真人驗收 | 隔離瀏覽器已驗流程，真人觀察依使用者安排延後 | 有新手參與時觀察[第一次創作](#simple-first-use) |
+| 模型來源 M01／M02 | 已完成公開資料補查與本機內容指紋；完整來源鏈仍缺 | 取得發布者可追溯的條款適用、上游 revision 或轉檔紀錄 |
+| 作者畫風／角色品質 | 資料工具、技術試訓與產物回登已交付，作者圖仍待審查 | 先完成[候選審查](#author-dataset-review)，再安排試訓與固定比較 |
+| 實機觸控 V01-02 | 桌面與 390px 瀏覽器模擬通過 | 有實體觸控設備後操作遮罩筆刷 |
+| 官方 API A01–A07 | 尚未接入，依既定順序最後實作 | 先查 NovelAI 正式資料並確認 Mango 2 身分，才評估接入 |
 
-近期完成：E02 → E03 → E04 已驗證 RTX 4080 八流程、兩機相同配置比較、1536² 較高負載與 512／1024 自製幾何技術訓練。F01–F04 已完成 RTX 3060／約 64 GiB RAM 的固定 512 FLUX 配置；RTX 4080 的 SDXL 驗收不涵蓋 FLUX。T05–T08 的圖片審查、訓練控制、缺項導覽及報告，以及 D01／D02 本機部署與選用 Docker 均已完成，證據保留於 [CHANGELOG.md](../history/changelog.md)。
+各工作項獨立驗證、commit／push 後再接續下一項。技術維持 Vue／FastAPI／SQLite 與獨立 ComfyUI，保留原 UUID、端點、不可變快照、精確 seed 與未知結果的恢復規則。原始圖片、權重與 runtime 保存在 Git 外。驗收證據依配置與資料範圍記於 [docs/validation](../validation)，採用上游能力的依據見[借用決策](../research/upstream-reuse.md#reuse-assessment)。
 
-各工作項獨立驗證、commit／push 後再接續下一項。已完成項只針對可重現問題改善；其他配置另立實測，不以技術試訓認列作者品質，不自動批准作者圖片。延伸模組參考 [GitHub 借用決策](../research/upstream-reuse.md#reuse-assessment)。
-
-技術維持 Vue／FastAPI／SQLite 與獨立 ComfyUI；保留原 UUID／端點、不可變快照、精確 seed、未知結果不重送及未知能力標示。權重／原始圖片／runtime 不進 Git，不以顯卡型號或 VRAM 估算保證可執行。驗收以 [docs/validation](../validation) 及各功能說明為準。
+2026-11-13 已修正簡易創作的空描述與比例選取，並交付專用流程的提示詞助手、草稿、設定交換與比較。[交付紀錄](../history/changelog.md#2026-11-13--簡易創作與專用工作台)
 
 | 範圍 | 未完成主項 | 待驗收子項 |
 | --- | ---: | ---: |
 | P0：硬體、相容性與量測 | 0 | 0 |
-| P1／P6：介面顯示與實機觸控 | 1 | 1 |
+| P1／P6：介面、真人與實機觸控驗收 | 3 | 3 |
 | P2／P4：模型來源 | 2 | 2 |
+| 作者資料、試訓與品質驗收 | 3 | 4 |
 | P8：官方 API（最後實作） | 7 | 8 |
 
 ## P0：硬體、相容性與量測
@@ -64,6 +63,18 @@
   - [ ] 驗收 V01-02：在桌面與 390px 視窗操作；使用實際觸控能力驗證指標互動，無觸控環境不能標記觸控通過。
 
   2026-10-23：1440px／390px Chromium 完成操作與保存 PNG 的逐像素雜湊核對；修正素材重讀／切頁清空筆畫、取消選取值未復原及非 PNG 載入問題。主指標、越界捕獲、取消、停用與第二指模擬回歸通過。使用者確認目前沒有實體觸控裝置；V01-02 的實機觸控與 V01 主項保留未完成。見 [V01 驗收紀錄](../validation/mask-editor-20261023.md)。
+
+<a id="gallery-narrow-layout"></a>
+
+- [ ] **作品庫 390px 搜尋／篩選列溢出**
+  - [ ] 讓搜尋、篩選與版型控制在 390px 可換行，並通過既有作品整理案例的整頁寬度斷言、收藏／筆記／封存／還原流程及桌面回歸。
+  - 2026-11-14 用 Edge Chromium 與隔離資料重跑，案例仍在 `document.documentElement.scrollWidth <= innerWidth + 1` 失敗。在 `frontend` 以 `npm.cmd run test:browser -- tests/artwork-library.spec.ts -g "390px organize"` 重跑。見[原驗收限制](../ui-redesign/ACCEPTANCE.md#rerun)及[測試程式](../../frontend/tests/artwork-library.spec.ts)。
+
+<a id="simple-first-use"></a>
+
+- [ ] **簡易創作 11.1 · 真人新手首次操作**（使用者延後）
+  - [ ] 觀察已完成安裝的新手能否辨識簡易入口，選卡、生成、保存及修改再生成，盡量不展開技術參數。另記錄他能否理解缺模型／元件的說明，並在處理後回到原選卡及描述。原桌面規格也將 10 秒內辨識入口列為可用性觀察目標。
+  - 四步操作及缺項返回已有隔離瀏覽器驗證。真人觀察等使用者安排。見[簡易方案驗收](simple-creation-plan.md#11-驗收清單)及[原介面驗收要求](../ui-redesign/PLAN.md#驗收要求)。
 
 ## P2／P4：模型來源與授權追溯
 
@@ -100,6 +111,26 @@ F02 的逐元件條款記錄與所列 3060 原生配置觀察已移至 [CHANGELO
 <a id="f04"></a>
 
 已完成，完整驗收敘述移至 [CHANGELOG](../history/changelog.md#f04)。[實際證據](../validation/flux-extensions-20261025.md)只涵蓋固定 PVC LoRA、原生 VAE 圖生圖與所列 512 配置；未知 LoRA、Redux／IP-Adapter、身份保證及混合流程保持停用。後續需要指定作者／角色圖片時，提醒依 [圖片備註](../models/flux-extensions.md#下一輪圖片提醒)完成審查與保留圖確認。
+
+## 作者資料、試訓與品質驗收
+
+T01–T08 的需求、資料契約、技術試訓、產物流程及網頁工作區已交付。[CHANGELOG](../history/changelog.md#t01)以下承接使用者提供的作者圖與角色目標。來源盤點以已記錄的 T02 驗收及工作區匯入紀錄為準。[T02 驗收](../validation/training-dataset-20261023.md)、[工作區匯入紀錄](../validation/training-workspace-20261025.md)
+
+<a id="author-dataset-review"></a>
+
+- [ ] **T02 後續 · 作者圖候選審查與資料包**
+  - [ ] 兩份清單各有 10 張 train 候選、6 張開發評估、0 張 final test、6 張排除。逐張補畫風與角色候選的 caption、來源與用途依據，角色另核身分。維持同原作／差分群組分割；有缺少視角、服裝或場景時再補圖。按審查通過的修訂匯出、驗證只含合格 train 圖的資料包。見[資料契約](../training/dataset-contract.md)與[圖片提醒](anime-style-development.md#image-input-reminders)。
+
+<a id="author-training-run"></a>
+
+- [ ] **T03 後續 · 作者畫風與角色 LoRA 試訓**
+  - [ ] 資料包就緒後另行安排，以固定 Animagine XL 4.0 Opt／SDXL UNet LoRA 先試畫風，再試角色，分開保留資料版本、run、設定、資源與權重指紋。使用既有技術基線確認停止、恢復與租約釋放。見[訓練規格](../training/requirements.md)、[訓練操作](../training/runtime.md)及[既有技術驗收](../validation/hardware-resources-20261026.md)。
+
+<a id="author-quality"></a>
+
+- [ ] **T04 後續 · 作者畫風與角色品質比較**
+  - [ ] 取得未參與選型、調參或訓練的不同原作最終評估圖，保留獨立分組。現有 6 張開發評估維持原用途。
+  - [ ] 回登兩件作者試訓產物並核對完整載入；各以三題材 × 兩個精確 seed × 基準／候選做 12 件比較，共 24 件。保存原圖、失敗、設定與來源，逐格人工記錄提示服從、角色一致、畫風與構圖。依既定每路徑六格中至少四格改善的訊號及其品質條件，由使用者檢視。見[固定驗收方案](../training/requirements.md#可追溯與可執行的驗收方案)及[產物操作](../training/artifacts.md)。
 
 ## P8：官方 API 服務（最後實作）
 
@@ -143,15 +174,15 @@ F02 的逐元件條款記錄與所列 3060 原生配置觀察已移至 [CHANGELO
 
 <a id="backend-backlog"></a>
 
-N07 已交付本機分類掃描。以下記錄計量口徑、API 與驗收條件。
+N05、N06 與 N07 已交付。後續候選見[待評估提案](#conditional-followups)。
 
 ### 狀態與證據
 
-| 編號 | 優先級／狀態 | 現有能力 | 尚缺能力 |
+| 編號 | 優先級／狀態 | 交付證據 | 已交付範圍 |
 | --- | --- | --- | --- |
-| N07 分類容量 | P1／已交付 | [手動背景掃描、去重、快取與取消](../history/changelog.md#n07) | 外部引擎檔案系統無法從平台統計，其他用量維持未知 |
-| N05 全域任務抽屜 | 已交付生成任務 | [跨頁追蹤與原任務定位](../history/changelog.md#n05) | 訓練與安裝任務另依需求評估 |
-| N06 顯示偏好保存 | 已交付 | [同瀏覽器還原排版與展開狀態](../history/changelog.md#n06) | 全站密度、跨裝置同步視需求另排 |
+| N07 分類容量 | P1／已交付 | [手動背景掃描、去重、快取與取消](../history/changelog.md#n07) | 本機模型與作品的邏輯大小 |
+| N05 全域任務抽屜 | 已交付生成任務 | [跨頁追蹤與原任務定位](../history/changelog.md#n05) | 生成任務 |
+| N06 顯示偏好保存 | 已交付 | [同瀏覽器還原排版與展開狀態](../history/changelog.md#n06) | 同瀏覽器 |
 
 N07 的唯一含義沿用 [UI 規格](../ui-redesign/PLAN.md#原提案編號與交付範圍) 新增能力表的「模型／作品分類容量」。原 v3 文字曾重用 N07 表示尺寸能力，已移除該處錯誤編號；尺寸驗證仍按 F07 與各流程契約處理。
 
@@ -200,3 +231,27 @@ N07 的唯一含義沿用 [UI 規格](../ui-redesign/PLAN.md#原提案編號與�
 ### 與連續旅程驗收的關係
 
 [隔離資料逐流程驗收](../ui-redesign/ACCEPTANCE.md#isolated-journey)記錄當時的功能範圍。
+
+<a id="conditional-followups"></a>
+
+## 待評估提案與條件式補驗
+
+各列保留已記錄的觸發條件或範圍。排入主線時補上獨立驗收。
+
+| 範圍 | 待評估或補驗 | 依據 |
+| --- | --- | --- |
+| 行動與人工無障礙 | 有指定裝置／瀏覽器時補實體行動操作、人工讀屏與無障礙檢查。遮罩筆刷實體觸控由 V01-02 追蹤。 | [桌面介面驗收](../ui-redesign/ACCEPTANCE.md#rerun)、[V06 已驗範圍](../validation/ui-accessibility-20261023.md) |
+| 顯示偏好與任務範圍 | 視使用需求評估 N05 納入訓練／安裝、N06 全站密度與跨裝置同步。英文介面、淺色／跟隨系統是原提案後續選項。清快取需先定義資料範圍。 | [已交付 UI 範圍](#backend-backlog)、[設定規格](../ui-redesign/PLAN.md#設定) |
+| N07 分類容量補驗 | 若需驗收多磁碟與 NTFS 特殊檔案，使用實際多卷、junction、壓縮／稀疏檔核對歸屬、去重和邏輯大小。既有測試以替身覆蓋跨卷與重解析點判定。 | [N07 計量](#storage-category-api)、[掃描測試](../../backend/test_storage_categories.py) |
+| 前端建置大小 | 已有 Vite 主 JS 超過 500 kB 提示；若列為效能工作，先量測首載與路由成本，再決定是否拆分並檢查操作回歸。 | [建置與回歸紀錄](../ui-redesign/ACCEPTANCE.md#rerun) |
+| 簡易創作後續選項 | 依需求驗證更多比例、配方或流程組合。現有本機提示詞助手可手動預覽及套用英文，若要擴大適用範圍，另驗更多中文語意、生成品質及與繪圖同時使用的 RAM／耗時。 | [簡易方案第 10 節](simple-creation-plan.md#10-建議實作順序)、[提示詞驗收](../validation/prompt-converter-20261031.md) |
+| 擴充模型的授權與依賴 | 固定 PVC LoRA、像素風 LoRA（含轉換版）、IKEA LoRA、Pose／Depth 權重、IP-Adapter／ViT-H 與 Fooocus 權重仍有來源條款或依賴缺口。需要相應使用範圍時，逐個補正式條款及固定修訂證據，按清冊記錄。 | [模型清冊](../../models)、[FLUX PVC LoRA](../models/flux-extensions.md)、[像素風 LoRA](../models/pixel-art-lora-sdxl.md)、[IP-Adapter](../models/ipadapter-reference.md) |
+| FLUX 精度、量化與硬體 | 目標配置確認後另驗 RTX 4080、較大尺寸、32 GiB RAM 或不同精度／卸載。GGUF Q4 須先確認固定來源／hash／條款、量化 T5、節點與獨立流程。 | [3060 前置判斷](../models/flux-rtx3060-planning.md)、[F02 實測](../validation/flux-runtime-20261025.md)、[4080 實機範圍](../validation/rtx4080-workflows-20261026.md) |
+| FLUX 流程擴充 | Redux／IP-Adapter／身份參考、多 LoRA、LoRA＋圖生圖，以及修補與結構引導目前各有未支援範圍。選定組合後再核對模型／節點，補流程、保存／還原、原請求恢復與實測。 | [FLUX 擴充界線](../models/flux-extensions.md)、[創作目的規格](../ui-redesign/PLAN.md#創作工作台) |
+| SDXL 參考、結構與修補品質 | 按指定題材補 R05／L01 更多模型、seed、素材或提示格式。R02 可另驗 Pony、多圖／角色與畫風雙參考、LoRA／Canny 組合。R01 可另驗多人、其他尺寸／模型與 RTX 4080。R03 若選定新版，另驗 Fooocus refine 雙 latent、遮罩邊界品質及新配置。 | [動漫開發計畫](anime-style-development.md)、[參考品質](../validation/reference-adapter-20261023.md)、[結構參考](../features/structure-reference.md)、[Fooocus](../features/fooocus-inpainting.md) |
+| 專用設定的圖片套件 | 目前的專用 JSON 使用本機素材 ID 與指紋。若要讓跨主機設定附帶原圖與遮罩，先定義檔案大小、解壓／路徑限制與逐角色 hash 驗證。 | [R07 設計](../development/specialized-workflow-formats.md#r07-專用格式設計草案) |
+| 訓練額外配置 | 依實際訓練需求補多圖、長時間、其他 rank／主機等容量與資源驗收。既有 E04 證據是 RTX 4080 的 512／1024 短程幾何技術訓練。 | [T03 實測限制](../validation/training-runtime-20261025.md)、[E04 量測](../validation/hardware-resources-20261026.md) |
+| Docker／跨系統搬移 | 有跨 OS 搬移需求時，驗證 Windows 路徑、原圖與資料包重新綁定及還原。容器 cgroup RAM 配額換算、trainer 與跨 OS GPU 租約另行評估。 | [Docker 範圍](../operations/docker.md)、[D02 驗收](../validation/docker-deployment-20261025.md) |
+| B3 · FLUX URL 驗證依賴 | 直接引用純 schema，保留主程式相容匯出，驗證 URL 契約及匯入副作用。提案尚未批准。 | [原稽核 B3](../history/codebase-audit-20261027.md#b3讓-flux-url-驗證直接依賴純-schema) |
+| B4 · 羽化預覽錯誤大小限制 | 目前錯誤回覆直接讀完整 JSON。若安排功能修正，限制讀取 bytes，保留成功 PNG、錯誤訊息及取消語意。提案尚未批准。 | [原稽核 B4](../history/codebase-audit-20261027.md#b4限制羽化預覽的錯誤回應大小) |
+| B5／B6 · 預覽與測試工具整理 | B5 評估 Canny／羽化共用有界串流讀取，B6 評估 Node 契約測試共用純 TS 載入。依各原契約驗證。兩項提案尚未批准。 | [原稽核 B5](../history/codebase-audit-20261027.md#b5抽取預覽串流讀取的共用機制)、[原稽核 B6](../history/codebase-audit-20261027.md#b6共用-node-契約測試的純-ts-載入助手) |

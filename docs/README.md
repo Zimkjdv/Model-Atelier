@@ -37,7 +37,7 @@
 | 創作設定的匯入、預覽與匯出 | [設定交換](features/creation-settings-transfer.md)、[專用格式限制](development/specialized-workflow-formats.md) |
 | 作品整理、並排與人工評分 | [作品庫](features/artwork-library.md#comparison-and-ratings) |
 | 保存方案、逐組執行與結果報告 | [比較實驗](features/experiment-plans.md) |
-| 簡易模式配方與畫風任務 | [交付方案與待驗收清單](planning/simple-creation-plan.md) |
+| 簡易模式配方與畫風任務 | [原方案與交付證據](planning/simple-creation-plan.md)、[真人操作待驗收](planning/roadmap.md#simple-first-use) |
 
 ## 模型與 FLUX
 
@@ -77,7 +77,7 @@
 
 [桌面規格](ui-redesign/PLAN.md)與[原始 preview](ui-redesign/preview.html)定義外觀；[功能保留表](ui-redesign/FEATURE-INVENTORY.md)記錄保留邊界，[整合說明](ui-redesign/INTEGRATION-NOTES.md)解釋落點與差異，[桌面矩陣／連續旅程](ui-redesign/ACCEPTANCE.md)保存實際驗收。
 
-N05／N06／N07 的狀態、設計與完成條件集中於 [ROADMAP 的 UI 能力待辦](planning/roadmap.md#backend-backlog)，由同一處維護。
+N05／N06／N07 的交付範圍見 [ROADMAP 的 UI 獨立能力](planning/roadmap.md#backend-backlog)。現行待辦與驗收集中在 [ROADMAP](planning/roadmap.md)。
 
 ## 實機與歷史證據
 

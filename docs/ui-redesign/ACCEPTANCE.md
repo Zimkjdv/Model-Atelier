@@ -99,7 +99,7 @@ FLUX 的 PVC model-only LoRA 是五目的以外的額外獨立流程，並非「
 | 訓練來源欄位比原型多 | 需保存標註審查、用途依據、分組與版本，並防止最終評估圖提早曝光 | 基本欄位先顯示，補充欄位在具名詳情；待補項目與修訂實際回報，不照抄原型的 9／12 |
 | 訓練摘要不是 620／1000 的展示進度 | 原型明寫該進度與審查資料無關；正式版只能使用原 run 回報 | 顯示 0、真實回報步數或未知；失敗保留上次快照。準備與開始仍是兩個明確操作，原 UUID、續訓、資源與產物入口保留 |
 | 專用流程未開放一般交換／比較格式 | 一般格式可能遺失來源、遮罩或控制參數 | 顯示能力限制或拒絕處理；仍可還原完整歷史設定與下載 workflow，不部分保存或默默降級 |
-| 真實結果、硬體與容量讀值不同於原型 | 示意山巒、版本、GPU 與分類容量不是真實資料 | 讀實際結果與來源；未知保持未知。N07 分類容量、N05 任務抽屜及 N06 偏好保存仍按 [獨立待辦](../planning/roadmap.md#backend-backlog) 列管 |
+| 真實結果、硬體與容量讀值不同於原型 | 示意山巒、版本、GPU 與分類容量不是真實資料 | 讀實際結果與來源；未知保持未知。N07 分類容量、N05 任務抽屜及 N06 偏好保存的後續交付範圍見 [ROADMAP](../planning/roadmap.md#backend-backlog) |
 
 這些差異都有具體資料或契約理由。其他漏項不能以「優化」概括帶過；本輪沒有改預覽、刪除正式能力或加入手機版。
 
@@ -214,9 +214,9 @@ npx.cmd playwright test --config playwright.journey.config.ts
 | 已保存結果的離線舞台 | [截圖](journey-06-offline-saved-stage.png) |
 | 同來源任務失敗 | [截圖](journey-07-failed-task.png) |
 
-### 仍未交付的範圍
+### 當次未納入的範圍
 
-N07 分類容量、N05 全域任務抽屜、N06 跨次 UI 偏好保存仍是獨立未完成工作，見 [後續能力與驗收條件](../planning/roadmap.md#backend-backlog)。本輪沒有新增分類容量 API 或換色段冒充掃描結果。
+N07 分類容量、N05 全域任務抽屜、N06 跨次 UI 偏好保存於本輪驗收後另行交付，見 [交付範圍](../planning/roadmap.md#backend-backlog)。
 
 本資料鏈驗收的是素材 → Checkpoint 圖片重繪 → 任務 → 作品／比較 → 設定匯出。模型五分類、其他創作流程、訓練四階段與實際部署仍依其各自的既有測試及後續驗收，不因這一條成功而一併宣告全平台全情境完成；尤其本輪沒有把訓練候選資料或合成進度冒充真實訓練成果。
 
@@ -379,4 +379,4 @@ npx.cmd playwright test --config playwright.journey.config.ts
 
 旅程須獨立空DATA；一般tests不能先填資料再冒充驗過空庫。模型原批亦選preview-alignment/ui-redesign的model五類／handoff／reference metadata；訓練原批選training-control、training-review-navigation、preview-alignment、secondary-gaps的四階段／explicit training／saved review issues／populated review／save-and-next／summary／empty stages。精確批次案例數見上表，列出指令不是新執行宣告。
 
-正式版保留舊390px作品整理測試：曾在原搜尋／篩選列不換行及固定寬度的整頁橫向溢出斷言失敗，未刪除或放寬；本輪沒有重做手機版。Vite大包提示也仍存在。N05／N06／N07沒有因此完成；真實GPU配置／權重／來源與品質限其各自硬體驗收，不能以mock旅程或原型截圖取代。
+正式版保留舊390px作品整理測試：曾在原搜尋／篩選列不換行及固定寬度的整頁橫向溢出斷言失敗，未刪除或放寬；當次 Vite 大包提示仍存在。390px 問題與建置大小的目前狀態分見 [作品庫待辦](../planning/roadmap.md#gallery-narrow-layout)及[待評估提案](../planning/roadmap.md#conditional-followups)。GPU、權重、來源與品質依各自驗收範圍。

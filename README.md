@@ -34,7 +34,7 @@ Set-Location ..
 | --- | --- |
 | 創作 | 文生圖、單張圖片重繪、精確 Seed、草稿與設定交換；[最多四個有序 LoRA](docs/models/lora-library.md#ordered-lora)。batch 固定 1。 |
 | 中文提示詞 | [本機 Ollama 轉換器](docs/features/prompt-converter.md)：中文轉英文、預覽及明確套用；另需安裝本機小型模型，不會自動生成圖片。 |
-| 局部修補 | 遮罩筆刷／擦除／PNG、[v1／v2 修補與羽化](docs/features/inpainting.md)、[Fooocus 實驗流程](docs/features/fooocus-inpainting.md)。專用流程的一般草稿／交換／比較仍未開放。 |
+| 局部修補 | 遮罩筆刷／擦除／PNG、[v1／v2 修補與羽化](docs/features/inpainting.md)、[Fooocus 實驗流程](docs/features/fooocus-inpainting.md)及[專用草稿、設定交換與比較](docs/development/specialized-workflow-formats.md)。 |
 | 結構與單張參考 | [Canny 與 CPU 預覽](docs/features/controlnet.md)、[Pose／Depth](docs/features/structure-reference.md)、[SDXL 畫風／角色參考](docs/models/ipadapter-reference.md)。不保證身份鎖定或姿勢完全一致。 |
 | FLUX | [固定四元件安裝](docs/models/flux-installation.md)、[Schnell 文生圖及保存／復原](docs/models/flux-workflow.md)、[獨立 LoRA／VAE 圖生圖](docs/models/flux-extensions.md)。僅認列已驗收配置，未知組合與身份參考停用。 |
 | 作品、素材與實驗 | [搜尋、收藏、筆記、評分、封存及並排比較](docs/features/artwork-library.md)；[有限比較方案、任務關聯與 JSON 報告](docs/features/experiment-plans.md)。封存不釋放檔案，各組生成需明確操作。 |
@@ -53,7 +53,7 @@ Set-Location ..
 | 找功能、API、模型、訓練或驗收文件 | [分類文件總覽](docs/README.md)，功能細節由各主題文件維護。 |
 | 找啟動器、依賴、品質設定與部署檔 | [專案目錄分類](docs/README.md#專案根目錄與工具分類)。 |
 | 看目前 UI 與驗收 | [正式交付現況](docs/ui-redesign/INTEGRATION-NOTES.md)、[桌面驗收](docs/ui-redesign/ACCEPTANCE.md)、[原始 preview](docs/ui-redesign/preview.html)。 |
-| 看尚未完成的工作 | [產品 ROADMAP 與 UI 能力待辦](docs/planning/roadmap.md)，不以頁面美化代替能力完成。 |
+| 看尚未完成的工作 | [ROADMAP](docs/planning/roadmap.md)集中追蹤待實作、待驗收及外部證據。 |
 | 查版本變更與舊決策 | [CHANGELOG](docs/history/changelog.md)，歷史測試數不代表目前全量驗收結果。 |
 | 開發與回歸 | [架構](docs/development/architecture.md)、[前端通訊與生命週期](docs/development/frontend-api.md)、[品質檢查](docs/development/quality-checks.md)。 |
 
