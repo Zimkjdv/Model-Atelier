@@ -6,6 +6,10 @@ from backend.listing import Pager, ListingError
 def install(app, host):
     pager = Pager(host.DB)
 
+    @app.get('/api/library/jobs/overview')
+    def job_overview():
+        return pager.job_overview()
+
     @app.get('/api/library/{kind}')
     def page(
         kind: Literal['artworks', 'jobs', 'assets'],

@@ -29,6 +29,7 @@ export type Job = {
   id: string
   status: string
   checkpoint: string
+  engine_url?: string
   created_at: string
   updated_at?: string
   revision?: number
@@ -65,7 +66,11 @@ export function mergeJob(previous: Job | undefined, incoming: Job): Job {
   return incoming
 }
 
-export function useJobEvents(jobs: Ref<Job[]>, reload: () => Promise<void>) {
+export function useJobEvents(
+  jobs: Ref<Job[]>,
+  reload: () => Promise<void>,
+  enabled: () => boolean = () => true,
+) {
   const connections = ref<Record<string, Connection>>({})
   const visible = ref(false)
   const streams = new Map<string, EventSource>()
@@ -145,7 +150,7 @@ export function useJobEvents(jobs: Ref<Job[]>, reload: () => Promise<void>) {
     for (const id of targets) open(id)
   }
   async function resume() {
-    if (!active || document.visibilityState !== 'visible' || visible.value) return
+    if (!active || !enabled() || document.visibilityState !== 'visible' || visible.value) return
     visible.value = true
     retries.clear()
     await reload().catch(() => {})
@@ -161,6 +166,14 @@ export function useJobEvents(jobs: Ref<Job[]>, reload: () => Promise<void>) {
     connections.value = {}
     void resume()
   }
+  watch(
+    enabled,
+    (value) => {
+      if (value) void resume()
+      else stop()
+    },
+    { flush: 'sync' },
+  )
   watch(() => jobs.value.map((job) => `${job.id}:${job.status}`).join('|'), sync)
   onMounted(() => {
     mounted = true

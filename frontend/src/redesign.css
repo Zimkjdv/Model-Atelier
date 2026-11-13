@@ -1893,6 +1893,13 @@
   #app .atelier-shell .preview-grid {
     grid-template-columns: 1fr;
   }
+  #app .atelier-shell .app-topbar {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+  #app .atelier-shell .top-tools {
+    gap: 6px;
+  }
   #app .atelier-shell .top-tools .connection-status {
     display: none;
   }

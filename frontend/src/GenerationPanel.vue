@@ -9,7 +9,16 @@ import {
 import { api as request, ApiError } from './apiClient'
 import { specializedBody, type SpecializedForm } from './specializedSettings'
 import { submitOnce } from './generationRequest'
-import { computed, onActivated, onBeforeUnmount, ref, watch } from 'vue'
+import {
+  computed,
+  inject,
+  nextTick,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  ref,
+  watch,
+} from 'vue'
 import ExperimentSnapshot from './ExperimentSnapshot.vue'
 import { experimentForSubmission, type ExperimentLoad } from './experimentSettings'
 import type { CreationForm } from './creationSettings'
@@ -47,22 +56,31 @@ import {
 import { imageWorkflowId } from './referenceSettings'
 import { fluxWorkflowId, type FluxForm } from './fluxSettings'
 import { fluxExtensionSubmission, type FluxExtensionForm } from './fluxExtensions'
+import {
+  generationFamily,
+  generationNavigation,
+  jobStatusLabels as labels,
+} from './generationNavigation'
 import { mergeJob, terminal, useJobEvents, type Job } from './jobEvents'
 import type { TemplateSelection } from './templateContext'
 import TemplateSnapshot from './TemplateSnapshot.vue'
-const props = defineProps<{
-  templateSelection?: TemplateSelection | null
-  form: CreationForm | FluxForm | FluxExtensionForm | InpaintForm | ControlForm | ReferenceForm
-  experiment?: ExperimentLoad | null
-  specializedWorkflowId?: string
-  workflow?: 'flux' | 'flux-addon' | 'inpaint' | 'control' | 'reference'
-  fieldProblems?: FieldProblems
-  blockers?: PreflightBlocker[]
-  blockedReason?: string
-  previewStage?: boolean
-  submitTarget?: string
-  disabled?: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    templateSelection?: TemplateSelection | null
+    form: CreationForm | FluxForm | FluxExtensionForm | InpaintForm | ControlForm | ReferenceForm
+    experiment?: ExperimentLoad | null
+    specializedWorkflowId?: string
+    workflow?: 'flux' | 'flux-addon' | 'inpaint' | 'control' | 'reference'
+    fieldProblems?: FieldProblems
+    blockers?: PreflightBlocker[]
+    blockedReason?: string
+    previewStage?: boolean
+    trackTasks?: boolean
+    submitTarget?: string
+    disabled?: boolean
+  }>(),
+  { trackTasks: true },
+)
 const checkpointForm = computed(() => ('checkpoint' in props.form ? props.form : null))
 const pendingKey = {
   checkpoint: 'atelier-pending-submission',
@@ -97,6 +115,8 @@ const emit = defineEmits<{
   pending: [value: boolean]
   submitted: [id: string, settings: Record<string, unknown>]
 }>()
+const navigation = inject(generationNavigation, null)
+const focusedJob = ref<Job>()
 const previewId = ref('')
 const previewJob = computed(
   () => jobs.value.find((job) => job.id === previewId.value) || jobs.value[0] || null,
@@ -137,22 +157,6 @@ const submissionAvailability = computed(() => {
     return '尚缺必要條件：請依下方提示補齊模型、素材或元件。'
   return '表單預檢可提交：按下生成後仍會檢查引擎與元件。'
 })
-const labels: Record<string, string> = {
-  uploading_input: '上傳輸入圖片中',
-  validating: '確認模型中',
-  submitting: '提交中',
-  queued: '等待生成',
-  running: '生成中',
-  completed: '已完成',
-  failed: '失敗',
-  unknown: '結果待確認',
-  cancelling: '確認取消中',
-  cancel_unknown: '取消結果待確認',
-  cancelled: '已取消排隊',
-  stopping: '確認停止中',
-  stop_unknown: '停止結果待確認',
-  stopped: '已停止生成',
-}
 const nextCursor = ref<string | null>(null),
   detailBusy = ref<string | null>(null)
 const expanded = ref<string[]>([])
@@ -166,6 +170,9 @@ async function load(more = false) {
     const previous = jobs.value.find((value) => value.id === job.id)
     return mergeJob(previous, expanded.value.includes(job.id) ? { ...previous, ...job } : job)
   })
+  const pinned = focusedJob.value
+  if (!more && pinned && !incoming.some((job) => job.id === pinned.id))
+    incoming.unshift(jobs.value.find((job) => job.id === pinned.id) || pinned)
   const ids = new Set(jobs.value.map((job) => job.id))
   jobs.value = more ? [...jobs.value, ...incoming.filter((job) => !ids.has(job.id))] : incoming
   nextCursor.value = result.next_cursor
@@ -194,14 +201,56 @@ async function detail(job: Job) {
     detailBusy.value = null
   }
 }
-const { connections, visible, reconnect } = useJobEvents(jobs, async () => {
-  try {
-    await load()
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : '查詢失敗'
-    throw e
-  }
+let panelActive = true
+let handledTarget: { job: Job } | null = null
+async function focusTask() {
+  const target = navigation?.target.value
+  if (
+    !target ||
+    target === handledTarget ||
+    !panelActive ||
+    props.trackTasks === false ||
+    !props.previewStage ||
+    generationFamily(target.job) !== (props.workflow || 'checkpoint')
+  )
+    return
+  handledTarget = target
+  focusedJob.value = target.job
+  const current = jobs.value.find((job) => job.id === target.job.id)
+  if (!current) jobs.value = [target.job, ...jobs.value]
+  previewId.value = target.job.id
+  historyOpen.value = true
+  await nextTick()
+  if (!panelActive || navigation?.target.value !== target) return
+  document.getElementById(`generation-task-${props.submitTarget}-${target.job.id}`)?.focus()
+  await detail(current || target.job)
+}
+watch(
+  [() => navigation?.target.value, () => props.trackTasks],
+  () => {
+    void focusTask()
+  },
+  { immediate: true, flush: 'post' },
+)
+onActivated(() => {
+  panelActive = true
+  void focusTask()
 })
+onDeactivated(() => {
+  panelActive = false
+})
+const { connections, visible, reconnect } = useJobEvents(
+  jobs,
+  async () => {
+    try {
+      await load()
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '查詢失敗'
+      throw e
+    }
+  },
+  () => props.trackTasks !== false && !navigation?.drawerOpen.value,
+)
 const connectionLabels = {
   connecting: '正在連接即時進度',
   connected: '即時進度已連線',
@@ -276,6 +325,7 @@ async function generate() {
     await load().catch(() => {})
   } finally {
     busy.value = false
+    navigation?.refreshOverview()
   }
 }
 async function refresh() {
@@ -444,7 +494,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
     <details
       class="generation-records"
       :open="historyOpen"
-      @toggle="historyOpen = ($event.target as HTMLDetailsElement).open"
+      @toggle.self="historyOpen = ($event.target as HTMLDetailsElement).open"
       ><summary>生成任務與歷史紀錄</summary><h2>生成任務</h2>
       <WorkflowFormatSupport
         v-if="workflow === 'inpaint' || workflow === 'control' || workflow === 'reference'"
@@ -506,8 +556,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
         >重新連線進度</button
       >
       <p v-if="jobs.some((j) => !terminal(j))" class="footnote"
-        >即時監聽最近 4
-        個未完成任務。離線時保留最後進度並低頻查詢；切換頁面或隱藏分頁會停止監聽。</p
+        >即時監聽最近 4 個未完成任務。開啟全域任務抽屜時，進度監聽由抽屜接手。</p
       >
       <p v-if="!jobs.length" class="footnote"
         >尚無任務。生成結果暫存於 ComfyUI output，平台保留歷史 JSON。</p
@@ -515,7 +564,13 @@ onBeforeUnmount(() => window.clearInterval(timer))
       <button v-if="nextCursor" class="secondary" :disabled="busy" @click="older"
         >載入較早任務</button
       >
-      <div v-for="job in jobs" :key="job.id" class="job">
+      <div
+        v-for="job in jobs"
+        :id="'generation-task-' + submitTarget + '-' + job.id"
+        :key="job.id"
+        class="job"
+        tabindex="-1"
+      >
         <button
           v-if="!expanded.includes(job.id)"
           class="secondary"

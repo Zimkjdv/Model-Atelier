@@ -41,7 +41,11 @@ type Profile = {
   lora: { filename: string; sha256: string; version: string }
   components: Record<string, string>
 }
-const props = defineProps<{ imageRequested?: boolean; restoration?: Restoration | null }>()
+const props = defineProps<{
+  imageRequested?: boolean
+  restoration?: Restoration | null
+  trackTasks?: boolean
+}>()
 const emit = defineEmits<{ gallery: [id: string]; models: []; assets: [] }>()
 const base = reactive({
   ...newFlux(),
@@ -481,6 +485,7 @@ const preflightBlockers = computed(() => {
             submit-target="#studio-submit-flux-addon"
             :form="form"
             workflow="flux-addon"
+            :track-tasks="trackTasks !== false"
             :blockers="preflightBlockers"
             :field-problems="fieldProblems"
             :blocked-reason="problem"

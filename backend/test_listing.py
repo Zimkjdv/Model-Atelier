@@ -40,6 +40,23 @@ class ListingTests(unittest.TestCase):
         self.assertEqual(len(self.client.get('/api/jobs').json()), 125)
         self.assertEqual(len(self.client.get('/api/assets').json()), 125)
 
+    def test_task_overview_counts_older_active_jobs_without_loading_workflows(self):
+        self.populate(45)
+        rows = self.page('jobs', limit=45)['items']
+        with closing(sqlite3.connect(self.db)) as db, db:
+            for index, row in enumerate(rows):
+                status = 'completed' if index < 20 else 'unknown' if index == 44 else 'running'
+                db.execute(
+                    "UPDATE settings SET value=json_set(value,'$.status',?) WHERE key=?",
+                    (status, 'job:' + row['id']),
+                )
+        result = self.client.get('/api/library/jobs/overview').json()
+        self.assertEqual(result['active_total'], 25)
+        self.assertEqual(len(result['items']), 30)
+        self.assertTrue(all(row['status'] == 'running' for row in result['items'][:20]))
+        self.assertTrue(all(row['status'] == 'completed' for row in result['items'][20:]))
+        self.assertTrue(all('workflow' not in row for row in result['items']))
+
     def test_fixed_membership_has_no_duplicates_or_gaps_after_insert_or_updates(self):
         self.populate()
         first = self.page(scope='all', limit=13)

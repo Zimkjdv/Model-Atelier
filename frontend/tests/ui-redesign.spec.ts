@@ -417,3 +417,74 @@ test('unknown display preference version falls back without overwriting storage'
   await expect(page.getByText('無法讀取顯示偏好，已使用預設排版。')).toBeVisible()
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(invalid)
 })
+
+for (const width of [1440, 390]) {
+  test(`${width}px: global tasks show progress across pages and locate the original job`, async ({
+    page,
+    request,
+  }) => {
+    await page.setViewportSize({ width, height: 900 })
+    const before = (await (await request.get('/qa/state')).json()).prompts
+    await request.post('/qa/engine/uncertain')
+    await page.goto('/#/studio/checkpoint')
+    await page.locator('#draft-model').selectOption('demo.safetensors')
+    await page.locator('#draft-prompt').fill('A test landscape')
+    const response = page.waitForResponse(
+      (value) => value.url().endsWith('/api/generate') && value.request().method() === 'POST',
+    )
+    await page.getByRole('button', { name: '生成圖片', exact: true }).click()
+    const submitted = await response
+    expect(submitted.ok()).toBeTruthy()
+    const job = await submitted.json()
+    const id = job.id
+    const liveRequests: string[] = []
+    await page.route('**/api/jobs/*/events', async (route) => {
+      if (
+        !route
+          .request()
+          .url()
+          .endsWith('/' + id + '/events')
+      )
+        return route.continue()
+      liveRequests.push(id)
+      const update = {
+        ...job,
+        status: 'running',
+        revision: 100000,
+        progress: { node: 'KSampler', percent: 40, updated_at: '2099-01-01T00:00:00Z' },
+      }
+      await route.fulfill({
+        contentType: 'text/event-stream',
+        body: 'event: job\ndata: ' + JSON.stringify({ job: update }) + '\n\n',
+      })
+    })
+    await page.getByRole('navigation').getByRole('button', { name: '作品庫' }).click()
+    const trigger = page.getByRole('button', { name: /任務抽屜/ })
+    await trigger.click()
+    const drawer = page.getByRole('dialog', { name: '生成任務' })
+    const entry = drawer.locator('[data-task-id="' + id + '"]')
+    await expect(entry).toContainText('http://mock-engine.invalid:8188')
+    await expect(entry.getByRole('progressbar')).toHaveAttribute('value', '40')
+    expect(liveRequests.length).toBeGreaterThan(0)
+    expect(
+      await drawer.evaluate((element) => {
+        const bounds = element.getBoundingClientRect()
+        return (
+          bounds.left >= 0 &&
+          bounds.right <= innerWidth &&
+          element.scrollWidth <= element.clientWidth
+        )
+      }),
+    ).toBe(true)
+    await page.keyboard.press('Escape')
+    await expect(drawer).toBeHidden()
+    await expect(trigger).toBeFocused()
+    await trigger.click()
+    await entry.getByRole('button', { name: '前往原任務' }).click()
+    await expect(drawer).toBeHidden()
+    await expect(page).toHaveURL(/#\/studio\/checkpoint$/)
+    await expect(page.locator('.job').filter({ hasText: id })).toBeFocused()
+    await expect(page.locator('#draft-prompt')).toHaveValue('A test landscape')
+    expect((await (await request.get('/qa/state')).json()).prompts).toBe(before + 1)
+  })
+}

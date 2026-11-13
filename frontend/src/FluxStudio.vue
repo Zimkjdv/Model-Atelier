@@ -12,6 +12,7 @@ import { useUnsavedChanges } from './unsavedChanges'
 import UnsavedChangesNotice from './UnsavedChangesNotice.vue'
 import {
   computed,
+  inject,
   onActivated,
   onBeforeUnmount,
   onDeactivated,
@@ -21,6 +22,7 @@ import {
   watch,
 } from 'vue'
 import GenerationPanel from './GenerationPanel.vue'
+import { generationFamily, generationNavigation } from './generationNavigation'
 import PromptConverter from './PromptConverter.vue'
 import FluxExtensionStudio from './FluxExtensionStudio.vue'
 import { isFluxExtension, type FluxExtensionRestoration } from './fluxExtensions'
@@ -75,6 +77,17 @@ function openExtensions() {
   extensionsOpened.value = true
   showExtensions.value = true
 }
+const taskNavigation = inject(generationNavigation, null)
+watch(
+  () => taskNavigation?.target.value,
+  (target) => {
+    if (!target) return
+    const family = generationFamily(target.job)
+    if (family === 'flux-addon') openExtensions()
+    else if (family === 'flux') showExtensions.value = false
+  },
+  { immediate: true },
+)
 const form = reactive(newFlux()),
   records = ref<Draft[]>([]),
   catalog = ref<FluxCatalog | null>(null)
@@ -389,6 +402,7 @@ const preflightBlockers = computed(() => {
       v-if="extensionsOpened"
       v-show="showExtensions"
       :restoration="extensionRestoration"
+      :track-tasks="showExtensions"
       :image-requested="!!purposeRequest?.image"
       @models="emit('models')"
       @assets="emit('assets')"
@@ -643,6 +657,7 @@ const preflightBlockers = computed(() => {
               submit-target="#studio-submit-flux"
               :form="form"
               workflow="flux"
+              :track-tasks="!showExtensions"
               :blockers="preflightBlockers"
               :field-problems="fieldProblems"
               :blocked-reason="block"

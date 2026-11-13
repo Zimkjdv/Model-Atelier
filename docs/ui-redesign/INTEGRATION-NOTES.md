@@ -11,7 +11,7 @@
 | 落差G01–G04 | 已補主舞台真實結果、五分類版型、分類同步與素材詳情，見[主要流程](#primary-flows) |
 | 落差G05／G06／P01–P03 | 已補作品資訊／分頁／空狀態、欄位預檢、訓練摘要與設定匯出引導，見[資訊與操作](#information-operations) |
 | 提案N09 | 已補選取操作列、明確進比較、批次封存／還原及原圖ZIP，見[作品操作](#artwork-selection) |
-| 提案 N05／N06／N07 | [N06 顯示偏好](../history/changelog.md#n06)已交付；N05 全域任務及 N07 分類容量見[獨立待辦](../planning/roadmap.md#backend-backlog) |
+| 提案 N05／N06／N07 | [N06 顯示偏好](../history/changelog.md#n06)與 [N05 生成任務抽屜](../history/changelog.md#n05)已交付；N07 分類容量見[獨立待辦](../planning/roadmap.md#backend-backlog) |
 | 後續逐頁對齊 | [模型](#models)、[訓練](#training)、[創作](#studio)、[作品卡片及詳情](#artwork-cards-detail)已整理；各批案例不可加總成一次全站驗收 |
 
 「落差ID」與FEATURE-INVENTORY的「功能盤點ID」分開；例如落差G01=舞台、盤點G01=作品庫，落差P01=預檢、盤點P01=診斷。提案N編號亦不代替ROADMAP。

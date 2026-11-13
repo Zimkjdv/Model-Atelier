@@ -220,7 +220,35 @@ class Pager:
             )
         return Snapshot(tuple(row[0] for row in rows), query, now + TTL, models, all_total)
 
-    def _summaries(self, kind, keys):
+    def job_overview(self):
+        active = (
+            "key GLOB 'job:*' AND COALESCE(json_extract(value,'$.status'),'unknown') "
+            "NOT IN ('completed','failed','cancelled','stopped')"
+        )
+        order = " ORDER BY json_extract(value,'$.created_at') DESC, key DESC"
+        with closing(sqlite3.connect(self.path)) as db:
+            db.execute('BEGIN')
+            count = db.execute('SELECT COUNT(*) FROM settings WHERE ' + active).fetchone()[0]
+            active_keys = [
+                row[0]
+                for row in db.execute(
+                    'SELECT key FROM settings WHERE ' + active + order + ' LIMIT 20'
+                )
+            ]
+            recent_keys = [
+                row[0]
+                for row in db.execute(
+                    "SELECT key FROM settings WHERE key GLOB 'job:*' AND NOT ("
+                    + active
+                    + ')'
+                    + order
+                    + ' LIMIT 10'
+                )
+            ]
+            items, _ = self._summaries('jobs', active_keys + recent_keys, db=db)
+        return dict(items=items, active_total=count)
+
+    def _summaries(self, kind, keys, *, db=None):
         if not keys:
             return [], []
         common = ['id', 'title', 'created_at', 'revision']
@@ -266,15 +294,17 @@ class Pager:
             )
         if kind == 'assets':
             projection += ", 'preprocessing',CASE WHEN json_type(value,'$.preprocessing')='object' THEN json_object('version',json_extract(value,'$.preprocessing.version'),'library_version',json_extract(value,'$.preprocessing.library_version')) ELSE NULL END"
-        with closing(sqlite3.connect(self.path)) as db:
-            rows = db.execute(
-                'SELECT key,json_object('
-                + projection
-                + ') FROM settings WHERE key IN ('
-                + ','.join('?' for _ in keys)
-                + ')',
-                keys,
-            ).fetchall()
+        if db is None:
+            with closing(sqlite3.connect(self.path)) as connection:
+                return self._summaries(kind, keys, db=connection)
+        rows = db.execute(
+            'SELECT key,json_object('
+            + projection
+            + ') FROM settings WHERE key IN ('
+            + ','.join('?' for _ in keys)
+            + ')',
+            keys,
+        ).fetchall()
         by_key = {key: json.loads(raw) for key, raw in rows}
         for item in by_key.values():
             if kind == 'assets' and item['purpose'] is None:

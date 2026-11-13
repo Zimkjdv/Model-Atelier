@@ -2,7 +2,7 @@
 import { useStudioPreferences } from './studioPreferences'
 import { apiJson as api } from './apiClient'
 import { createRequestScope } from './requestScope'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { pages, useNavigation, type Mode } from './navigation'
 import ModelLibrary from './ModelLibrary.vue'
 import CreationStudio from './CreationStudio.vue'
@@ -24,6 +24,9 @@ import type { EngineReport } from './environmentTypes'
 import SystemWorkspace from './SystemWorkspace.vue'
 import PageTabs from './PageTabs.vue'
 import UiIcon from './UiIcon.vue'
+import TaskDrawer from './TaskDrawer.vue'
+import { generationFamily, generationNavigation } from './generationNavigation'
+import type { Job } from './jobEvents'
 import SimpleCreation from './SimpleCreation.vue'
 import type { SimpleTransfer } from './simpleCreation'
 import type { TemplateSelection } from './templateContext'
@@ -63,6 +66,25 @@ const {
       !artworkNotesDirty.value ||
       window.confirm('作品筆記或評分尚未保存，或批次操作正在處理，確定離開目前畫面？')),
 )
+const drawerOpen = ref(false)
+const taskDrawer = ref<InstanceType<typeof TaskDrawer>>()
+const generationTarget = ref<{ job: Job } | null>(null)
+provide(generationNavigation, {
+  drawerOpen,
+  target: generationTarget,
+  refreshOverview: () => {
+    void taskDrawer.value?.refresh()
+  },
+})
+function locateJob(job: Job) {
+  const family = generationFamily(job)
+  if (!navigate('創作工作台', family === 'flux-addon' ? 'flux' : family)) return
+  taskDrawer.value?.close(false)
+  generationTarget.value = { job }
+}
+function openJobGallery(id: string) {
+  if (navigate('作品庫', studioMode.value, id)) taskDrawer.value?.close(false)
+}
 const systemStale = ref(false),
   savedUrl = ref('')
 const restoreRequest = ref<{ artworkId: string; token: number } | null>(null)
@@ -352,7 +374,13 @@ async function testConnection() {
             ><span class="dot" :class="{ online: engine?.connected }"></span
             >{{ engine?.connected ? '引擎已連線' : engine ? '引擎未連線' : '連線狀態未知'
             }}{{ engineDevice }}</span
-          ><button class="secondary" @click="openConnection">連線設定</button></div
+          ><TaskDrawer
+            ref="taskDrawer"
+            v-model:open="drawerOpen"
+            @locate="locateJob"
+            @gallery="openJobGallery"
+          />
+          <button class="secondary" @click="openConnection">連線設定</button></div
         ></header
       >
       <section

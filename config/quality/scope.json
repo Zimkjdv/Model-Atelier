@@ -172,6 +172,8 @@
     "frontend/src/GenerationPanel.vue",
     "frontend/src/generationRequest.ts",
     "frontend/src/jobEvents.ts",
+    "frontend/src/TaskDrawer.vue",
+    "frontend/src/generationNavigation.ts",
     "frontend/src/style.css",
     "frontend/check-style.mjs",
     "frontend/css-checks.mjs",
