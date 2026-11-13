@@ -165,6 +165,8 @@
     "frontend/tests/artwork-library.spec.ts",
     "frontend/tests/artwork-detail-ui.spec.ts",
     "frontend/src/ArtworkLibrary.vue",
+    "frontend/src/ArtworkSourcesPanel.vue",
+    "frontend/src/artworkRecord.ts",
     "frontend/src/OverflowText.vue",
     "frontend/src/ArtworkComparison.vue",
     "frontend/tests/inpaint-recovery.spec.ts",

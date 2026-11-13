@@ -9,7 +9,7 @@
 
 這裡維護目前尚待實作、驗收及外部證據的工作。已完成條目的證據見 [CHANGELOG](../history/changelog.md#roadmap-completed-20261025)，原清單的去向見 [歷史索引](../history/changelog.md#unchecked-index)。規格、操作與各次驗收條件由原主題文件保存。
 
-截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **6 個優化候選（O03–O08）**。已完成的作品庫窄視窗、O01 與 O02 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02)
+截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**，另有 **5 個優化候選（O04–O08）**。已完成的作品庫窄視窗與 O01–O03 驗收移至 CHANGELOG。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02) · [O03](../history/changelog.md#o03)
 
 ## 目前進度與接續條件
 
@@ -166,7 +166,7 @@ N05 生成任務抽屜、N06 同瀏覽器顯示偏好與 N07 分類容量已移�
 
 ### 建議順序與完成條件
 
-接續分批安排 O03／O04。O05–O08 依維護與使用頻率選擇。官方 API 依既定順序最後實作，真人觀察依使用者安排。
+接續安排 O04。O05–O08 依維護與使用頻率選擇。官方 API 依既定順序最後實作，真人觀察依使用者安排。
 
 <a id="o01"></a>
 
@@ -178,15 +178,14 @@ O02 工作區拆包及首載大小驗收已完成。 [CHANGELOG](../history/chan
 
 <a id="o03"></a>
 
-- [ ] **O03 · P2／架構：按責任拆分大型 Vue 工作台**
-  - 依據：[CreationStudio.vue](../../frontend/src/CreationStudio.vue)、[ArtworkLibrary.vue](../../frontend/src/ArtworkLibrary.vue)、[SimpleCreation.vue](../../frontend/src/SimpleCreation.vue) 各混合表單／資料查詢／生命週期與大片模板；最大者超過 1,700 非空行。
-  - 完成條件：先選一個實際高變更區，分離純設定轉換、查詢生命週期或展示面板，明列輸入／輸出及狀態擁有者。保留公開 props／事件、儲存 key、精確 seed、dirty／409 衝突與原 UUID 行為，跑受影響 Node／瀏覽器案例；不把不同流程硬合成通用提交器。
+O03 已完成作品詳情「生成與來源」的展示面板拆分。 [CHANGELOG](../history/changelog.md#o03)
 
 <a id="o04"></a>
 
 - [ ] **O04 · P2／UI 維護：收斂 CSS 覆蓋與響應式規則**
   - 依據：[main.ts](../../frontend/src/main.ts) 依序載入 style／theme／redesign，另有元件 scoped style；[redesign.css](../../frontend/src/redesign.css) 超過 4,100 非空行，含高 specificity selector 與多處 media 覆蓋。舊 `.artwork-toolbar` 的換行設定未直接涵蓋新的 `.gallery-browser-tools`。
   - 完成條件：先盤點作品庫工具列、對話框、工作台區域的最終 computed style 與擁有檔案，再逐區整合 spacing／寬度／斷點。以 390／768／1280／1440／1920px、長模型名、空／錯誤狀態驗證可見、鍵盤可達、無整頁橫溢；不移除有動態用途的 selector，不以全域 overflow hidden 代替修正。
+  - 作品庫頁尾補驗：用隔離平台建立超過一頁的作品。390px 視窗的 `.library-footer` 出現分頁按鈕後，頁面寬度達 430px，O03 拆分前後結果相同。驗收時連同每頁筆數、上一頁／下一頁、重新整理及清單說明一起確認可見與可操作。 [O03 驗收](../history/changelog.md#o03)
 
 <a id="o05"></a>
 

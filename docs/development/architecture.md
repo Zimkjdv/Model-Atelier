@@ -19,6 +19,7 @@ flowchart LR
 | --- | --- |
 | frontend/src/App.vue | 導覽、平台／引擎資訊、KeepAlive 工作台 |
 | 各 Studio、GenerationPanel、jobEvents.ts | 專用表單、提交／恢復、任務與進度 |
+| ArtworkLibrary、ArtworkSourcesPanel、artworkRecord.ts | 作品庫管理查詢、選取、對話框、未保存草稿與修訂。來源面板接收一筆已載入的作品，顯示保存參數、快照、原任務連結與下載。兩者共用作品型別。 |
 | TrainingWorkspace、training_review、training_control | 人工圖片審查、不可變修訂、持久準備 UUID／單次啟動標記與狀態查閱；沿用獨立 training_runs／training_artifacts，不在平台載入 Torch |
 | backend/main.py、app_context.py | app 工廠、明確配置、啟動時初始化與引擎 HTTP 介面 |
 | core_api.py、schemas.py、各 install 函式 | 每 app 的端點／鎖、純請求型別與功能註冊 |

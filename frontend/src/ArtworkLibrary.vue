@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import ArtworkSourcesPanel from './ArtworkSourcesPanel.vue'
+import type { Artwork } from './artworkRecord'
 import { useStudioPreferences } from './studioPreferences'
 import UiIcon from './UiIcon.vue'
-import TemplateSnapshot from './TemplateSnapshot.vue'
-import type { TemplateContext } from './templateContext'
 import OverflowText from './OverflowText.vue'
 import { vMasonry } from './masonry'
 const display = useStudioPreferences()
@@ -75,26 +75,7 @@ function selectCollection(value: 'active' | 'archived', favorites = false) {
 import { api, apiResponse, ApiError } from './apiClient'
 import { createRequestScope } from './requestScope'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import {
-  architectureLabel,
-  fileHash,
-  fileSize,
-  metadataTime,
-  safeMetadataUrl,
-} from './modelMetadata'
-import type { ModelMetadataSnapshot, LoraMetadataSnapshot } from './modelMetadata'
-import LoraSnapshot from './LoraSnapshot.vue'
-import ComponentSnapshot from './ComponentSnapshot.vue'
-import ControlSnapshot from './ControlSnapshot.vue'
-import ControlEdgePreview from './ControlEdgePreview.vue'
-import StructureOutput from './StructureOutput.vue'
-import { controlEdgeWorkflowId, structureWorkflowId, isControlWorkflow } from './controlSettings'
-import ReferenceSnapshot from './ReferenceSnapshot.vue'
-import RuntimeSnapshot from './RuntimeSnapshot.vue'
-import ExperimentSnapshot from './ExperimentSnapshot.vue'
-import type { ExperimentContext } from './experimentSettings'
-import JobMeasurements from './JobMeasurements.vue'
-import type { JobMeasurements as Measurements } from './jobMeasurements'
+import { structureWorkflowId, isControlWorkflow } from './controlSettings'
 import ArtworkComparison from './ArtworkComparison.vue'
 import {
   emptyRatings,
@@ -102,13 +83,11 @@ import {
   type Ratings,
   type ComparisonArtwork,
 } from './artworkComparison'
-import type { RuntimeMetadata } from './runtimeMetadata'
 import { isInpaintWorkflow } from './inpaintSettings'
 import { referenceWorkflowId } from './adapterSettings'
-import ReferenceComponentsSnapshot from './ReferenceComponentsSnapshot.vue'
-import { imageWorkflowId, type ReferenceSnapshot as ReferenceMetadata } from './referenceSettings'
-import { fluxWorkflowId, type ComponentSnapshot as ComponentMetadata } from './fluxSettings'
-import { fluxImageId, fluxLoraId, isFluxExtension } from './fluxExtensions'
+import { imageWorkflowId } from './referenceSettings'
+import { fluxWorkflowId } from './fluxSettings'
+import { fluxImageId, fluxLoraId } from './fluxExtensions'
 const props = defineProps<{ jobId?: string; comparing?: boolean }>()
 const emit = defineEmits<{
   studio: []
@@ -116,49 +95,6 @@ const emit = defineEmits<{
   dirty: [value: boolean]
   compare: [show: boolean]
 }>()
-type Parameters = {
-  prompt: string | null
-  negative_prompt: string | null
-  seed: string | null
-  steps: number | null
-  cfg: number | null
-  sampler: string | null
-  scheduler: string | null
-  denoise: number | null
-}
-type Artwork = {
-  template_context?: TemplateContext | null
-  notes_truncated?: boolean
-  experiment_context?: ExperimentContext | null
-  measurements?: Measurements | null
-  ratings: Ratings
-  runtime_metadata?: RuntimeMetadata | null
-  id: string
-  job_id: string
-  title: string
-  checkpoint: string
-  model_version: string
-  model_metadata?: ModelMetadataSnapshot | null
-  lora_metadata?: LoraMetadataSnapshot[] | null
-  workflow_id?: string | null
-  component_metadata?: ComponentMetadata[] | null
-  reference_metadata?: ReferenceMetadata[] | null
-  engine_url: string
-  parameters: Parameters
-  width: number
-  height: number
-  size: number
-  created_at: string
-  imported_at: string
-  image_available: boolean
-  thumbnail_available: boolean
-  sha256: string
-  favorite: boolean
-  notes: string
-  archived: boolean
-  revision: number
-  organization_updated_at: string | null
-}
 type Job = { id: string; status: string; checkpoint: string; created_at: string }
 type ImportResult = {
   imported: Artwork[]
@@ -1109,167 +1045,8 @@ onBeforeUnmount(() => {
                 ></section
               >
             </section>
-            <section
-              id="artwork-panel-sources"
-              v-show="detailTab === 'sources'"
-              role="tabpanel"
-              aria-labelledby="artwork-tab-sources"
-              tabindex="0"
-              class="artwork-extra"
-            >
-              <div class="artwork-source-actions">
-                <a :href="`/api/artworks/${selected.id}/workflow`">下載完整工作流程</a>
-                <a :href="`/api/jobs/${selected.job_id}`" target="_blank" rel="noopener"
-                  >原始任務 JSON ↗</a
-                >
-              </div>
-              <h3>生成設定</h3>
-              <dl
-                ><dt>Checkpoint</dt><dd>{{ selected.checkpoint }}</dd
-                ><dt>模型版本（提交時登記）</dt><dd>{{ selected.model_version }}</dd
-                ><dt>圖片尺寸</dt><dd>{{ selected.width }} × {{ selected.height }}</dd
-                ><dt>Seed</dt><dd>{{ selected.parameters.seed ?? '未知' }}</dd
-                ><dt>Steps / CFG</dt
-                ><dd
-                  >{{ selected.parameters.steps ?? '未知' }} /
-                  {{ selected.parameters.cfg ?? '未知' }}</dd
-                ><dt>Sampler / Scheduler</dt
-                ><dd
-                  >{{ selected.parameters.sampler ?? '未知' }} /
-                  {{ selected.parameters.scheduler ?? '未知' }}</dd
-                ><dt>Denoise</dt><dd>{{ selected.parameters.denoise ?? '未知' }}</dd></dl
-              >
-              <TemplateSnapshot :item="selected.template_context" />
-              <p v-if="!selected.template_context" class="footnote"
-                >此作品未記錄起始模板；不依圖片、檔名或目前模型推定來源。</p
-              >
-              <h3>畫面描述</h3>
-              <p class="prompt">{{
-                selected.parameters.prompt ?? '無法從此工作流程解析，請查看完整 JSON。'
-              }}</p>
-              <h3>負面提示詞</h3>
-              <p class="prompt">{{ selected.parameters.negative_prompt || '未設定或無法解析' }}</p>
-              <details class="model-snapshot"
-                ><summary>提交時模型資料</summary>
-                <template v-if="selected.model_metadata"
-                  ><p class="footnote"
-                    >保留任務提交時的使用者登記，不隨模型庫後續編輯改動；不代表平台已驗證檔案、授權或相容性。</p
-                  ><dl>
-                    <dt>模型檔名</dt><dd>{{ selected.model_metadata.name || '未知' }}</dd>
-                    <dt>登記版本</dt
-                    ><dd>{{ selected.model_metadata.version?.trim() || '未知' }}</dd>
-                    <dt>登記架構</dt
-                    ><dd>{{ architectureLabel(selected.model_metadata.architecture) }}</dd>
-                    <dt>模型檔案大小</dt><dd>{{ fileSize(selected.model_metadata.size_bytes) }}</dd>
-                    <dt>模型檔案 SHA-256</dt
-                    ><dd class="file-hash">{{ fileHash(selected.model_metadata.sha256) }}</dd>
-                    <dt>模型來源</dt
-                    ><dd
-                      ><a
-                        v-if="safeMetadataUrl(selected.model_metadata.source_url)"
-                        :href="safeMetadataUrl(selected.model_metadata.source_url)"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        >查看當時登記來源 ↗</a
-                      ><span v-else>未知</span></dd
-                    >
-                    <dt>授權名稱／標記</dt
-                    ><dd>{{ selected.model_metadata.license_name?.trim() || '未知' }}</dd>
-                    <dt>授權條款網址</dt
-                    ><dd
-                      ><a
-                        v-if="safeMetadataUrl(selected.model_metadata.license_url)"
-                        :href="safeMetadataUrl(selected.model_metadata.license_url)"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        >查看當時登記條款 ↗</a
-                      ><span v-else>未知</span></dd
-                    >
-                    <dt>登記資料更新</dt
-                    ><dd>{{ metadataTime(selected.model_metadata.metadata_updated_at) }}</dd>
-                    <dt>快照保存</dt
-                    ><dd>{{ metadataTime(selected.model_metadata.captured_at) }}</dd>
-                  </dl></template
-                >
-                <p v-else class="footnote"
-                  >此作品尚無提交時的模型資料快照，當時架構、檔案識別及授權資訊未知。</p
-                >
-              </details>
-              <LoraSnapshot
-                v-if="
-                  !selected.workflow_id ||
-                  selected.workflow_id === 'checkpoint-text2image-v1' ||
-                  isFluxExtension(selected.workflow_id) ||
-                  selected.workflow_id === imageWorkflowId ||
-                  isInpaintWorkflow(selected.workflow_id) ||
-                  isControlWorkflow(selected.workflow_id)
-                "
-                :items="selected.lora_metadata"
-              />
-              <a
-                v-if="
-                  !selected.workflow_id ||
-                  ['checkpoint-text2image-v1', imageWorkflowId, fluxWorkflowId].includes(
-                    selected.workflow_id,
-                  )
-                "
-                :href="`/api/artworks/${selected.id}/settings-export`"
-                >匯出創作設定（含來源快照）</a
-              >
-              <a
-                v-if="
-                  isInpaintWorkflow(selected.workflow_id) ||
-                  isControlWorkflow(selected.workflow_id) ||
-                  selected.workflow_id === referenceWorkflowId
-                "
-                :href="`/api/specialized/artworks/${selected.id}/settings`"
-                >匯出專用設定（含來源快照）</a
-              >
-              <ControlSnapshot
-                v-if="isControlWorkflow(selected.workflow_id)"
-                :items="selected.component_metadata"
-              />
-              <ReferenceComponentsSnapshot
-                v-else-if="selected.workflow_id === referenceWorkflowId"
-                :items="selected.component_metadata"
-              />
-              <ComponentSnapshot v-else :items="selected.component_metadata" />
-              <ExperimentSnapshot :item="selected.experiment_context" />
-              <RuntimeSnapshot :item="selected.runtime_metadata" />
-              <JobMeasurements :item="selected.measurements" />
-              <StructureOutput
-                v-if="selected.workflow_id === structureWorkflowId"
-                :job-id="selected.job_id"
-              />
-              <ControlEdgePreview
-                v-if="selected.workflow_id === controlEdgeWorkflowId"
-                :key="selected.id"
-                :job-id="selected.job_id"
-                :artwork-id="selected.id"
-              />
-              <p
-                v-else-if="
-                  selected.workflow_id !== structureWorkflowId &&
-                  isControlWorkflow(selected.workflow_id)
-                "
-                class="footnote"
-                >舊版 v1 沒有保存同次邊緣輸出，不會重新計算歷史圖。</p
-              >
-              <ReferenceSnapshot
-                :items="selected.reference_metadata"
-                :job-id="selected.job_id"
-                :processed-ready="true"
-              />
-              <details
-                ><summary>作品來源紀錄</summary><p>原引擎：{{ selected.engine_url }}</p
-                ><p>任務：{{ selected.job_id }}</p
-                ><p>提交：{{ new Date(selected.created_at).toLocaleString() }}</p
-                ><p>匯入：{{ new Date(selected.imported_at).toLocaleString() }}</p
-                ><p class="file-hash">作品原圖 SHA-256：{{ selected.sha256 }}</p></details
-              ></section
-            >
-          </div></div
-        >
+            <ArtworkSourcesPanel v-show="detailTab === 'sources'" :artwork="selected" /> </div
+        ></div>
       </div>
     </template>
     <div data-overflow-tooltip-root></div>
@@ -1444,11 +1221,6 @@ onBeforeUnmount(() => {
 .artwork-info dd {
   margin: 0;
 }
-.prompt {
-  white-space: pre-wrap;
-  max-height: 220px;
-  overflow: auto;
-}
 .artwork-info details {
   margin-top: 24px;
 }
@@ -1475,13 +1247,6 @@ onBeforeUnmount(() => {
   .preview-heading h2 {
     font-size: 14px;
   }
-}
-.model-snapshot a {
-  color: #c5dfba;
-}
-.file-hash {
-  font-family: monospace;
-  line-height: 1.7;
 }
 .artwork-toolbar .favorite-filter {
   white-space: nowrap;
