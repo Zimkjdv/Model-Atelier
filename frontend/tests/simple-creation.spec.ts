@@ -1,4 +1,4 @@
-import { test, expect, type APIRequestContext } from '@playwright/test'
+import { test, expect, type APIRequestContext, type Dialog } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
 
@@ -195,15 +195,24 @@ test('Pony transfers exact settings, preserves simple edits and protects an exis
     .click()
   await page.getByRole('button', { name: '套用後修改', exact: true }).click()
   await page.locator('#simple-prompt').fill('score_9, source_anime, mountain lake, no humans')
-  page.once('dialog', (dialog) => dialog.dismiss())
-  await page.getByRole('button', { name: '帶到進階工作台', exact: true }).click()
+  const transfer = page.getByRole('button', { name: '帶到進階工作台', exact: true })
+  let acceptTransfer = false
+  const respondToTransfer = (dialog: Dialog) =>
+    acceptTransfer ? dialog.accept() : dialog.dismiss()
+  page.on('dialog', respondToTransfer)
+  const dismissed = page.waitForEvent('dialogclosed')
+  await transfer.click()
+  expect((await dismissed).message()).toContain('帶入簡易配方會取代目前進階工作台')
   await expect(page.locator('#draft-prompt')).toHaveValue('keep advanced draft')
   await page.getByRole('tab', { name: '簡易創作', exact: true }).click()
   await expect(page.locator('#simple-prompt')).toHaveValue(
     'score_9, source_anime, mountain lake, no humans',
   )
-  page.once('dialog', (dialog) => dialog.accept())
-  await page.getByRole('button', { name: '帶到進階工作台', exact: true }).click()
+  acceptTransfer = true
+  const accepted = page.waitForEvent('dialogclosed')
+  await transfer.click()
+  expect((await accepted).message()).toContain('帶入簡易配方會取代目前進階工作台')
+  page.off('dialog', respondToTransfer)
   await expect(page.locator('#draft-prompt')).toHaveValue(
     'score_9, source_anime, mountain lake, no humans',
   )
