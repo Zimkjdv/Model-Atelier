@@ -523,6 +523,7 @@ onMounted(() => {
       id="models-panel-control"
       role="tabpanel"
       aria-labelledby="models-tab-control"
+      ><h2 class="sr-only">結構控制模型</h2
       ><ControlLibrary
         ref="controlLibrary"
         :view="view"
@@ -535,6 +536,7 @@ onMounted(() => {
       id="models-panel-lora"
       role="tabpanel"
       aria-labelledby="models-tab-lora"
+      ><h2 class="sr-only">LoRA 模型</h2
       ><LoraLibrary
         ref="loraLibrary"
         :view="view"
@@ -548,6 +550,7 @@ onMounted(() => {
       id="models-panel-reference"
       role="tabpanel"
       aria-labelledby="models-tab-reference"
+      ><h2 class="sr-only">參考元件</h2
       ><ReferenceLibrary ref="referenceLibrary" :view="view" managed
     /></section>
     <section
@@ -555,6 +558,7 @@ onMounted(() => {
       id="models-panel-flux"
       role="tabpanel"
       aria-labelledby="models-tab-flux"
+      ><h2 class="sr-only">FLUX 元件</h2
       ><FluxComponentLibrary ref="fluxLibrary" :view="view" managed />
       <div class="model-category-actions"
         ><button class="secondary" @click="emit('create', 'flux')">前往 FLUX 創作</button></div

@@ -303,10 +303,10 @@ for (const [route, field] of [
     )
     await page.goto(`/#/studio/${route}`)
     const editor = page.locator(`#${field}-prompt`)
+    await expect(editor).toBeEditable()
     const settingsBefore = await page
       .locator('main select')
       .evaluateAll((fields) => fields.map((field) => (field as HTMLSelectElement).value))
-    await expect(editor).toBeEditable()
     await editor.fill('original prompt')
     await page.getByRole('button', { name: '中文轉英文', exact: true }).click()
     const widget = page.getByRole('dialog', { name: '提示詞助手' })

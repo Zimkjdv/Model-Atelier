@@ -138,9 +138,7 @@ for (const [route, title] of routes)
       ).toHaveAttribute('aria-current', 'page')
       const brand = page.locator('a.brand')
       await expect(brand).toBeVisible()
-      await expect(brand).toHaveAccessibleName(
-        width === 1440 ? /Model Atelier.*個人 AI 創作工作台/ : '系統資訊',
-      )
+      await expect(brand).toHaveAccessibleName('Model Atelier · 系統資訊')
       await enter(page.getByRole('link', { name: '跳至主要內容' }))
       await expect(page.locator('main')).toBeFocused()
       await expect(page).toHaveURL(new RegExp('#/' + route + '$'))
@@ -244,17 +242,22 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/#/system')
     await page.waitForLoadState('networkidle')
+    await enter(page.getByRole('tab', { name: '主機與引擎', exact: true }))
+    await enter(page.locator('.engine-memory-details > summary'))
     await expect(
-      page.getByRole('heading', { name: 'V06 synthetic GPU', exact: true }),
+      page.getByRole('progressbar', { name: '引擎裝置 0 · 顯存 · V06 synthetic GPU', exact: true }),
     ).toBeVisible()
     await expect(page.getByRole('status').filter({ hasText: '已取得設定的執行裝置' })).toBeVisible()
-    await expect(
-      page.getByRole('status').filter({ hasText: '此 Python 環境回報 CUDA 不可用' }),
-    ).toBeVisible()
     await openDetails(page)
     await capture(page, info, 'hardware-devices')
+    await enter(page.getByRole('tab', { name: '安裝與部署', exact: true }))
+    await enter(page.getByRole('button', { name: '檢查本機 ComfyUI 安裝', exact: true }))
+    await expect(page.locator('.local-environment').getByRole('status')).toContainText(
+      '此 Python 環境回報 CUDA 不可用',
+    )
+    await enter(page.getByRole('tab', { name: '主機與引擎', exact: true }))
     unavailable = true
-    await enter(page.getByRole('button', { name: '↻ 重新整理', exact: true }))
+    await enter(page.getByRole('button', { name: '重新整理', exact: true }))
     await expect(page.getByRole('alert')).toContainText('平台硬體資訊更新失敗')
     await expect(page.getByRole('status').filter({ hasText: '目前執行裝置不可用' })).toBeVisible()
     await expect(page.getByText('V06 fixture host', { exact: true })).toBeVisible()
@@ -262,7 +265,7 @@ for (const width of [1440, 390]) {
     await capture(page, info, 'hardware-stale-offline')
   })
 
-  test(`${width}px: catalog editors, validation and horizontal table keyboard`, async ({
+  test(`${width}px: catalog editors, validation and keyboard access to FLUX metadata`, async ({
     page,
     request,
   }, info) => {
@@ -298,6 +301,7 @@ for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 })
       await page.goto('/#/models')
       await page.waitForLoadState('networkidle')
+      await enter(page.locator('.model-card .model-details > summary').first())
       await enter(
         page
           .locator('.model-card')
@@ -308,32 +312,45 @@ for (const width of [1440, 390]) {
       await enter(
         page.locator('.model-card').first().getByRole('button', { name: '編輯資料', exact: true }),
       )
+      await openDetails(page)
+      await capture(page, info, 'checkpoint-editor')
+      await enter(page.getByRole('button', { name: '取消', exact: true }))
+      await enter(page.getByRole('tab', { name: 'LoRA', exact: true }))
+      await openDetails(page)
       await enter(
         page
           .locator('.lora-card')
           .first()
           .getByRole('button', { name: '編輯 LoRA 資料', exact: true }),
       )
+      await capture(page, info, 'lora-editor')
+      await enter(page.getByRole('button', { name: '取消 LoRA 編輯', exact: true }))
+      await enter(page.getByRole('tab', { name: '結構控制', exact: true }))
+      await openDetails(page)
       await enter(
         page
           .locator('.control-card')
           .first()
           .getByRole('button', { name: '編輯 ControlNet 資料', exact: true }),
       )
+      await capture(page, info, 'control-editor')
+      await enter(page.getByRole('button', { name: '取消 ControlNet 編輯', exact: true }))
+      await enter(page.getByRole('tab', { name: 'FLUX 元件', exact: true }))
+      await openDetails(page)
       await enter(
         page.getByRole('button', { name: '編輯 FLUX 元件：v06-fixture.safetensors', exact: true }),
       )
       await openDetails(page)
       await capture(page, info, 'catalog-editors')
-      const table = page.getByRole('region', { name: 'FLUX 元件與來源版本表格' })
-      await keyboardFocus(table)
-      const start = await table.evaluate((element) => element.scrollLeft)
-      for (let step = 0; step < 8; step++) await table.press('ArrowRight')
-      if (width === 390)
-        await expect
-          .poll(() => table.evaluate((element) => element.scrollLeft))
-          .toBeGreaterThan(start)
-      await table.screenshot({ path: info.outputPath('flux-table-keyboard.png') })
+      await keyboardFocus(page.getByRole('textbox', { name: '元件版本', exact: true }))
+      await enter(page.getByRole('button', { name: '取消元件編輯', exact: true }))
+      const metadata = page.locator('.component-row .collection-details').first()
+      const summary = metadata.locator('summary')
+      if ((await metadata.getAttribute('open')) !== null) await enter(summary)
+      await enter(summary)
+      await expect(metadata).toHaveAttribute('open', '')
+      await expect(metadata.getByText('SHA256', { exact: true })).toBeVisible()
+      await metadata.screenshot({ path: info.outputPath('flux-metadata-keyboard.png') })
     } finally {
       const reset = await request.post('/qa/comparison-context/reset')
       expect(reset.ok()).toBe(true)
@@ -356,6 +373,7 @@ for (const width of [1440, 390]) {
       .filter({ has: page.getByRole('button', { name: '查看作品 qa-artwork.png', exact: true }) })
     const favorite = card.getByRole('button', { name: /收藏.*：qa-artwork.png/ })
     await expect(favorite).toHaveAttribute('aria-pressed', String(!!original.favorite))
+    await expect(favorite).toBeEnabled()
     await enter(favorite)
     await expect(card.getByRole('button', { name: /收藏.*：qa-artwork.png/ })).toHaveAttribute(
       'aria-pressed',
@@ -364,12 +382,15 @@ for (const width of [1440, 390]) {
     await expect(
       page.getByRole('status').filter({ hasText: original.favorite ? '已取消收藏' : '已加入收藏' }),
     ).toBeVisible()
-    await enter(card.getByRole('button', { name: /收藏.*：qa-artwork.png/ }))
+    await expect(favorite).toBeEnabled()
+    await enter(favorite)
     await expect(card.getByRole('button', { name: /收藏.*：qa-artwork.png/ })).toHaveAttribute(
       'aria-pressed',
       String(!!original.favorite),
     )
-    await enter(card.getByRole('button', { name: '選取作品：qa-artwork.png', exact: true }))
+    const select = card.getByRole('button', { name: '選取作品：qa-artwork.png', exact: true })
+    await expect(select).toBeEnabled()
+    await enter(select)
     await expect(page.getByRole('region', { name: '已選作品', exact: true })).toBeVisible()
     await expect(page.getByRole('region', { name: '作品並排比較', exact: true })).toHaveCount(0)
     await capture(page, info, 'artwork-selection')
@@ -393,18 +414,23 @@ for (const width of [1440, 390]) {
 
   test(`${width}px: asset editor, no results, loading and error announcements`, async ({
     page,
+    request,
   }, info) => {
+    expect((await request.post('/qa/populate')).ok()).toBe(true)
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/#/assets')
     await page.waitForLoadState('networkidle')
     await expect(page.getByRole('group', { name: '素材分頁' })).toBeVisible()
     const card = page.locator('.asset-card').first()
-    await enter(card.getByRole('button', { name: /編輯素材/ }))
-    await expect(card.getByLabel('素材名稱')).toBeVisible()
+    await enter(card.locator('.asset-cover'))
+    const dialog = page.getByRole('dialog')
+    await enter(dialog.getByRole('button', { name: '編輯素材資料', exact: true }))
+    await expect(dialog.getByLabel('素材名稱')).toBeVisible()
     await capture(page, info, 'asset-editor')
-    await enter(card.getByRole('button', { name: '取消', exact: true }))
+    await enter(dialog.getByRole('button', { name: '取消編輯', exact: true }))
+    await enter(dialog.getByRole('button', { name: '關閉', exact: true }))
     await page.getByRole('searchbox', { name: '搜尋素材' }).fill('v06-no-matching-asset')
-    await expect(page.getByRole('heading', { name: '目前沒有符合條件的素材' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: '沒有符合的素材', exact: true })).toBeVisible()
     await capture(page, info, 'asset-empty')
     let release!: () => void
     const gate = new Promise<void>((resolve) => {
@@ -418,6 +444,7 @@ for (const width of [1440, 390]) {
       })
     })
     try {
+      await enter(page.locator('.library-management > summary'))
       await enter(page.getByRole('button', { name: '重新整理', exact: true }))
       await expect(page.getByRole('status').filter({ hasText: '正在處理素材' })).toBeVisible()
       await capture(page, info, 'asset-loading')
@@ -434,6 +461,7 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/#/settings')
     await page.waitForLoadState('networkidle')
+    await enter(page.getByRole('tab', { name: '診斷', exact: true }))
     await enter(page.getByRole('button', { name: '預覽診斷 JSON', exact: true }))
     const preview = page.getByLabel('診斷 JSON 預覽', { exact: true })
     await expect(preview).toBeVisible()
@@ -446,9 +474,10 @@ for (const width of [1440, 390]) {
         ? route.fulfill({ status: 503, json: { detail: 'V06：設定保存失敗，請稍後再試。' } })
         : route.continue(),
     )
-    await enter(page.getByRole('button', { name: '保存並檢查連線', exact: true }))
+    await enter(page.getByRole('tab', { name: '引擎連線', exact: true }))
+    await enter(page.getByRole('button', { name: '保存並套用', exact: true }))
     await expect(page.getByRole('status').filter({ hasText: 'V06：設定保存失敗' })).toBeVisible()
-    await expect(page.getByLabel('服務位址', { exact: true })).toHaveValue(
+    await expect(page.getByLabel('引擎位址', { exact: true })).toHaveValue(
       'http://mock-engine.invalid:8188',
     )
     await capture(page, info, 'settings-error')
@@ -462,18 +491,19 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/#/studio/checkpoint')
     await page.waitForLoadState('networkidle')
-    await page.getByLabel('Checkpoint 工作流程', { exact: true }).selectOption('image2image')
-    await page.getByLabel('輸入圖片', { exact: true }).selectOption(state.asset_id)
+    await enter(page.getByRole('button', { name: '圖片重繪', exact: true }))
+    await page.locator('#image-asset').selectOption(state.asset_id)
+    await enter(page.getByRole('button', { name: '草稿與設定交換', exact: true }))
     await openDetails(page)
     await capture(page, info, 'checkpoint-image-input')
     const transfer = page.locator('.settings-transfer:visible')
-    await transfer.getByRole('textbox').fill('{ invalid JSON')
+    await transfer.getByLabel('或貼上設定 JSON', { exact: true }).fill('{ invalid JSON')
     await enter(transfer.getByRole('button', { name: '驗證並預覽設定', exact: true }))
     await expect(transfer.getByRole('alert')).toBeVisible()
     await capture(page, info, 'checkpoint-import-error')
     await page.goto('/#/studio/inpaint')
     await page.waitForLoadState('networkidle')
-    await page.getByLabel('原圖', { exact: true }).selectOption(state.asset_id)
+    await page.locator('#inpaint-source').selectOption(state.asset_id)
     await expect(page.locator('canvas')).toBeVisible()
     const brush = page.getByRole('slider', { name: /大小/ })
     await keyboardFocus(brush)
@@ -487,7 +517,8 @@ for (const width of [1440, 390]) {
     await capture(page, info, 'inpaint-mask')
     await page.goto('/#/studio/control')
     await page.waitForLoadState('networkidle')
-    await page.getByLabel('原圖', { exact: true }).selectOption(state.asset_id)
+    await page.locator('#control-source').selectOption(state.asset_id)
+    await enter(page.locator('.studio-advanced > summary'))
     await expect(page.getByRole('img', { name: '結構參考素材：qa-source.png' })).toBeVisible()
     await expect(page.getByLabel('提交能力狀態')).toContainText('尚缺必要條件')
     await capture(page, info, 'control-source')

@@ -135,7 +135,7 @@ test('asset names keep card rows aligned and action icons visually centered', as
 test('completed stage shows original dimensions, handles offline and does not import', async ({
   page,
   request,
-}) => {
+}, info) => {
   const state = await (await request.get('/qa/state')).json()
   const artwork = await (await request.get('/api/artworks/' + state.artwork_id)).json()
   const before = (await (await request.get('/api/artworks')).json()).length
@@ -158,7 +158,7 @@ test('completed stage shows original dimensions, handles offline and does not im
   await expect(page.getByAltText('所選任務的生成結果')).toBeVisible()
   await request.post('/qa/engine/uncertain')
   await page.screenshot({
-    path: '../docs/ui-redesign/platform-stage-result-fixture.png',
+    path: info.outputPath('platform-stage-result-fixture.png'),
     fullPage: true,
   })
 })
@@ -180,7 +180,7 @@ test('stage exposes unavailable output and recovers with retry', async ({ page }
 
 test('all model categories share layout and sync follows the selected category', async ({
   page,
-}) => {
+}, info) => {
   const seen: string[] = []
   const base = { engine_url: 'http://mock-engine.invalid:8188', synced_at: null, sync_error: null }
   const item = {
@@ -253,7 +253,7 @@ test('all model categories share layout and sync follows the selected category',
   await page.getByRole('button', { name: '取消 LoRA 編輯', exact: true }).click()
   await page.evaluate(() => window.scrollTo(0, 0))
   await page.screenshot({
-    path: '../docs/ui-redesign/platform-model-categories-fixture.png',
+    path: info.outputPath('platform-model-categories-fixture.png'),
     fullPage: true,
   })
 })
@@ -261,7 +261,7 @@ test('all model categories share layout and sync follows the selected category',
 test('asset detail keeps edits on cancelled close, saves, archives and restores focus', async ({
   page,
   request,
-}) => {
+}, info) => {
   const editedTitle = '詳情測試素材 ' + Date.now()
   const state = await (await request.get('/qa/state')).json()
   await page.goto('/#/assets')
@@ -292,7 +292,7 @@ test('asset detail keeps edits on cancelled close, saves, archives and restores 
   await dialog.getByRole('button', { name: '還原素材', exact: true }).click()
   await expect(dialog.getByRole('button', { name: '用於創作', exact: true })).toBeEnabled()
   await page.screenshot({
-    path: '../docs/ui-redesign/platform-asset-detail-fixture.png',
+    path: info.outputPath('platform-asset-detail-fixture.png'),
     fullPage: true,
   })
   await dialog.getByRole('button', { name: '關閉', exact: true }).click()

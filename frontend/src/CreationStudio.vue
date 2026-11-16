@@ -942,7 +942,7 @@ watch(
                   ><details
                     ><summary>模型能力、預設與差異確認</summary>
                     <div class="profile-heading"
-                      ><h3>模型工作流程</h3
+                      ><h2>模型工作流程</h2
                       ><button
                         type="button"
                         class="secondary"
@@ -1555,7 +1555,7 @@ watch(
   font-size: 12px;
   overflow-wrap: anywhere;
 }
-.model-profile h3 {
+.profile-heading h2 {
   font-size: 13px;
   margin: 0;
 }

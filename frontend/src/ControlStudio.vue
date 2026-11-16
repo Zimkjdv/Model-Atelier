@@ -378,10 +378,6 @@ const preflightBlockers = computed(() => {
                   }}{{ asset.archived ? '（已封存）' : '' }}</option
                 ></select
               >
-              <label for="control-prompt" class="studio-field-label"
-                ><UiIcon name="text" :size="15" />描述你想創作的畫面
-                <small>{{ form.prompt.length.toLocaleString() }} / 20,000</small></label
-              >
               <PromptConverter
                 editor-id="control-prompt"
                 :current-prompt="form.prompt"

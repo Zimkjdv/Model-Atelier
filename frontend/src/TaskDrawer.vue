@@ -139,7 +139,7 @@ defineExpose({ refresh, close })
     class="secondary task-drawer-trigger"
     type="button"
     aria-haspopup="dialog"
-    :aria-controls="uid"
+    :aria-controls="open ? uid : undefined"
     :aria-expanded="open"
     @click="emit('update:open', true)"
     >任務抽屜<span v-if="count !== null" class="task-count" :aria-label="count + ' 個未完成任務'">{{

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { writeFile } from 'node:fs/promises'
 import { expect, test, type APIRequestContext, type Page, type TestInfo } from '@playwright/test'
 import type { CreationForm } from '../src/creationSettings'
+import { expandDetails, loadCheckpointDraft } from './checkpoint-studio'
 
 const planner = (page: Page) => page.locator('.experiment-planner')
 const stack = (page: Page) => page.getByRole('region', { name: '有序 LoRA 組合實測紀錄' })
@@ -24,19 +25,16 @@ async function openDraft(page: Page, request: APIRequestContext, settings: Creat
   const response = await request.post('/api/drafts', { data: body })
   expect(response.ok()).toBe(true)
   const draft = await response.json()
-  await page.goto('/#/studio/checkpoint')
-  await page
-    .locator('.draft-row')
-    .filter({ has: page.getByText(body.title, { exact: true }) })
-    .click()
-  if (await page.getByRole('button', { name: '捨棄變更並載入', exact: true }).isVisible())
-    await page.getByRole('button', { name: '捨棄變更並載入', exact: true }).click()
-  await expect(page.locator('#draft-title')).toHaveValue(body.title)
-  if (!(await page.locator('#seed').isVisible()))
-    await page.getByText('進階設定', { exact: true }).click()
+  await loadCheckpointDraft(page, body.title)
+  await expandDetails(page.locator('.studio-advanced'))
+  await expandDetails(
+    page.locator('.studio-advanced details').filter({ has: page.locator('#seed') }),
+  )
+  await expandDetails(page.locator('.advanced-controls'))
   return draft
 }
 async function preview(page: Page) {
+  await expandDetails(planner(page))
   const pending = page.waitForResponse(
     (response) =>
       new URL(response.url()).pathname === '/api/experiments/preview' &&
@@ -175,7 +173,8 @@ for (const width of [1440, 390]) {
         seed: '18446744073709551615',
         loras: choices,
       })
-      await planner(page).locator('summary').first().click()
+      await page.goto('/#/experiments')
+      await expandDetails(planner(page))
       await page.locator('#experiment-axis').selectOption('lora_strength_model')
       await page.locator('#experiment-values').fill('[-1, 0, 0.5]')
       expect((await preview(page)).status).toBe(422)
@@ -193,6 +192,7 @@ for (const width of [1440, 390]) {
         ['lora_strength_model', 'strength_model'],
         ['lora_strength_clip', 'strength_clip'],
       ] as const) {
+        await expandDetails(planner(page))
         await page.locator('#experiment-axis').selectOption(axis)
         await page.locator('#experiment-values').fill('[-1, 0, 0.5]')
         const result = await preview(page)
@@ -206,17 +206,21 @@ for (const width of [1440, 390]) {
         }
         const variant = plan.variants[axis === 'lora_strength_model' ? 1 : 0]
         await page.getByRole('button', { name: '載入比較設定 ' + variant.id, exact: true }).click()
+        await page.goto('/#/studio/checkpoint')
         await checkForm(page, variant.settings)
         const saved = await saveDraft(page)
         expect(
           Object.fromEntries(Object.keys(variant.settings).map((key) => [key, saved[key]])),
         ).toEqual(variant.settings)
         receipts.push({ result, saved })
+        await page.goto('/#/experiments')
       }
+      await page.goto('/#/studio/checkpoint')
       await page.getByLabel('啟用 LoRA 3', { exact: true }).uncheck()
-      expect((await preview(page)).status).toBe(422)
       await expect(page.getByLabel('啟用 LoRA 3', { exact: true })).not.toBeChecked()
       await expect(page.locator('#seed')).toHaveValue('18446744073709551615')
+      await page.goto('/#/experiments')
+      expect((await preview(page)).status).toBe(422)
       await page.screenshot({ path: info.outputPath('strength-error.png') })
       const drafts = await (await request.get('/api/drafts')).json()
       expect(drafts.find((item: any) => item.id === original.id).loras).toEqual(choices)
@@ -236,7 +240,8 @@ for (const width of [1440, 390]) {
         sampler_name: 'euler_ancestral',
         scheduler: 'normal',
       })
-      await planner(page).locator('summary').first().click()
+      await page.goto('/#/experiments')
+      await expandDetails(planner(page))
       const suite = await (await request.get('/api/experiments/suite')).json()
       expect(suite.cases.map((item: any) => item.id)).toEqual([
         'chair',
@@ -250,7 +255,9 @@ for (const width of [1440, 390]) {
       await page.locator('#experiment-values').fill('["9007199254740993"]')
       const receipts = []
       for (const model of data.models) {
+        await page.goto('/#/studio/checkpoint')
         await page.locator('#draft-model').selectOption(model)
+        await page.goto('/#/experiments')
         const result = await preview(page)
         expect(result.status).toBe(200)
         expect(result.value.expected_job_count).toBe(4)
@@ -267,17 +274,22 @@ for (const width of [1440, 390]) {
           await page
             .getByRole('button', { name: '載入比較設定 ' + variant.id, exact: true })
             .click()
+          await page.goto('/#/studio/checkpoint')
           await checkForm(page, variant.settings)
+          await page.goto('/#/experiments')
         }
         await page.screenshot({ path: info.outputPath(model + '-four-cases.png') })
         receipts.push(result)
       }
+      await expandDetails(planner(page))
       await page.locator('#experiment-values').fill('["1", "2", "3"]')
       expect((await preview(page)).status).toBe(422)
       await expect(planner(page).getByRole('alert')).toBeVisible()
-      expect(
-        await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
-      ).toBe(true)
+      const viewport = await page.evaluate(() => ({
+        width: innerWidth,
+        contentWidth: document.documentElement.scrollWidth,
+      }))
+      expect(viewport.contentWidth).toBeLessThanOrEqual(viewport.width + 1)
       await attach(info, 'four-cases.json', { suite, receipts })
     })
 

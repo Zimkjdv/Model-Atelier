@@ -2695,12 +2695,34 @@
   gap: 6px;
   margin: 0;
 }
+#app .atelier-shell .saved-plan-picker select {
+  min-width: 0;
+  width: 100%;
+}
 #app .atelier-shell .saved-experiments {
   background: var(--panel);
   border: 1px solid var(--line);
   padding: 16px 20px;
   border-radius: 14px;
   margin: 22px 0;
+}
+@media (max-width: 600px) {
+  #app .atelier-shell .settings-workspace,
+  #app .atelier-shell .comparison-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #app .atelier-shell .experiment-workspace {
+    overflow-wrap: anywhere;
+  }
+  #app .atelier-shell .model-browser-tools,
+  #app .atelier-shell .model-browser-tools .page-tabs,
+  #app .atelier-shell .asset-browser-tools,
+  #app .atelier-shell .asset-browser-tools .purpose-tabs {
+    flex-wrap: wrap;
+  }
+  #app .atelier-shell .asset-search {
+    max-width: 100%;
+  }
 }
 #app .atelier-shell .training-tabs small {
   display: block;
@@ -3465,6 +3487,18 @@
 }
 #app .atelier-shell :is(.model-grid:not(.model-list), .collection-cards) .model-entry-action {
   margin-top: auto;
+}
+@media (max-width: 600px) {
+  #app .atelier-shell :is(.model-list, .collection-list) > .model-entry {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  #app .atelier-shell :is(.model-list, .collection-list) .model-entry-info {
+    flex-basis: 100%;
+  }
+  #app .atelier-shell :is(.model-grid:not(.model-list), .collection-cards) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 #app .atelier-shell .component-library {
   margin-top: 0;

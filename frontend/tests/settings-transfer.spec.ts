@@ -10,6 +10,7 @@ import {
 } from '@playwright/test'
 import { newCreation, type CreationForm } from '../src/creationSettings'
 import { newFlux, type FluxForm } from '../src/fluxSettings'
+import { expandDetails } from './checkpoint-studio'
 
 const area = (page: Page) => page.locator('.settings-transfer:visible')
 const imported = (page: Page) => area(page).getByRole('region', { name: '匯入設定預覽' })
@@ -104,6 +105,7 @@ async function open(
   await expect(page.locator(mode === 'flux' ? '#flux-title' : '#draft-title')).toHaveValue(
     value.title,
   )
+  await expandDetails(page.locator('.studio-advanced:visible'))
   await page.locator('.settings-transfer').evaluateAll((elements) => {
     for (const element of elements)
       for (let parent = element.parentElement; parent; parent = parent.parentElement)

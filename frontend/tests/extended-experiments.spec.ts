@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { expect, test } from '@playwright/test'
+import { expandDetails, loadCheckpointDraft } from './checkpoint-studio'
 
 for (const width of [1440, 390]) {
   test.describe(`${width}px R06`, () => {
@@ -25,33 +26,33 @@ for (const width of [1440, 390]) {
           denoise: 0.45,
         }
         expect((await request.post('/api/drafts', { data: settings })).ok()).toBe(true)
-        await page.goto('/#/studio/checkpoint')
-        await page
-          .locator('.draft-row')
-          .filter({ has: page.getByText(title, { exact: true }) })
-          .click()
-        if (await page.getByRole('button', { name: '捨棄變更並載入', exact: true }).isVisible())
-          await page.getByRole('button', { name: '捨棄變更並載入', exact: true }).click()
-        const area = page.locator('.experiment-planner')
-        await area.locator(':scope > summary').click()
+        await loadCheckpointDraft(page, title)
+        await page.goto('/#/experiments')
+        const area = page.locator('.experiment-workspace')
+        await expandDetails(area.locator('.experiment-planner'))
         await page.locator('#experiment-title').fill(title)
         for (const [axis, values] of [
           ['sampler_name', ['euler', 'dpmpp_2m']],
           ['scheduler', ['normal', 'karras']],
           ['checkpoint', ['demo.safetensors', 'alternate.safetensors']],
         ] as const) {
+          await expandDetails(area.locator('.experiment-planner'))
           await page.locator('#experiment-axis').selectOption(axis)
           await page.locator('#experiment-values').fill(JSON.stringify(values))
           await area.getByRole('button', { name: '預覽比較方案', exact: true }).click()
+          await expect(area.locator('.comparison-grid .variant')).toHaveCount(2)
+          await expandDetails(area.locator('.experiment-planner'))
+          await expandDetails(area.locator('.comparison-metadata'))
           await expect(area.getByRole('region', { name: '參數比較預覽' })).toContainText(
             '預計 2 次生成',
           )
         }
+        await expandDetails(area.locator('.comparison-metadata'))
         await area.getByText('模型登記快照（非權重驗證）', { exact: true }).click()
         await expect(area.getByRole('region', { name: '參數比較預覽' })).toContainText(
           'fixture-r06-2',
         )
-        await area.locator('.saved-experiments > summary').click()
+        await expandDetails(area.locator('.saved-experiments'))
         const saving = page.waitForResponse(
           (r) => r.url().endsWith('/api/experiments/plans') && r.request().method() === 'POST',
         )
@@ -93,6 +94,7 @@ for (const width of [1440, 390]) {
         // Reopen saved source before manual load so the job has an explicit association.
         await area.getByRole('button', { name: '重載比較方案 ' + title, exact: true }).click()
         await area.getByRole('button', { name: '載入比較設定 variant-1', exact: true }).click()
+        await expect(page).toHaveURL(/#\/studio\/checkpoint$/)
         await expect(page.locator('#draft-title')).toHaveValue(
           record.plan.variants[0].settings.title,
         )
@@ -120,6 +122,8 @@ for (const width of [1440, 390]) {
           .toBe('completed')
         const imported = await request.post('/api/jobs/' + body.request_id + '/artworks')
         expect(imported.ok(), await imported.text()).toBe(true)
+        await page.goto('/#/experiments')
+        await expandDetails(area.locator('.comparison-history'))
         await area.getByRole('button', { name: '重讀已保存結果', exact: true }).click()
         await expect(area.locator('.result-group').first()).toContainText('已完成')
         await expect(area.locator('.result-group').nth(1)).toContainText('尚無關聯任務')

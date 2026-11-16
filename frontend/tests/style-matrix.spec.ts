@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { expect, test } from '@playwright/test'
+import { expandDetails, loadCheckpointDraft } from './checkpoint-studio'
 
 for (const width of [1440, 390]) {
   test.describe(`${width}px L01`, () => {
@@ -28,13 +29,9 @@ for (const width of [1440, 390]) {
           ],
         }
         expect((await request.post('/api/drafts', { data: settings })).ok()).toBe(true)
-        await page.goto('/#/studio/checkpoint')
-        await page
-          .locator('.draft-row')
-          .filter({ has: page.getByText(title, { exact: true }) })
-          .click()
-        if (await page.getByRole('button', { name: '捨棄變更並載入', exact: true }).isVisible())
-          await page.getByRole('button', { name: '捨棄變更並載入', exact: true }).click()
+        await loadCheckpointDraft(page, title)
+        await expandDetails(page.locator('.studio-advanced'))
+        await expandDetails(page.locator('.advanced-controls'))
         const area = page.getByRole('region', { name: '有序 LoRA 組合實測紀錄' })
         await expect(area.getByRole('status')).toContainText('符合歷史條件')
         await expect(area).toContainText('不是本次生成或品質保證')

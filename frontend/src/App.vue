@@ -354,6 +354,7 @@ async function testConnection() {
     <aside class="rail"
       ><a
         class="brand"
+        aria-label="Model Atelier · 系統資訊"
         title="Model Atelier · 系統資訊"
         href="#/system"
         @click.prevent="navigate('系統資訊')"

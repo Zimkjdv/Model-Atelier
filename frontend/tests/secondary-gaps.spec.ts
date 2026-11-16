@@ -15,7 +15,7 @@ async function openAncestors(page: any, selector: string) {
 test('gallery metadata, average ratings, page size, selection and clear filters', async ({
   page,
   request,
-}) => {
+}, info) => {
   await request.post('/qa/populate')
   const all = await (await request.get('/api/library/artworks?limit=4&scope=all')).json()
   const first = (await (await request.get('/api/library/artworks?limit=4')).json()).items[0]
@@ -63,7 +63,7 @@ test('gallery metadata, average ratings, page size, selection and clear filters'
   await expect(page.getByRole('searchbox', { name: '搜尋作品', exact: true })).toHaveValue('')
   await expect(page.locator('.artwork-card').first()).toBeVisible()
   await page.evaluate(() => window.scrollTo(0, 0))
-  await page.screenshot({ path: '../docs/ui-redesign/platform-gallery-information-fixture.png' })
+  await page.screenshot({ path: info.outputPath('platform-gallery-information-fixture.png') })
 })
 
 test('asset clear filters preserves archive scope and empty library guides upload', async ({
@@ -98,7 +98,7 @@ test('asset clear filters preserves archive scope and empty library guides uploa
 test('preflight reports independent field errors beside controls and focuses collapsed fields', async ({
   page,
   request,
-}) => {
+}, info) => {
   const before = (await (await request.get('/qa/state')).json()).prompts
   await page.route('**/api/engine/capabilities', async (route) => {
     const response = await route.fetch()
@@ -137,7 +137,7 @@ test('preflight reports independent field errors beside controls and focuses col
   expect((await (await request.get('/qa/state')).json()).prompts).toBe(before)
   const a11y = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
   expect(a11y.violations).toEqual([])
-  await page.screenshot({ path: '../docs/ui-redesign/platform-preflight-fields-fixture.png' })
+  await page.screenshot({ path: info.outputPath('platform-preflight-fields-fixture.png') })
 })
 
 test('settings export guide returns to cached parameters and reveals the actual exchange controls', async ({
@@ -164,7 +164,7 @@ test('settings export guide returns to cached parameters and reveals the actual 
 
 test('training summary uses reported progress, unknowns and failed-read snapshot without starting a run', async ({
   page,
-}) => {
+}, info) => {
   const id = 'b5000000-0000-4000-8000-000000000001'
   const run: any = {
     run_id: id,
@@ -204,7 +204,7 @@ test('training summary uses reported progress, unknowns and failed-read snapshot
   const summary = page.getByRole('region', { name: '訓練執行摘要', exact: true })
   await expect(summary.locator('.training-kpi strong')).toHaveText('43')
   await expect(summary.getByRole('progressbar')).toHaveAttribute('value', '43')
-  await page.screenshot({ path: '../docs/ui-redesign/platform-training-summary-fixture.png' })
+  await page.screenshot({ path: info.outputPath('platform-training-summary-fixture.png') })
   run.state = {}
   await summary.getByRole('button', { name: '更新執行摘要', exact: true }).click()
   await expect(summary.locator('.training-kpi strong')).toHaveText('未知')
@@ -221,7 +221,7 @@ test('training summary uses reported progress, unknowns and failed-read snapshot
   expect(writes).toBe(0)
   await page.evaluate(() => window.scrollTo(0, 0))
   await page.screenshot({
-    path: '../docs/ui-redesign/platform-training-summary-warning-fixture.png',
+    path: info.outputPath('platform-training-summary-warning-fixture.png'),
   })
 })
 

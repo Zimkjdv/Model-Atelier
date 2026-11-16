@@ -17,6 +17,7 @@ for (const width of [1440, 390]) test(`${width}px: diagnostic preview, ID filter
   await request.post('/qa/engine/offline')
   try {
     await page.goto('/#/settings')
+    await page.getByRole('tab', { name: '診斷', exact: true }).click()
     const panel = page.getByRole('region', { name: '故障診斷', exact: true })
     await panel.getByRole('button', { name: '唯讀檢查狀態', exact: true }).click()
     await expect(panel.getByLabel('服務與資料狀態')).toContainText('離線')

@@ -407,6 +407,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
             <div
               v-if="displayBlockers.length"
               class="notice warning preflight-blockers"
+              role="group"
               aria-label="流程與環境阻擋"
               ><strong>需先處理</strong
               ><ul
@@ -431,7 +432,11 @@ onBeforeUnmount(() => window.clearInterval(timer))
                 ></ul
               ></div
             >
-            <div v-if="hasFieldProblems" class="preflight-fields" aria-label="需修正欄位"
+            <div
+              v-if="hasFieldProblems"
+              class="preflight-fields"
+              role="group"
+              aria-label="需修正欄位"
               ><p>請修正 {{ Object.keys(fieldProblems || {}).length }} 個欄位：</p
               ><ul
                 ><li v-for="(message, key) in fieldProblems" :key="key"

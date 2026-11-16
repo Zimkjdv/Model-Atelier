@@ -1,10 +1,13 @@
 import { test, expect, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
+import { expandDetails } from './checkpoint-studio'
 
 async function studio(page: Page, mode = 'Checkpoint／SDXL') {
   await page.goto('/')
   await page.getByRole('button', { name: '創作工作台', exact: true }).click()
   await page.getByRole('tab', { name: '進階工作台', exact: true }).click()
+  if (mode === 'Checkpoint／SDXL' || mode === 'FLUX.1 [schnell]')
+    await expandDetails(page.locator('.architecture-switch'))
   await page.getByRole('button', { name: mode, exact: true }).click()
 }
 
@@ -19,13 +22,13 @@ async function cancelReload(page: Page) {
 
 for (const [mode, prompt] of [
   ['Checkpoint／SDXL', '#draft-prompt'], ['FLUX.1 [schnell]', '#flux-prompt'],
-  ['局部編輯', '#inpaint-prompt'], ['Canny 結構參考', '#control-prompt'],
+  ['局部修補', '#inpaint-prompt'], ['結構引導', '#control-prompt'],
 ]) {
   test(`${mode}: unsaved refresh, close and cached page`, async ({ page, request }) => {
     const before = (await (await request.get('/qa/state')).json()).prompts
     await studio(page, mode)
     await page.locator(prompt).fill('retained unsaved content')
-    if (mode === '局部編輯') {
+    if (mode === '局部修補') {
       const { asset_id } = await (await request.get('/qa/state')).json()
       await page.locator('#inpaint-source').selectOption(asset_id)
       const canvas = page.locator('canvas[aria-label="在原圖上繪製白色編輯範圍"]')
@@ -58,6 +61,7 @@ test('draft save protects in flight and clears protection only after success', a
     await studio(page, mode)
     const flux = mode.startsWith('FLUX')
     await page.locator(flux ? '#flux-prompt' : '#draft-prompt').fill('saved prompt')
+    await expandDetails(page.locator('.studio-advanced:visible'))
     if (flux) for (const name of ['diffusion_model', 'clip_l', 't5xxl', 'vae']) await page.locator('#flux-' + name).fill(name + '.safetensors')
     await page.getByRole('button', { name: flux ? '保存 FLUX 草稿' : '保存草稿', exact: true }).click()
     await expect(page.getByLabel('內容保存狀態')).toContainText('正在保存')
@@ -76,7 +80,8 @@ test('lost response recovers the original UUID, payload and endpoint once', asyn
   const before = (await (await request.get('/qa/state')).json()).prompts
   await studio(page)
   await page.locator('#draft-prompt').fill('original prompt')
-  await page.getByText('進階設定', { exact: true }).click()
+  await expandDetails(page.locator('.studio-advanced'))
+  await expandDetails(page.locator('.studio-advanced details').filter({ has: page.locator('#seed') }))
   await page.locator('#seed').fill('18446744073709551615')
   const bodies: string[] = []
   await page.route('**/api/generate', async route => {
@@ -127,12 +132,12 @@ test('390px basic navigation, preview and input stay operable', async ({ page })
   await page.setViewportSize({ width: 390, height: 844 })
   await studio(page)
   await page.locator('#draft-prompt').fill('narrow viewport')
-  await page.getByRole('button', { name: 'Canny 結構參考', exact: true }).click()
+  await page.getByRole('button', { name: '結構引導', exact: true }).click()
   await page.locator('#control-prompt').fill('narrow Canny')
   await page.getByRole('button', { name: '作品庫', exact: true }).click()
   await page.getByRole('button', { name: '查看作品 qa-artwork.png', exact: true }).click()
   await expect(page.getByRole('dialog')).toBeVisible()
-  await page.getByRole('button', { name: '關閉 ×', exact: true }).click()
+  await page.getByRole('dialog').getByRole('button', { name: '關閉', exact: true }).click()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
 })
 
@@ -142,7 +147,8 @@ test('paged artwork filters, comparison across pages, older tasks and assets', a
   page.on('request', req => requests.push(new URL(req.url()).pathname + new URL(req.url()).search))
   await page.goto('/')
   await page.getByRole('button', { name: '作品庫', exact: true }).click()
-  await expect(page.locator('.artwork-card')).toHaveCount(40)
+  await page.getByLabel('每頁作品筆數', { exact: true }).selectOption('24')
+  await expect(page.locator('.artwork-card')).toHaveCount(24)
   const first = await page.locator('.artwork-card h2').first().innerText()
   await page.getByRole('button', { name: '選取作品：' + first, exact: true }).click()
   await expect(page.getByRole('region', { name: '已選作品' })).toContainText('已選 1 件')
@@ -179,7 +185,7 @@ test('paged artwork filters, comparison across pages, older tasks and assets', a
   await studio(page, '局部修補')
   await expect(page.locator('#inpaint-source option')).toHaveCount(41)
   const firstOption = await page.locator('#inpaint-source option').nth(1).getAttribute('value')
-  await page.getByText('草稿、來源與設定交換', { exact: true }).click()
+  await page.getByRole('button', { name: '草稿與設定交換', exact: true }).click()
   await page.getByRole('button', { name: '下一批素材', exact: true }).click()
   await expect(page.locator('#inpaint-source option').nth(1)).not.toHaveAttribute('value', firstOption!)
   const id = await page.locator('#inpaint-source option').nth(1).getAttribute('value')

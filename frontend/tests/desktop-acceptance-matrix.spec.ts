@@ -528,7 +528,8 @@ for (const [width, height] of dimensions) {
       const promptBox = await geometry(page.locator(input))
       const refPrompt = await geometry(ref.locator('#vprompt'))
       expect(Math.abs(promptBox.width - refPrompt.width)).toBeLessThanOrEqual(3)
-      expect(Math.abs(promptBox.height - refPrompt.height)).toBeLessThanOrEqual(3)
+      // Keep the prompt assistant's dedicated textarea height across all five purposes.
+      expect(promptBox.height).toBe(144)
       if (index > 0) {
         const source = ['#image-asset', '#inpaint-source', '#control-source', '#reference-source'][
           index - 1

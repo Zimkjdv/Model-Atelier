@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { expandDetails } from './checkpoint-studio'
 
 for (const [mode, label, input] of [
   ['checkpoint', 'Checkpoint／SDXL', '#draft-prompt'], ['flux', 'FLUX.1 [schnell]', '#flux-prompt'],
@@ -7,9 +8,10 @@ for (const [mode, label, input] of [
   const before = (await (await request.get('/qa/state')).json()).prompts
   await page.goto('/#/studio/' + mode)
   await expect(page.locator(input)).toBeVisible()
-  await expect(page.getByRole('button', { name: label, exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByRole('navigation').getByRole('button', { name: '創作工作台' })).toHaveAttribute('aria-current', 'page')
   await expect(page.locator('main')).toBeFocused()
+  if (mode === 'checkpoint' || mode === 'flux') await expandDetails(page.locator('.architecture-switch'))
+  await expect(page.getByRole('button', { name: label, exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByLabel('提交能力狀態')).toBeVisible()
   await page.reload()
   await expect(page.locator(input)).toBeVisible()
@@ -20,6 +22,7 @@ test('history retains forms, focuses content, rejects malformed URL and skip lin
   const before = (await (await request.get('/qa/state')).json()).prompts
   await page.goto('/#/studio/checkpoint')
   await page.locator('#draft-prompt').fill('history keeps this form')
+  await expandDetails(page.locator('.architecture-switch'))
   await page.getByRole('button', { name: 'FLUX.1 [schnell]', exact: true }).click()
   await page.locator('#flux-prompt').fill('separate flux form')
   await page.getByRole('button', { name: '參考素材', exact: true }).click()
@@ -73,23 +76,27 @@ for (const width of [1440, 1280]) test(`${width}px: first connection, model, exp
     await page.getByRole('button', { name: '保存並套用', exact: true }).click()
     await expect(page.getByText('ComfyUI 連線成功', { exact: true })).toBeVisible()
     await page.getByRole('button', { name: '模型庫', exact: true }).click()
-    await page.getByRole('button', { name: '↻ 同步模型清單', exact: true }).click()
+    await page.getByRole('button', { name: '同步Checkpoint清單', exact: true }).click()
     await expect(page.getByText('清單已同步。模型尚未載入 GPU。', { exact: true })).toBeVisible()
     await page.locator('.model-card').first().getByText('來源、授權與檔案資訊', { exact: true }).click()
     await page.getByRole('button', { name: '設為偏好', exact: true }).click()
     await expect(page.getByRole('button', { name: '✓ 偏好模型', exact: true })).toBeDisabled()
     await page.getByRole('button', { name: '創作工作台', exact: true }).click()
     await page.getByRole('tab', { name: '進階工作台', exact: true }).click()
+    await expandDetails(page.locator('.architecture-switch'))
     await page.getByRole('button', { name: 'FLUX.1 [schnell]', exact: true }).click()
     await expect(page.getByLabel('提交能力狀態')).toContainText('尚缺必要條件')
-    await page.getByText('能力與實機驗證範圍', { exact: true }).click()
-    await expect(page.getByText(/FLUX 已完成文件所列固定 512 配置實測/)).toBeVisible()
+    await page.getByRole('button', { name: '相容性與實測', exact: true }).click()
+    await expect(page.locator('.studio-validation')).toContainText('512×512／4 步')
+    await expandDetails(page.locator('.architecture-switch'))
     await page.getByRole('button', { name: 'Checkpoint／SDXL', exact: true }).click()
     await page.locator('#draft-prompt').fill('explicit fixture generation ' + width)
+    await page.locator('#draft-model').selectOption('demo.safetensors')
     await expect(page.getByLabel('提交能力狀態')).toContainText('表單預檢可提交')
     const submitted = page.waitForResponse(response => response.url().endsWith('/api/generate') && response.request().method() === 'POST')
     await page.getByRole('button', { name: '生成圖片', exact: true }).click()
     const job = await (await submitted).json()
+    await page.getByRole('button', { name: '任務與歷史資訊', exact: true }).click()
     await page.getByRole('button', { name: '更新任務狀態', exact: true }).click()
     const row = page.locator('.job').filter({ hasText: job.id })
     await expect(row).toContainText('已完成')
