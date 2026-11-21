@@ -6,7 +6,7 @@
 
 這裡維護目前尚待實作、驗收及外部證據的工作。規格、操作與各次驗收條件由原主題文件保存。 [CHANGELOG](../history/changelog.md) · [原清單歷史索引](../history/changelog.md#unchecked-index)
 
-目前共 **16 個未完成主項、18 個待驗收子項**。 [O12–O14 依據與驗收](#audit-20261121) · [已完成變更](../history/changelog.md)
+目前共 **15 個未完成主項、17 個待驗收子項**。 [O13–O14 依據與驗收](#audit-20261121) · [已完成變更](../history/changelog.md)
 
 ## 目前進度與接續條件
 
@@ -22,7 +22,7 @@
 
 | 範圍 | 未完成主項 | 待驗收子項 |
 | --- | ---: | ---: |
-| O12–O14：本輪改善 | 3 | 3 |
+| O13–O14：本輪改善 | 2 | 2 |
 | P1／P6：介面、真人與實機觸控驗收 | 2 | 2 |
 | P2／P4：模型來源 | 2 | 2 |
 | 作者資料、試訓與品質驗收 | 2 | 3 |
@@ -32,12 +32,7 @@
 
 ## 2026-11-21 整體檢視與改善順序
 
-Vue 負責互動、FastAPI 協調任務與 SQLite 紀錄、ComfyUI 獨立推論，這個分工仍適合單人桌面工作台。接下來改善桌面操作、素材庫載圖及跨頁回歸。官方服務仍排在本地工作之後。
-
-<a id="o12"></a>
-
-- [ ] **O12 · 區分引擎連線測試與保存中的畫面（中優先）**。設定頁的兩個動作共用 `saving`。按「測試（不保存）」等待回覆時，旁邊的按鈕會顯示「保存中…」，使用者無法從狀態判斷引擎位址是否正在寫入。 [設定頁的表單與請求](../../frontend/src/App.vue)
-  - [ ] 延遲測試請求，核對等待、成功、失敗三種狀態均指向受測位址，請求紀錄沒有寫入設定。另驗保存期間的提示、成功後套用的位址，以及兩種操作都能阻擋重複點擊。 [設定頁瀏覽器案例](../../frontend/tests/ui-accessibility.spec.ts)
+Vue 負責互動、FastAPI 協調任務與 SQLite 紀錄、ComfyUI 獨立推論，這個分工仍適合單人桌面工作台。接下來改善素材庫載圖及跨頁回歸。官方服務仍排在本地工作之後。
 
 <a id="o13"></a>
 
@@ -155,6 +150,7 @@ Vue 負責互動、FastAPI 協調任務與 SQLite 紀錄、ComfyUI 獨立推論�
 <a id="o09"></a>
 <a id="o10"></a>
 <a id="o11"></a>
+<a id="o12"></a>
 <a id="author-dataset-review"></a>
 <a id="pc02提示詞編輯區整併2026-11-07-完成"></a>
 <a id="pc01中文描述轉英文提示詞2026-10-31-完成實作與隔離驗收"></a>
@@ -185,4 +181,4 @@ Vue 負責互動、FastAPI 協調任務與 SQLite 紀錄、ComfyUI 獨立推論�
 <a id="建議順序與完成條件"></a>
 <a id="初次稽核的驗證與限制"></a>
 
-舊章節的交付紀錄集中於 [CHANGELOG 歷史入口](../history/changelog.md#roadmap-history-index)。近期紀錄見 [O09 素材封存保護](../history/changelog.md#o09)、[O10 任務抽屜計數](../history/changelog.md#o10)與 [O11 FLUX 圖片輸入](../history/changelog.md#o11)。
+舊章節的交付紀錄集中於 [CHANGELOG 歷史入口](../history/changelog.md#roadmap-history-index)。近期紀錄見 [O09 素材封存保護](../history/changelog.md#o09)、[O10 任務抽屜計數](../history/changelog.md#o10)、[O11 FLUX 圖片輸入](../history/changelog.md#o11)與 [O12 引擎連線回饋](../history/changelog.md#o12)。

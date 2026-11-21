@@ -126,19 +126,95 @@ test('system tabs, real capacity, keyboard focus and retained storage actions', 
   )
 })
 
-test('connection test does not save; settings tabs keep pending input', async ({
+test('engine testing and saving show distinct progress and protect the selected address', async ({
   page,
   request,
 }) => {
   const before = await (await request.get('/api/settings')).json()
+  const candidate = 'http://mock-engine.invalid:8189'
+  const operations: string[] = []
+  page.on('request', (value) => {
+    const path = new URL(value.url()).pathname
+    if (value.method() === 'POST' && path === '/api/engine/test') operations.push('test')
+    if (value.method() === 'PUT' && path === '/api/settings') operations.push('save')
+  })
+  let releaseTest!: () => void
+  let releaseSave!: () => void
+  const testGate = new Promise<void>((resolve) => (releaseTest = resolve))
+  const saveGate = new Promise<void>((resolve) => (releaseSave = resolve))
+  await page.route(
+    '**/api/engine/test',
+    async (route) => {
+      await testGate
+      await route.fulfill({ json: { connected: true, url: candidate } })
+    },
+    { times: 1 },
+  )
+  await page.route('**/api/settings', async (route) => {
+    if (route.request().method() === 'PUT') await saveGate
+    await route.continue()
+  })
   await page.goto('/#/settings')
-  await page.locator('#url').fill('http://mock-engine.invalid:8189')
-  await page.getByRole('button', { name: '測試（不保存）', exact: true }).click()
-  await expect(page.locator('form.settings [role=status]')).not.toHaveText('')
-  expect(await (await request.get('/api/settings')).json()).toEqual(before)
-  await page.getByRole('tab', { name: '資料與隱私', exact: true }).click()
-  await page.getByRole('tab', { name: '引擎連線', exact: true }).click()
-  await expect(page.locator('#url')).toHaveValue('http://mock-engine.invalid:8189')
+  const form = page.locator('form.settings')
+  const address = form.getByLabel('引擎位址', { exact: true })
+  const status = form.getByRole('status')
+  const testButton = form.getByRole('button', { name: '測試（不保存）', exact: true })
+  const saveButton = form.getByRole('button', { name: '保存並套用', exact: true })
+  await expect(address).toHaveValue(before.comfy_url)
+  await address.fill(candidate)
+  try {
+    const tested = page.waitForRequest('**/api/engine/test')
+    await testButton.click()
+    expect((await tested).postDataJSON()).toEqual({ comfy_url: candidate })
+    const testing = form.getByRole('button', { name: '測試中…', exact: true })
+    await expect(testing).toBeDisabled()
+    await expect(saveButton).toBeDisabled()
+    await expect(address).toBeDisabled()
+    await expect(status).toHaveText(`正在測試 ${candidate} 的連線…`)
+    await testing.dispatchEvent('click')
+    await form.dispatchEvent('submit')
+    expect(await (await request.get('/api/settings')).json()).toEqual(before)
+    expect(operations).toEqual(['test'])
+    releaseTest()
+    await expect(status).toHaveText(`測試連線成功，${candidate} 可連線（尚未保存）。`)
+
+    await page.route('**/api/engine/test', (route) =>
+      route.fulfill({ json: { connected: false, url: candidate, error: '模擬引擎離線。' } }),
+    )
+    await testButton.click()
+    await expect(status).toHaveText(`測試 ${candidate} 的連線失敗。模擬引擎離線。`)
+    expect(operations).toEqual(['test', 'test'])
+    expect(await (await request.get('/api/settings')).json()).toEqual(before)
+    await page.getByRole('tab', { name: '資料與隱私', exact: true }).click()
+    await page.getByRole('tab', { name: '引擎連線', exact: true }).click()
+    await expect(address).toHaveValue(candidate)
+
+    await address.fill(candidate + '/')
+    const saved = page.waitForRequest(
+      (value) => value.url().endsWith('/api/settings') && value.method() === 'PUT',
+    )
+    await saveButton.click()
+    expect((await saved).postDataJSON()).toEqual({ comfy_url: candidate + '/' })
+    await expect(form.getByRole('button', { name: '保存中…', exact: true })).toBeDisabled()
+    await expect(testButton).toBeDisabled()
+    await expect(address).toBeDisabled()
+    await expect(status).toHaveText(`正在保存並套用 ${candidate}/…`)
+    await testButton.dispatchEvent('click')
+    await form.dispatchEvent('submit')
+    expect(await (await request.get('/api/settings')).json()).toEqual(before)
+    expect(operations).toEqual(['test', 'test', 'save'])
+    releaseSave()
+    await expect(status).toHaveText(`設定已保存，已套用 ${candidate}。`)
+    await expect(address).toHaveValue(candidate)
+    await expect(saveButton).toBeEnabled()
+    expect(await (await request.get('/api/settings')).json()).toEqual({ comfy_url: candidate })
+    expect(operations).toEqual(['test', 'test', 'save'])
+  } finally {
+    await page.close()
+    releaseTest()
+    releaseSave()
+    expect((await request.put('/api/settings', { data: before })).ok()).toBeTruthy()
+  }
 })
 
 test('gallery layouts, selection, top-right archive and close, notes and read-only source', async ({

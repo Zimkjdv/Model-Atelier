@@ -155,13 +155,13 @@ const url = ref(''),
   error = ref(''),
   message = ref(''),
   busy = ref(false),
-  saving = ref(false)
+  connectionAction = ref<'testing' | 'saving' | null>(null)
 let timer: ReturnType<typeof setInterval> | undefined
 const refreshRequests = createRequestScope()
 let alive = true,
   settingsEpoch = 0
 async function refresh(force = false) {
-  if (!alive || (!force && (busy.value || saving.value))) return
+  if (!alive || (!force && (busy.value || connectionAction.value))) return
   const request = refreshRequests.begin()
   const expectedUrl = savedUrl.value
   busy.value = true
@@ -197,31 +197,32 @@ async function refresh(force = false) {
   busy.value = false
 }
 async function save() {
-  if (saving.value || !alive) return
+  if (connectionAction.value || !alive) return
+  const address = url.value
   ++settingsEpoch
   refreshRequests.cancel()
   engine.value = null
   busy.value = false
-  saving.value = true
-  message.value = ''
+  connectionAction.value = 'saving'
+  message.value = `正在保存並套用 ${address}…`
   try {
     const value = await api<{ comfy_url: string }>('settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ comfy_url: url.value }),
+      body: JSON.stringify({ comfy_url: address }),
     })
     if (!alive) return
     savedUrl.value = value.comfy_url
     url.value = value.comfy_url
-    message.value = '設定已保存'
     await refresh(true)
+    if (alive) message.value = `設定已保存，已套用 ${value.comfy_url}。`
   } catch (e) {
     if (alive) {
       message.value = e instanceof Error ? e.message : '保存失敗'
       await refresh(true)
     }
   } finally {
-    if (alive) saving.value = false
+    if (alive) connectionAction.value = null
   }
 }
 onMounted(async () => {
@@ -233,7 +234,8 @@ onMounted(async () => {
       if (!url.value) url.value = value.comfy_url
     }
   } catch {
-    if (alive && epoch === settingsEpoch) message.value = '無法載入設定，請確認後端已啟動。'
+    if (alive && epoch === settingsEpoch && !message.value)
+      message.value = '無法載入設定，請確認後端已啟動。'
   }
   if (!alive) return
   await refresh()
@@ -331,22 +333,25 @@ function settingsPaths() {
   navigate('設定')
 }
 async function testConnection() {
-  if (saving.value) return
-  saving.value = true
-  message.value = ''
+  const address = url.value.trim()
+  if (!alive || connectionAction.value || !address) return
+  connectionAction.value = 'testing'
+  message.value = `正在測試 ${address} 的連線…`
   try {
     const result = await api<{ connected: boolean; error?: string }>('engine/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ comfy_url: url.value }),
+      body: JSON.stringify({ comfy_url: address }),
     })
+    if (!alive) return
     message.value = result.connected
-      ? '測試連線成功（尚未保存）'
-      : result.error || '測試連線失敗，原設定未變更。'
+      ? `測試連線成功，${address} 可連線（尚未保存）。`
+      : `測試 ${address} 的連線失敗。${result.error || '原設定未變更。'}`
   } catch (e) {
-    message.value = e instanceof Error ? e.message : '測試失敗，原設定未變更。'
+    if (alive)
+      message.value = `測試 ${address} 的連線失敗。${e instanceof Error ? e.message : '原設定未變更。'}`
   } finally {
-    saving.value = false
+    if (alive) connectionAction.value = null
   }
 }
 </script>
@@ -589,7 +594,7 @@ async function testConnection() {
                   ><input
                     id="url"
                     v-model="url"
-                    :disabled="saving"
+                    :disabled="connectionAction !== null"
                     required
                     type="url"
                     placeholder="http://127.0.0.1:8188"
@@ -597,11 +602,11 @@ async function testConnection() {
                     ><button
                       type="button"
                       class="secondary"
-                      :disabled="saving || !url"
+                      :disabled="connectionAction !== null || !url.trim()"
                       @click="testConnection"
-                      >測試（不保存）</button
-                    ><button class="primary" :disabled="saving">{{
-                      saving ? '保存中…' : '保存並套用'
+                      >{{ connectionAction === 'testing' ? '測試中…' : '測試（不保存）' }}</button
+                    ><button class="primary" :disabled="connectionAction !== null">{{
+                      connectionAction === 'saving' ? '保存中…' : '保存並套用'
                     }}</button></div
                   ><p role="status">{{ message }}</p
                   ><p v-if="engine">{{ engine.connected ? 'ComfyUI 連線成功' : engine.error }}</p
