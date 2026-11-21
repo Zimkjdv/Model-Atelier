@@ -8,6 +8,8 @@
 
 `GET /api/assets/{id}/usage` 提供引用素材的草稿、任務、作品及已保存比較方案 ID。素材封存與引用檢查在同一 SQLite 寫入交易執行：草稿引用需先移除並保存；任務／作品／已保存比較方案引用的素材不可封存，以保留來源與重建能力；封存方案仍保留素材引用。方案保存與素材封存共用 SQLite 寫入交易，見[保存方案說明](../features/experiment-plans.md#storage-and-import)。仍可更新名稱與用途。平台沒有素材永久刪除 API。
 
+FLUX VAE 圖生圖草稿也列在 `usage` 的 `drafts`。封存仍被引用的素材會收到 HTTP 409。要封存原素材，先在草稿選另一張未封存的圖並保存。若素材在修正前已被封存，可先還原素材再繼續使用原草稿。 [FLUX 圖生圖操作](flux-extensions.md)
+
 ## Checkpoint 圖生圖 API
 
 `POST /api/generate` 使用原有取樣欄位，加上 `workflow_mode: "image2image"`、`image_asset_id`、僅包含該 ID 的 `reference_ids`，以及 `reference_resize: "fit" | "stretch"`。仍需持久 UUID `request_id`。草稿可保存這些欄位；舊草稿預設文生圖。

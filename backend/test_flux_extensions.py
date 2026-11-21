@@ -1,6 +1,10 @@
 import io
 import json
+import sqlite3
 import unittest
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
+from threading import Barrier
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -204,3 +208,102 @@ class FluxExtensionTests(unittest.TestCase):
         self.assertIn('"seed": 9007199254740993', preview.json()['workflow_json'])
         self.assertEqual(self.client.post('/api/flux/drafts', json=body).status_code, 422)
         self.assertEqual(jobs.list_all(self.db), [])
+
+    def test_image_drafts_protect_the_current_asset_and_allow_rename(self):
+        drafts_url = '/api/flux/extensions/drafts'
+        for existing in (False, True):
+            with self.subTest(existing=existing):
+                body = self.body(image=True)
+                body.pop('request_id')
+                replacement_id = self.body(image=True)['image_asset_id']
+                source_url = '/api/assets/' + body['image_asset_id']
+                replacement_url = '/api/assets/' + replacement_id
+                if existing:
+                    draft_id = str(uuid4())
+                    timestamp = '2026-10-25T00:00:00+00:00'
+                    record = dict(
+                        body, id=draft_id, revision=1, created_at=timestamp, updated_at=timestamp
+                    )
+                    with closing(sqlite3.connect(self.db)) as db, db:
+                        db.execute(
+                            'INSERT INTO settings VALUES (?, ?)',
+                            ('flux_extension_draft:' + draft_id, json.dumps(record)),
+                        )
+                else:
+                    saved = self.client.post(drafts_url, json=body)
+                    self.assertEqual(saved.status_code, 200, saved.text)
+                    draft_id = saved.json()['id']
+                self.assertEqual(
+                    self.client.get(source_url + '/usage').json()['drafts'], [draft_id]
+                )
+
+                source = self.client.get(source_url).json()
+                update = dict(title='Renamed input', revision=source['revision'])
+                blocked = self.client.put(source_url, json=dict(update, archived=True))
+                self.assertEqual(blocked.status_code, 409, blocked.text)
+                renamed = self.client.put(source_url, json=dict(update, archived=False))
+                self.assertEqual(renamed.status_code, 200, renamed.text)
+                self.assertEqual(renamed.json()['title'], update['title'])
+                self.assertFalse(renamed.json()['archived'])
+
+                draft_url = drafts_url + '/' + draft_id
+                changed = self.client.put(
+                    draft_url, json=dict(body, image_asset_id=replacement_id, revision=1)
+                )
+                self.assertEqual(changed.status_code, 200, changed.text)
+                self.assertEqual(changed.json()['image_asset_id'], replacement_id)
+                self.assertEqual(self.client.get(source_url + '/usage').json()['drafts'], [])
+                self.assertEqual(
+                    self.client.get(replacement_url + '/usage').json()['drafts'], [draft_id]
+                )
+                blocked = self.client.put(
+                    replacement_url, json=dict(title='Replacement', revision=1, archived=True)
+                )
+                self.assertEqual(blocked.status_code, 409, blocked.text)
+                archived = self.client.put(
+                    source_url,
+                    json=dict(update, revision=renamed.json()['revision'], archived=True),
+                )
+                self.assertEqual(archived.status_code, 200, archived.text)
+                self.assertTrue(archived.json()['archived'])
+                restored_binding = self.client.put(
+                    draft_url, json=dict(body, revision=changed.json()['revision'])
+                )
+                self.assertEqual(restored_binding.status_code, 409, restored_binding.text)
+
+    def test_image_draft_save_racing_archive_keeps_the_asset_binding_consistent(self):
+        drafts_url = '/api/flux/extensions/drafts'
+        body = self.body(image=True)
+        body.pop('request_id')
+        source_url = '/api/assets/' + body['image_asset_id']
+        source = self.client.get(source_url).json()
+        ready = Barrier(2, timeout=5)
+
+        def save_draft():
+            ready.wait()
+            return self.client.post(drafts_url, json=body)
+
+        def archive_asset():
+            ready.wait()
+            return self.client.put(
+                source_url,
+                json=dict(title=source['title'], revision=source['revision'], archived=True),
+            )
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            saving = pool.submit(save_draft)
+            archiving = pool.submit(archive_asset)
+            saved = saving.result()
+            archived = archiving.result()
+        self.assertCountEqual(
+            [saved.status_code, archived.status_code], [200, 409], (saved.text, archived.text)
+        )
+        current = self.client.get(source_url).json()
+        usage = self.client.get(source_url + '/usage').json()['drafts']
+        if saved.status_code == 200:
+            self.assertFalse(current['archived'])
+            self.assertEqual(usage, [saved.json()['id']])
+        else:
+            self.assertTrue(current['archived'])
+            self.assertEqual(usage, [])
+            self.assertEqual(self.client.get(drafts_url).json(), [])

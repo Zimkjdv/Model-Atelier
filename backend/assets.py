@@ -25,13 +25,13 @@ def display(value):
 def references(db, asset_id):
     result = dict(drafts=[], jobs=[], artworks=[], experiments=[])
     groups = {
-        'draft': 'drafts', 'specialized-draft': 'drafts', 'job': 'jobs',
-        'artwork': 'artworks', 'experiment': 'experiments',
+        'draft': 'drafts', 'specialized-draft': 'drafts', 'flux_extension_draft': 'drafts',
+        'job': 'jobs', 'artwork': 'artworks', 'experiment': 'experiments',
         'specialized-experiment': 'experiments',
     }
-    conditions = ' OR '.join('key LIKE ?' for _ in groups)
+    conditions = ' OR '.join('key GLOB ?' for _ in groups)
     for key, raw in db.execute('SELECT key, value FROM settings WHERE ' + conditions,
-                               tuple(group + ':%' for group in groups)):
+                               tuple(group + ':*' for group in groups)):
         value = json.loads(raw)
         reference = value.get('plan', {}).get('baseline', value.get('settings', value))
         ids = reference.get('reference_ids', [])
@@ -121,7 +121,7 @@ def update(db_path, asset_id, title, archived, purpose=None, revision=None):
             if used['experiments']:
                 raise ValueError('素材正被已保存比較方案引用；封存方案仍保留來源，無法封存素材')
             if used['drafts']:
-                raise ValueError('素材正被草稿引用，請先在草稿移除參考並保存，再封存素材')
+                raise ValueError('素材正被草稿引用，請先在草稿移除或更換此素材並保存，再封存素材')
         value.update(title=title, archived=archived, purpose=purpose if purpose is not None else value.get('purpose', 'unspecified'),
                      revision=value.get('revision', 0) + 1, updated_at=datetime.now(timezone.utc).isoformat())
         db.execute('UPDATE settings SET value=? WHERE key=?', (json.dumps(value, ensure_ascii=False), 'asset:' + asset_id))

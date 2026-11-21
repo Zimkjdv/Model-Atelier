@@ -7,6 +7,10 @@ from backend.listing import Pager, ListingError
 def install(app, host):
     pager = Pager(host.DB)
 
+    @app.get('/api/library/jobs/active-count')
+    def active_job_count():
+        return {'active_total': pager.active_job_count()}
+
     @app.get('/api/library/jobs/overview')
     def job_overview(active_page: Annotated[int, Field(ge=1)] | Literal['last'] = 1):
         return pager.job_overview(active_page)

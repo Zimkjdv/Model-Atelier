@@ -1,66 +1,71 @@
 # Model Atelier — Roadmap
 
-個人 AI 圖像創作與實驗工作台。更新日期：2026-11-14。
+個人 AI 圖像創作與實驗工作台。更新日期為 2026-11-21。
 
 **使用範圍：本專案僅供桌面電腦使用，沒有手機使用需求。** 介面驗收以桌面瀏覽器為主。390px 是既有自動化測試用的窄視窗寬度，用於檢查縮窄視窗時的溢出與操作。
 
-<a id="pc02提示詞編輯區整併2026-11-07-完成"></a>
-<a id="pc01中文描述轉英文提示詞2026-10-31-完成實作與隔離驗收"></a>
+這裡維護目前尚待實作、驗收及外部證據的工作。規格、操作與各次驗收條件由原主題文件保存。 [CHANGELOG](../history/changelog.md) · [原清單歷史索引](../history/changelog.md#unchecked-index)
 
-這裡維護目前尚待實作、驗收及外部證據的工作。已完成條目的證據見 [CHANGELOG](../history/changelog.md#roadmap-completed-20261025)，原清單的去向見 [歷史索引](../history/changelog.md#unchecked-index)。規格、操作與各次驗收條件由原主題文件保存。
-
-截至 2026-11-14，主線共有 **14 個未完成主項、16 個待驗收子項**。作品庫窄視窗與本輪 O01–O08 優化已完成並歸檔。 [作品庫](../history/changelog.md#gallery-narrow-layout) · [O01](../history/changelog.md#o01) · [O02](../history/changelog.md#o02) · [O03](../history/changelog.md#o03) · [O04](../history/changelog.md#o04) · [O05](../history/changelog.md#o05) · [O06](../history/changelog.md#o06) · [O07](../history/changelog.md#o07) · [O08](../history/changelog.md#o08)
+目前共 **17 個未完成主項、19 個待驗收子項**。 [O11–O14 依據與驗收](#audit-20261121) · [已完成變更](../history/changelog.md)
 
 ## 目前進度與接續條件
 
 | 範圍 | 目前進度 | 下一個可驗收動作 |
 | --- | --- | --- |
-| 簡易創作真人驗收 | 隔離瀏覽器已驗流程，真人觀察依使用者安排延後 | 有新手參與時觀察[第一次創作](#simple-first-use) |
-| 模型來源 M01／M02 | 已完成公開資料補查與本機內容指紋；完整來源鏈仍缺 | 取得發布者可追溯的條款適用、上游 revision 或轉檔紀錄 |
-| 作者畫風／角色品質 | 資料工具、技術試訓與產物回登已交付，作者圖仍待審查 | 先完成[候選審查](#author-dataset-review)，再安排試訓與固定比較 |
-| 實機觸控 V01-02 | 桌面與 390px 瀏覽器模擬通過 | 有桌面觸控設備後操作遮罩筆刷 |
+| 簡易創作真人驗收 | 依使用者安排延後 | 有新手參與時觀察[第一次創作](#simple-first-use) |
+| 模型來源 M01／M02 | 完整來源鏈仍待確認 | 取得發布者可追溯的條款適用、上游 revision 或轉檔紀錄 |
+| 作者畫風／角色品質 | 角色試訓及獨立評估圖待補 | 使用已驗證資料包安排[角色 LoRA 試訓](#author-training-run)，備妥保留圖後做[固定品質比較](#author-quality) |
+| 實機觸控 V01-02 | 待有桌面觸控設備 | 在實機操作遮罩筆刷並核對保存結果 |
 | 官方 API A01–A07 | 尚未接入，依既定順序最後實作 | 先查 NovelAI 正式資料並確認 Mango 2 身分，才評估接入 |
 
-各工作項獨立驗證、commit／push 後再接續下一項。技術維持 Vue／FastAPI／SQLite 與獨立 ComfyUI，保留原 UUID、端點、不可變快照、精確 seed 與未知結果的恢復規則。原始圖片、權重與 runtime 保存在 Git 外。驗收證據依配置與資料範圍記於 [docs/validation](../validation)，採用上游能力的依據見[借用決策](../research/upstream-reuse.md#reuse-assessment)。
+技術維持 Vue／FastAPI／SQLite 與獨立 ComfyUI，保留原 UUID、端點、不可變快照、精確 seed 與未知結果的恢復規則。原始圖片、權重與 runtime 保存在 Git 外。驗收證據依配置與資料範圍記於 [docs/validation](../validation)，採用上游能力的依據見[借用決策](../research/upstream-reuse.md#reuse-assessment)。
 
 | 範圍 | 未完成主項 | 待驗收子項 |
 | --- | ---: | ---: |
-| P0：硬體、相容性與量測 | 0 | 0 |
+| O11–O14：本輪改善 | 4 | 4 |
 | P1／P6：介面、真人與實機觸控驗收 | 2 | 2 |
 | P2／P4：模型來源 | 2 | 2 |
-| 作者資料、試訓與品質驗收 | 3 | 4 |
+| 作者資料、試訓與品質驗收 | 2 | 3 |
 | P8：官方 API（最後實作） | 7 | 8 |
 
-<a id="e02"></a>
-<a id="e03"></a>
-<a id="e04"></a>
+<a id="audit-20261121"></a>
 
-硬體 E02–E04 已歸檔至 [CHANGELOG](../history/changelog.md#e02)；此處僅保留舊錨點。
+## 2026-11-21 整體檢視與改善順序
+
+Vue 負責互動、FastAPI 協調任務與 SQLite 紀錄、ComfyUI 獨立推論，這個分工仍適合單人桌面工作台。接下來改善功能說明、桌面操作、素材庫載圖及跨頁回歸。官方服務仍排在本地工作之後。
+
+<a id="o11"></a>
+
+- [ ] **O11 · 說清楚 FLUX 圖片輸入的支援範圍（中優先）**。現有工作台可用一張素材做 VAE 圖生圖，但素材庫的流程清單沒有這個項目，參考流程文件又寫「尚未支援參考圖」。讀者難以判斷構圖重繪和角色／畫風參考各自的支援範圍。 [能力清單](../../backend/reference_workflows.py) · [參考流程說明](../models/reference-workflows.md) · [FLUX 已驗收配置](../models/flux-extensions.md)
+  - [ ] 從素材庫的流程說明或參考流程文件，都能找到 FLUX VAE 圖生圖入口、單張輸入及固定元件要求，並辨識 Redux／IP-Adapter 的支援狀態。以能力 API 與桌面畫面核對流程 ID 和輸入數，文件連到同一份配置說明。
+
+<a id="o12"></a>
+
+- [ ] **O12 · 區分引擎連線測試與保存中的畫面（中優先）**。設定頁的兩個動作共用 `saving`。按「測試（不保存）」等待回覆時，旁邊的按鈕會顯示「保存中…」，使用者無法從狀態判斷引擎位址是否正在寫入。 [設定頁的表單與請求](../../frontend/src/App.vue)
+  - [ ] 延遲測試請求，核對等待、成功、失敗三種狀態均指向受測位址，請求紀錄沒有寫入設定。另驗保存期間的提示、成功後套用的位址，以及兩種操作都能阻擋重複點擊。 [設定頁瀏覽器案例](../../frontend/tests/ui-accessibility.spec.ts)
+
+<a id="o13"></a>
+
+- [ ] **O13 · 降低素材庫卡片載圖量（中優先）**。每頁最多 40 張素材，卡片雖有延遲載入，進入載入範圍時仍取回完整正規化 PNG。作品庫已有獨立縮圖與缺圖提示，可沿用其互動方式。 [素材卡片](../../frontend/src/AssetLibrary.vue) · [素材圖片端點](../../backend/core_api.py) · [作品庫卡片](../../frontend/src/ArtworkLibrary.vue)
+  - [ ] 用同一組高解析素材比較桌面首屏的圖片請求及實收位元組。卡片使用縮圖、傳輸量低於基線，舊素材或缺縮圖仍可開啟詳情。核對詳情與創作輸入讀到的正規化 PNG 及 SHA256 與改善前一致。
+
+<a id="o14"></a>
+
+- [ ] **O14 · 讓空庫到作品匯出的完整流程進入 CI（後續）**。這條 Playwright 案例已有獨立空庫設定，一般品質入口只收集 `frontend/tests/`。因此即使各頁測試通過，跨頁的生成、匯入、比較與下載也可能缺少該次提交的驗證。 [品質入口](../../scripts/check_quality.py) · [獨立瀏覽器設定](../../frontend/playwright.journey.config.ts) · [Windows CI](../../.github/workflows/quality.yml)
+  - [ ] 在 CI 以獨立的空庫與合成引擎執行現有案例，讓該案例失敗能反映在 CI 結果並保存對應報告。核對一般瀏覽器批次與此案例各執行一次，更新品質指南的實際覆蓋及時間預算。 [現有操作與覆蓋](../development/quality-checks.md#同組隔離資料連續驗收)
 
 ## P1／P6：尚未完成的介面驗收
 
-<a id="ux01"></a>
-<a id="ux02"></a>
-
-UX01／UX02 已完成，見 [候選計數](../history/changelog.md#ux01)與[窄視窗審查](../history/changelog.md#ux02)。
-
 <a id="v01"></a>
 
-- [ ] **V01 · 遮罩筆刷與觸控的真實瀏覽器補驗**
-  - 已完成部分：[V01-01 筆刷與 PNG 操作](../history/changelog.md#v01-01)，此處只追蹤 V01-02 實機觸控。
-  - [ ] 驗收 V01-02：在具觸控功能的桌面設備驗證遮罩筆刷指標互動。390px 窄視窗的瀏覽器模擬已通過，實體觸控仍待驗收。
-
-  2026-10-23：1440px／390px Chromium 完成操作與保存 PNG 的逐像素雜湊核對；修正素材重讀／切頁清空筆畫、取消選取值未復原及非 PNG 載入問題。主指標、越界捕獲、取消、停用與第二指模擬回歸通過。使用者確認目前沒有實體觸控裝置；V01-02 的實機觸控與 V01 主項保留未完成。見 [V01 驗收紀錄](../validation/mask-editor-20261023.md)。
-
-<a id="gallery-narrow-layout"></a>
-
-作品庫窄視窗修正已通過驗收。 [CHANGELOG](../history/changelog.md#gallery-narrow-layout)
+- [ ] **V01 · 桌面實機觸控補驗**
+  - [ ] 驗收 V01-02：在具觸控功能的桌面設備驗證遮罩筆刷指標互動、畫布及保存 PNG。 [實機驗收方式](../validation/mask-editor-20261023.md#剩餘實機驗收) · [已交付 V01-01](../history/changelog.md#v01-01)
 
 <a id="simple-first-use"></a>
 
 - [ ] **簡易創作 11.1 · 真人新手首次操作**（使用者延後）
   - [ ] 觀察已完成安裝的新手能否辨識簡易入口，選卡、生成、保存及修改再生成，盡量不展開技術參數。另記錄他能否理解缺模型／元件的說明，並在處理後回到原選卡及描述。原桌面規格也將 10 秒內辨識入口列為可用性觀察目標。
-  - 四步操作及缺項返回已有隔離瀏覽器驗證。真人觀察等使用者安排。見[簡易方案驗收](simple-creation-plan.md#11-驗收清單)及[原介面驗收要求](../ui-redesign/PLAN.md#驗收要求)。
+  - [簡易方案驗收](simple-creation-plan.md#11-驗收清單) · [原介面驗收要求](../ui-redesign/PLAN.md#驗收要求)
 
 ## P2／P4：模型來源與授權追溯
 
@@ -68,36 +73,22 @@ UX01／UX02 已完成，見 [候選計數](../history/changelog.md#ux01)與[窄�
 
 - [ ] **M01 · Pony V6 XL 完整授權條款核對**
   - [ ] 驗收 M01-01：核對固定來源修訂的完整條款與依賴，補上可追溯連結；只有模型卡標記時仍註明尚未核對全文。
-  - 2026-10-23：已閱讀 Open RAIL-M、Fair AI Public License 1.0-SD、SDXL Open RAIL++-M 全文並查核依賴來源；固定 HF 修訂僅 39 bytes 標記，相同 SHA256 的 Civitai 發布頁另列修改版 Fair AI 與變現推論限制。manifest 保存來源／條文雜湊及差異，`terms_verified` 維持 false；條款適用關係、作者附文與內嵌元件版本仍待可追溯釐清，主項／子項不勾選。見 [M01 查核](../models/pony-v6-xl-license.md)。
-  - 2026-10-26：已補查[作者官網 V6 聲明](../models/pony-v6-xl-license-followup-20261026.md)，並新增[完整權重／四組元件內容指紋](../validation/pony-license-audit-20261026.json)與 CPU-only 核對器。HF／作者聲明適用關係及內嵌元件精確 revision 仍需發布者證據，`acceptance_complete=false`、`terms_verified=false`；沒有把補查／工具完成當作本驗收完成。
+  - 尚缺固定 Hugging Face 修訂與作者聲明的適用關係、作者附文及內嵌元件的確切修訂。`acceptance_complete` 與 `terms_verified` 維持 `false`。 [M01 歷次查核與證據](../history/changelog.md#m01-source-audit)
 
 <a id="m02"></a>
 
 - [ ] **M02 · FLUX 編碼器轉檔來源與授權鏈補驗**
   - [ ] 驗收 M02-01：取得固定 CLIP-L／T5 FP8 scaled 的可追溯原始權重 revision、轉換方式及適用條款；只有整合來源標記及 BFL 推薦上游時，`terms_verified`／`conversion_lineage_verified` 維持 false。
-  - F02 已逐一讀取來源與全文，記錄 BFL 主模型／VAE、整合來源與上游參考的差別；本項只保留尚缺的確切轉檔來源證明，見 [條款查核](../models/flux-component-licenses.md)。
-  - 2026-10-26：已補[兩檔發布提交與公開轉換來源追查](../models/flux-encoder-lineage-followup-20261026.md)，新增[完整本機指紋／CLIP 候選全張量比對](../validation/flux-encoder-audit-20261026.json)。CLIP 的 196 個 F16 張量與候選 OpenAI 固定修訂 F32 轉型後逐位元一致；T5 確認 389 張量及 168 個 scale。發布者實際輸入 revision／腳本／參數、T5 recipe 與逐元件條款仍缺，`acceptance_complete=false`，兩個原驗證旗標維持 false，主項／子項不勾選。
-
-<a id="f01"></a>
-<a id="f02"></a>
-<a id="f03"></a>
-<a id="f04"></a>
-
-FLUX F01–F04 已歸檔至 [CHANGELOG](../history/changelog.md#f01)。來源缺口仍由 M02 追蹤；硬體／流程擴充見[條件式補驗](#conditional-followups)。
+  - 尚缺發布者實際使用的來源修訂、轉檔腳本／參數、T5 轉換配方及逐元件條款。`acceptance_complete` 維持 `false`。 [M02 歷次查核與證據](../history/changelog.md#m02-source-audit) · [逐元件條款](../models/flux-component-licenses.md)
 
 ## 作者資料、試訓與品質驗收
 
-T01–T08 的需求、資料契約、技術試訓、產物流程及網頁工作區已交付。[CHANGELOG](../history/changelog.md#t01)以下承接使用者提供的作者圖與角色目標。來源盤點以已記錄的 T02 驗收及工作區匯入紀錄為準。[T02 驗收](../validation/training-dataset-20261023.md)、[工作區匯入紀錄](../validation/training-workspace-20261025.md)
-
-<a id="author-dataset-review"></a>
-
-- [ ] **T02 後續 · 作者圖候選審查與資料包**
-  - [ ] 兩份清單各有 10 張 train 候選、6 張開發評估、0 張 final test、6 張排除。逐張補畫風與角色候選的 caption、來源與用途依據，角色另核身分。維持同原作／差分群組分割；有缺少視角、服裝或場景時再補圖。按審查通過的修訂匯出、驗證只含合格 train 圖的資料包。見[資料契約](../training/dataset-contract.md)與[圖片提醒](anime-style-development.md#image-input-reminders)。
+以下為使用者提供的作者圖與角色目標。來源盤點以既有清單與匯入紀錄為準。 [T02 驗收](../validation/training-dataset-20261023.md) · [工作區匯入紀錄](../validation/training-workspace-20261025.md)
 
 <a id="author-training-run"></a>
 
-- [ ] **T03 後續 · 作者畫風與角色 LoRA 試訓**
-  - [ ] 資料包就緒後另行安排，以固定 Animagine XL 4.0 Opt／SDXL UNet LoRA 先試畫風，再試角色，分開保留資料版本、run、設定、資源與權重指紋。使用既有技術基線確認停止、恢復與租約釋放。見[訓練規格](../training/requirements.md)、[訓練操作](../training/runtime.md)及[既有技術驗收](../validation/hardware-resources-20261026.md)。
+- [ ] **T03 後續 · 作者角色 LoRA 試訓**
+  - [ ] 以固定 Animagine XL 4.0 Opt／SDXL UNet LoRA 完成獨立角色試訓，保存資料版本、run、設定、資源與權重指紋。依試訓目標核對側面、日常服裝與場景涵蓋，按需補圖。使用既有技術基線確認停止、恢復與租約釋放。 [已完成的畫風試訓](../history/changelog.md#t03-style-pilot-20261114) · [T02 已驗證資料包](../history/changelog.md#t02-author-review-20261114) · [訓練規格](../training/requirements.md) · [訓練操作](../training/runtime.md) · [技術驗收](../validation/hardware-resources-20261026.md)
 
 <a id="author-quality"></a>
 
@@ -143,72 +134,6 @@ T01–T08 的需求、資料契約、技術試訓、產物流程及網頁工作�
 - [ ] **A07 · 遠端結果與請求設定保存**
   - [ ] 驗收 A07-01：依服務可提供範圍保存結果、設定、來源與版本，未知值不補猜，完成離線查閱驗收。
 
-<a id="backend-backlog"></a>
-<a id="storage-category-api"></a>
-
-## 已完成能力的歷史入口
-
-N05 生成任務抽屜、N06 同瀏覽器顯示偏好與 N07 分類容量的交付見 CHANGELOG。現行分類容量端點由開發契約維護。訓練／安裝任務、跨裝置同步及特殊磁碟實測仍為後續選項。 [N07 交付](../history/changelog.md#n07) · [掃描 API](../development/storage-scan-api.md#storage-category-api)
-
-<a id="audit-20261114"></a>
-
-## 2026-11-14 整體分析與優化候選
-
-本輪檢查前後端入口、任務／資料邊界、主要 Vue 工作台、樣式、功能契約、CI、文件與既有 UI 圖像，並執行下列限定檢查。這是程式與文件的整體抽查，不是逐行安全稽核或全功能實機認證。
-
-### 整體判斷
-
-- **架構**：Vue／FastAPI／SQLite／獨立 ComfyUI 適合目前單人本機產品。AppContext 隔離、不可變快照、UUID 恢復、精確 seed、分頁與運算租約已有明確邊界；沒有足夠證據支持改成微服務、換資料庫或重寫工作流。
-- **程式**：主要維護成本集中於大型 Vue 元件、跨檔 CSS 覆蓋，以及少量尚未收斂的依賴與讀取契約。檔案長只是定位線索，不構成刪碼或全面抽象化理由。
-- **功能**：本地創作、專用圖片流程、作品整理、比較、訓練工具與系統管理已有實作。主要產品缺口仍是作者資料／品質、真人第一次使用與既定最後接入的官方 API；技術交付不等同模型品質或新手可用性完成。
-- **UI**：桌面視覺語言與主要工作區一致。初次稽核重現的作品庫窄視窗溢出已修復。 [CHANGELOG](../history/changelog.md#gallery-narrow-layout)
-- **文件**：分類與歷史驗收完整，但 ROADMAP 混有已完成規格、歷史跳轉與目前待辦，容易重複計工。本次已移出完成敘述並保留舊錨點；長期契約仍應由主題文件負責。
-
-### 建議順序與完成條件
-
-官方 API 依既定順序最後實作，真人觀察依使用者安排。
-
-<a id="o01"></a>
-
-O01（原 B4）已通過驗收。 [CHANGELOG](../history/changelog.md#o01)
-
-<a id="o02"></a>
-
-O02 工作區拆包及首載大小驗收已完成。 [CHANGELOG](../history/changelog.md#o02)
-
-<a id="o03"></a>
-
-O03 已完成作品詳情「生成與來源」的展示面板拆分。 [CHANGELOG](../history/changelog.md#o03)
-
-<a id="o04"></a>
-
-O04 作品庫與工作台 CSS 收斂、分頁溢出修正已完成。 [CHANGELOG](../history/changelog.md#o04)
-
-<a id="o05"></a>
-
-O05 已完成現行掃描契約及文件連結檢查。 [CHANGELOG](../history/changelog.md#o05)
-
-<a id="o06"></a>
-
-O06 任務抽屜的未完成任務分頁及最早任務定位已完成。 [CHANGELOG](../history/changelog.md#o06)
-
-<a id="o07"></a>
-
-O07 已完成 FLUX 驗證依賴與 Node 契約測試載入器整理（原 B3／B6）。 [CHANGELOG](../history/changelog.md#o07)
-
-<a id="o08"></a>
-
-O08 已完成起始配方卡縮圖與範例原圖按需載入。 [CHANGELOG](../history/changelog.md#o08)
-
-### 初次稽核的驗證與限制
-
-- `npm.cmd run build -- --configLoader runner`：型別與正式建置通過，保留主 JS 大包警告。
-- `npm.cmd test`：API／生命週期、實驗、修補、控制、預檢與配方證據契約通過。
-- `.venv/Scripts/python.exe -m unittest backend.test_app_factory backend.test_workflow_support backend.test_storage_categories`：14 項通過；保留 Starlette TestClient 的 httpx 棄用提示，未在本輪更換依賴。
-- Edge Chromium 隔離案例：`artwork-library.spec.ts -g "390px organize"` 1 項失敗（整頁橫溢）；`ui-redesign.spec.ts -g "display preferences|task drawer"` 實際只選到 1 項顯示偏好案例並通過，不能據此宣稱抽屜驗收。報告分別在 `runtime/quality/audit-20261114-report`、`audit-delivered-20261114-report`，Git 外保存。
-- 文件檢查：三份修改文件共 281 個本地連結的路徑／Markdown 錨點核對通過，無重複顯式錨點；主線 15 項、子項 17 項及候選 8 項與清單一致；`git diff --check` 通過。
-- 未跑全套後端／瀏覽器、GPU 生成／訓練、真人或實體觸控；未查詢新的外部模型條款／API 資料。M01／M02、作者品質與官方 API 仍維持原未完成狀態。本輪只修改文件，以上優化未實作。
-
 <a id="conditional-followups"></a>
 
 ## 待評估提案與條件式補驗
@@ -218,7 +143,7 @@ O08 已完成起始配方卡縮圖與範例原圖按需載入。 [CHANGELOG](../
 | 範圍 | 待評估或補驗 | 依據 |
 | --- | --- | --- |
 | 桌面人工無障礙 | 有指定桌面瀏覽器時補人工讀屏與無障礙檢查。桌面觸控設備的遮罩筆刷驗收由 V01-02 追蹤。 | [桌面介面驗收](../ui-redesign/ACCEPTANCE.md#rerun)、[V06 已驗範圍](../validation/ui-accessibility-20261023.md) |
-| 顯示偏好與任務範圍 | 視使用需求評估 N05 納入訓練／安裝、N06 全站密度與跨裝置同步。英文介面、淺色／跟隨系統是原提案後續選項。清快取需先定義資料範圍。 | [已交付 UI 範圍](#backend-backlog)、[設定規格](../ui-redesign/PLAN.md#設定) |
+| 顯示偏好與任務範圍 | 視使用需求評估 N05 納入訓練／安裝、N06 全站密度與跨裝置同步。英文介面、淺色／跟隨系統是原提案後續選項。清快取需先定義資料範圍。 | [已交付 UI 範圍](../history/changelog.md#backend-backlog)、[設定規格](../ui-redesign/PLAN.md#設定) |
 | N07 分類容量補驗 | 若需驗收多磁碟與 NTFS 特殊檔案，使用實際多卷、junction、壓縮／稀疏檔核對歸屬、去重和邏輯大小。既有測試以替身覆蓋跨卷與重解析點判定。 | [N07 計量](../development/storage-scan-api.md#storage-category-api)、[掃描測試](../../backend/test_storage_categories.py) |
 | 簡易創作後續選項 | 依需求驗證更多比例、配方或流程組合。現有本機提示詞助手可手動預覽及套用英文，若要擴大適用範圍，另驗更多中文語意、生成品質及與繪圖同時使用的 RAM／耗時。 | [簡易方案第 10 節](simple-creation-plan.md#10-建議實作順序)、[提示詞驗收](../validation/prompt-converter-20261031.md) |
 | 擴充模型的授權與依賴 | 固定 PVC LoRA、像素風 LoRA（含轉換版）、IKEA LoRA、Pose／Depth 權重、IP-Adapter／ViT-H 與 Fooocus 權重仍有來源條款或依賴缺口。需要相應使用範圍時，逐個補正式條款及固定修訂證據，按清冊記錄。 | [模型清冊](../../models)、[FLUX PVC LoRA](../models/flux-extensions.md)、[像素風 LoRA](../models/pixel-art-lora-sdxl.md)、[IP-Adapter](../models/ipadapter-reference.md) |
@@ -229,3 +154,39 @@ O08 已完成起始配方卡縮圖與範例原圖按需載入。 [CHANGELOG](../
 | 訓練額外配置 | 依實際訓練需求補多圖、長時間、其他 rank／主機等容量與資源驗收。既有 E04 證據是 RTX 4080 的 512／1024 短程幾何技術訓練。 | [T03 實測限制](../validation/training-runtime-20261025.md)、[E04 量測](../validation/hardware-resources-20261026.md) |
 | Docker／跨系統搬移 | 有跨 OS 搬移需求時，驗證 Windows 路徑、原圖與資料包重新綁定及還原。容器 cgroup RAM 配額換算、trainer 與跨 OS GPU 租約另行評估。 | [Docker 範圍](../operations/docker.md)、[D02 驗收](../validation/docker-deployment-20261025.md) |
 | B5 · 預覽串流讀取 | 評估 Canny／羽化共用有界串流讀取，依各原契約驗證。 | [原稽核 B5](../history/codebase-audit-20261027.md#b5抽取預覽串流讀取的共用機制) |
+
+## 歷史連結
+
+<a id="o09"></a>
+<a id="o10"></a>
+<a id="author-dataset-review"></a>
+<a id="pc02提示詞編輯區整併2026-11-07-完成"></a>
+<a id="pc01中文描述轉英文提示詞2026-10-31-完成實作與隔離驗收"></a>
+<a id="e02"></a>
+<a id="e03"></a>
+<a id="e04"></a>
+<a id="ux01"></a>
+<a id="ux02"></a>
+<a id="f01"></a>
+<a id="f02"></a>
+<a id="f03"></a>
+<a id="f04"></a>
+<a id="backend-backlog"></a>
+<a id="storage-category-api"></a>
+<a id="gallery-narrow-layout"></a>
+<a id="audit-20261114"></a>
+<a id="o01"></a>
+<a id="o02"></a>
+<a id="o03"></a>
+<a id="o04"></a>
+<a id="o05"></a>
+<a id="o06"></a>
+<a id="o07"></a>
+<a id="o08"></a>
+<a id="已完成能力的歷史入口"></a>
+<a id="2026-11-14-整體分析與優化候選"></a>
+<a id="整體判斷"></a>
+<a id="建議順序與完成條件"></a>
+<a id="初次稽核的驗證與限制"></a>
+
+舊章節的交付紀錄集中於 [CHANGELOG 歷史入口](../history/changelog.md#roadmap-history-index)。近期紀錄見 [O09 素材封存保護](../history/changelog.md#o09)與 [O10 任務抽屜計數](../history/changelog.md#o10)。

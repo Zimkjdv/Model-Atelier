@@ -41,7 +41,7 @@ T05 將 T02 的清單審查與資料出口接到 `#/training`。原生平台側�
 
 ## 作者圖片提醒
 
-已匯入的畫風／角色清單各有 10 張 train 候選、6 張開發評估、6 張排除。工具不代填使用許可。後續標註、來源用途與角色審查見 [ROADMAP](../planning/roadmap.md#author-dataset-review)。
+可匯入 `runtime/t02-author-review-20261114/trial-v3/style-v3.json` 與同目錄的 `character-v3.json`。兩份清單各沿用 6 張開發評估，已封存的試訓資料包分別含 8 張畫風與 4 張角色訓練圖。匯入時另選原圖目錄與同一份前序 R02 study。 [試訓資料包及驗證](../history/changelog.md#t02-author-review-20261114)
 
 作者試訓前提醒確認來源用途、caption、角色與姿勢／衣著／背景涵蓋；不足才補相應圖片。最終品質比較前，另需未參與訓練與調參的不同原作評估圖。無 final test 的警告保留，不把出口通過認列為畫風／角色品質通過。
 

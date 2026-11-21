@@ -19,6 +19,7 @@ const pagination = ref<HTMLElement>()
 const jobs = ref<Job[]>([])
 const recent = ref<Job[]>([])
 const total = ref<number | null>(null)
+const badgeTotal = ref<number | null>(null)
 const page = ref(1)
 const limit = ref(20)
 const error = ref('')
@@ -41,11 +42,18 @@ const familyLabels = {
   'flux-addon': 'FLUX LoRA／圖生圖',
 }
 
-async function loadPage(target: number | 'last') {
+async function load(target: number | 'last' | 'count') {
   if (document.visibilityState !== 'visible') return
   const request = reads.begin()
   loading.value = true
   try {
+    if (target === 'count') {
+      const response = await apiJson<{ active_total: number }>('library/jobs/active-count', {
+        signal: request.signal,
+      })
+      if (request.isCurrent()) badgeTotal.value = response.active_total
+      return
+    }
     const response = await apiJson<{
       items: Job[]
       active_total: number
@@ -59,11 +67,12 @@ async function loadPage(target: number | 'last') {
       .map((item) => mergeJob(previous.get(item.id), item))
     recent.value = response.items.filter(terminal)
     total.value = response.active_total
+    badgeTotal.value = count.value
     page.value = response.active_page
     limit.value = response.active_limit
     error.value = ''
   } catch (cause) {
-    if (request.isCurrent())
+    if (request.isCurrent() && target !== 'count')
       error.value = cause instanceof Error ? cause.message : '暫時無法讀取任務清單。'
   } finally {
     if (request.isCurrent()) loading.value = false
@@ -71,19 +80,40 @@ async function loadPage(target: number | 'last') {
 }
 
 async function refresh() {
-  if (!loading.value) await loadPage(page.value)
+  if (!loading.value) await load(props.open ? page.value : 'count')
 }
 
 async function turnPage(target: number | 'last') {
   if (loading.value || target === page.value) return
   if (target === 'last' ? page.value >= lastPage.value : target < 1 || target > lastPage.value)
     return
-  await loadPage(target)
+  await load(target)
 }
+
+function cancelRead() {
+  reads.cancel()
+  loading.value = false
+}
+
+watch(
+  () => props.open,
+  (open) => {
+    cancelRead()
+    if (open) dialog.value?.showModal()
+    else {
+      dialog.value?.close()
+      void refresh()
+    }
+  },
+  { flush: 'sync' },
+)
 
 const { connections, reconnect } = useJobEvents(jobs, refresh, () => props.open)
 watch(settled, (value) => {
-  if (value) void refresh()
+  if (value && props.open) {
+    badgeTotal.value = count.value
+    void refresh()
+  }
 })
 watch(lastPage, async (value) => {
   if (value !== 1 || !pagination.value?.contains(document.activeElement)) return
@@ -91,21 +121,19 @@ watch(lastPage, async (value) => {
   if (props.open) refreshButton.value?.focus()
 })
 
+let timer: ReturnType<typeof setInterval> | undefined
 function visibilityChanged() {
+  clearInterval(timer)
   if (document.visibilityState === 'visible') {
     if (!props.open) void refresh()
+    timer = setInterval(() => void refresh(), 15000)
   } else {
-    reads.cancel()
-    loading.value = false
+    cancelRead()
   }
 }
-let timer: ReturnType<typeof setInterval>
 onMounted(() => {
-  void refresh()
   document.addEventListener('visibilitychange', visibilityChanged)
-  timer = setInterval(() => {
-    void refresh()
-  }, 15000)
+  visibilityChanged()
 })
 onBeforeUnmount(() => {
   reads.dispose()
@@ -114,22 +142,10 @@ onBeforeUnmount(() => {
 })
 function close(restoreFocus = true) {
   dialog.value?.close()
-  reads.cancel()
-  loading.value = false
+  cancelRead()
   emit('update:open', false)
   if (restoreFocus) trigger.value?.focus()
 }
-watch(
-  () => props.open,
-  (open) => {
-    if (open && !dialog.value?.open) dialog.value?.showModal()
-    if (!open) {
-      dialog.value?.close()
-      reads.cancel()
-      loading.value = false
-    }
-  },
-)
 defineExpose({ refresh, close })
 </script>
 
@@ -142,9 +158,12 @@ defineExpose({ refresh, close })
     :aria-controls="open ? uid : undefined"
     :aria-expanded="open"
     @click="emit('update:open', true)"
-    >任務抽屜<span v-if="count !== null" class="task-count" :aria-label="count + ' 個未完成任務'">{{
-      count
-    }}</span></button
+    >任務抽屜<span
+      v-if="badgeTotal !== null"
+      class="task-count"
+      :aria-label="badgeTotal + ' 個未完成任務'"
+      >{{ badgeTotal }}</span
+    ></button
   >
   <dialog
     :id="uid"

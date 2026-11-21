@@ -92,6 +92,27 @@ class ListingTests(unittest.TestCase):
             [row['id'] for row in clamped['items'][:20]], [row['id'] for row in unfinished[5:]]
         )
 
+    def test_active_job_count_tracks_new_and_terminal_jobs_without_loading_a_page(self):
+        endpoint = '/api/library/jobs/active-count'
+        self.populate(4)
+        key = 'job:' + str(uuid4())
+        with patch.object(Pager, 'job_overview', side_effect=AssertionError('no page read')):
+            response = self.client.get(endpoint)
+            self.assertEqual(response.status_code, 200, response.text)
+            self.assertEqual(response.json(), {'active_total': 0})
+            with closing(sqlite3.connect(self.db)) as db:
+                with db:
+                    db.execute('INSERT INTO settings VALUES (?, ?)', (key, '{}'))
+                self.assertEqual(self.client.get(endpoint).json(), {'active_total': 1})
+                for status in ('unknown', 'queued', 'running', 'stop_unknown', 'completed'):
+                    with db:
+                        db.execute(
+                            "UPDATE settings SET value=json_set(value,'$.status',?) WHERE key=?",
+                            (status, key),
+                        )
+                    active = int(status != 'completed')
+                    self.assertEqual(self.client.get(endpoint).json(), {'active_total': active})
+
     def test_fixed_membership_has_no_duplicates_or_gaps_after_insert_or_updates(self):
         self.populate()
         first = self.page(scope='all', limit=13)

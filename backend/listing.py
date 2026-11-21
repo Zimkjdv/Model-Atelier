@@ -15,6 +15,11 @@ from uuid import uuid4
 
 MAX_KEYS = 50000
 TTL = 600
+JOB_ROWS = " FROM settings WHERE key GLOB 'job:*' AND "
+ACTIVE_JOB = (
+    "COALESCE(json_extract(value,'$.status'),'unknown') "
+    "NOT IN ('completed','failed','cancelled','stopped')"
+)
 
 
 class ListingError(ValueError):
@@ -220,23 +225,26 @@ class Pager:
             )
         return Snapshot(tuple(row[0] for row in rows), query, now + TTL, models, all_total)
 
+    @staticmethod
+    def _count_active_jobs(db):
+        return db.execute('SELECT COUNT(*)' + JOB_ROWS + ACTIVE_JOB).fetchone()[0]
+
+    def active_job_count(self):
+        with closing(sqlite3.connect(self.path)) as db:
+            return self._count_active_jobs(db)
+
     def job_overview(self, active_page=1):
-        active = (
-            "COALESCE(json_extract(value,'$.status'),'unknown') "
-            "NOT IN ('completed','failed','cancelled','stopped')"
-        )
-        where = " WHERE key GLOB 'job:*' AND "
         order = " ORDER BY json_extract(value,'$.created_at') DESC, key DESC"
         limit = 20
         with closing(sqlite3.connect(self.path)) as db:
             db.execute('BEGIN')
-            count = db.execute('SELECT COUNT(*) FROM settings' + where + active).fetchone()[0]
+            count = self._count_active_jobs(db)
             last_page = max(1, (count + limit - 1) // limit)
             active_page = last_page if active_page == 'last' else min(active_page, last_page)
             active_keys = [
                 row[0]
                 for row in db.execute(
-                    'SELECT key FROM settings' + where + active + order + ' LIMIT ? OFFSET ?',
+                    'SELECT key' + JOB_ROWS + ACTIVE_JOB + order + ' LIMIT ? OFFSET ?',
                     (limit, (active_page - 1) * limit),
                 )
             ]
@@ -245,13 +253,7 @@ class Pager:
                 recent_keys = [
                     row[0]
                     for row in db.execute(
-                        'SELECT key FROM settings'
-                        + where
-                        + 'NOT ('
-                        + active
-                        + ')'
-                        + order
-                        + ' LIMIT 10'
+                        'SELECT key' + JOB_ROWS + 'NOT (' + ACTIVE_JOB + ')' + order + ' LIMIT 10'
                     )
                 ]
             items, _ = self._summaries('jobs', active_keys + recent_keys, db=db)

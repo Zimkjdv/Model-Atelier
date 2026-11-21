@@ -78,7 +78,7 @@
 
 [桌面規格](ui-redesign/PLAN.md)與[原始 preview](ui-redesign/preview.html)定義外觀；[功能保留表](ui-redesign/FEATURE-INVENTORY.md)記錄保留邊界，[整合說明](ui-redesign/INTEGRATION-NOTES.md)解釋落點與差異，[桌面矩陣／連續旅程](ui-redesign/ACCEPTANCE.md)保存實際驗收。
 
-N05／N06／N07 的交付範圍見 [ROADMAP 的 UI 獨立能力](planning/roadmap.md#backend-backlog)。現行待辦與驗收集中在 [ROADMAP](planning/roadmap.md)。
+N05／N06／N07 的交付與現行待驗收項目可分別查閱。 [CHANGELOG 的 UI 交付範圍](history/changelog.md#backend-backlog) · [ROADMAP](planning/roadmap.md)
 
 ## 實機與歷史證據
 

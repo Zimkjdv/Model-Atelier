@@ -1,24 +1,16 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
-test.afterEach(async ({ page, request }) => {
-  await page.close()
-  expect((await request.post('/qa/task-drawer-jobs/reset')).ok()).toBeTruthy()
-})
+const countPath = '/api/library/jobs/active-count'
+const overviewPath = '/api/library/jobs/overview'
 
-test('unfinished job pages reach the oldest original job with bounded read-only browsing', async ({
-  page,
-  request,
-}) => {
-  const fixture = await request.post('/qa/task-drawer-jobs')
-  expect(fixture.ok()).toBeTruthy()
-  const { active_ids: ids, other_engine: otherEngine } = (await fixture.json()) as {
-    active_ids: string[]
-    other_engine: string
-  }
-  const writes: string[] = []
-  page.on('request', (value) => {
-    if (value.url().includes('/api/') && value.method() !== 'GET') writes.push(value.url())
-  })
+async function setVisibility(page: Page, state: DocumentVisibilityState) {
+  await page.evaluate((value) => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value })
+    document.dispatchEvent(new Event('visibilitychange'))
+  }, state)
+}
+
+async function trackProgressStreams(page: Page) {
   await page.addInitScript(() => {
     const streams = new Map<EventTarget, string>()
     const stats = { ids: [] as string[], peak: 0 }
@@ -39,10 +31,32 @@ test('unfinished job pages reach the oldest original job with bounded read-only 
     } as unknown as typeof EventSource
   })
 
-  const streamStats = () =>
+  return () =>
     page.evaluate(
       () => (window as Window & { taskStreams: { ids: string[]; peak: number } }).taskStreams,
     )
+}
+
+test.afterEach(async ({ page, request }) => {
+  await page.close()
+  expect((await request.post('/qa/task-drawer-jobs/reset')).ok()).toBeTruthy()
+})
+
+test('unfinished job pages reach the oldest original job with bounded read-only browsing', async ({
+  page,
+  request,
+}) => {
+  const fixture = await request.post('/qa/task-drawer-jobs')
+  expect(fixture.ok()).toBeTruthy()
+  const { active_ids: ids, other_engine: otherEngine } = (await fixture.json()) as {
+    active_ids: string[]
+    other_engine: string
+  }
+  const writes: string[] = []
+  page.on('request', (value) => {
+    if (value.url().includes('/api/') && value.method() !== 'GET') writes.push(value.url())
+  })
+  const streamStats = await trackProgressStreams(page)
   const before = (await (await request.get('/qa/state')).json()).prompts
   const oldest = ids[0]
   const overview = '**/api/library/jobs/overview?active_page=*'
@@ -94,7 +108,10 @@ test('unfinished job pages reach the oldest original job with bounded read-only 
   await page.keyboard.press('Escape')
   await expect(trigger).toBeFocused()
   await expect.poll(async () => (await streamStats()).ids).toEqual([])
+  const reloaded = page.waitForResponse('**/api/library/jobs/overview?active_page=2')
   await trigger.click()
+  expect((await reloaded).ok()).toBeTruthy()
+  await expect.poll(listedIds).toEqual(secondPage)
   await nav.getByRole('button', { name: '上一頁' }).click()
   await expect.poll(listedIds).toEqual(firstPage)
   await nav.getByRole('button', { name: '下一頁' }).click()
@@ -118,4 +135,79 @@ test('unfinished job pages reach the oldest original job with bounded read-only 
   expect((await streamStats()).peak).toBe(4)
   expect((await (await request.get('/qa/state')).json()).prompts).toBe(before)
   expect(writes).toEqual([])
+})
+
+test('the closed drawer polls only for its count and reopening replaces a pending count', async ({
+  page,
+  request,
+}) => {
+  const { active_total: initial } = (await (await request.get(countPath)).json()) as {
+    active_total: number
+  }
+  const streamStats = await trackProgressStreams(page)
+  const reads: string[] = []
+  page.on('request', (value) => {
+    const path = new URL(value.url()).pathname
+    if (path === countPath || path === overviewPath) reads.push(path)
+  })
+  let delayNextCount = false
+  let releaseCount!: () => void
+  const delayed = new Promise<void>((resolve) => (releaseCount = resolve))
+  await page.route('**' + countPath, async (route) => {
+    if (!delayNextCount) return route.continue()
+    delayNextCount = false
+    await delayed
+    await route.fulfill({ json: { active_total: 999 } }).catch(() => {})
+  })
+  await page.clock.install()
+  await page.goto('/#/system')
+  const trigger = page.getByRole('button', { name: /任務抽屜/ })
+  const badge = trigger.locator('.task-count')
+  const drawer = page.getByRole('dialog', { name: '生成任務' })
+  await expect(badge).toHaveText(String(initial))
+
+  expect((await request.post('/qa/task-drawer-jobs')).ok()).toBeTruthy()
+  await page.clock.fastForward(15000)
+  await expect(badge).toHaveText(String(initial + 25))
+  expect((await request.post('/qa/task-drawer-jobs/finish-five')).ok()).toBeTruthy()
+  await page.clock.fastForward(15000)
+  await expect(badge).toHaveText(String(initial + 20))
+  expect(reads).toEqual([countPath, countPath, countPath])
+  expect((await streamStats()).ids).toEqual([])
+
+  await setVisibility(page, 'hidden')
+  await page.clock.fastForward(45000)
+  expect(reads).toHaveLength(3)
+  const resumed = page.waitForResponse('**' + countPath)
+  await setVisibility(page, 'visible')
+  expect((await resumed).ok()).toBeTruthy()
+
+  delayNextCount = true
+  const pendingCount = page.waitForRequest('**' + countPath)
+  try {
+    await page.clock.fastForward(15000)
+    await pendingCount
+    await trigger.click()
+    await expect(drawer.getByText(`${initial + 20} 個未完成`, { exact: true })).toBeVisible()
+    await expect.poll(async () => (await streamStats()).ids.length).toBe(4)
+    expect(reads.slice(-2)).toEqual([countPath, overviewPath])
+  } finally {
+    releaseCount()
+  }
+
+  await setVisibility(page, 'hidden')
+  await expect.poll(async () => (await streamStats()).ids).toEqual([])
+  const readsBefore = reads.length
+  await page.clock.fastForward(45000)
+  expect(reads).toHaveLength(readsBefore)
+  const reopened = page.waitForResponse('**/api/library/jobs/overview?active_page=1')
+  await setVisibility(page, 'visible')
+  expect((await reopened).ok()).toBeTruthy()
+  await expect.poll(async () => (await streamStats()).ids.length).toBe(4)
+  const collapsed = page.waitForResponse('**' + countPath)
+  await drawer.getByRole('button', { name: '關閉', exact: true }).click()
+  expect((await collapsed).ok()).toBeTruthy()
+  await expect(badge).toHaveText(String(initial + 20))
+  expect(await streamStats()).toEqual({ ids: [], peak: 4 })
+  expect(reads.slice(-2)).toEqual([overviewPath, countPath])
 })
