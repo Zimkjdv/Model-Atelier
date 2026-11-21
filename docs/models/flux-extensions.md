@@ -5,7 +5,7 @@
 ## 先完成安裝與登記
 
 1. 完成 [四元件安裝及完整驗檔](flux-installation.md)，啟動本機 ComfyUI 與平台。
-2. 在專案目錄下載固定 LoRA；新增約 164 MiB，不需要新的推論套件：
+2. 使用「Schnell PVC LoRA」時，在專案目錄下載約 164 MiB 的固定 LoRA，沿用現有推論套件。VAE 圖生圖的權重需求為上一項的四個 FLUX 元件。
 
    ```powershell
    .\.venv\Scripts\python.exe -m scripts.install_model flux-schnell-pvc-style-lora --check
@@ -13,7 +13,7 @@
    ```
 
    沿用既有安裝器的續傳、獨占鎖、完整 SHA256 及不覆寫正式檔規則。權重與 provenance 保留在 ignored runtime，不進 Git。
-3. 到模型庫同步 FLUX 元件及 LoRA。按本機完整驗檔結果登記四元件的 `revision <完整 commit>`、SHA256；主模型架構為 FLUX。LoRA 登記如下：
+3. 到模型庫同步 FLUX 元件。按本機完整驗檔結果登記四元件的 `revision <完整 commit>` 及 SHA256，主模型架構為 FLUX。使用 Schnell PVC LoRA 時另同步與登記下列權重。
 
    | 欄位 | 固定值 |
    | --- | --- |

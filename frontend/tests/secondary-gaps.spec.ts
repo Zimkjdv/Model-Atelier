@@ -95,6 +95,45 @@ test('asset clear filters preserves archive scope and empty library guides uploa
   await expect(page.locator('input[type=file]')).toBeVisible()
 })
 
+test('asset workflow help opens single-image FLUX VAE redraw without submitting', async ({
+  page,
+  request,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const response = await request.get('/api/reference-workflows')
+  expect(response.ok()).toBe(true)
+  const id = 'flux1-schnell-image2image-v1'
+  const workflows = (await response.json()) as { id: string; image_count: number }[]
+  expect(workflows.find((workflow) => workflow.id === id)?.image_count).toBe(1)
+  const before = (await (await request.get('/qa/state')).json()).prompts
+  const openRedraw = async () => {
+    await page.getByText('素材篩選、整理與流程能力', { exact: true }).click()
+    await page.getByText('參考流程的輸入需求與支援能力', { exact: true }).click()
+    const workflow = page.locator(`[data-workflow-id="${id}"]`)
+    await expect(workflow).toContainText('圖片輸入 1 張')
+    await expect(workflow).toContainText('Schnell 主模型、CLIP-L、T5 與 VAE')
+    await expect(workflow).toContainText('512×512、4 步、FP8 e4m3fn、CPU 編碼器')
+    await expect(workflow).toContainText('Redux、IP-Adapter、畫風與角色參考尚未整合')
+    await expect(workflow.getByRole('link', { name: '固定配置與操作' })).toHaveAttribute(
+      'href',
+      /docs\/models\/flux-extensions\.md#從介面操作$/,
+    )
+    await workflow.getByRole('button', { name: '前往 FLUX VAE 圖生圖' }).click()
+    await expect(page).toHaveURL(/#\/studio\/flux$/)
+    await expect(page.getByLabel('附加流程', { exact: true })).toHaveValue('image')
+    await expect(page.getByLabel('FLUX 原圖素材', { exact: true })).toBeVisible()
+  }
+  await page.goto('/#/assets')
+  await openRedraw()
+  await page.getByLabel('附加流程', { exact: true }).selectOption('lora')
+  await page
+    .getByRole('navigation', { name: '主要導覽' })
+    .getByRole('button', { name: '參考素材', exact: true })
+    .click()
+  await openRedraw()
+  expect((await (await request.get('/qa/state')).json()).prompts).toBe(before)
+})
+
 test('preflight reports independent field errors beside controls and focuses collapsed fields', async ({
   page,
   request,

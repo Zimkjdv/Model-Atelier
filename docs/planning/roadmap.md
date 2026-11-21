@@ -6,7 +6,7 @@
 
 這裡維護目前尚待實作、驗收及外部證據的工作。規格、操作與各次驗收條件由原主題文件保存。 [CHANGELOG](../history/changelog.md) · [原清單歷史索引](../history/changelog.md#unchecked-index)
 
-目前共 **17 個未完成主項、19 個待驗收子項**。 [O11–O14 依據與驗收](#audit-20261121) · [已完成變更](../history/changelog.md)
+目前共 **16 個未完成主項、18 個待驗收子項**。 [O12–O14 依據與驗收](#audit-20261121) · [已完成變更](../history/changelog.md)
 
 ## 目前進度與接續條件
 
@@ -22,7 +22,7 @@
 
 | 範圍 | 未完成主項 | 待驗收子項 |
 | --- | ---: | ---: |
-| O11–O14：本輪改善 | 4 | 4 |
+| O12–O14：本輪改善 | 3 | 3 |
 | P1／P6：介面、真人與實機觸控驗收 | 2 | 2 |
 | P2／P4：模型來源 | 2 | 2 |
 | 作者資料、試訓與品質驗收 | 2 | 3 |
@@ -32,12 +32,7 @@
 
 ## 2026-11-21 整體檢視與改善順序
 
-Vue 負責互動、FastAPI 協調任務與 SQLite 紀錄、ComfyUI 獨立推論，這個分工仍適合單人桌面工作台。接下來改善功能說明、桌面操作、素材庫載圖及跨頁回歸。官方服務仍排在本地工作之後。
-
-<a id="o11"></a>
-
-- [ ] **O11 · 說清楚 FLUX 圖片輸入的支援範圍（中優先）**。現有工作台可用一張素材做 VAE 圖生圖，但素材庫的流程清單沒有這個項目，參考流程文件又寫「尚未支援參考圖」。讀者難以判斷構圖重繪和角色／畫風參考各自的支援範圍。 [能力清單](../../backend/reference_workflows.py) · [參考流程說明](../models/reference-workflows.md) · [FLUX 已驗收配置](../models/flux-extensions.md)
-  - [ ] 從素材庫的流程說明或參考流程文件，都能找到 FLUX VAE 圖生圖入口、單張輸入及固定元件要求，並辨識 Redux／IP-Adapter 的支援狀態。以能力 API 與桌面畫面核對流程 ID 和輸入數，文件連到同一份配置說明。
+Vue 負責互動、FastAPI 協調任務與 SQLite 紀錄、ComfyUI 獨立推論，這個分工仍適合單人桌面工作台。接下來改善桌面操作、素材庫載圖及跨頁回歸。官方服務仍排在本地工作之後。
 
 <a id="o12"></a>
 
@@ -159,6 +154,7 @@ Vue 負責互動、FastAPI 協調任務與 SQLite 紀錄、ComfyUI 獨立推論�
 
 <a id="o09"></a>
 <a id="o10"></a>
+<a id="o11"></a>
 <a id="author-dataset-review"></a>
 <a id="pc02提示詞編輯區整併2026-11-07-完成"></a>
 <a id="pc01中文描述轉英文提示詞2026-10-31-完成實作與隔離驗收"></a>
@@ -189,4 +185,4 @@ Vue 負責互動、FastAPI 協調任務與 SQLite 紀錄、ComfyUI 獨立推論�
 <a id="建議順序與完成條件"></a>
 <a id="初次稽核的驗證與限制"></a>
 
-舊章節的交付紀錄集中於 [CHANGELOG 歷史入口](../history/changelog.md#roadmap-history-index)。近期紀錄見 [O09 素材封存保護](../history/changelog.md#o09)與 [O10 任務抽屜計數](../history/changelog.md#o10)。
+舊章節的交付紀錄集中於 [CHANGELOG 歷史入口](../history/changelog.md#roadmap-history-index)。近期紀錄見 [O09 素材封存保護](../history/changelog.md#o09)、[O10 任務抽屜計數](../history/changelog.md#o10)與 [O11 FLUX 圖片輸入](../history/changelog.md#o11)。

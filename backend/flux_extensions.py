@@ -18,9 +18,9 @@ from backend import (
     image_workflows,
     loras,
 )
+from backend.reference_workflows import FLUX_IMAGE_ID as IMAGE_ID
 
 LORA_ID = 'flux1-schnell-lora-v1'
-IMAGE_ID = 'flux1-schnell-image2image-v1'
 IDS = frozenset((LORA_ID, IMAGE_ID))
 LORA_MANIFEST = Path(__file__).resolve().parents[1] / 'models/flux-schnell-pvc-style-lora.json'
 

@@ -2,6 +2,14 @@
 
 本檔保存已完成變更與當時的驗收條件；歷史測試數、未完成數及環境描述均屬該日期。現行操作見 [README](../../README.md) 與 [文件索引](../README.md)，尚未完成工作見 [ROADMAP](../planning/roadmap.md)。
 
+<a id="o11"></a>
+
+## 2026-11-21 · O11 說明 FLUX 圖片輸入的支援範圍
+
+素材庫的流程說明與能力 API 列出 `flux1-schnell-image2image-v1`，標示一張未封存素材、固定 Schnell 主模型／CLIP-L／T5／VAE 與 512×512／4 步／FP8／CPU 編碼器。素材庫可直接開啟 VAE 構圖重繪。FLUX 的 Redux、IP-Adapter、畫風與角色參考仍待整合。素材庫與參考流程文件指向同一份配置與操作。 [參考流程](../models/reference-workflows.md#flux-vae-圖生圖) · [固定配置與操作](../models/flux-extensions.md#從介面操作)
+
+30 項相關後端測試、前端建置與 5 項 Edge Chromium 隔離案例通過。桌面驗證 API 與素材庫顯示的流程 ID、單張輸入、固定配置連結，以及從 LoRA 切回素材庫後再次開啟 VAE 模式。全程未增加生成任務。瀏覽器案例結束後手動停止隔離服務，Playwright 以 0 結束。 [桌面回歸案例](../../frontend/tests/secondary-gaps.spec.ts)
+
 <a id="o10"></a>
 
 ## 2026-11-21 · O10 降低任務抽屜收起時的查詢成本

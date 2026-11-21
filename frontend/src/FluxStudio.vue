@@ -403,7 +403,7 @@ const preflightBlockers = computed(() => {
       v-show="showExtensions"
       :restoration="extensionRestoration"
       :track-tasks="showExtensions"
-      :image-requested="!!purposeRequest?.image"
+      :image-request="purposeRequest?.image ? purposeRequest.token : undefined"
       @models="emit('models')"
       @assets="emit('assets')"
       @gallery="emit('gallery', $event)"

@@ -317,6 +317,11 @@ function selectPurpose(image: boolean) {
   purposeRequest.value = { image, token: Date.now() }
   navigate('創作工作台', studioMode.value === 'flux' ? 'flux' : 'checkpoint')
 }
+function openFluxImage() {
+  if (!navigate('創作工作台', 'flux')) return
+  imagePurpose.value = true
+  purposeRequest.value = { image: true, token: Date.now() }
+}
 function openConnection() {
   settingsTab.value = 'connection'
   navigate('設定')
@@ -694,6 +699,7 @@ async function testConnection() {
         <AssetLibrary
           v-else-if="page === '參考素材'"
           @use="useAsset"
+          @open-flux-image="openFluxImage"
           @dirty="assetDirty = $event"
         />
         <TrainingWorkspace

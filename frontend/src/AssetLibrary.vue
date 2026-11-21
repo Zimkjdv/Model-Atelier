@@ -2,8 +2,13 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { apiJson } from './apiClient'
 import { createRequestScope } from './requestScope'
+import { fluxImageId } from './fluxExtensions'
 import UiIcon from './UiIcon.vue'
-const emit = defineEmits<{ use: [id: string, purpose: string]; dirty: [value: boolean] }>()
+const emit = defineEmits<{
+  use: [id: string, purpose: string]
+  dirty: [value: boolean]
+  'open-flux-image': []
+}>()
 const uploadOpen = ref(false)
 type Purpose = 'unspecified' | 'style' | 'character' | 'composition'
 type Asset = {
@@ -21,6 +26,7 @@ type Workflow = {
   id: string
   name: string
   implemented: boolean
+  image_count: number
   input_requirement: string
   control: string
 }
@@ -456,11 +462,25 @@ onMounted(() => {
     >
     <details class="panel"
       ><summary>參考流程的輸入需求與支援能力</summary
-      ><article v-for="workflow in workflows" :key="workflow.id"
+      ><article v-for="workflow in workflows" :key="workflow.id" :data-workflow-id="workflow.id"
         ><h3
           >{{ workflow.name }} ·
           {{ workflow.implemented ? '已實作，提交仍需引擎驗證' : '尚未整合' }}</h3
-        ><p>{{ workflow.input_requirement }} {{ workflow.control }}</p></article
+        ><p>{{ workflow.input_requirement }} {{ workflow.control }}</p>
+        <template v-if="workflow.id === fluxImageId && workflow.implemented">
+          <p>圖片輸入 {{ workflow.image_count }} 張</p>
+          <div class="actions">
+            <button type="button" class="secondary" @click="emit('open-flux-image')"
+              >前往 FLUX VAE 圖生圖</button
+            >
+            <a
+              href="https://github.com/Zimkjdv/Model-Atelier/blob/main/docs/models/flux-extensions.md#從介面操作"
+              target="_blank"
+              rel="noopener noreferrer"
+              >固定配置與操作</a
+            >
+          </div>
+        </template></article
       ></details
     >
   </details>

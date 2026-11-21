@@ -4,11 +4,17 @@
 
 用途分為「未指定、視覺風格、角色外觀、構圖」，僅供管理與篩選。用途不等於影像條件控制，也不承諾重現畫風或角色。素材編輯帶修訂號防止跨視窗覆寫；既有不帶修訂號的 API 客戶端仍相容。
 
-`GET /api/reference-workflows` 回傳各流程的圖片數量、架構、輸入需求與是否已實作。文生圖不套用圖片；Checkpoint 圖生圖已實作後端，需明確登記 SD 1.x／SDXL 架構與一張未封存的素材。Checkpoint 局部編輯已提供獨立工作台及原圖／遮罩雙輸入流程，Pony／Animagine 在 RTX 3060 的固定條件通過，修補品質仍有接縫限制；見 [局部編輯說明](../features/inpainting.md)。[Canny 結構參考](../features/controlnet.md) 已提供 v1／v2 專用流程，v2 可保存同次原邊緣；[畫風／角色 adapter](ipadapter-reference.md) 已提供 SDXL 單張專用工作台，畫風與外觀模式分開；不代表訓練或身份鎖定。FLUX 使用獨立流程，尚未支援參考圖。
+`GET /api/reference-workflows` 回傳各流程的圖片數量、架構、輸入需求與是否已實作。文生圖不套用圖片；Checkpoint 圖生圖已實作後端，需明確登記 SD 1.x／SDXL 架構與一張未封存的素材。Checkpoint 局部編輯已提供獨立工作台及原圖／遮罩雙輸入流程，Pony／Animagine 在 RTX 3060 的固定條件通過，修補品質仍有接縫限制；見 [局部編輯說明](../features/inpainting.md)。[Canny 結構參考](../features/controlnet.md) 已提供 v1／v2 專用流程，v2 可保存同次原邊緣；[畫風／角色 adapter](ipadapter-reference.md) 已提供 SDXL 單張專用工作台，畫風與外觀模式分開；不代表訓練或身份鎖定。
 
 `GET /api/assets/{id}/usage` 提供引用素材的草稿、任務、作品及已保存比較方案 ID。素材封存與引用檢查在同一 SQLite 寫入交易執行：草稿引用需先移除並保存；任務／作品／已保存比較方案引用的素材不可封存，以保留來源與重建能力；封存方案仍保留素材引用。方案保存與素材封存共用 SQLite 寫入交易，見[保存方案說明](../features/experiment-plans.md#storage-and-import)。仍可更新名稱與用途。平台沒有素材永久刪除 API。
 
-FLUX VAE 圖生圖草稿也列在 `usage` 的 `drafts`。封存仍被引用的素材會收到 HTTP 409。要封存原素材，先在草稿選另一張未封存的圖並保存。若素材在修正前已被封存，可先還原素材再繼續使用原草稿。 [FLUX 圖生圖操作](flux-extensions.md)
+FLUX VAE 圖生圖草稿也列在 `usage` 的 `drafts`。封存仍被引用的素材會收到 HTTP 409。要封存原素材，先在草稿選另一張未封存的圖並保存。若素材在修正前已被封存，可先還原素材再繼續使用原草稿。
+
+## FLUX VAE 圖生圖
+
+在素材庫展開「素材篩選、整理與流程能力」→「參考流程的輸入需求與支援能力」，選「前往 FLUX VAE 圖生圖」。也可以從創作工作台選 FLUX.1 [schnell] →「FLUX LoRA／圖生圖」→「VAE 圖生圖（構圖重繪）」。
+
+`flux1-schnell-image2image-v1` 使用一張未封存的本機素材，依等比補白或拉伸後以 VAE 編碼，再依重繪強度調整構圖。需登記固定 Schnell 主模型、CLIP-L、T5 與 VAE 的版本及 SHA256，配置固定為 512×512、4 步、FP8 e4m3fn、CPU 編碼器。FLUX 的 Redux、IP-Adapter、畫風與角色參考尚未整合。 [固定配置與操作](flux-extensions.md#從介面操作)
 
 ## Checkpoint 圖生圖 API
 

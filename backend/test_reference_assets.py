@@ -11,6 +11,7 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 from PIL import Image
 from backend import main, assets
+from backend.flux_extensions import IMAGE_ID
 
 
 class ReferenceAssetTests(unittest.TestCase):
@@ -99,4 +100,11 @@ class ReferenceAssetTests(unittest.TestCase):
         self.assertTrue(reference['implemented'])
         self.assertEqual(reference['architectures'], ['sdxl'])
         self.assertFalse(reference['lora'])
+        flux = next(item for item in values if item['id'] == IMAGE_ID)
+        self.assertTrue(flux['implemented'])
+        self.assertEqual(flux['architectures'], ['flux'])
+        self.assertEqual(flux['image_count'], 1)
+        self.assertFalse(flux['lora'])
+        self.assertIn('512×512', flux['input_requirement'])
+        self.assertIn('Redux、IP-Adapter、畫風與角色參考尚未整合', flux['control'])
         self.assertEqual(set(assets.PURPOSES), {'unspecified', 'style', 'character', 'composition'})

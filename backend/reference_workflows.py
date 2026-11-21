@@ -3,6 +3,7 @@
 from copy import deepcopy
 
 IMG2IMG_ID = 'checkpoint-image2image-v1'
+FLUX_IMAGE_ID = 'flux1-schnell-image2image-v1'
 DESCRIPTIONS = [
     dict(
         id='checkpoint-fooocus-inpaint-v3',
@@ -43,6 +44,19 @@ DESCRIPTIONS = [
         input_requirement='一張未封存的本機 PNG 素材；縮放至輸出尺寸後編碼為 latent。',
         control='以 denoise 控制改動幅度；不是獨立畫風或角色鎖定。',
         lora=True,
+    ),
+    dict(
+        id=FLUX_IMAGE_ID,
+        name='FLUX VAE 圖生圖（構圖重繪）',
+        implemented=True,
+        architectures=['flux'],
+        image_count=1,
+        input_requirement=(
+            '選一張未封存的本機素材，登記固定 Schnell 主模型、CLIP-L、T5 與 VAE 的版本及 SHA256。'
+            '固定 512×512、4 步、FP8 e4m3fn、CPU 編碼器。'
+        ),
+        control='以 VAE 與重繪強度調整構圖。FLUX 的 Redux、IP-Adapter、畫風與角色參考尚未整合。',
+        lora=False,
     ),
     dict(
         id='checkpoint-inpaint-v1',

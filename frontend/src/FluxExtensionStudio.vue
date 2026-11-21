@@ -42,7 +42,7 @@ type Profile = {
   components: Record<string, string>
 }
 const props = defineProps<{
-  imageRequested?: boolean
+  imageRequest?: number
   restoration?: Restoration | null
   trackTasks?: boolean
 }>()
@@ -287,9 +287,9 @@ onBeforeUnmount(() => {
   restores.dispose()
 })
 watch(
-  () => props.imageRequested,
+  () => props.imageRequest,
   (value) => {
-    if (value) kind.value = 'image'
+    if (value !== undefined) kind.value = 'image'
   },
   { immediate: true },
 )
